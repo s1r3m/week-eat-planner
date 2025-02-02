@@ -3,7 +3,7 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.dao.session_maker_fast_api import DatabaseSession
+from week_eat_planner.dao.session_maker import DatabaseSession
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -25,7 +25,7 @@ async def mock_session(mocker) -> AsyncSession:
 
 @pytest_asyncio.fixture(autouse=True)
 async def mock_session_maker(mocker, mock_session) -> AsyncSession:
-    mocker.patch('week_eat_planner.dao.session_maker_fast_api.async_session_maker', return_value=mock_session)
+    mocker.patch('week_eat_planner.dao.session_maker.async_session_maker', return_value=mock_session)
 
 
 async def test_get_db__always__no_commit_call(mock_session):

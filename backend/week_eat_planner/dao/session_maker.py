@@ -7,7 +7,7 @@ from week_eat_planner.dao.database import async_session_maker
 
 class DatabaseSession:
     @staticmethod
-    async def get_session(commit: bool = False) -> AsyncGenerator[AsyncSession, None]:
+    async def _get_session(commit: bool = False) -> AsyncGenerator[AsyncSession, None]:
         async with async_session_maker() as session:
             try:
                 yield session
@@ -21,12 +21,12 @@ class DatabaseSession:
 
     @staticmethod
     async def get_db() -> AsyncGenerator[AsyncSession, None]:
-        async for session in DatabaseSession.get_session():
+        async for session in DatabaseSession._get_session():
             yield session
 
     @staticmethod
     async def get_db_commit() -> AsyncGenerator[AsyncSession, None]:
-        async for session in DatabaseSession.get_session(commit=True):
+        async for session in DatabaseSession._get_session(commit=True):
             yield session
 
 
