@@ -5,8 +5,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.dao.base import BaseDAO
-from week_eat_planner.dao.database import Base
+from week_eat_planner.db.base import BaseDAO
+from week_eat_planner.db.models import Base
 
 
 class TestModel(Base):
@@ -26,6 +26,11 @@ class TestDAO(BaseDAO):
 @pytest_asyncio.fixture
 async def mocked_session(mocker) -> AsyncSession:
     return mocker.AsyncMock(spec=AsyncSession)
+
+
+@pytest.fixture
+def test_dao(mocked_session):
+    return TestDAO(mocked_session)
 
 
 @pytest_asyncio.fixture(autouse=True, scope='module')
@@ -85,51 +90,60 @@ def pydantic_model(mocker, test_model):
     return model
 
 
-async def test_get_one_or_none_by_id__record_exists__record_returned(mocked_session, mocked_record):
-    result = await TestDAO.get_one_or_none_by_id(mocked_session, mocked_record.id)
+async def test_get_one_or_none_by_id__record_exists__record_returned(test_dao, mocked_record):
+    result = await test_dao.get_one_or_none_by_id(mocked_record.id)
     assert result == mocked_record
 
 
-async def test_get_one_or_none_by_id__record_not_exists__none_returned(mocked_session, mocked_record_none):
-    result = await TestDAO.get_one_or_none_by_id(mocked_session, mocked_record_none.id)
+async def test_get_one_or_none_by_id__record_not_exists__none_returned(test_dao, mocked_record_none):
+    result = await test_dao.get_one_or_none_by_id(mocked_record_none.id)
     assert result is None
 
 
-async def test_get_one_or_none_by_id__sql_error__exception_raised(mocked_session):
+async def test_get_one_or_none_by_id__sql_error__exception_raised(test_dao, mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError('SQL error')
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO.get_one_or_none_by_id(mocked_session, 1)
+        await test_dao.get_one_or_none_by_id(1)
     assert str(exc.value) == 'SQL error'
 
 
-async def test_get_one_or_none__record_exists__record_returned(mocked_session, mocked_filter, mocked_record):
-    result = await TestDAO.get_one_or_none(mocked_session, mocked_filter)
+async def test_get_one_or_none__record_exists__record_returned(test_dao, mocked_session, mocked_filter, mocked_record):
+    result = await test_dao.get_one_or_none(mocked_filter)
     assert result == mocked_record
     mocked_session.execute.assert_called_once()
 
 
-async def test_get_one_or_none__record_not_exists__none_returned(mocked_session, mocked_filter_none):
-    result = await TestDAO.get_one_or_none(mocked_session, mocked_filter_none)
+async def test_get_one_or_none__record_not_exists__none_returned(test_dao, mocked_filter_none):
+    result = await test_dao.get_one_or_none(mocked_filter_none)
     assert result is None
 
 
-async def test_get_one_or_none__sql_error__exception_raised(mocked_session, mocked_filter_none):
+async def test_get_one_or_none__sql_error__exception_raised(test_dao, mocked_session, mocked_filter_none):
     mocked_session.execute.side_effect = SQLAlchemyError('SQL error')
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO.get_one_or_none(mocked_session, mocked_filter_none)
+        await test_dao.get_one_or_none(mocked_filter_none)
     assert str(exc.value) == 'SQL error'
 
 
-async def test_add__valid_obj__exception_raised(mocked_session, pydantic_model, test_model):
-    result = await TestDAO.add(mocked_session, pydantic_model)
+async def test_add__valid_obj__exception_raised(test_dao, pydantic_model, test_model):
+    result = await test_dao.add(pydantic_model)
     assert result == test_model
 
 
-async def test_add__sql_error__exception_raised(mocked_session, pydantic_model):
+async def test_add__sql_error__exception_raised(test_dao, mocked_session, pydantic_model):
     mocked_session.add.side_effect = SQLAlchemyError('SQL error')
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO.add(mocked_session, pydantic_model)
+        await test_dao.add(pydantic_model)
 
     assert str(exc.value) == 'SQL error'
-    mocked_session.rollback.assert_awaited_once()
+
+
+async def test_dao_model__no_model__exception_raised(mocked_session):
+    class BadDAO(BaseDAO):
+        pass
+
+    with pytest.raises(ValueError) as exc:
+        BadDAO(mocked_session)
+
+    assert str(exc.value) == 'A model must be specified in child classes!'

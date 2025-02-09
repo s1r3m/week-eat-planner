@@ -1,13 +1,13 @@
-from week_eat_planner.dao.models import User, Meal, Week
+from week_eat_planner.db.models import User, Meal, Week
 
 
 def test_user__filled_all_fields__correct_model():
-    nickname = 'testuser'
+    email = 'testuser@example.com'
     user_id = 100
 
-    user = User(id=user_id, nickname=nickname)
+    user = User(id=user_id, email=email)
 
-    assert user.nickname == nickname
+    assert user.email == email
     assert user.id == user_id
 
 

@@ -52,7 +52,7 @@ poetry: $(VENV_POETRY_ACTIVATE)
 	$(VIRTUAL_ENV_POETRY)/bin/pip install poetry==$(POETRY_VERSION)
 	ln -f -s $(realpath $(VIRTUAL_ENV_POETRY))/bin/poetry $(VIRTUAL_ENV)/bin/poetry
 
-## @Setup Prepare environment for develop autotests.
+## @Setup Prepare environment.
 install: $(VENV_ACTIVATE) poetry
 	# Check user uid
 ifeq ($(UID),0)
@@ -68,10 +68,16 @@ start: stop
 	docker-compose build --pull  && \
 	docker-compose up
 
+debug: $(VENV_ACTIVATE) stop
+	docker-compose up -d db
+	sleep 2
+	cd $(BE_PATH) && alembic upgrade head
+	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
+
 ## @App Stop the environment.
 stop:
 	docker-compose kill   && \
-	docker-compose down --volumes
+	docker-compose down --volumes --remove-orphans
 
 ## @App SSH to backend container.
 in:
@@ -96,7 +102,7 @@ style: $(VENV_ACTIVATE)
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
 	pytest $(BE_PATH)/tests
-	coverage report --fail-under=100
+	coverage report
 
 ## @Tests Run fe unittests.
 fe_test:

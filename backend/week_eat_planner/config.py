@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     BE_HOST: str
     FE_HOST: str
 
+    # Auth.
+    SECRET_KEY: str
+    ALGORITHM: str
+    TOKEN_TTL: int
+
     # Logger settings.
     FORMAT_LOG: str = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
     LOG_ROTATION: str = "10 MB"

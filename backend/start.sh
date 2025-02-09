@@ -7,4 +7,4 @@
 alembic upgrade head
 
 # Launch uvicorn
-uvicorn week_eat_planner.main:app --host 0.0.0.0 --port 8000
+uvicorn week_eat_planner.main:app --host 0.0.0.0 --port 8000 --root-path /api
