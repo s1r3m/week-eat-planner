@@ -1,9 +1,6 @@
-import pytest
-
 from tests.conftest import EMAIL
-from week_eat_planner.exceptions import UserNotFound
-from week_eat_planner.api.schemas import UserCreate, UserOut
-from week_eat_planner.dependencies.auth_deps import get_current_user, get_current_active_user
+from week_eat_planner.api.schemas import UserCreate
+from week_eat_planner.dependencies.auth_deps import get_current_user
 
 TOKEN_DATA = {"sub": EMAIL}
 ENCODED_TOKEN = (

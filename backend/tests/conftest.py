@@ -33,7 +33,7 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 
 
 @pytest.fixture
-def user_dao(mocked_session) -> UserDAO:
+def user_dao(mocked_session: AsyncSession) -> UserDAO:
     return UserDAO(mocked_session)
 
 
