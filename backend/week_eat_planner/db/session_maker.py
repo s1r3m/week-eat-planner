@@ -1,14 +1,17 @@
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from week_eat_planner.dao.database import async_session_maker
+from week_eat_planner.config import database_url
+
+_engine = create_async_engine(url=database_url)
+_async_session_maker = async_sessionmaker(_engine, class_=AsyncSession)
 
 
 class DatabaseSession:
     @staticmethod
     async def _get_session(commit: bool = False) -> AsyncGenerator[AsyncSession, None]:
-        async with async_session_maker() as session:
+        async with _async_session_maker() as session:
             try:
                 yield session
                 if commit:

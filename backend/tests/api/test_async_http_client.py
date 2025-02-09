@@ -5,7 +5,7 @@ import httpx
 import pytest
 import pytest_asyncio
 
-from week_eat_planner.dao.async_client import HttpClientManager
+from week_eat_planner.db.async_client import HttpClientManager
 
 
 @pytest.fixture(scope='module', autouse=True)

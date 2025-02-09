@@ -1,4 +1,4 @@
-from week_eat_planner.dao.models import User, Meal, Week
+from week_eat_planner.db.models import User, Meal, Week
 
 
 def test_user__filled_all_fields__correct_model():

@@ -3,10 +3,13 @@ from typing import Generic, TypeVar
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.future import select
 
-from week_eat_planner.dao.database import Base
+
+class Base(AsyncAttrs, DeclarativeBase):
+    __abstract__ = True
 
 
 T = TypeVar('T', bound=Base)
@@ -36,8 +39,8 @@ class BaseDAO(Generic[T]):
 
         return record
 
-    async def get_one_or_none(self, _filter: BaseModel) -> T | None:
-        model_dict = _filter.model_dump(exclude_unset=True)
+    async def get_one_or_none(self, filter_: BaseModel) -> T | None:
+        model_dict = filter_.model_dump(exclude_unset=True)
         logger.info(f'Getting {self.model.__name__} by filter={model_dict}')
         try:
             query = select(self.model).filter_by(**model_dict)
@@ -62,7 +65,6 @@ class BaseDAO(Generic[T]):
             await self._session.flush()
             logger.info(f'{self.model.__name__} has been successfully added')
         except SQLAlchemyError as exc:
-            await self._session.rollback()
             logger.exception(f'Error while adding {self.model.__name__}: {exc}')
             raise exc
 

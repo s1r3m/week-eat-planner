@@ -15,7 +15,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DB_URL=postgresql+psycopg://wep:wep@db:5432/wep
+      - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
   frontend:
     build:
       context: ./frontend

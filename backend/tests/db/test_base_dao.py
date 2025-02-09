@@ -5,8 +5,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.dao.base import BaseDAO
-from week_eat_planner.dao.database import Base
+from week_eat_planner.db.base import BaseDAO
+from week_eat_planner.db.models import Base
 
 
 class TestModel(Base):
@@ -137,7 +137,6 @@ async def test_add__sql_error__exception_raised(test_dao, mocked_session, pydant
         await test_dao.add(pydantic_model)
 
     assert str(exc.value) == 'SQL error'
-    mocked_session.rollback.assert_awaited_once()
 
 
 async def test_dao_model__no_model__exception_raised(mocked_session):

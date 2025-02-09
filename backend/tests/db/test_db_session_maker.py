@@ -3,7 +3,7 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.dao.session_maker import DatabaseSession
+from week_eat_planner.db.session_maker import DatabaseSession
 
 
 @pytest.fixture(scope='module', autouse=True)
