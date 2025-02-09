@@ -1,6 +1,8 @@
 from typing import Generator
 
 import asyncio
+from uuid import UUID
+
 import pytest
 import pytest_asyncio
 from pytest_mock import MockerFixture
@@ -12,7 +14,7 @@ from week_eat_planner.api.schemas import UserOut
 
 EMAIL = 'ya@ya.eu'
 PASSWORD = 'hashed_password'
-USER_ID = 100500
+USER_ID = UUID('848ca017-0f19-479b-937d-698fbb46887b')
 
 
 @pytest.fixture(scope='module', autouse=True)

@@ -34,4 +34,4 @@ def get_password_hash(password: str) -> str:
 
 def verify_password(password: str, hashed_password: str) -> bool:
     """Verify given hashed_password against password."""
-    return pwd_context.verify(password, hashed_password)
+    return pwd_context.verify(hashed_password, password)

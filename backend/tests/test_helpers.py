@@ -43,12 +43,12 @@ def test_get_password_hash__valid_string__hashed_password():
 
 
 def test_verify_password__valid_hash__password_match():
-    result = verify_password(PASSWORD, HASHED_PASSWORD)
+    result = verify_password(HASHED_PASSWORD, PASSWORD)
 
     assert result
 
 
 def test_verify_password__bad_hash__password_mismatch():
-    result = verify_password(PASSWORD, OTHER_HASH)
+    result = verify_password(OTHER_HASH, PASSWORD)
 
     assert not result

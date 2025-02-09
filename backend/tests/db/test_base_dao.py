@@ -1,9 +1,6 @@
-import asyncio
 import pytest
-import pytest_asyncio
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import Base
@@ -16,28 +13,16 @@ class TestModel(Base):
     name = Column(String)
 
     def __eq__(self, other: 'TestModel') -> bool:
-        return self.id == other.id and self.name == other.name
+        return bool(self.id == other.id and self.name == other.name)
 
 
 class TestDAO(BaseDAO):
     model = TestModel
 
 
-@pytest_asyncio.fixture
-async def mocked_session(mocker) -> AsyncSession:
-    return mocker.AsyncMock(spec=AsyncSession)
-
-
 @pytest.fixture
 def test_dao(mocked_session):
     return TestDAO(mocked_session)
-
-
-@pytest_asyncio.fixture(autouse=True, scope='module')
-def loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture

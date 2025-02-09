@@ -14,16 +14,15 @@ from week_eat_planner.helpers import create_access_token, get_password_hash, ver
 auth_router = APIRouter(prefix='/auth')
 
 
-@auth_router.post('/add', response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@auth_router.post('/user', response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def add_user(
     user_data: Annotated[UserCreate, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Any:
     """Add a user."""
-    user_dao = UserDAO(session)
     assert user_data.password
     hashed_password = get_password_hash(user_data.password)
-    user_in_db = await user_dao.create_user(email=user_data.email, hashed_password=hashed_password)
+    user_in_db = await UserDAO(session).create_user(email=user_data.email, hashed_password=hashed_password)
 
     return user_in_db
 

@@ -1,3 +1,5 @@
+import uuid
+
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
@@ -16,7 +18,8 @@ class UserDAO(BaseDAO):
 
     async def create_user(self, email: str, hashed_password: str) -> User:
         logger.debug(f'Creating user with {email=}')
-        user = User(email=email, hashed_password=hashed_password)
+        user_id = uuid.uuid4()
+        user = User(id=user_id, email=email, hashed_password=hashed_password)
         self._session.add(user)
         await self._session.flush()
         logger.info(f'User with {email=} has been successfully created')
