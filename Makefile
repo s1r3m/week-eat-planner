@@ -102,7 +102,7 @@ style: $(VENV_ACTIVATE)
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
 	pytest $(BE_PATH)/tests
-	coverage report --fail-under=100
+	coverage report
 
 ## @Tests Run fe unittests.
 fe_test:

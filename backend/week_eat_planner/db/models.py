@@ -27,9 +27,6 @@ class User(Base):
     )
     is_active: Mapped[bool] = mapped_column(default=True)
 
-    def __repr__(self) -> str:
-        return f'<User {self.id=} {self.is_active=} {self.email=}>'
-
 
 class Meal(Base):
     __tablename__ = 'meals'

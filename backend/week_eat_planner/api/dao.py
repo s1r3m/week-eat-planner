@@ -2,7 +2,7 @@ from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
-from week_eat_planner.api.schemas import UserShow
+from week_eat_planner.api.schemas import UserOut
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import Meal, User, Week
 
@@ -27,12 +27,13 @@ class UserDAO(BaseDAO):
 class WeekDAO(BaseDAO):
     model = Week
 
-    async def get_weeks_by_user(self, user: UserShow) -> list[Week]:
-        logger.debug(f'Getting weeks to {user=}')
+    async def get_weeks(self, user: UserOut) -> list[Week]:
+        logger.debug(f'Getting weeks for {user}')
         try:
             query = select(self.model).filter_by(user_id=user.id)
             result = await self._session.execute(query)
-            records = result.scalars().all()
+            scalars = result.scalars()
+            records = scalars.all()
             logger.info(f'Found {len(records)} Weeks with filter user_id={user.id}')
         except SQLAlchemyError as exc:
             logger.exception(f'Error while getting weeks by filter user_id={user.id}: {exc}')
