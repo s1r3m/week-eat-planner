@@ -92,7 +92,7 @@ db_shell:
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
 	black --config $(BE_PATH)/pyproject.toml --check --diff --color $(BE_PATH)
-	pylint --rcfile $(BE_PATH)/pyproject.toml $(BE_PATH) --output-format=colorized
+	pylint --rcfile $(BE_PATH)/pyproject.toml $(BE_PATH) --output-format=colorized --jobs=2
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.

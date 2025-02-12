@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -7,7 +9,7 @@ class Token(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: int
+    id: UUID
     email: str
     is_active: bool
 
@@ -17,12 +19,12 @@ class UserOut(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str | None = None
+    password: str
 
 
 class WeekModel(BaseModel):
     name: str
-    user_id: int
+    user_id: UUID
 
     class Config:
         from_attributes = True
