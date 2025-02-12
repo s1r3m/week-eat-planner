@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
-
+from week_eat_planner.helpers import create_access_token
 
 EMAIL = 'ya@ya.eu'
+TOKEN_DATA = {"sub": EMAIL}
 PASSWORD = 'hashed_password'
 USER_ID = UUID('848ca017-0f19-479b-937d-698fbb46887b')
 
@@ -42,3 +43,8 @@ def user_dao(mocked_session: AsyncSession) -> UserDAO:
 @pytest.fixture
 def user() -> UserOut:
     return UserOut(id=USER_ID, email=EMAIL, is_active=True)
+
+
+@pytest.fixture
+def encoded_token() -> str:
+    return create_access_token(TOKEN_DATA)

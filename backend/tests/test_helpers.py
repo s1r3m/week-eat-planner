@@ -1,23 +1,17 @@
 import pytest
 from loguru import logger
 
-from tests.conftest import EMAIL
+from tests.conftest import EMAIL, TOKEN_DATA
 from week_eat_planner.helpers import create_access_token, get_email_from_token, get_password_hash, verify_password
 
-
-TOKEN_DATA = {"sub": EMAIL}
-ENCODED_TOKEN = (
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ5YUB5YS5ldSIsImV4cCI6MTczOTE4MTk3OH0.'
-    'DF-fx3RjWeZB0NVoGIjNbWKe6gHpPA0ZW8Yn4DnGJxA'
-)
 BAD_TOKEN = 'bad_token'
 HASHED_PASSWORD = '$2b$12$Ut6AYZYJGgQuBLwoGY1cQOzzYtf2CEeDvj0Q/Rk.EOzD8Gu1kKeWG'
 OTHER_HASH = '$2b$12$lq6H9Uj6.CXVBm2lYffICOZmnaIFalgOqEfgWBq5v7mh6Z1pZU28m'
 PASSWORD = '123456'
 
 
-def test_decode__valid_token__decoded_str():
-    email = get_email_from_token(ENCODED_TOKEN)
+def test_decode__valid_token__decoded_str(encoded_token):
+    email = get_email_from_token(encoded_token)
 
     assert email == EMAIL
 

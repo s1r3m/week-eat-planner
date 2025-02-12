@@ -34,11 +34,11 @@ async def login(
 ) -> Token:
     """Login the user."""
     try:
-        email = UserCreate(email=user_data.username)
+        user = UserCreate(email=user_data.username, password='filler')
     except ValueError as exc:
         raise InvalidEmail from exc
 
-    user_in_db = await UserDAO(session).get_one_or_none(filter_=email)
+    user_in_db = await UserDAO(session).get_user_by_email(user.email)
 
     if not (user_in_db and verify_password(user_in_db.hashed_password, user_data.password)):
         raise UserNotFound

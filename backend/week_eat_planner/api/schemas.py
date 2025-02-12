@@ -19,7 +19,7 @@ class UserOut(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str | None = None
+    password: str
 
 
 class WeekModel(BaseModel):

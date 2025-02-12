@@ -26,6 +26,22 @@ class UserDAO(BaseDAO):
 
         return user
 
+    async def get_user_by_email(self, email: str) -> User | None:
+        logger.info(f'Getting User by {email=}')
+        try:
+            query = select(self.model).filter_by(email=email)
+            result = await self._session.execute(query)
+            record = result.scalar_one_or_none()
+            if record:
+                logger.info(f'{self.model.__name__} with {email=}has been successfully found')
+            else:
+                logger.warning(f'{self.model.__name__} with {email=} not found')
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while getting {self.model.__name__} by {email=}: {exc}')
+            raise exc
+
+        return record
+
 
 class WeekDAO(BaseDAO):
     model = Week
