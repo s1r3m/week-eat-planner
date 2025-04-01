@@ -13,7 +13,6 @@ from week_eat_planner.api.schemas import UserOut
 from week_eat_planner.helpers import create_access_token
 
 EMAIL = 'ya@ya.eu'
-TOKEN_DATA = {"sub": EMAIL}
 PASSWORD = 'hashed_password'
 USER_ID = UUID('848ca017-0f19-479b-937d-698fbb46887b')
 
@@ -47,4 +46,4 @@ def user() -> UserOut:
 
 @pytest.fixture
 def encoded_token() -> str:
-    return create_access_token(TOKEN_DATA)
+    return create_access_token(EMAIL)

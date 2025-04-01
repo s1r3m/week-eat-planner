@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
@@ -18,11 +19,11 @@ def get_email_from_token(token: str) -> str:
     return email
 
 
-def create_access_token(data: dict) -> str:
+def create_access_token(email: str) -> str:
     """Create encoded by jwt token."""
-    to_encode = data.copy()
+    to_encode: dict[str, Any] = {'sub': email}
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.TOKEN_TTL)
-    to_encode.update({"exp": expire})
+    to_encode.update({'exp': expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -32,6 +33,6 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def verify_password(hashed_password: str, given_password: str) -> bool:
-    """Verify given_password against password."""
-    return pwd_context.verify(given_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify plain_password against hashed_password."""
+    return pwd_context.verify(plain_password, hashed_password)

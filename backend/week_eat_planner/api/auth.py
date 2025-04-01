@@ -40,8 +40,8 @@ async def login(
 
     user_in_db = await UserDAO(session).get_user_by_email(user.email)
 
-    if not (user_in_db and verify_password(user_in_db.hashed_password, user_data.password)):
+    if not (user_in_db and verify_password(user_data.password, user_in_db.hashed_password)):
         raise UserNotFound
 
-    access_token = create_access_token(data={"sub": user_in_db.email})
+    access_token = create_access_token(user_in_db.email)
     return Token(access_token=access_token, token_type=TokenType.BEARER)
