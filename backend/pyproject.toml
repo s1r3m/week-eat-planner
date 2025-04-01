@@ -1,36 +1,39 @@
-[tool.poetry]
+[project]
 name = "week_eat_planner"
 version = "0.0.0"
 description = "My Menu Planner app to get a shopping list for a week in a click."
-authors = ["Filipp Aleksandrov <falexandrov@gmail.com>"]
-maintainers = ["Filipp Aleksandrov <falexandrov@gmail.com>"]
 readme = "./README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi[standard]==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.5",
+    "pydantic-settings==2.7.1",
+    "alembic==1.14.0",
+    "sqlalchemy[asyncio]==2.0.37",
+    "psycopg[binary]==3.2.4",
+    "httpx==0.28.1",
+    "loguru==0.7.3",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-fastapi = {extras = ["standard"], version = "^0.115.6"}
-uvicorn = {extras = ["standard"], version = "^0.34.0"}
-pydantic = "^2.10.5"
-pydantic-settings = "^2.7.1"
-alembic = "^1.14.0"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.37"}
-psycopg = {extras = ["async", "binary"], version = "^3.2.4"}
-httpx = "^0.28.1"
-loguru = "^0.7.3"
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+[project.optional-dependencies]
+dev = [
+    "pytest==8.2.0",
+    "pytest-asyncio==0.25.0", 
+    "pytest-cov==6.0.0",
+    "pytest-mock==3.14.0",
+    "pylint-pytest==1.1.8",
+    "black==23.3.0",
+    "mypy==1.13.0",
+    "pylint==2.15.10",
+    "types-ujson==5.10.0.20240515"
+]
 
-[tool.poetry.dev-dependencies]
-pytest = "<=8.2.0"
-pytest-asyncio = "^0.25.0"
-pytest-cov = "^6.0.0"
-pytest-mock = "^3.14.0"
-pylint-pytest = "^1.1.8"
-black = "23.3.0"
-mypy = "^1.13.0"
-pylint = "2.15.10"
-types-ujson = "^5.10.0.20240515"
-
+# [[tool.uv.index]]
+# # url = "https://pypi.org/simple"
+# default = true
 
 [tool.black]
 line-length = 120

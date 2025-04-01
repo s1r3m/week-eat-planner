@@ -6,11 +6,9 @@ ifeq ($(MAKE_OK),)
 endif
 
 # Versions.
-POETRY_VERSION = 1.7.1
-PYTHON = python3.11
-PIP_VERSION = 24.3.1
-SETUPTOOLS_VERSION = 75.6.0
-WHEEL_VERSION = 0.45.1
+PYTHON_VERSION = 3.11
+PYTHON = python$(PYTHON_VERSION)
+UV_VERSION = 0.6.11
 
 # Paths.
 PROJECT_PATH = $(CURDIR)
@@ -18,17 +16,16 @@ BE_PATH = $(PROJECT_PATH)/backend
 FE_PATH = $(PROJECT_PATH)/frontend
 
 export VIRTUAL_ENV ?= $(PROJECT_PATH)/.venv_$(PYTHON)
-VIRTUAL_ENV_POETRY = $(PROJECT_PATH)/.venv_poetry
 
 # Bin.
 VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate
-VENV_POETRY_ACTIVATE = $(VIRTUAL_ENV_POETRY)/bin/activate
 
 # Other.
 SHELL = /bin/bash  # Using bash as default shell
 CHECK_PYTHON = $(shell which $(PYTHON))
+CHECK_UV = $(shell which uv)
 
-export PATH := $(VIRTUAL_ENV)/bin:$(PATH)
+export PATH := $(VIRTUAL_ENV)/bin:$(HOME)/.local/bin:$(PATH)
 export PYTHONPATH = $(BE_PATH)
 
 all: help
@@ -36,30 +33,35 @@ all: help
 ## ------------------------------------------------ SETUP --------------------------------------------------------------
 
 $(VENV_ACTIVATE):
+	# Check if uv is installed.
+ifeq ($(CHECK_UV), )
+	curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
+endif
 	# Check if correct python is installed.
 ifeq ($(CHECK_PYTHON), )
-	$(error $(PYTHON) was not found but needed to continue. Please install $(PYTHON))
+	echo $(PYTHON) was not found but needed to continue.
+	uv python install $(PYTHON_VERSION)
 endif
-	$(PYTHON) -m venv $(VIRTUAL_ENV)
-	pip install pip==$(PIP_VERSION) setuptools==$(SETUPTOOLS_VERSION) wheel==$(WHEEL_VERSION)
+	uv venv $(VIRTUAL_ENV) --python $(PYTHON_VERSION)
 
-$(VENV_POETRY_ACTIVATE):
-	$(PYTHON) -m venv $(VIRTUAL_ENV_POETRY)
-	$(VIRTUAL_ENV_POETRY)/bin/pip install pip==$(PIP_VERSION) setuptools==$(SETUPTOOLS_VERSION) wheel==$(WHEEL_VERSION)
-
-# @Setup Install poetry.
-poetry: $(VENV_POETRY_ACTIVATE)
-	$(VIRTUAL_ENV_POETRY)/bin/pip install poetry==$(POETRY_VERSION)
-	ln -f -s $(realpath $(VIRTUAL_ENV_POETRY))/bin/poetry $(VIRTUAL_ENV)/bin/poetry
+test:
+	# Check if uv is installed.
+ifeq ($(CHECK_UV), )
+	echo "uv not found, installing..."
+	curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
+else
+	echo "uv already installed to $(HOME)"
+endif
+	uv --version
 
 ## @Setup Prepare environment.
-install: $(VENV_ACTIVATE) poetry
+install: $(VENV_ACTIVATE)
 	# Check user uid
 ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	poetry -C $(BE_PATH) install --no-root
+	cd $(BE_PATH) && uv sync --active --all-extras
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 

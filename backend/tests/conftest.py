@@ -47,4 +47,4 @@ def user() -> UserOut:
 
 @pytest.fixture
 def encoded_token() -> str:
-    return create_access_token(TOKEN_DATA)
+    return create_access_token(EMAIL)
