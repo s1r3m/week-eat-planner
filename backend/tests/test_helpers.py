@@ -1,7 +1,6 @@
 import pytest
-from loguru import logger
 
-from tests.conftest import EMAIL, TOKEN_DATA
+from tests.conftest import EMAIL
 from week_eat_planner.helpers import create_access_token, get_email_from_token, get_password_hash, verify_password
 
 BAD_TOKEN = 'bad_token'

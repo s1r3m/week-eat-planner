@@ -35,11 +35,12 @@ all: help
 $(VENV_ACTIVATE):
 	# Check if uv is installed.
 ifeq ($(CHECK_UV), )
+	# UV is not installed, installing it...
 	curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
 endif
 	# Check if correct python is installed.
 ifeq ($(CHECK_PYTHON), )
-	echo $(PYTHON) was not found but needed to continue.
+	# $(PYTHON) was not found but needed to continue. Installing it...
 	uv python install $(PYTHON_VERSION)
 endif
 	uv venv $(VIRTUAL_ENV) --python $(PYTHON_VERSION)
