@@ -44,16 +44,6 @@ ifeq ($(CHECK_PYTHON), )
 endif
 	uv venv $(VIRTUAL_ENV) --python $(PYTHON_VERSION)
 
-test:
-	# Check if uv is installed.
-ifeq ($(CHECK_UV), )
-	echo "uv not found, installing..."
-	curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
-else
-	echo "uv already installed to $(HOME)"
-endif
-	uv --version
-
 ## @Setup Prepare environment.
 install: $(VENV_ACTIVATE)
 	# Check user uid
