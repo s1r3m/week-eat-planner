@@ -23,7 +23,13 @@ async def test_user_dao_create_user__valid_data__user_created(user_dao):
     [
         pytest.param([], id='empty'),
         pytest.param([WeekModel(name='1', user_id=USER_ID)], id='one_week'),
-        pytest.param([WeekModel(name='1', user_id=USER_ID), WeekModel(name='2', user_id=USER_ID)], id='two_week'),
+        pytest.param(
+            [
+                WeekModel(name='1', user_id=USER_ID),
+                WeekModel(name='2', user_id=USER_ID),
+            ],
+            id='two_week',
+        ),
     ],
 )
 async def test_week_dao_get_weeks__no_data__empty_response(mocked_session, mocker, week_dao, user, weeks_from_db):

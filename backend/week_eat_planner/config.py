@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     TOKEN_TTL: int
 
     # Logger settings.
-    FORMAT_LOG: str = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
-    LOG_ROTATION: str = "10 MB"
+    FORMAT_LOG: str = '{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}'
+    LOG_ROTATION: str = '10 MB'
 
     # TG vars.
     ADMIN_IDS: list[int]

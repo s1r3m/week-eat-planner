@@ -84,13 +84,17 @@ db_shell:
 
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
-	black --config $(BE_PATH)/pyproject.toml --check --diff --color $(BE_PATH)
-	pylint --rcfile $(BE_PATH)/pyproject.toml $(BE_PATH) --output-format=colorized --jobs=2
+	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
+	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
+	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
+
+lint_old: $(VENV_ACTIVATE)
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
-	black --config $(BE_PATH)/pyproject.toml $(BE_PATH)
+	ruff check --fix --config $(BE_PATH)/pyproject.toml
+	ruff format --config $(BE_PATH)/pyproject.toml
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)

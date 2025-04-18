@@ -1,7 +1,12 @@
 import pytest
 
 from tests.conftest import EMAIL
-from week_eat_planner.helpers import create_access_token, get_email_from_token, get_password_hash, verify_password
+from week_eat_planner.helpers import (
+    create_access_token,
+    get_email_from_token,
+    get_password_hash,
+    verify_password,
+)
 
 BAD_TOKEN = 'bad_token'
 HASHED_PASSWORD = '$2b$12$LWMbERKL6XH7CzFNXR4tOO8wsxOCYzQBLpqH4qoTlZvy1s4riAVNu'

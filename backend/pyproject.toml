@@ -18,26 +18,31 @@ dependencies = [
     "passlib[bcrypt]==1.7.4",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest==8.2.0",
-    "pytest-asyncio==0.25.0", 
+    "pytest-asyncio==0.25.0",
     "pytest-cov==6.0.0",
     "pytest-mock==3.14.0",
-    "pylint-pytest==1.1.8",
-    "black==23.3.0",
+    "ruff>=0.11.6",
     "mypy==1.13.0",
-    "pylint==2.15.10",
     "types-ujson==5.10.0.20240515"
 ]
 
-# [[tool.uv.index]]
-# # url = "https://pypi.org/simple"
-# default = true
-
-[tool.black]
+[tool.ruff]
+exclude = [
+    ".venv*",
+    "migrations",
+]
 line-length = 120
-skip-string-normalization = true
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -75,62 +80,3 @@ warn_unreachable = true
 show_error_codes = true
 
 no_implicit_optional = true
-
-[tool.pylint.MASTER]
-# Use multiple processes to speed up Pylint.
-jobs = 0
-load-plugins = "pylint_pytest"
-
-[tool.pylint.FORMAT]
-# Maximum number of characters on a single line.
-max-line-length = 120
-
-[tool.pylint.'MESSAGES CONTROL']
-# Disable the message, report, category or checker with the given id(s).
-disable = '''
-    fixme,
-    missing-docstring,
-    too-many-arguments,
-    too-few-public-methods,
-    redefined-outer-name,
-    no-member,
-    import-outside-toplevel,
-'''
-
-[tool.pylint.BASIC]
-# Regular expression matching correct argument names. Overrides argument-naming-style
-argument-rgx = '[a-z_][a-z0-9_]{1,60}$'
-
-# Regular expression matching correct function names. Overrides function-naming-style.
-function-rgx = '[a-z_][a-z0-9_]{2,115}$'
-
-# Good variable names which should always be accepted, separated by a comma.
-good-names = 'i,j,k,v,f,e,x,y,z,_,logger'
-
-# Regular expression matching correct method names.
-method-rgx = '[a-z_][A-Za-z0-9_]{1,100}$'
-
-# Regular expression matching correct variable names.
-variable-rgx = '[a-z_][a-z0-9_]{1,60}$'
-
-# Regular expression matching correct class attribute names
-class-attribute-rgx = '([A-Za-z_][A-Za-z0-9_]{1,60}|(__.*__))$'
-
-# Include a hint for the correct naming format with invalid-name
-include-naming-hint = 'yes'
-
-[tool.pylint.REPORTS]
-# Template used to display messages. This is a python new-style format string
-# used to format the message information. See doc for all details.
-msg-template = '{abspath}:{line}:{obj} [{symbol}({msg_id})] {msg}'
-
-[tool.pylint.DESIGN]
-# Maximum number of locals for function / method body
-max-locals = 25
-
-# Maximum number of public methods for a class (see R0904).
-max-public-methods = 100
-
-[tool.pylint.SIMILARITIES]
-# Ignore imports when computing similarities.
-ignore-imports = 'yes'
