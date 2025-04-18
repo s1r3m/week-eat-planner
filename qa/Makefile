@@ -11,11 +11,9 @@ PYTHON = python$(PYTHON_VERSION)
 UV_VERSION = 0.6.11
 
 # Paths.
-PROJECT_PATH = $(CURDIR)
-BE_PATH = $(PROJECT_PATH)/backend
-FE_PATH = $(PROJECT_PATH)/frontend
+PROJECT_PATH = $(shell dirname $(CURDIR))
 
-export VIRTUAL_ENV ?= $(PROJECT_PATH)/.venv_$(PYTHON)
+export VIRTUAL_ENV ?= $(PROJECT_PATH)/.venv_at_$(PYTHON)
 
 # Bin.
 VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate
@@ -52,55 +50,38 @@ ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	cd $(BE_PATH) && uv sync --active --all-extras
+	uv sync --active
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
 ## @App Start the environment.
 start: stop
-	docker-compose build --pull  && \
-	docker-compose up
-
-debug: $(VENV_ACTIVATE) stop
-	docker-compose up -d db
-	sleep 2
-	cd $(BE_PATH) && alembic upgrade head
-	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
+	cd $(PROJECT_PATH)/docker docker-compose build --pull  && \
+	cd $(PROJECT_PATH)/docker docker-compose up
 
 ## @App Stop the environment.
 stop:
-	docker-compose kill   && \
-	docker-compose down --volumes --remove-orphans
+	cd $(PROJECT_PATH)/docker docker-compose kill   && \
+	cd $(PROJECT_PATH)/docker docker-compose down --volumes --remove-orphans
 
 ## @App SSH to backend container.
 in:
-	docker exec -it week-eat-planner-backend-1 bash
-
-## @App Connect to database.
-db_shell:
-	PGPASSWORD=wep psql -h localhost -U wep -d wep
+	# TODO: add an entrypoint to the container with the app
+	#docker exec -it week-eat-planner-backend-1 bash
 
 ## ------------------------------------------------ TESTS --------------------------------------------------------------
 
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
-	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
-	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
-	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
+	ruff check $(PROJECT_PATH)/qa --diff
+	ruff format $(PROJECT_PATH)/qa --diff
+	mypy --config-file $(PROJECT_PATH)/qa/pyproject.toml $(PROJECT_PATH)/qa
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
-	ruff check --fix --config $(BE_PATH)/pyproject.toml
-	ruff format --config $(BE_PATH)/pyproject.toml
+	ruff check --fix $(PROJECT_PATH)/qa
+	ruff format $(PROJECT_PATH)/qa
 
-## @Tests Run be unittests.
-be_test: $(VENV_ACTIVATE)
-	pytest $(BE_PATH)/tests
-	coverage report
-
-## @Tests Run fe unittests.
-fe_test:
-	# TODO: add tests
 
 HELP_TARGET_MAX_CHAR_NUM = 20
 

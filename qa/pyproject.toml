@@ -1,0 +1,58 @@
+[project]
+name = "week_eat_planner_qa"
+version = "0.0.0"
+description = "Autotests for week_eat_planner."
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "pytest==8.2.0",
+    "ruff>=0.11.6",
+    "mypy==1.13.0",
+]
+
+[tool.ruff]
+exclude = [
+    ".venv*",
+]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::Warning",
+]
+addopts = "--tb=short -vv"
+
+[tool.mypy]
+python_version = "3.11"
+
+exclude = [
+    '/test_.*',
+]
+
+ignore_missing_imports = true
+show_column_numbers = true
+show_absolute_path = true
+
+allow_redefinition = true
+no_implicit_reexport = true
+strict_equality = true
+
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+
+warn_unused_ignores = true
+warn_unused_configs = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unreachable = true
+show_error_codes = true
+
+no_implicit_optional = true
