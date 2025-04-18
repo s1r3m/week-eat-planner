@@ -7,7 +7,10 @@ from week_eat_planner.db.session_maker import db
 
 @pytest_asyncio.fixture(autouse=True)
 async def mock_session_maker(mocker, mocked_session) -> AsyncSession:
-    mocker.patch('week_eat_planner.db.session_maker._async_session_maker', return_value=mocked_session)
+    mocker.patch(
+        'week_eat_planner.db.session_maker._async_session_maker',
+        return_value=mocked_session,
+    )
 
 
 async def test_get_db__always__no_commit_call(mocked_session):

@@ -9,7 +9,11 @@ from week_eat_planner.api.schemas import UserCreate, UserOut, Token
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.constants import TokenType
 from week_eat_planner.exceptions import InvalidEmail, UserNotFound
-from week_eat_planner.helpers import create_access_token, get_password_hash, verify_password
+from week_eat_planner.helpers import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+)
 
 auth_router = APIRouter(prefix='/auth')
 

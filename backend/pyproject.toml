@@ -18,22 +18,31 @@ dependencies = [
     "passlib[bcrypt]==1.7.4",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest==8.2.0",
-    "pytest-asyncio==0.25.0", 
+    "pytest-asyncio==0.25.0",
     "pytest-cov==6.0.0",
     "pytest-mock==3.14.0",
-    "pylint-pytest==1.1.8",
-    "black==23.3.0",
+    "ruff>=0.11.6",
     "mypy==1.13.0",
-    "pylint==2.15.10",
     "types-ujson==5.10.0.20240515"
 ]
 
-# [[tool.uv.index]]
-# # url = "https://pypi.org/simple"
-# default = true
+[tool.ruff]
+exclude = [
+    ".venv*",
+    "migrations",
+]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.black]
 line-length = 120

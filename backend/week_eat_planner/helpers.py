@@ -6,14 +6,14 @@ from passlib.context import CryptContext
 
 from week_eat_planner.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 def get_email_from_token(token: str) -> str:
     """Decode the token and return email from it."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email: str = payload.get("sub")
+        email: str = payload.get('sub')
     except (JWTError, ExpiredSignatureError) as exc:
         raise ValueError('Invalid token') from exc
     return email

@@ -30,7 +30,7 @@ async def test_manager__client_property__client_created(manager):
     client = manager.client
 
     assert isinstance(client, httpx.AsyncClient)
-    assert manager._client is not None  # pylint: disable=protected-access
+    assert manager._client is not None
 
 
 async def test_manager__second_client_call__same_client(manager):
@@ -40,9 +40,9 @@ async def test_manager__second_client_call__same_client(manager):
 
 
 async def test_manager__close_client__client_removed(manager):
-    client = manager.client  # pylint: disable=unused-variable
+    _ = manager.client
     await manager.close_client()
-    assert manager._client is None  # pylint: disable=protected-access
+    assert manager._client is None
 
 
 async def test_manager__client_recreation_after_closing__client_created(manager):
@@ -52,5 +52,5 @@ async def test_manager__client_recreation_after_closing__client_created(manager)
     new_client = manager.client
 
     assert isinstance(new_client, httpx.AsyncClient)
-    assert manager._client is not None  # pylint: disable=protected-access
+    assert manager._client is not None
     assert new_client is not client

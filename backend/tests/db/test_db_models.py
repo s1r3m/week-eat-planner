@@ -24,7 +24,7 @@ def test_create_week__filled_all_fields__correct_model():
 
 
 def test_week_meal__relationship__success():
-    week = Week(week_start="Sunday")
+    week = Week(week_start='Sunday')
     meal = Meal()
 
     week.meals.append(meal)
