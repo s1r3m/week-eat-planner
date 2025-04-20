@@ -10,5 +10,5 @@ app.include_router(router)
 app.include_router(auth_router)
 
 
-def start_app():
+def start_app() -> None:
     uvicorn.run(app, host='0.0.0.0', port=8000)
