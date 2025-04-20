@@ -15,7 +15,7 @@ PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
 FE_PATH = $(PROJECT_PATH)/frontend
 
-export VIRTUAL_ENV ?= $(PROJECT_PATH)/.venv_$(PYTHON)
+export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
 # Bin.
 VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate
@@ -101,6 +101,16 @@ be_test: $(VENV_ACTIVATE)
 ## @Tests Run fe unittests.
 fe_test:
 	# TODO: add tests
+
+
+## ------------------------------------------------ Build --------------------------------------------------------------
+
+clear:
+	rm -rf $(BE_PATH)/build/ $(BE_PATH)/dist/ $(BE_PATH)/*.egg-info/
+
+## @Build build python package
+package: $(VENV_ACTIVATE) clear
+	uv build --wheel $(BE_PATH)
 
 HELP_TARGET_MAX_CHAR_NUM = 20
 

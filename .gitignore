@@ -6,6 +6,10 @@
 
 .vscode/
 
+**/build/
+**/dist/
+**/**.egg-info/
+
 */node_modules/
 
 .coverage

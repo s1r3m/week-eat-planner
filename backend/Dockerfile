@@ -9,10 +9,10 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Install requiremnents
-COPY pyproject.toml poetry.lock /
-RUN pip install poetry==1.7.1
+COPY pyproject.toml uv.lock /
+RUN pip install uv==0.6.13
 
-RUN poetry config virtualenvs.create false && poetry install --no-dev
+RUN uv sync
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
