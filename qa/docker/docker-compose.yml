@@ -1,0 +1,40 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "81:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      default:
+        aliases:
+          - app.dev.local
+  app:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    volumes:
+      - ./:/app
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: wep
+      POSTGRES_USER: wep
+      POSTGRES_PASSWORD: wep
+    volumes:
+      - postgres_data:/var/lib/postgresql/datare
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
