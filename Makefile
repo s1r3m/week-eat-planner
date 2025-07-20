@@ -60,8 +60,10 @@ endif
 run_db:
 	docker compose up -d --wait db
 
-start: $(VENV_ACTIVATE) run_db
+migrations: $(VENV_ACTIVATE) run_db
 	cd $(BE_PATH) && alembic upgrade head
+
+start: migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 ## @App Stop the environment.
@@ -91,8 +93,13 @@ style: $(VENV_ACTIVATE)
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
-	pytest $(BE_PATH)/tests
-	coverage report
+	cd $(BE_PATH) 								&& \
+		coverage run -m pytest $(BE_PATH)/tests && \
+		coverage report
+
+## @Tests Create a HTML coverage report.
+coverage: be_test
+	cd $(BE_PATH) && coverage html
 
 ## @Tests Run fe unittests.
 fe_test:

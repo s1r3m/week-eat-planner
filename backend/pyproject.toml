@@ -75,11 +75,11 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "module"
 filterwarnings = [
     "ignore::Warning",
 ]
-addopts = "--tb=short -vv --cov=week_eat_planner --cov-report=term-missing"
+addopts = "--tb=short -vv"  # --cov=week_eat_planner --cov-report=term-missing"
 
 [tool.mypy]
 python_version = "3.11"
@@ -109,3 +109,28 @@ warn_unreachable = true
 show_error_codes = true
 
 no_implicit_optional = true
+
+[tool.coverage.run]
+source = ["week_eat_planner"]
+branch = true
+omit = [
+    "*/tests/*",
+    # Omit files that are primarily configuration or startup logic
+#    "week_eat_planner/main.py",
+#    "week_eat_planner/config.py",
+#    "week_eat_planner/db/session_maker.py",
+#    "week_eat_planner/constants.py",
+#    "week_eat_planner/exceptions.py",
+]
+
+[tool.coverage.paths]
+# This is the key to fixing the 0% coverage issue.
+# It tells coverage that the source code in 'backend/week_eat_planner'
+# is the same as the code being executed from 'site-packages'.
+source = [
+    "week_eat_planner",
+    ".venv*/lib/python*/site-packages/week_eat_planner",
+]
+
+[tool.coverage.report]
+show_missing = true
