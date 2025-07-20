@@ -31,9 +31,6 @@ jobs:
     - name: Run the app
       run: make -C qa start
 
-    - name: Wait for the app to run
-      run: make -C qa wait
-
     - name: Run tests
       run: make -C qa test
 
