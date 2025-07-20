@@ -2,6 +2,8 @@ name: BE Unittests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:

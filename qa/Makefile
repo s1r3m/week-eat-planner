@@ -59,7 +59,11 @@ start: stop
 	make -C .. package
 	cd $(PROJECT_PATH)/qa/docker 	 && \
 		docker compose build --pull  && \
-		docker compose up
+		docker compose up --detach
+
+logs: start
+	cd $(PROJECT_PATH)/qa/docker 	 && \
+		docker compose logs --follow
 
 ## @App Stop the environment.
 stop:
