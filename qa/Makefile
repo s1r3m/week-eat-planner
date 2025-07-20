@@ -59,7 +59,7 @@ start: stop
 	$(MAKE) -C .. package
 	cd $(PROJECT_PATH)/qa/docker 	 && \
 		docker compose build --pull  && \
-		docker compose up --detach --wait backend
+		docker compose up --detach --wait nginx
 ifneq ($(GITHUB_ACTIONS),true)
 	$(MAKE) logs
 endif
