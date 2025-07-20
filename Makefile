@@ -52,7 +52,7 @@ ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	cd $(BE_PATH) && uv sync --active --all-extras
+	cd $(BE_PATH) && uv sync --active --all-extras --python $(VIRTUAL_ENV)/bin/python
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 

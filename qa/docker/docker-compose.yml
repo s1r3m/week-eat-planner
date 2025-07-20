@@ -4,27 +4,38 @@ services:
     ports:
       - "81:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+#      - frontend
     networks:
       default:
         aliases:
           - app.dev.local
-  app:
+  backend:
     build:
-      context: ../../backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/app
+      context: ../../
+      dockerfile: qa/docker/app/Dockerfile
     environment:
       - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      - BE_HOST=http://app.dev.local
+      - FE_HOST=http://app.dev.local
+      - SECRET_KEY=gV64m9aIzFG4qpgVphvQbPQrtAO0nM-7YwwOvu0XPt5KJOjAy4AfgLkqJXYEt
+      - ALGORITHM=HS256
+      - TOKEN_TTL=1440
+      - ADMIN_IDS=[193191236]
+      - BOT_TOKEN=your_bot_token
+      - TG_API_SITE=https://api.telegram.org
     expose:
-      - "3000"
-    volumes:
-      - ./:/app
+      - 8000
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    expose:
+#      - "3000"
+#    volumes:
+#      - ./:/app
   db:
     image: postgres:13
     environment:
@@ -32,7 +43,7 @@ services:
       POSTGRES_USER: wep
       POSTGRES_PASSWORD: wep
     volumes:
-      - postgres_data:/var/lib/postgresql/datare
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 

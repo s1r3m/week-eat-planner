@@ -7,6 +7,7 @@ dependencies = [
     "pytest==8.2.0",
     "ruff>=0.11.6",
     "mypy==1.13.0",
+    "httpx==0.28.1",
 ]
 
 [tool.ruff]
@@ -24,6 +25,8 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "ignore::Warning",
 ]
