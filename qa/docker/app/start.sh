@@ -5,7 +5,6 @@ set -ex
 wait-for-it.sh db:5432 --timeout=30 --strict -- echo "Database is up"
 
 # Run alembic upgrade
-#sed -i -e "s|driver://user:pass@localhost/dbname|postgresql+asyncpg://wep:wep@db:5432/wep|g" alembic.ini
 alembic upgrade head
 
 # Launch uvicorn
