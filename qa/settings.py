@@ -1,3 +1,3 @@
 import os
 
-APP_HOST = os.getenv('APP_HOST', 'http://app.dev.local:81')
+APP_URL = os.getenv('APP_URL', 'http://app.dev.local:81')

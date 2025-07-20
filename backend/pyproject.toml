@@ -21,6 +21,7 @@ classifiers = [                     # Standard classifiers for PyPI
 ]
 
 dependencies = [
+    "asyncpg==0.30.0",
     "fastapi[standard]==0.115.6",
     "uvicorn[standard]==0.34.0",
     "pydantic==2.10.5",

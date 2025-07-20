@@ -13,7 +13,7 @@ UV_VERSION = 0.6.11
 # Paths.
 PROJECT_PATH = $(shell dirname $(CURDIR))
 
-export VIRTUAL_ENV ?= $(PROJECT_PATH)/.venv_at_$(PYTHON)
+export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_at_$(PYTHON)
 
 # Bin.
 VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate
@@ -50,24 +50,26 @@ ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	uv sync --active
+	uv sync --active --python $(VIRTUAL_ENV)/bin/python
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
 ## @App Start the environment.
 start: stop
-	cd $(PROJECT_PATH)/docker docker-compose build --pull  && \
-	cd $(PROJECT_PATH)/docker docker-compose up
+	make -C .. package
+	cd $(PROJECT_PATH)/qa/docker 	 && \
+		docker-compose build --pull  && \
+		docker-compose up
 
 ## @App Stop the environment.
 stop:
-	cd $(PROJECT_PATH)/docker docker-compose kill   && \
-	cd $(PROJECT_PATH)/docker docker-compose down --volumes --remove-orphans
+	cd $(PROJECT_PATH)/qa/docker  && \
+		docker-compose kill  	  && \
+		docker-compose down --volumes --remove-orphans
 
 ## @App SSH to backend container.
 in:
-	# TODO: add an entrypoint to the container with the app
-	#docker exec -it week-eat-planner-backend-1 bash
+	docker exec -it backend-1 bash
 
 ## ------------------------------------------------ TESTS --------------------------------------------------------------
 
@@ -81,6 +83,9 @@ lint: $(VENV_ACTIVATE)
 style: $(VENV_ACTIVATE)
 	ruff check --fix $(PROJECT_PATH)/qa
 	ruff format $(PROJECT_PATH)/qa
+
+test: $(VENV_ACTIVATE)
+	pytest tests
 
 
 HELP_TARGET_MAX_CHAR_NUM = 20
