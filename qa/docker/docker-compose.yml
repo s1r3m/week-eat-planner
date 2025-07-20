@@ -30,7 +30,6 @@ services:
       - 8000
     depends_on:
       - db
-#      - nginx
     healthcheck:
       test: [ "CMD-SHELL", "httpx  http://localhost:8000/ping | grep 200" ]
       interval: 5s

@@ -15,4 +15,5 @@
 .coverage
 
 sandbox.py
-/htmlcov/
+**/htmlcov/
+
