@@ -58,14 +58,14 @@ endif
 start: stop
 	make -C .. package
 	cd $(PROJECT_PATH)/qa/docker 	 && \
-		docker-compose build --pull  && \
-		docker-compose up
+		docker compose build --pull  && \
+		docker compose up
 
 ## @App Stop the environment.
 stop:
 	cd $(PROJECT_PATH)/qa/docker  && \
-		docker-compose kill  	  && \
-		docker-compose down --volumes --remove-orphans
+		docker compose kill  	  && \
+		docker compose down --volumes --remove-orphans
 
 ## @App SSH to backend container.
 in:
