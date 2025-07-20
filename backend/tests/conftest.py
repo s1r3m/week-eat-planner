@@ -1,29 +1,41 @@
-from typing import Generator
+from typing import AsyncGenerator, Generator, TypeVar
 
 import asyncio
 from uuid import UUID
 
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
 from week_eat_planner.helpers import create_access_token
+from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
 PASSWORD = 'hashed_password'
 USER_ID = UUID('848ca017-0f19-479b-937d-698fbb46887b')
 
+T = TypeVar('T')
+AsyncYieldFixture = AsyncGenerator[T, None]
+YieldFixture = Generator[T, None, None]
+
 
 @pytest.fixture(scope='module', autouse=True)
-def loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+def loop() -> YieldFixture[asyncio.AbstractEventLoop]:
     loop = asyncio.new_event_loop()
 
     yield loop
 
     loop.close()
+
+
+@pytest_asyncio.fixture
+async def client() -> AsyncYieldFixture[AsyncClient]:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
+        yield ac
 
 
 @pytest_asyncio.fixture

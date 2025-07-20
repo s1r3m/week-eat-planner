@@ -57,24 +57,22 @@ endif
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
 ## @App Start the environment.
-start: stop
-	docker-compose build --pull  && \
-	docker-compose up
+run_db:
+	docker compose up -d --wait db
 
-debug: $(VENV_ACTIVATE) stop
-	docker-compose up -d db
-	sleep 2
+migrations: $(VENV_ACTIVATE) run_db
 	cd $(BE_PATH) && alembic upgrade head
+
+start: migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 ## @App Stop the environment.
 stop:
-	docker-compose kill   && \
-	docker-compose down --volumes --remove-orphans
+	docker compose down --volumes --remove-orphans
 
 ## @App SSH to backend container.
 in:
-	docker exec -it week-eat-planner-backend-1 bash
+	docker exec -it backend-1 bash
 
 ## @App Connect to database.
 db_shell:
@@ -95,8 +93,13 @@ style: $(VENV_ACTIVATE)
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
-	pytest $(BE_PATH)/tests
-	coverage report
+	cd $(BE_PATH) 								&& \
+		coverage run -m pytest $(BE_PATH)/tests && \
+		coverage report
+
+## @Tests Create a HTML coverage report.
+coverage: be_test
+	cd $(BE_PATH) && coverage html
 
 ## @Tests Run fe unittests.
 fe_test:

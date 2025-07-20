@@ -29,6 +29,15 @@ jobs:
       run: |
         make install
 
+    - name: Run the env
+      run: |
+        make migrations
+
     - name: Run tests
       run: |
         make be_test
+
+    - name: Stop the DB and clean up
+      # This step will run even if the tests fail, ensuring Docker containers are stopped.
+      if: always()
+      run: make stop

@@ -58,6 +58,36 @@ To run the frontend tests:
 make fe_tests
 ```
 
+
+## Autotests
+
+The project comes with autotests. All in qa/ folder.
+
+To prepare your local machine for autotests:
+```bash
+make -C qa install
+```
+
+To run the app in detached mode:
+```bash
+make -C qa start
+```
+
+To read logs:
+```bash
+make -C qa logs
+```
+
+To run autotests:
+```bash
+make -C qa test
+```
+
+To run QA linters:
+```bash
+make -C qa lint
+```
+
 ## Project Structure
 ```
 week-eat-planner/
@@ -72,6 +102,10 @@ week-eat-planner/
 │   ├── src/                    # Vue.js source code
 │   ├── tests/                  # Frontend tests
 │   └── package.json            # Node.js dependencies
+├── qa/                         # Base QA folder
+│   ├── docker/                 # Docker compose files
+│   ├── tests/                  # Tests 
+│   └── wep_qa                  # Autotests infrastructure
 └── README.md                   # Project documentation
 ```
 
