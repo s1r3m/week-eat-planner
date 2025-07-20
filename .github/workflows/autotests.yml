@@ -1,4 +1,4 @@
-name: BE Unittests
+name: autotests.yml
 
 on:
   push:
@@ -24,9 +24,13 @@ jobs:
       # correctly indicating that the PR is not ready.
 
     - name: Install dependencies
-      run: |
-        make install
+      run: make -C qa install
+
+    - name: Run the app
+      run: make -C qa start
+
+    - name: Wait for the app to run
+      run: make -C qa wait
 
     - name: Run tests
-      run: |
-        make be_test
+      run: make -C qa test

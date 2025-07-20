@@ -71,6 +71,24 @@ stop:
 in:
 	docker exec -it backend-1 bash
 
+
+wait:
+	@n=0; \
+	max_retries=20; \
+	until [ $$n -ge $$max_retries ]; do \
+		response=$$(curl --silent --fail --write-out "\n%{http_code}" http://localhost:81/api/ping || echo "Error connecting\n000"); \
+		body=$$(echo "$$response" | sed '$$d'); \
+		status_code=$$(echo "$$response" | tail -n1); \
+		if [ "$$status_code" -eq 200 ] && [ "$$body" = "pong" ]; then \
+			echo "✅ Application is ready!"; \
+			exit 0; \
+		fi; \
+		n=$$((n+1)); \
+		echo "Waiting for application to be ready... (Attempt $$n/$$max_retries)"; \
+		sleep 5; \
+	done; \
+	echo "❌ Timed out waiting for application to start."; \
+	exit 1
 ## ------------------------------------------------ TESTS --------------------------------------------------------------
 
 ## @Checks Run linters.
