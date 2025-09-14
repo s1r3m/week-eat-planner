@@ -63,7 +63,7 @@ run_db:
 migrations: $(VENV_ACTIVATE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
-start: migrations
+start: stop migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 ## @App Stop the environment.

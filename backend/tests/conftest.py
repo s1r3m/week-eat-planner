@@ -9,7 +9,7 @@ from httpx import ASGITransport, AsyncClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dao import UserDAO
+from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
 from week_eat_planner.helpers import create_access_token
 from week_eat_planner.main import app

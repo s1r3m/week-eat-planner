@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+from week_eat_planner.db.models import DayOfWeek, MealType
+
 
 class Token(BaseModel):
     access_token: str
@@ -22,9 +24,25 @@ class UserCreate(BaseModel):
     password: str
 
 
-class WeekModel(BaseModel):
+class WeekPreviewOut(BaseModel):
+    id: UUID
     name: str
     user_id: UUID
 
     class Config:
         from_attributes = True
+
+
+class WeekCreate(BaseModel):
+    name: str
+
+
+class MealSlot(BaseModel):
+    id: UUID
+    day_of_week: DayOfWeek
+    meal_type: MealType
+    recipe_id: UUID | None = None
+
+
+class WeekOut(WeekPreviewOut):
+    meal_slots: list[MealSlot]

@@ -2,13 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dao import UserDAO
+from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserCreate, UserOut, Token
 from week_eat_planner.db.models import User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.constants import TokenType
+from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import InvalidEmail, UserAlreadyExists, UserNotFound
 from week_eat_planner.helpers import (
     create_access_token,
@@ -16,15 +18,15 @@ from week_eat_planner.helpers import (
     verify_password,
 )
 
-auth_router = APIRouter(prefix='/auth')
+router = APIRouter(prefix='/auth')
 
 
-@auth_router.post('/user', response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post('/signup', response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def add_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> User:
-    """Add a user.
+    """Adds a user.
 
     Checks if a user with the given email already exists. If not, it hashes the
     password and creates a new user in the database.
@@ -32,6 +34,7 @@ async def add_user(
     Raises:
         UserAlreadyExists: If a user with the same email is already registered.
     """
+    logger.info(f'Got POST /signup request with {user_data}.')
     user_dao = UserDAO(session)
     user = await user_dao.get_user_by_email(user_data.email)
     if user:
@@ -43,7 +46,7 @@ async def add_user(
     return user_in_db
 
 
-@auth_router.post('/token', response_model=Token)
+@router.post('/login', response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db)],
@@ -54,7 +57,9 @@ async def login(
 
     Raises:
         UserNotFound: If a user with the email is not registered.
+        InvalidEmail: If the email format is invalid.
     """
+    logger.info(f'Got POST /login request for {user_data.username}.')
     try:
         UserCreate(email=user_data.username, password='filler')
     except ValueError as exc:
@@ -67,3 +72,10 @@ async def login(
 
     access_token = create_access_token(user_in_db.email)
     return Token(access_token=access_token, token_type=TokenType.BEARER)
+
+
+@router.get('/me', response_model=UserOut)
+async def get_user(user: Annotated[UserOut, Depends(get_current_active_user)]) -> UserOut:
+    """Get the current user profile."""
+    logger.info(f'Got GET /me request for {user}.')
+    return user

@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
 from tests.conftest import EMAIL, PASSWORD, USER_ID
-from week_eat_planner.api.dao import WeekDAO
-from week_eat_planner.api.schemas import WeekModel
+from week_eat_planner.db.user_dao import WeekDAO
+from week_eat_planner.api.schemas import WeekPreviewOut
 
 
 @pytest.fixture
@@ -22,11 +22,11 @@ async def test_user_dao_create_user__valid_data__user_created(user_dao):
     'weeks_from_db',
     [
         pytest.param([], id='empty'),
-        pytest.param([WeekModel(name='1', user_id=USER_ID)], id='one_week'),
+        pytest.param([WeekPreviewOut(name='1', user_id=USER_ID)], id='one_week'),
         pytest.param(
             [
-                WeekModel(name='1', user_id=USER_ID),
-                WeekModel(name='2', user_id=USER_ID),
+                WeekPreviewOut(name='1', user_id=USER_ID),
+                WeekPreviewOut(name='2', user_id=USER_ID),
             ],
             id='two_week',
         ),

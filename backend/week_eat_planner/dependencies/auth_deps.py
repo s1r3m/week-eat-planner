@@ -4,13 +4,13 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dao import UserDAO
+from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import UserNotFound
 from week_eat_planner.helpers import get_email_from_token
 
-_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
 
 
 async def get_current_user(
