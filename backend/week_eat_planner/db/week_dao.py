@@ -2,7 +2,7 @@ import uuid
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.future import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
 from week_eat_planner.api.schemas import UserOut
@@ -55,3 +55,13 @@ class WeekDAO(BaseDAO):
             raise exc
 
         return record
+
+    async def update_week(self, week_id: str, new_name: str) -> None:
+        logger.debug(f'Updating week {week_id=} with {new_name=}.')
+        try:
+            query = update(self.model).filter_by(id=week_id).values(name=new_name)
+            await self._session.execute(query)
+            await self._session.flush()
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while updating week {week_id=}: {exc}')
+            raise exc

@@ -59,7 +59,7 @@ async def get_weeks(
 
 @router.get('/weeks/{week_id}', response_model=WeekOut)
 async def get_week(
-    week_id: Annotated[str, Path(title='ID of the week to get', description='The ID of the week to get')],
+    week_id: Annotated[str, Path(title='ID of the week to get')],
     user: Annotated[UserOut, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> Week:
@@ -68,4 +68,22 @@ async def get_week(
     if not week or week.user_id != user.id:
         logger.error(f'No week {week_id} for user {user}.')
         raise ValueError(f'No week with {week_id=}')
+    return week
+
+
+@router.put('/weeks/{week_id}', response_model=WeekPreviewOut)
+async def update_week(
+    week_id: Annotated[str, Path(title='ID of the week to get')],
+    new_name: Annotated[str, Path(title='New name for the week')],
+    user: Annotated[UserOut, Depends(get_current_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> Week:
+    logger.info(f'Request PUT /weeks/{week_id} for user {user} with {new_name=}.')
+    week_dao = WeekDAO(session)
+    week = await week_dao.get_week(week_id)
+    if not week or week.user_id != user.id:
+        logger.error(f'No week {week_id} for user {user}.')
+        raise ValueError(f'No week with {week_id=}')
+
+    await week_dao.update_week(week_id, new_name)
     return week

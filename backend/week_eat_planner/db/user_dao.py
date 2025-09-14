@@ -2,7 +2,7 @@ import uuid
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.future import select
+from sqlalchemy import select
 
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import User
@@ -28,11 +28,11 @@ class UserDAO(BaseDAO):
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:
-                logger.info(f'{self.model.__name__} with {email=}has been successfully found.')
+                logger.info(f'User with {email=}has been successfully found.')
             else:
-                logger.warning(f'{self.model.__name__} with {email=} not found.')
+                logger.warning(f'User with {email=} not found.')
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while getting {self.model.__name__} by {email=}: {exc}.')
+            logger.exception(f'Error while getting User by {email=}: {exc}.')
             raise exc
 
         return record
