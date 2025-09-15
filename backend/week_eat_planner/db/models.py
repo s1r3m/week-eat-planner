@@ -87,4 +87,3 @@ class Week(Base):
 
     def __repr__(self) -> str:
         return f'Week({self.id=}, {self.name=}, {self.user_id=})'
-

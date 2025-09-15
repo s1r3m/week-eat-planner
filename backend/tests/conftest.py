@@ -61,13 +61,14 @@ def week_dao(mocked_session: AsyncSession) -> WeekDAO:
 
 
 @pytest.fixture
-def meal_slot_dao(mocked_session) -> MealSlotDAO:
+def meal_slot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
     return MealSlotDAO(mocked_session)
 
 
 @pytest.fixture
 def db_week() -> Week:
     return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=USER_ID)
+
 
 @pytest.fixture
 def user() -> UserOut:
