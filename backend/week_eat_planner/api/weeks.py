@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Path
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.constants import WEEKS, WEEK
 from week_eat_planner.db.day_dao import MealSlotDAO
 from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.api.schemas import UserOut, WeekPreviewOut, WeekCreate, WeekOut
@@ -14,7 +15,7 @@ from week_eat_planner.dependencies.auth_deps import get_current_active_user
 router = APIRouter()
 
 
-@router.post('/weeks', response_model=WeekPreviewOut)
+@router.post(WEEKS, response_model=WeekPreviewOut)
 async def create_week(
     week_data: Annotated[WeekCreate, Depends()],
     user: Annotated[UserOut, Depends(get_current_active_user)],
@@ -38,7 +39,7 @@ async def create_week(
     return week
 
 
-@router.get('/weeks', response_model=list[WeekPreviewOut])
+@router.get(WEEKS, response_model=list[WeekPreviewOut])
 async def get_weeks(
     user: Annotated[UserOut, Depends(get_current_active_user)],
     session: AsyncSession = Depends(db.get_db),
@@ -57,7 +58,7 @@ async def get_weeks(
     return weeks
 
 
-@router.get('/weeks/{week_id}', response_model=WeekOut)
+@router.get(WEEK, response_model=WeekOut)
 async def get_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     user: Annotated[UserOut, Depends(get_current_active_user)],
@@ -71,7 +72,7 @@ async def get_week(
     return week
 
 
-@router.put('/weeks/{week_id}', response_model=WeekPreviewOut)
+@router.put(WEEK, response_model=WeekPreviewOut)
 async def update_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     new_name: Annotated[str, Path(title='New name for the week')],

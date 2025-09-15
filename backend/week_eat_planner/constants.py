@@ -7,6 +7,9 @@ AUTH_SIGNUP = '/signup'
 
 PING = '/ping'
 
+WEEKS = '/weeks'
+WEEK = '/weeks/{week_id}'
+
 
 class TokenType(StrEnum):
     BEARER = 'bearer'
