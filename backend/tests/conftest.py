@@ -9,8 +9,9 @@ from httpx import ASGITransport, AsyncClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.db.user_dao import UserDAO
+from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.helpers import create_access_token
 from week_eat_planner.main import app
 
@@ -49,6 +50,11 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 @pytest.fixture
 def user_dao(mocked_session: AsyncSession) -> UserDAO:
     return UserDAO(mocked_session)
+
+
+@pytest.fixture
+def week_dao(mocked_session: AsyncSession) -> WeekDAO:
+    return WeekDAO(mocked_session)
 
 
 @pytest.fixture

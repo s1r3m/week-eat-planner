@@ -20,8 +20,12 @@ class WeekDAO(BaseDAO):
         logger.debug(f'Creating week for {user}.')
         week_id = uuid.uuid4()
         week = Week(id=week_id, user_id=user.id, name=name)
-        self._session.add(week)
-        await self._session.flush()
+        try:
+            self._session.add(week)
+            await self._session.flush()
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while creating week for {user}: {exc}')
+            raise exc
 
         logger.info(f'Week {week} has been successfully created.')
         return week
