@@ -23,6 +23,9 @@ class User(Base):
     weeks: Mapped[list['Week']] = relationship(back_populates='user')
     recipes: Mapped[list['Recipe']] = relationship(back_populates='user')
 
+    def __repr__(self) -> str:
+        return f'User({self.id=}, {self.email=}, {self.is_active=}'
+
 
 class Recipe(Base):
     __tablename__ = 'recipes'
@@ -32,6 +35,9 @@ class Recipe(Base):
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
     user: Mapped['User'] = relationship(back_populates='recipes')
+
+    def __repr__(self) -> str:
+        return f'Recipe({self.id=}, {self.name=}, {self.user_id=})'
 
 
 class DayOfWeek(StrEnum):
@@ -65,6 +71,9 @@ class MealSlot(Base):
 
     __table_args__ = (UniqueConstraint('week_id', 'day_of_week', 'meal_type', name='_week_day_meal_uc'),)
 
+    def __repr__(self) -> str:
+        return f'MealSlot({self.id=}, {self.week_id=}, {self.day_of_week=}, {self.meal_type=}, {self.recipe_id=})'
+
 
 class Week(Base):
     __tablename__ = 'weeks'
@@ -75,3 +84,7 @@ class Week(Base):
 
     user: Mapped['User'] = relationship(back_populates='weeks')
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='week', cascade='all, delete-orphan')
+
+    def __repr__(self) -> str:
+        return f'Week({self.id=}, {self.name=}, {self.user_id=})'
+

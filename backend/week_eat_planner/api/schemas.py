@@ -37,7 +37,7 @@ class WeekCreate(BaseModel):
     name: str
 
 
-class MealSlot(BaseModel):
+class MealSlotOut(BaseModel):
     id: UUID
     day_of_week: DayOfWeek
     meal_type: MealType
@@ -45,4 +45,4 @@ class MealSlot(BaseModel):
 
 
 class WeekOut(WeekPreviewOut):
-    meal_slots: list[MealSlot]
+    meal_slots: list[MealSlotOut]

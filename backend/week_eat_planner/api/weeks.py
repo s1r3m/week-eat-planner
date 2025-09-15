@@ -5,7 +5,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.constants import WEEKS, WEEK
-from week_eat_planner.db.day_dao import MealSlotDAO
+from week_eat_planner.db.meal_slot_dao import MealSlotDAO
 from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.api.schemas import UserOut, WeekPreviewOut, WeekCreate, WeekOut
 from week_eat_planner.db.models import Week
