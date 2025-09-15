@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
@@ -15,7 +16,7 @@ from week_eat_planner.dependencies.auth_deps import get_current_active_user
 router = APIRouter()
 
 
-@router.post(WEEKS, response_model=WeekPreviewOut)
+@router.post(WEEKS, response_model=WeekPreviewOut, status_code=HTTPStatus.CREATED)
 async def create_week(
     week_data: Annotated[WeekCreate, Depends()],
     user: Annotated[UserOut, Depends(get_current_active_user)],
