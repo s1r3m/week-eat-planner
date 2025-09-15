@@ -15,8 +15,12 @@ class UserDAO(BaseDAO):
         logger.debug(f'Creating user with {email=}.')
         user_id = uuid.uuid4()
         user = User(id=user_id, email=email, hashed_password=hashed_password)
-        self._session.add(user)
-        await self._session.flush()
+        try:
+            self._session.add(user)
+            await self._session.flush()
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while creating user with {email=}: {exc}.')
+            raise exc
         logger.info(f'User with {email=} has been successfully created.')
 
         return user
