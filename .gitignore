@@ -12,6 +12,8 @@
 
 */node_modules/
 
+*/.env
+
 .coverage
 
 sandbox.py

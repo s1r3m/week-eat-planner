@@ -14,6 +14,8 @@ UV_VERSION = 0.6.11
 PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
 FE_PATH = $(PROJECT_PATH)/frontend
+ENV_FILE = $(BE_PATH)/.env
+BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
 
 export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
@@ -56,14 +58,20 @@ endif
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
-## @App Start the environment.
+## @App Start the DB.
 run_db:
 	docker compose up -d --wait db
 
-migrations: $(VENV_ACTIVATE) run_db
+## @Tests Prepare env file for be unittests
+be_tests_config:
+	cp $(BE_TEST_ENV_FILE) $(ENV_FILE)
+
+## @App Apply migrations to DB.
+migrations: $(VENV_ACTIVATE) be_tests_config run_db
 	cd $(BE_PATH) && alembic upgrade head
 
-start: migrations
+## @App Start the environment.
+start: stop migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 ## @App Stop the environment.

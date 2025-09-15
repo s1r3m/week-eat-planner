@@ -1,7 +1,7 @@
+import uuid
 from typing import AsyncGenerator, Generator, TypeVar
 
 import asyncio
-from uuid import UUID
 
 import pytest
 import pytest_asyncio
@@ -9,14 +9,20 @@ from httpx import ASGITransport, AsyncClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dao import UserDAO
 from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.db.meal_slot_dao import MealSlotDAO
+from week_eat_planner.db.models import Week
+from week_eat_planner.db.user_dao import UserDAO
+from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.helpers import create_access_token
 from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
 PASSWORD = 'hashed_password'
-USER_ID = UUID('848ca017-0f19-479b-937d-698fbb46887b')
+USER_ID = uuid.uuid4()
+
+WEEK_1_ID = uuid.uuid4()
+WEEK_1_NAME = 'first'
 
 T = TypeVar('T')
 AsyncYieldFixture = AsyncGenerator[T, None]
@@ -26,9 +32,7 @@ YieldFixture = Generator[T, None, None]
 @pytest.fixture(scope='module', autouse=True)
 def loop() -> YieldFixture[asyncio.AbstractEventLoop]:
     loop = asyncio.new_event_loop()
-
     yield loop
-
     loop.close()
 
 
@@ -49,6 +53,21 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 @pytest.fixture
 def user_dao(mocked_session: AsyncSession) -> UserDAO:
     return UserDAO(mocked_session)
+
+
+@pytest.fixture
+def week_dao(mocked_session: AsyncSession) -> WeekDAO:
+    return WeekDAO(mocked_session)
+
+
+@pytest.fixture
+def meal_slot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
+    return MealSlotDAO(mocked_session)
+
+
+@pytest.fixture
+def db_week() -> Week:
+    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=USER_ID)
 
 
 @pytest.fixture
