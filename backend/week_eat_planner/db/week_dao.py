@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
-from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.api.schemas import UserOut, WeekUpdate
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import Week
 
@@ -60,10 +60,10 @@ class WeekDAO(BaseDAO):
 
         return record
 
-    async def update_week(self, week_id: str, new_name: str) -> None:
-        logger.debug(f'Updating week {week_id=} with {new_name=}.')
+    async def update_week(self, week_id: str, new_data: WeekUpdate) -> Week:
+        logger.debug(f'Updating week {week_id=} with {new_data=}.')
         try:
-            query = update(self.model).filter_by(id=week_id).values(name=new_name)
+            query = update(self.model).filter_by(id=week_id).values(name=new_data.name)
             await self._session.execute(query)
             await self._session.flush()
         except SQLAlchemyError as exc:

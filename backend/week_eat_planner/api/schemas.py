@@ -46,3 +46,7 @@ class MealSlotOut(BaseModel):
 
 class WeekOut(WeekPreviewOut):
     meal_slots: list[MealSlotOut]
+
+
+class WeekUpdate(BaseModel):
+    name: str

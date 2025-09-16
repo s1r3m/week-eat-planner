@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.constants import WEEKS, WEEK
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
 from week_eat_planner.db.week_dao import WeekDAO
-from week_eat_planner.api.schemas import UserOut, WeekPreviewOut, WeekCreate, WeekOut
+from week_eat_planner.api.schemas import UserOut, WeekPreviewOut, WeekCreate, WeekOut, WeekUpdate
 from week_eat_planner.db.models import Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
@@ -76,16 +76,17 @@ async def get_week(
 @router.put(WEEK, response_model=WeekPreviewOut)
 async def update_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    new_name: Annotated[str, Path(title='New name for the week')],
+    new_data: Annotated[WeekUpdate, Depends()],
     user: Annotated[UserOut, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
-    logger.info(f'Request PUT /weeks/{week_id} for user {user} with {new_name=}.')
+    logger.info(f'Request PUT /weeks/{week_id} for user {user} with {new_data=}.')
     week_dao = WeekDAO(session)
     week = await week_dao.get_week(week_id)
     if not week or week.user_id != user.id:
         logger.error(f'No week {week_id} for user {user}.')
         raise ValueError(f'No week with {week_id=}')
 
-    await week_dao.update_week(week_id, new_name)
+    await week_dao.update_week(week_id, new_data)
+    await session.refresh(week)
     return week
