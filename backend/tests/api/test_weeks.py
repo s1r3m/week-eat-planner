@@ -34,6 +34,11 @@ async def created_user(user_factory):
 
 
 @pytest_asyncio.fixture
+async def created_user_2(user_factory):
+    return await user_factory('user_2@test.com', PASSWORD)
+
+
+@pytest_asyncio.fixture
 async def created_week(created_user):
     async for session in db.get_db_commit():
         user = await UserDAO(session).get_user_by_email(created_user.email)
@@ -60,8 +65,8 @@ async def test_create_week__with_auth__week_in_response(auth_client_for_created_
     assert body == {'name': WEEK_1_NAME, 'user_id': str(created_user.id)}
 
 
-async def test_get_weeks__empty_db__empty_response(auth_client):
-    response = await auth_client.get(AppUrl.WEEKS)
+async def test_get_weeks__empty_db__empty_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.get(AppUrl.WEEKS)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == []
@@ -82,17 +87,17 @@ async def test_get_week__user_with_week__week_in_response(auth_client_for_create
     assert body == created_week.model_dump(mode='json')
 
 
-async def test_get_week__user_without_week__error_in_response(auth_client):
+async def test_get_week__user_without_week__error_in_response(auth_client_for_created_user):
     bad_week_id = uuid.uuid4()
 
-    response = await auth_client.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
+    response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Week not found'}
 
 
-async def test_get_week__no_auth__error_in_response(week, no_auth_client):
-    response = await no_auth_client.get(f'{AppUrl.WEEKS_TPL.format(week_id=week.id)}')
+async def test_get_week__no_auth__error_in_response(client, created_week):
+    response = await client.get(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
@@ -108,50 +113,60 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
 
     body = response.json()
     assert response.status_code == HTTPStatus.OK
-    assert body == WeekPreviewOut.model_validate(created_week).model_dump()
+    assert body == {
+        'id': str(created_week.id),
+        'name': new_name,
+        'user_id': str(created_week.user_id),
+    }
 
 
-async def test_update_week__no_auth__error_in_response(week, no_auth_client):
-    response = await no_auth_client.put(f'{AppUrl.WEEKS_TPL.format(week_id=week.id)}', params={'name': 'new_name'})
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
-
-
-async def test_update_week__user_without_week__error_in_response(auth_client):
-    bad_week_id = uuid.uuid4()
-
-    response = await auth_client.put(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}', params={'name': 'test'})
-
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Week not found'}
-
-
-async def test_delete_week__no_auth__error_in_response(week, no_auth_client):
-    response = await no_auth_client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=week.id)}')
+async def test_update_week__no_auth__error_in_response(client, created_week):
+    response = await client.put(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', params={'name': 'new_name'})
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
 
 
-async def test_delete_week__user_without_week__error_in_response(auth_client):
+async def test_update_week__user_without_week__error_in_response(auth_client_for_created_user):
     bad_week_id = uuid.uuid4()
 
-    response = await auth_client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
+    response = await auth_client_for_created_user.put(
+        url=f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}',
+        json={'name': 'test'},
+    )
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Week not found'}
 
 
-async def test_delete_week__user_with_week__week_removed(auth_client, week):
-    response = await auth_client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=week.id)}')
+async def test_delete_week__no_auth__error_in_response(client, created_week):
+    response = await client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}
+
+
+async def test_delete_week__user_without_week__error_in_response(auth_client_for_created_user):
+    bad_week_id = uuid.uuid4()
+
+    response = await auth_client_for_created_user.delete(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Week not found'}
+
+
+async def test_delete_week__user_with_week__week_removed(auth_client_for_created_user, created_week):
+    response = await auth_client_for_created_user.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
     assert response.status_code == HTTPStatus.NO_CONTENT
-    # assert response.json() == {}
+    assert not response.text
 
 
-async def test_delete_week__other_user_existing_week__error_in_response(week, auth_client_2):
-    response = await auth_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=week.id)}')
+async def test_delete_week__other_user_existing_week__error_in_response(
+    created_week, auth_client_factory, created_user_2
+):
+    user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
+    response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Week not found'}
