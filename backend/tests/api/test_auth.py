@@ -94,8 +94,8 @@ async def test_login__nonexistent_user__not_found_error(client, login_data):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-async def test_get_user__auth_user__user_in_response(auth_client, created_user):
-    response = await auth_client.get(AppUrl.AUTH_ME)
+async def test_get_user__auth_user__user_in_response(auth_client_for_created_user, created_user):
+    response = await auth_client_for_created_user.get(AppUrl.AUTH_ME)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {

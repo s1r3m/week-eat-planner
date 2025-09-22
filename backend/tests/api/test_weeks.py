@@ -1,59 +1,16 @@
 import uuid
 from http import HTTPStatus
-from typing import AsyncGenerator
 
 import pytest_asyncio
-from httpx import AsyncClient
-from sqlalchemy import delete, select
-from sqlalchemy.orm import selectinload
 
-from tests.conftest import WEEK_1_NAME, EMAIL
+from tests.conftest import WEEK_1_NAME
 from tests.test_helpers import PASSWORD
-from week_eat_planner.api.schemas import WeekPreviewOut, WeekOut
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import MealSlot, User, Week
-from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.user_dao import UserDAO
-from week_eat_planner.db.week_dao import WeekDAO
-
-
-@pytest_asyncio.fixture(autouse=True)
-async def clean_db() -> AsyncGenerator[None, None]:
-    yield
-
-    async for session in db.get_db_commit():
-        await session.execute(delete(MealSlot))
-        await session.execute(delete(Week))
-        await session.execute(delete(User))
-
-
-@pytest_asyncio.fixture
-async def created_user(user_factory):
-    return await user_factory(EMAIL, PASSWORD)
 
 
 @pytest_asyncio.fixture
 async def created_user_2(user_factory):
     return await user_factory('user_2@test.com', PASSWORD)
-
-
-@pytest_asyncio.fixture
-async def created_week(created_user):
-    async for session in db.get_db_commit():
-        user = await UserDAO(session).get_user_by_email(created_user.email)
-        week = await WeekDAO(session).create_week(user, WEEK_1_NAME)
-        await MealSlotDAO(session).init_meal_slots_for_week(week)
-        stmt = select(Week).where(Week.id == week.id).options(selectinload(Week.meal_slots))
-        result = await session.execute(stmt)
-        loaded_week = result.scalar_one()
-        week_out = WeekOut.model_validate(loaded_week)
-    return week_out
-
-
-@pytest_asyncio.fixture
-async def auth_client_for_created_user(auth_client_factory, created_user) -> AsyncClient:
-    return await auth_client_factory(created_user, PASSWORD)
 
 
 async def test_create_week__with_auth__week_in_response(auth_client_for_created_user, created_user):
