@@ -108,7 +108,7 @@ style: $(VENV_ACTIVATE)
 be_test: $(VENV_ACTIVATE)
 	cd $(BE_PATH) && \
 		coverage run -m pytest tests && \
-		coverage report --fail-under=95
+		coverage report --fail-under=100
 
 ## @Tests Create a HTML coverage report.
 coverage: be_test

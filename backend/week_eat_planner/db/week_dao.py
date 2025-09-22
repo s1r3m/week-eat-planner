@@ -11,11 +11,21 @@ from week_eat_planner.db.models import Week, User
 
 
 class WeekDAO(BaseDAO):
+    """Data Access Object for managing weeks."""
     model = Week
 
     async def create_week(self, user: User, name: str) -> Week:
-        """Create a new week for the given user.
-        Create new days and meal slots for it.
+        """Creates a new week for the given user.
+
+        Args:
+            user: The user for whom to create the week.
+            name: The name of the week.
+
+        Returns:
+            The created Week object.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
         """
         logger.debug(f'Creating week for {user}.')
         week_id = uuid.uuid4()
@@ -31,6 +41,17 @@ class WeekDAO(BaseDAO):
         return week
 
     async def get_weeks(self, user: User) -> list[Week]:
+        """Retrieves all weeks for a given user.
+
+        Args:
+            user: The user whose weeks to retrieve.
+
+        Returns:
+            A list of Week objects.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         logger.debug(f'Getting weeks for {user}.')
         try:
             query = select(self.model).filter_by(user_id=user.id)
@@ -45,6 +66,17 @@ class WeekDAO(BaseDAO):
         return list(records)
 
     async def get_week(self, week_id: str) -> Week | None:
+        """Retrieves a specific week by its ID, including its meal slots.
+
+        Args:
+            week_id: The ID of the week to retrieve.
+
+        Returns:
+            The Week object if found, otherwise None.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         logger.debug(f'Getting week with {week_id=}.')
         try:
             query = select(self.model).filter_by(id=week_id).options(selectinload(self.model.meal_slots))
@@ -61,6 +93,18 @@ class WeekDAO(BaseDAO):
         return record
 
     async def update_week(self, week: Week, new_data: WeekUpdate) -> Week:
+        """Updates a week's data.
+
+        Args:
+            week: The Week object to update.
+            new_data: An object containing the new data for the week.
+
+        Returns:
+            The updated Week object.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         logger.debug(f'Updating week {week} with {new_data=}.')
         week.name = new_data.name
         try:
@@ -72,7 +116,14 @@ class WeekDAO(BaseDAO):
         return week
 
     async def delete_week(self, week: Week) -> None:
-        """Delete the week and its associated meal slots via ORM cascade."""
+        """Deletes a week and its associated meal slots via ORM cascade.
+
+        Args:
+            week: The Week object to delete.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         logger.debug(f'Deleting {week=}.')
         try:
             await self._session.delete(week)

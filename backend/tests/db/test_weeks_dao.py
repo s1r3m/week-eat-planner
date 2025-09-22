@@ -3,7 +3,7 @@ import uuid
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from tests.conftest import USER_ID, WEEK_1_ID, WEEK_1_NAME
+from tests.conftest import WEEK_1_ID, WEEK_1_NAME
 from week_eat_planner.api.schemas import WeekUpdate
 from week_eat_planner.db.models import Week
 

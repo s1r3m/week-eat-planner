@@ -9,8 +9,14 @@ _async_session_maker = async_sessionmaker(_engine, class_=AsyncSession)
 
 
 class DatabaseSession:
+    """Manages the creation and lifecycle of database sessions."""
     @staticmethod
     async def get_db() -> AsyncGenerator[AsyncSession, None]:
+        """FastAPI dependency to get a database session for read-only operations.
+
+        Yields:
+            An asynchronous database session.
+        """
         async with _async_session_maker() as session:
             try:
                 yield session
@@ -20,6 +26,11 @@ class DatabaseSession:
 
     @staticmethod
     async def get_db_commit() -> AsyncGenerator[AsyncSession, None]:
+        """FastAPI dependency to get a database session and commit changes.
+
+        Yields:
+            An asynchronous database session.
+        """
         async with _async_session_maker() as session:
             try:
                 yield session

@@ -31,6 +31,13 @@ async def create_user(
     Checks if a user with the given email already exists. If not, it hashes the
     password and creates a new user in the database.
 
+    Args:
+        user_data: The user data to create a new user.
+        session: The database session.
+
+    Returns:
+        The created user.
+
     Raises:
         UserAlreadyExists: If a user with the same email is already registered.
     """
@@ -55,6 +62,13 @@ async def login(
 
     Validates credentials and returns a JWT bearer token upon success.
 
+    Args:
+        user_data: The user's login credentials.
+        session: The database session.
+
+    Returns:
+        An access token.
+
     Raises:
         UserNotFound: If a user with the email is not registered.
         InvalidEmail: If the email format is invalid.
@@ -76,6 +90,13 @@ async def login(
 
 @router.get(AppUrl.AUTH_ME, response_model=UserOut)
 async def get_user(user: Annotated[UserOut, Depends(get_current_active_user)]) -> UserOut:
-    """Get the current user profile."""
+    """Get the current user profile.
+
+    Args:
+        user: The current authenticated user.
+
+    Returns:
+        The current user's profile.
+    """
     logger.info(f'Got GET /me request for {user}.')
     return user

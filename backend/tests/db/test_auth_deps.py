@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from fastapi import HTTPException
 
@@ -24,7 +26,7 @@ async def test_get_current_user__user_not_found__error_raised(mocker, mocked_ses
     with pytest.raises(HTTPException) as exc:
         await get_current_user(encoded_token, mocked_session)
 
-    assert exc.value.status_code == 409
+    assert exc.value.status_code == HTTPStatus.CONFLICT
     assert exc.value.detail == 'Incorrect email or password'
     user_dao_mock.get_user_by_email.assert_awaited_once_with(EMAIL)
 

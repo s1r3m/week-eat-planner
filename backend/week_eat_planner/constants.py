@@ -1,10 +1,15 @@
+"""Application-wide constants.
+
+This module defines enumerations for application URLs and token types.
+"""
 from enum import StrEnum
 
 
 class AppUrl(StrEnum):
-    AUTH_LOGIN = f'/auth/login'
-    AUTH_ME = f'/auth/me'
-    AUTH_SIGNUP = f'/auth/signup'
+    """Enumeration of API endpoint URLs."""
+    AUTH_LOGIN = '/auth/login'
+    AUTH_ME = '/auth/me'
+    AUTH_SIGNUP = '/auth/signup'
 
     PING = '/ping'
 
@@ -13,4 +18,5 @@ class AppUrl(StrEnum):
 
 
 class TokenType(StrEnum):
+    """Enumeration of token types."""
     BEARER = 'bearer'
