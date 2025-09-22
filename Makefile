@@ -54,7 +54,7 @@ ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	cd $(BE_PATH) && uv sync --active --all-extras --python $(VIRTUAL_ENV)/bin/python
+	cd $(BE_PATH) && uv sync --all-extras --active --python $(VIRTUAL_ENV)/bin/python
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
@@ -67,7 +67,7 @@ be_tests_config:
 	cp $(BE_TEST_ENV_FILE) $(ENV_FILE)
 
 ## @App Apply migrations to DB.
-migrations: $(VENV_ACTIVATE) be_tests_config run_db
+migrations: $(VENV_ACTIVATE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
@@ -80,7 +80,7 @@ stop:
 
 ## @App SSH to backend container.
 in:
-	docker exec -it backend-1 bash
+	docker compose exec backend bash
 
 ## @App Connect to database.
 db_shell:
@@ -101,9 +101,9 @@ style: $(VENV_ACTIVATE)
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
-	cd $(BE_PATH) 								&& \
-		coverage run -m pytest $(BE_PATH)/tests && \
-		coverage report
+	cd $(BE_PATH) && \
+		coverage run -m pytest tests && \
+		coverage report --fail-under=95
 
 ## @Tests Create a HTML coverage report.
 coverage: be_test

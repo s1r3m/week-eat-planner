@@ -2,18 +2,18 @@ import uuid
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from week_eat_planner.api.schemas import UserOut, WeekUpdate
+from week_eat_planner.api.schemas import WeekUpdate
 from week_eat_planner.db.base import BaseDAO
-from week_eat_planner.db.models import Week
+from week_eat_planner.db.models import Week, User
 
 
 class WeekDAO(BaseDAO):
     model = Week
 
-    async def create_week(self, user: UserOut, name: str) -> Week:
+    async def create_week(self, user: User, name: str) -> Week:
         """Create a new week for the given user.
         Create new days and meal slots for it.
         """
@@ -30,7 +30,7 @@ class WeekDAO(BaseDAO):
         logger.info(f'Week {week} has been successfully created.')
         return week
 
-    async def get_weeks(self, user: UserOut) -> list[Week]:
+    async def get_weeks(self, user: User) -> list[Week]:
         logger.debug(f'Getting weeks for {user}.')
         try:
             query = select(self.model).filter_by(user_id=user.id)
@@ -60,12 +60,26 @@ class WeekDAO(BaseDAO):
 
         return record
 
-    async def update_week(self, week_id: str, new_data: WeekUpdate) -> Week:
-        logger.debug(f'Updating week {week_id=} with {new_data=}.')
+    async def update_week(self, week: Week, new_data: WeekUpdate) -> Week:
+        logger.debug(f'Updating week {week} with {new_data=}.')
+        week.name = new_data.name
         try:
-            query = update(self.model).filter_by(id=week_id).values(name=new_data.name)
-            await self._session.execute(query)
+            await self._session.flush()
+            await self._session.refresh(week)
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while updating week {week}: {exc}')
+            raise exc
+        return week
+
+    async def delete_week(self, week: Week) -> None:
+        """Delete the week and its associated meal slots via ORM cascade."""
+        logger.debug(f'Deleting {week=}.')
+        try:
+            await self._session.delete(week)
             await self._session.flush()
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while updating week {week_id=}: {exc}')
+            logger.exception(f'Error while deleting {week=}: {exc}')
             raise exc
+
+        logger.info(f'Week {week} has been successfully deleted.')
+        return None

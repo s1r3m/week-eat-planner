@@ -1,24 +1,26 @@
 import uuid
-from typing import AsyncGenerator, Generator, TypeVar
+from typing import AsyncGenerator, Generator, TypeVar, Coroutine, Callable
 
 import asyncio
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
+from watchfiles import awatch
 
-from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.api.schemas import UserOut, WeekPreviewOut
+from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import Week
+from week_eat_planner.db.models import Week, User
+from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
-from week_eat_planner.helpers import create_access_token
+from week_eat_planner.helpers import create_access_token, get_password_hash
 from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
-PASSWORD = 'hashed_password'
+PASSWORD = 'password_123'
 USER_ID = uuid.uuid4()
 
 WEEK_1_ID = uuid.uuid4()
@@ -42,24 +44,6 @@ async def client() -> AsyncYieldFixture[AsyncClient]:
         yield ac
 
 
-@pytest_asyncio.fixture
-async def mocked_session(mocker: MockerFixture) -> AsyncSession:
-    mock_session = mocker.AsyncMock(spec=AsyncSession)
-    mock_session.__aenter__.return_value = mock_session
-    mock_session.__aexit__.return_value = None
-    return mock_session
-
-
-@pytest.fixture
-def user_dao(mocked_session: AsyncSession) -> UserDAO:
-    return UserDAO(mocked_session)
-
-
-@pytest.fixture
-def week_dao(mocked_session: AsyncSession) -> WeekDAO:
-    return WeekDAO(mocked_session)
-
-
 @pytest.fixture
 def meal_slot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
     return MealSlotDAO(mocked_session)
@@ -78,3 +62,30 @@ def user() -> UserOut:
 @pytest.fixture
 def encoded_token() -> str:
     return create_access_token(EMAIL)
+
+
+@pytest.fixture
+def user_factory() -> Callable:
+    async def _factory(email: str, password: str) -> UserOut:
+        async for session in db.get_db_commit():
+            hashed_password = get_password_hash(password)
+            user = await UserDAO(session).create_user(email, hashed_password)
+            user_out = UserOut.model_validate(user)
+        return user_out
+
+    return _factory
+
+
+@pytest.fixture
+def auth_client_factory(client: AsyncClient) -> Callable:
+    async def _factory(_user: UserOut, password: str) -> AsyncClient:
+        client.headers['Authorization'] = ''
+        token_data = {'username': _user.email, 'password': password}
+        response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+        body = response.json()
+        token = body['access_token']
+        client.headers['Authorization'] = f'Bearer {token}'
+        return client
+
+    return _factory
+

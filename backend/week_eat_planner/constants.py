@@ -1,14 +1,15 @@
 from enum import StrEnum
 
-AUTH_PREFIX = '/auth'
-AUTH_LOGIN = '/login'
-AUTH_ME = '/me'
-AUTH_SIGNUP = '/signup'
 
-PING = '/ping'
+class AppUrl(StrEnum):
+    AUTH_LOGIN = f'/auth/login'
+    AUTH_ME = f'/auth/me'
+    AUTH_SIGNUP = f'/auth/signup'
 
-WEEKS = '/weeks'
-WEEK = '/weeks/{week_id}'
+    PING = '/ping'
+
+    WEEKS = '/weeks'
+    WEEKS_TPL = '/weeks/{week_id}'
 
 
 class TokenType(StrEnum):

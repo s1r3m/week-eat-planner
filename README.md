@@ -50,6 +50,7 @@ Everyting else runs in docker.
 ## Running Tests
 To run the backend tests:
 ```bash
+make migrations
 make be_tests
 ```
 
@@ -93,10 +94,9 @@ make -C qa lint
 week-eat-planner/
 ├── backend/
 │   ├── alembic/                # Database migrations
-│   ├── app/                    # FastAPI application
+│   ├── week_eat_planner/       # FastAPI application
 │   ├── tests/                  # Unit tests
 │   ├── main.py                 # Entry point for the FastAPI app
-│   └── requirements.txt        # Python dependencies
 ├── frontend/
 │   ├── public/                 # Public assets
 │   ├── src/                    # Vue.js source code

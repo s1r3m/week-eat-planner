@@ -41,3 +41,8 @@ UserAlreadyExists = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='User with this email already exists',
 )
+
+WeekNotFound = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail='Week not found',
+)

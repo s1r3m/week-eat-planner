@@ -9,7 +9,7 @@ from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserCreate, UserOut, Token
 from week_eat_planner.db.models import User
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.constants import AUTH_LOGIN, AUTH_ME, AUTH_PREFIX, AUTH_SIGNUP, TokenType
+from week_eat_planner.constants import AppUrl, TokenType
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import InvalidEmail, UserAlreadyExists, UserNotFound
 from week_eat_planner.helpers import (
@@ -18,11 +18,11 @@ from week_eat_planner.helpers import (
     verify_password,
 )
 
-router = APIRouter(prefix=AUTH_PREFIX)
+router = APIRouter()
 
 
-@router.post(AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def add_user(
+@router.post(AppUrl.AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
+async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> User:
@@ -46,7 +46,7 @@ async def add_user(
     return user_in_db
 
 
-@router.post(AUTH_LOGIN, response_model=Token)
+@router.post(AppUrl.AUTH_LOGIN, response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db)],
@@ -74,7 +74,7 @@ async def login(
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
-@router.get(AUTH_ME, response_model=UserOut)
+@router.get(AppUrl.AUTH_ME, response_model=UserOut)
 async def get_user(user: Annotated[UserOut, Depends(get_current_active_user)]) -> UserOut:
     """Get the current user profile."""
     logger.info(f'Got GET /me request for {user}.')
