@@ -43,10 +43,15 @@ class MealSlotOut(BaseModel):
     meal_type: MealType
     recipe_id: UUID | None = None
 
+    class Config:
+        from_attributes = True
+
 
 class WeekOut(WeekPreviewOut):
     meal_slots: list[MealSlotOut]
 
+    class Config:
+        from_attributes = True
 
 class WeekUpdate(BaseModel):
     name: str
