@@ -1,4 +1,5 @@
 """Helper functions for authentication and password management."""
+
 from datetime import datetime, timedelta, timezone
 from typing import Any
 

@@ -10,6 +10,7 @@ from week_eat_planner.db.models import User
 
 class UserDAO(BaseDAO):
     """Data Access Object for managing users."""
+
     model = User
 
     async def create_user(self, email: str, hashed_password: str) -> User:

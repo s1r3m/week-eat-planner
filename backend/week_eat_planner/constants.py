@@ -2,11 +2,13 @@
 
 This module defines enumerations for application URLs and token types.
 """
+
 from enum import StrEnum
 
 
 class AppUrl(StrEnum):
     """Enumeration of API endpoint URLs."""
+
     AUTH_LOGIN = '/auth/login'
     AUTH_ME = '/auth/me'
     AUTH_SIGNUP = '/auth/signup'
@@ -19,4 +21,5 @@ class AppUrl(StrEnum):
 
 class TokenType(StrEnum):
     """Enumeration of token types."""
+
     BEARER = 'bearer'

@@ -12,6 +12,7 @@ from week_eat_planner.db.models import Week, User
 
 class WeekDAO(BaseDAO):
     """Data Access Object for managing weeks."""
+
     model = Week
 
     async def create_week(self, user: User, name: str) -> Week:

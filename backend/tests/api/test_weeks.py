@@ -64,8 +64,7 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
     new_name = 'new_name'
 
     response = await auth_client_for_created_user.put(
-        url=f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}',
-        json={'name': new_name}
+        url=f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': new_name}
     )
 
     body = response.json()

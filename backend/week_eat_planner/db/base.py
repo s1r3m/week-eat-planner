@@ -6,6 +6,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 class Base(AsyncAttrs, DeclarativeBase):
     """Abstract base model for all database models."""
+
     __abstract__ = True
 
 
@@ -14,6 +15,7 @@ T = TypeVar('T', bound=Base)
 
 class BaseDAO(Generic[T]):
     """Generic Data Access Object for database operations."""
+
     model: type[T] = None  # type: ignore
 
     def __init__(self, session: AsyncSession) -> None:

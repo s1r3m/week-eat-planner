@@ -1,12 +1,8 @@
 import pytest
-import pytest_asyncio
-from pytest_mock import MockerFixture
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.conftest import EMAIL, PASSWORD, USER_ID
 from week_eat_planner.db.models import User
-from week_eat_planner.db.user_dao import UserDAO
 
 DB_ERROR = 'DB User Error'
 
@@ -14,7 +10,6 @@ DB_ERROR = 'DB User Error'
 @pytest.fixture
 def db_user() -> User:
     return User(id=USER_ID, email=EMAIL, hashed_password=PASSWORD, is_active=True)
-
 
 
 async def test_user_dao_create_user__valid_data__user_created(mocked_user_dao):

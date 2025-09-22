@@ -10,6 +10,7 @@ _async_session_maker = async_sessionmaker(_engine, class_=AsyncSession)
 
 class DatabaseSession:
     """Manages the creation and lifecycle of database sessions."""
+
     @staticmethod
     async def get_db() -> AsyncGenerator[AsyncSession, None]:
         """FastAPI dependency to get a database session for read-only operations.

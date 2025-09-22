@@ -9,6 +9,7 @@ from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 
 class MealSlotDAO(BaseDAO):
     """Data Access Object for managing meal slots."""
+
     model = MealSlot
 
     async def init_meal_slots_for_week(self, week: Week) -> list[MealSlot]:

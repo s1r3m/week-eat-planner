@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 from fastapi import HTTPException
 
-from tests.conftest import EMAIL, created_user
+from tests.conftest import EMAIL
 from week_eat_planner.dependencies.auth_deps import get_current_user, get_current_active_user
 
 

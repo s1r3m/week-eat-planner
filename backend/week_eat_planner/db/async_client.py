@@ -3,6 +3,7 @@ import httpx
 
 class HttpClientManager:
     """Manages the lifecycle of a single httpx.AsyncClient instance."""
+
     def __init__(self) -> None:
         """Initializes the HttpClientManager."""
         self._client: httpx.AsyncClient | None = None

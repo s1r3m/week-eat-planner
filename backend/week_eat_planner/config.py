@@ -3,6 +3,7 @@
 This module loads configuration settings from a .env file and makes them
 available as a `Settings` object.
 """
+
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -10,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+
     DB_URL: str
     BE_HOST: str
     FE_HOST: str

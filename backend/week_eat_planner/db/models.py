@@ -10,6 +10,7 @@ from week_eat_planner.db.base import Base
 
 class User(Base):
     """Represents a user of the application."""
+
     __tablename__ = 'users'
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -30,6 +31,7 @@ class User(Base):
 
 class Recipe(Base):
     """Represents a recipe created by a user."""
+
     __tablename__ = 'recipes'
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -44,6 +46,7 @@ class Recipe(Base):
 
 class DayOfWeek(StrEnum):
     """Enumeration for the days of the week."""
+
     MONDAY = 'MONDAY'
     TUESDAY = 'TUESDAY'
     WEDNESDAY = 'WEDNESDAY'
@@ -55,6 +58,7 @@ class DayOfWeek(StrEnum):
 
 class MealType(StrEnum):
     """Enumeration for the different types of meals."""
+
     BREAKFAST = 'BREAKFAST'
     LUNCH = 'LUNCH'
     DINNER = 'DINNER'
@@ -63,6 +67,7 @@ class MealType(StrEnum):
 
 class MealSlot(Base):
     """Represents a specific meal slot in a week's schedule."""
+
     __tablename__ = 'meal_slots'
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
@@ -82,6 +87,7 @@ class MealSlot(Base):
 
 class Week(Base):
     """Represents a week-long meal plan for a user."""
+
     __tablename__ = 'weeks'
 
     id: Mapped[UUID] = mapped_column(primary_key=True)

@@ -1,5 +1,5 @@
 import uuid
-from typing import AsyncGenerator, Generator, TypeVar, Coroutine, Callable
+from typing import AsyncGenerator, Generator, TypeVar, Callable
 
 import asyncio
 
@@ -7,10 +7,9 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select, delete
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from week_eat_planner.api.schemas import UserOut, WeekPreviewOut, WeekOut
+from week_eat_planner.api.schemas import UserOut, WeekOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
 from week_eat_planner.db.models import Week, User, MealSlot
@@ -77,14 +76,16 @@ def auth_client_factory(client: AsyncClient) -> Callable:
 
 
 @pytest_asyncio.fixture
-async def created_user(user_factory) -> UserOut:
+async def created_user(user_factory: Callable) -> UserOut:
     return await user_factory(EMAIL, PASSWORD)
 
 
 @pytest_asyncio.fixture
-async def created_week(created_user) -> WeekOut:
+async def created_week(created_user: UserOut) -> WeekOut:
     async for session in db.get_db_commit():
         user = await UserDAO(session).get_user_by_email(created_user.email)
+        if not user:
+            raise ValueError('User not found!')
         week = await WeekDAO(session).create_week(user, WEEK_1_NAME)
         await MealSlotDAO(session).init_meal_slots_for_week(week)
         stmt = select(Week).where(Week.id == week.id).options(selectinload(Week.meal_slots))
@@ -95,9 +96,8 @@ async def created_week(created_user) -> WeekOut:
 
 
 @pytest_asyncio.fixture
-async def auth_client_for_created_user(auth_client_factory, created_user) -> AsyncClient:
+async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
     return await auth_client_factory(created_user, PASSWORD)
-
 
 
 @pytest_asyncio.fixture(autouse=True)

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.db.models import User
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.exceptions import InvalidJwtToken, UserNotFound
+from week_eat_planner.exceptions import UserNotFound
 from week_eat_planner.helpers import get_email_from_token
 
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
