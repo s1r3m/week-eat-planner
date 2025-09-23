@@ -9,7 +9,7 @@ from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.api.schemas import UserCreate, UserOut, Token
 from week_eat_planner.db.models import User
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.constants import AUTH_LOGIN, AUTH_ME, AUTH_PREFIX, AUTH_SIGNUP, TokenType
+from week_eat_planner.constants import AppUrl, TokenType
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import InvalidEmail, UserAlreadyExists, UserNotFound
 from week_eat_planner.helpers import (
@@ -18,11 +18,11 @@ from week_eat_planner.helpers import (
     verify_password,
 )
 
-router = APIRouter(prefix=AUTH_PREFIX)
+router = APIRouter()
 
 
-@router.post(AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
-async def add_user(
+@router.post(AppUrl.AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
+async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> User:
@@ -30,6 +30,13 @@ async def add_user(
 
     Checks if a user with the given email already exists. If not, it hashes the
     password and creates a new user in the database.
+
+    Args:
+        user_data: The user data to create a new user.
+        session: The database session.
+
+    Returns:
+        The created user.
 
     Raises:
         UserAlreadyExists: If a user with the same email is already registered.
@@ -46,7 +53,7 @@ async def add_user(
     return user_in_db
 
 
-@router.post(AUTH_LOGIN, response_model=Token)
+@router.post(AppUrl.AUTH_LOGIN, response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db)],
@@ -54,6 +61,13 @@ async def login(
     """Login the user and return an access token.
 
     Validates credentials and returns a JWT bearer token upon success.
+
+    Args:
+        user_data: The user's login credentials.
+        session: The database session.
+
+    Returns:
+        An access token.
 
     Raises:
         UserNotFound: If a user with the email is not registered.
@@ -74,8 +88,15 @@ async def login(
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
-@router.get(AUTH_ME, response_model=UserOut)
+@router.get(AppUrl.AUTH_ME, response_model=UserOut)
 async def get_user(user: Annotated[UserOut, Depends(get_current_active_user)]) -> UserOut:
-    """Get the current user profile."""
+    """Get the current user profile.
+
+    Args:
+        user: The current authenticated user.
+
+    Returns:
+        The current user's profile.
+    """
     logger.info(f'Got GET /me request for {user}.')
     return user

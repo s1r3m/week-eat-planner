@@ -1,24 +1,26 @@
 import uuid
-from typing import AsyncGenerator, Generator, TypeVar
+from typing import AsyncGenerator, Generator, TypeVar, Callable
 
 import asyncio
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from pytest_mock import MockerFixture
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 
-from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.api.schemas import UserOut, WeekOut
+from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import Week
+from week_eat_planner.db.models import Week, User, MealSlot
+from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
-from week_eat_planner.helpers import create_access_token
+from week_eat_planner.helpers import create_access_token, get_password_hash
 from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
-PASSWORD = 'hashed_password'
+PASSWORD = 'password_123'
 USER_ID = uuid.uuid4()
 
 WEEK_1_ID = uuid.uuid4()
@@ -42,39 +44,67 @@ async def client() -> AsyncYieldFixture[AsyncClient]:
         yield ac
 
 
-@pytest_asyncio.fixture
-async def mocked_session(mocker: MockerFixture) -> AsyncSession:
-    mock_session = mocker.AsyncMock(spec=AsyncSession)
-    mock_session.__aenter__.return_value = mock_session
-    mock_session.__aexit__.return_value = None
-    return mock_session
-
-
-@pytest.fixture
-def user_dao(mocked_session: AsyncSession) -> UserDAO:
-    return UserDAO(mocked_session)
-
-
-@pytest.fixture
-def week_dao(mocked_session: AsyncSession) -> WeekDAO:
-    return WeekDAO(mocked_session)
-
-
-@pytest.fixture
-def meal_slot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
-    return MealSlotDAO(mocked_session)
-
-
-@pytest.fixture
-def db_week() -> Week:
-    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=USER_ID)
-
-
-@pytest.fixture
-def user() -> UserOut:
-    return UserOut(id=USER_ID, email=EMAIL, is_active=True)
-
-
 @pytest.fixture
 def encoded_token() -> str:
     return create_access_token(EMAIL)
+
+
+@pytest.fixture
+def user_factory() -> Callable:
+    async def _factory(email: str, password: str) -> UserOut:
+        async for session in db.get_db_commit():
+            hashed_password = get_password_hash(password)
+            user = await UserDAO(session).create_user(email, hashed_password)
+            user_out = UserOut.model_validate(user)
+        return user_out
+
+    return _factory
+
+
+@pytest.fixture
+def auth_client_factory(client: AsyncClient) -> Callable:
+    async def _factory(_user: UserOut, password: str) -> AsyncClient:
+        client.headers['Authorization'] = ''
+        token_data = {'username': _user.email, 'password': password}
+        response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+        body = response.json()
+        token = body['access_token']
+        client.headers['Authorization'] = f'Bearer {token}'
+        return client
+
+    return _factory
+
+
+@pytest_asyncio.fixture
+async def created_user(user_factory: Callable) -> UserOut:
+    return await user_factory(EMAIL, PASSWORD)
+
+
+@pytest_asyncio.fixture
+async def created_week(created_user: UserOut) -> WeekOut:
+    async for session in db.get_db_commit():
+        user = await UserDAO(session).get_user_by_email(created_user.email)
+        if not user:
+            raise ValueError('User not found!')
+        week = await WeekDAO(session).create_week(user, WEEK_1_NAME)
+        await MealSlotDAO(session).init_meal_slots_for_week(week)
+        stmt = select(Week).where(Week.id == week.id).options(selectinload(Week.meal_slots))
+        result = await session.execute(stmt)
+        loaded_week = result.scalar_one()
+        week_out = WeekOut.model_validate(loaded_week)
+    return week_out
+
+
+@pytest_asyncio.fixture
+async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
+    return await auth_client_factory(created_user, PASSWORD)
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def clean_db() -> AsyncGenerator[None, None]:
+    yield
+
+    async for session in db.get_db_commit():
+        await session.execute(delete(MealSlot))
+        await session.execute(delete(Week))
+        await session.execute(delete(User))

@@ -9,28 +9,36 @@ _async_session_maker = async_sessionmaker(_engine, class_=AsyncSession)
 
 
 class DatabaseSession:
-    @staticmethod
-    async def _get_session(commit: bool = False) -> AsyncGenerator[AsyncSession, None]:
-        async with _async_session_maker() as session:
-            try:
-                yield session
-                if commit:
-                    await session.commit()
-            except Exception:
-                await session.rollback()
-                raise
-            finally:
-                await session.close()
+    """Manages the creation and lifecycle of database sessions."""
 
     @staticmethod
     async def get_db() -> AsyncGenerator[AsyncSession, None]:
-        async for session in DatabaseSession._get_session():
-            yield session
+        """FastAPI dependency to get a database session for read-only operations.
+
+        Yields:
+            An asynchronous database session.
+        """
+        async with _async_session_maker() as session:
+            try:
+                yield session
+            except Exception:
+                await session.rollback()
+                raise
 
     @staticmethod
     async def get_db_commit() -> AsyncGenerator[AsyncSession, None]:
-        async for session in DatabaseSession._get_session(commit=True):
-            yield session
+        """FastAPI dependency to get a database session and commit changes.
+
+        Yields:
+            An asynchronous database session.
+        """
+        async with _async_session_maker() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
 
 db = DatabaseSession()

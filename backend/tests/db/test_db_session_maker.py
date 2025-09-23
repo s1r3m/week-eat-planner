@@ -1,12 +1,11 @@
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.db.session_maker import db
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def mock_session_maker(mocker, mocked_session) -> AsyncSession:
+async def mock_session_maker(mocker, mocked_session) -> None:
     mocker.patch(
         'week_eat_planner.db.session_maker._async_session_maker',
         return_value=mocked_session,
@@ -33,4 +32,3 @@ async def test_get_db_commit__throws_exception__rollback_called(mocked_session):
             pass
 
     mocked_session.rollback.assert_awaited_once()
-    mocked_session.close.assert_awaited_once()

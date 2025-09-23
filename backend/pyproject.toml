@@ -33,17 +33,18 @@ dependencies = [
     "loguru==0.7.3",
     "python-jose[cryptography]==3.3.0",
     "passlib[bcrypt]==1.7.4",
+    "gevent>=25.9.1",
 ]
 
 [project.urls] # Optional: Links for PyPI
 Homepage = "https://github.com/s1r3m/week-eat-planner" # Example URL
 Repository = "https://github.com/s1r3m/week-eat-planner" # Example URL
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest==8.2.0",
     "pytest-asyncio==0.25.0",
-    "pytest-cov==6.0.0",
+    "pytest-cov==5.0.0",
     "pytest-mock==3.14.0",
     "ruff>=0.11.6",
     "mypy==1.13.0",
@@ -79,7 +80,7 @@ asyncio_default_fixture_loop_scope = "module"
 filterwarnings = [
     "ignore::Warning",
 ]
-addopts = "--tb=short -vv"  # --cov=week_eat_planner --cov-report=term-missing"
+addopts = "--tb=short -vv"
 
 [tool.mypy]
 python_version = "3.11"
@@ -113,23 +114,13 @@ no_implicit_optional = true
 [tool.coverage.run]
 source = ["week_eat_planner"]
 branch = true
+concurrency = ["gevent"]
 omit = [
-    "*/tests/*",
+    "tests/*",  # Exclude all test files and directories
     # Omit files that are primarily configuration or startup logic
-#    "week_eat_planner/main.py",
-#    "week_eat_planner/config.py",
-#    "week_eat_planner/db/session_maker.py",
-#    "week_eat_planner/constants.py",
-#    "week_eat_planner/exceptions.py",
-]
-
-[tool.coverage.paths]
-# This is the key to fixing the 0% coverage issue.
-# It tells coverage that the source code in 'backend/week_eat_planner'
-# is the same as the code being executed from 'site-packages'.
-source = [
-    "week_eat_planner",
-    ".venv*/lib/python*/site-packages/week_eat_planner",
+    "week_eat_planner/main.py",
+    "week_eat_planner/config.py",
+    "week_eat_planner/exceptions.py",
 ]
 
 [tool.coverage.report]

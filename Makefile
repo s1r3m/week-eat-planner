@@ -30,6 +30,15 @@ CHECK_UV = $(shell which uv)
 export PATH := $(VIRTUAL_ENV)/bin:$(HOME)/.local/bin:$(PATH)
 export PYTHONPATH = $(BE_PATH)
 
+# Check for docker compose v2, fallback to v1 if not found.
+DOCKER_COMPOSE := docker compose
+ifeq ($(shell docker compose version >/dev/null 2>&1; echo $$?), 0)
+	# docker compose v2 is available
+else
+	# fallback to docker-compose v1
+	DOCKER_COMPOSE := docker-compose
+endif
+
 all: help
 
 ## ------------------------------------------------ SETUP --------------------------------------------------------------
@@ -54,20 +63,20 @@ ifeq ($(UID),0)
 	$(error Can not run this command as root user)
 endif
 
-	cd $(BE_PATH) && uv sync --active --all-extras --python $(VIRTUAL_ENV)/bin/python
+	cd $(BE_PATH) && uv sync --all-extras --active --python $(VIRTUAL_ENV)/bin/python
 
 ## ------------------------------------------------ APP ----------------------------------------------------------------
 
 ## @App Start the DB.
 run_db:
-	docker compose up -d --wait db
+	$(DOCKER_COMPOSE) up -d --wait db
 
 ## @Tests Prepare env file for be unittests
 be_tests_config:
 	cp $(BE_TEST_ENV_FILE) $(ENV_FILE)
 
 ## @App Apply migrations to DB.
-migrations: $(VENV_ACTIVATE) be_tests_config run_db
+migrations: $(VENV_ACTIVATE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
@@ -76,11 +85,7 @@ start: stop migrations
 
 ## @App Stop the environment.
 stop:
-	docker compose down --volumes --remove-orphans
-
-## @App SSH to backend container.
-in:
-	docker exec -it backend-1 bash
+	$(DOCKER_COMPOSE) down --volumes --remove-orphans
 
 ## @App Connect to database.
 db_shell:
@@ -101,9 +106,9 @@ style: $(VENV_ACTIVATE)
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
-	cd $(BE_PATH) 								&& \
-		coverage run -m pytest $(BE_PATH)/tests && \
-		coverage report
+	cd $(BE_PATH) && \
+		coverage run -m pytest tests && \
+		coverage report --fail-under=100
 
 ## @Tests Create a HTML coverage report.
 coverage: be_test
