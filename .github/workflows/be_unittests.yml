@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  be_unittests:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
