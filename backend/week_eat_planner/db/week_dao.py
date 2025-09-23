@@ -33,7 +33,6 @@ class WeekDAO(BaseDAO):
         week = Week(id=week_id, user_id=user.id, name=name)
         try:
             self._session.add(week)
-            await self._session.flush()
         except SQLAlchemyError as exc:
             logger.exception(f'Error while creating week for {user}: {exc}')
             raise exc
@@ -93,6 +92,21 @@ class WeekDAO(BaseDAO):
 
         return record
 
+    async def get_week_for_update(self, week: Week) -> Week | None:
+        try:
+            query = select(self.model).filter_by(id=week.id).with_for_update()
+            result = await self._session.execute(query)
+            record = result.scalar_one_or_none()
+            if record:
+                logger.info(f'Week with {week.id} has been successfully found.')
+            else:
+                logger.warning(f'Week with {week.id} not found.')
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while fetching week with {week.id=}: {exc}')
+            raise exc
+
+        return record
+
     async def update_week(self, week: Week, new_data: WeekUpdate) -> Week:
         """Updates a week's data.
 
@@ -108,10 +122,8 @@ class WeekDAO(BaseDAO):
         """
         logger.debug(f'Updating week {week} with {new_data=}.')
         try:
-            self._session.add(week)
             week.name = new_data.name
-            await self._session.flush()
-            await self._session.refresh(week)
+            self._session.add(week)
         except SQLAlchemyError as exc:
             logger.exception(f'Error while updating week {week}: {exc}')
             raise exc
@@ -128,9 +140,7 @@ class WeekDAO(BaseDAO):
         """
         logger.debug(f'Deleting {week=}.')
         try:
-            self._session.add(week)
             await self._session.delete(week)
-            await self._session.flush()
         except SQLAlchemyError as exc:
             logger.exception(f'Error while deleting {week=}: {exc}')
             raise exc

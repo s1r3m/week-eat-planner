@@ -24,12 +24,12 @@ def mocked_user_dao(mocked_session: AsyncSession) -> UserDAO:
 
 
 @pytest.fixture
-def mocker_week_dao(mocked_session: AsyncSession) -> WeekDAO:
+def mocked_week_dao(mocked_session: AsyncSession) -> WeekDAO:
     return WeekDAO(mocked_session)
 
 
 @pytest.fixture
-def mocker_mealslot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
+def mocked_mealslot_dao(mocked_session: AsyncSession) -> MealSlotDAO:
     return MealSlotDAO(mocked_session)
 
 

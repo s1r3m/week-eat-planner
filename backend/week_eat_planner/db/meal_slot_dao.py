@@ -38,6 +38,5 @@ class MealSlotDAO(BaseDAO):
                     raise exc
 
                 logger.debug(f'Created MealSlot {slot}.')
-        await self._session.flush()
         logger.info(f'MealSlots for {week} has been successfully created.')
         return slots

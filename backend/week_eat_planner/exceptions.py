@@ -46,3 +46,8 @@ WeekNotFound = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='Week not found',
 )
+
+WeekForbidden = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail='Access forbidden',
+)

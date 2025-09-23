@@ -6,8 +6,8 @@ from week_eat_planner.db.models import DayOfWeek, MealType
 DB_ERROR = 'DB MealSlot Error'
 
 
-async def test_init_meal_slots__valid_week__days_inited(mocker_mealslot_dao, db_week):
-    slots = await mocker_mealslot_dao.init_meal_slots_for_week(db_week)
+async def test_init_meal_slots__valid_week__days_inited(mocked_mealslot_dao, db_week):
+    slots = await mocked_mealslot_dao.init_meal_slots_for_week(db_week)
 
     for slot in slots:
         assert slot.week_id == db_week.id
@@ -16,10 +16,10 @@ async def test_init_meal_slots__valid_week__days_inited(mocker_mealslot_dao, db_
         assert not slot.recipe_id
 
 
-async def test_init_meal_slots__db_error__error_raised(mocked_session, mocker_mealslot_dao, db_week):
+async def test_init_meal_slots__db_error__error_raised(mocked_session, mocked_mealslot_dao, db_week):
     mocked_session.add.side_effect = SQLAlchemyError(DB_ERROR)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await mocker_mealslot_dao.init_meal_slots_for_week(db_week)
+        await mocked_mealslot_dao.init_meal_slots_for_week(db_week)
 
     assert str(exc.value) == DB_ERROR

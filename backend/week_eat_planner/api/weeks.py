@@ -12,7 +12,7 @@ from week_eat_planner.api.schemas import WeekPreviewOut, WeekCreate, WeekOut, We
 from week_eat_planner.db.models import Week, User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.dependencies.week_deps import get_week_for_user
+from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for_update
 
 router = APIRouter()
 
@@ -63,7 +63,7 @@ async def get_weeks(
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekOut)
 async def get_week(
-    week: Annotated[Week, Depends(get_week_for_user)],
+    week: Annotated[Week, Depends(get_week_by_id)],
 ) -> Week:
     """Retrieves a specific week by its ID.
 
@@ -81,7 +81,7 @@ async def get_week(
 @router.put(AppUrl.WEEKS_TPL, response_model=WeekPreviewOut)
 async def update_week(
     new_data: WeekUpdate,
-    week: Annotated[Week, Depends(get_week_for_user)],
+    week: Annotated[Week, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Updates a specific week.
@@ -102,7 +102,7 @@ async def update_week(
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=HTTPStatus.NO_CONTENT)
 async def delete_week(
-    week: Annotated[Week, Depends(get_week_for_user)],
+    week: Annotated[Week, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.
@@ -114,6 +114,5 @@ async def delete_week(
         session: The database session for committing the deletion.
     """
     logger.info(f'Request DELETE /weeks/{week.id} for user {week.user_id}.')
-    week_dao = WeekDAO(session)
-    await week_dao.delete_week(week)
+    await WeekDAO(session).delete_week(week)
     return None

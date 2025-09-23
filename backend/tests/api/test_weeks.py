@@ -124,5 +124,5 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Week not found'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Access forbidden'}
