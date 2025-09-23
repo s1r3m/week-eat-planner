@@ -107,8 +107,9 @@ class WeekDAO(BaseDAO):
             SQLAlchemyError: If a database error occurs.
         """
         logger.debug(f'Updating week {week} with {new_data=}.')
-        week.name = new_data.name
         try:
+            self._session.add(week)
+            week.name = new_data.name
             await self._session.flush()
             await self._session.refresh(week)
         except SQLAlchemyError as exc:
@@ -127,6 +128,7 @@ class WeekDAO(BaseDAO):
         """
         logger.debug(f'Deleting {week=}.')
         try:
+            self._session.add(week)
             await self._session.delete(week)
             await self._session.flush()
         except SQLAlchemyError as exc:

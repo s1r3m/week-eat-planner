@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +12,7 @@ from week_eat_planner.api.schemas import WeekPreviewOut, WeekCreate, WeekOut, We
 from week_eat_planner.db.models import Week, User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.exceptions import WeekNotFound
+from week_eat_planner.dependencies.week_deps import get_week_for_user
 
 router = APIRouter()
 
@@ -63,38 +63,25 @@ async def get_weeks(
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekOut)
 async def get_week(
-    week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
-    session: Annotated[AsyncSession, Depends(db.get_db)],
+    week: Annotated[Week, Depends(get_week_for_user)],
 ) -> Week:
     """Retrieves a specific week by its ID.
 
     The week must belong to the currently authenticated user.
 
     Args:
-        week_id: The ID of the week to retrieve.
-        user: The authenticated user.
-        session: The database session.
+        week: The week object, injected by dependency.
 
     Returns:
         The requested week object.
-
-    Raises:
-        WeekNotFound: If the week does not exist or does not belong to the user.
     """
-    logger.info(f'Request GET /weeks/{week_id} for user {user}.')
-    week = await WeekDAO(session).get_week(week_id)
-    if not week or week.user_id != user.id:
-        logger.error(f'No week {week_id} for user {user}.')
-        raise WeekNotFound
     return week
 
 
 @router.put(AppUrl.WEEKS_TPL, response_model=WeekPreviewOut)
 async def update_week(
-    week_id: Annotated[str, Path(title='ID of the week to get')],
     new_data: WeekUpdate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    week: Annotated[Week, Depends(get_week_for_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Updates a specific week.
@@ -102,31 +89,20 @@ async def update_week(
     The week must belong to the currently authenticated user.
 
     Args:
-        week_id: The ID of the week to update.
         new_data: The new data for the week.
-        user: The authenticated user.
+        week: The week object to update.
         session: The database session for committing the update.
 
     Returns:
         The updated week object.
-
-    Raises:
-        WeekNotFound: If the week does not exist or does not belong to the user.
     """
-    logger.info(f'Request PUT /weeks/{week_id} for user {user} with {new_data=}.')
-    week_dao = WeekDAO(session)
-    week = await week_dao.get_week(week_id)
-    if not week or week.user_id != user.id:
-        logger.error(f'No week {week_id} for user {user}.')
-        raise WeekNotFound
-
-    return await week_dao.update_week(week, new_data)
+    logger.info(f'Request PUT /weeks/{week.id} for user {week.user_id} with {new_data=}.')
+    return await WeekDAO(session).update_week(week, new_data)
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=HTTPStatus.NO_CONTENT)
 async def delete_week(
-    week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    week: Annotated[Week, Depends(get_week_for_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.
@@ -134,19 +110,10 @@ async def delete_week(
     The week must belong to the currently authenticated user.
 
     Args:
-        week_id: The ID of the week to delete.
-        user: The authenticated user.
+        week: The week object to delete.
         session: The database session for committing the deletion.
-
-    Raises:
-        WeekNotFound: If the week does not exist or does not belong to the user.
     """
-    logger.info(f'Request DELETE /weeks/{week_id} for user {user}.')
+    logger.info(f'Request DELETE /weeks/{week.id} for user {week.user_id}.')
     week_dao = WeekDAO(session)
-    week = await week_dao.get_week(week_id)
-    if not week or week.user_id != user.id:
-        logger.error(f'No week {week_id} for user {user}.')
-        raise WeekNotFound
-
     await week_dao.delete_week(week)
     return None

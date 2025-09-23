@@ -1,0 +1,39 @@
+from typing import Annotated
+
+from fastapi import Depends, Path
+from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from week_eat_planner.db.models import User, Week
+from week_eat_planner.db.session_maker import db
+from week_eat_planner.db.week_dao import WeekDAO
+from week_eat_planner.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.exceptions import WeekNotFound
+
+
+async def get_week_for_user(
+    week_id: Annotated[str, Path(title="ID of the week to get")],
+    user: Annotated[User, Depends(get_current_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> Week:
+    """Retrieves a specific week by its ID.
+
+    The week must belong to the currently authenticated user.
+
+    Args:
+        week_id: The ID of the week to retrieve.
+        user: The authenticated user.
+        session: The database session.
+
+    Returns:
+        The requested week object.
+
+    Raises:
+        WeekNotFound: If the week does not exist or does not belong to the user.
+    """
+    logger.info(f"Requesting {week_id} for user {user}.")
+    week = await WeekDAO(session).get_week(week_id)
+    if not week or week.user_id != user.id:
+        logger.error(f"No week {week_id} for user {user}.")
+        raise WeekNotFound
+    return week
