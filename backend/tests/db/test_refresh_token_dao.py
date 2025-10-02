@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
-from asyncpg.pgproto.pgproto import timedelta
 from sqlalchemy.exc import SQLAlchemyError
 
 from tests.db.conftest import HASHED_REFRESH_TOKEN, REFRESH_TOKEN

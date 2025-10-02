@@ -1,7 +1,6 @@
 """Helper functions for authentication and password management."""
 
 import hashlib
-import hmac
 import secrets
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
@@ -96,19 +95,6 @@ def hash_refresh_token(token: str) -> str:
     """
     digest = hashlib.sha256(token.encode('utf-8')).hexdigest()
     return digest
-
-
-def verify_hash_equals(hash_a: str, hash_b: str) -> bool:
-    """Compares two hashes in a timing-attack-resistant way.
-
-    Args:
-        hash_a: The first hash to compare.
-        hash_b: The second hash to compare.
-
-    Returns:
-        True if the hashes are equal, False otherwise.
-    """
-    return hmac.compare_digest(hash_a, hash_b)
 
 
 def get_password_hash(password: str) -> str:

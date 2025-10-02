@@ -88,7 +88,7 @@ async def login(
     """
     logger.info(f'Got POST /login request for {user_data.username}.')
     try:
-        schema.UserCreate(email=user_data.username, password='filler')
+        schema.Email(email=user_data.username)
     except ValueError as exc:
         raise InvalidEmail from exc
 
@@ -121,6 +121,26 @@ async def refresh_tokens(
     user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> schema.Token:
+    """Refreshes access and refresh tokens.
+
+    This endpoint takes an existing refresh token from the request cookies,
+    validates it, revokes the old token, generates a new refresh token and
+    access token, and sets the new refresh token in the response cookies.
+
+    Args:
+        request: The incoming request object, used to retrieve the refresh token cookie.
+        response: The response object, used to set the new refresh token cookie.
+        user: The currently authenticated user, obtained via dependency injection.
+        session: The database session, obtained via dependency injection.
+
+    Returns:
+        A schema.Token object containing the new access token and its type.
+
+    Raises:
+        RefreshTokenMissing: If the refresh token cookie is not found in the request.
+        InvalidRefreshToken: If the refresh token found in the cookie is invalid or has been revoked.
+        TokenExpiredException: If the refresh token found in the cookie has expired.
+    """
     logger.info(f'Got POST /refresh request for {user.email=}.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
@@ -162,6 +182,23 @@ async def logout(
     user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
+    """Logs out the current user.
+
+    This endpoint revokes the refresh token associated with the current user
+    and deletes the refresh token cookie from the client. If no refresh token
+    is found, or it's already invalid/revoked, it logs a warning and proceeds
+    without error.
+
+    Args:
+        request: The incoming request object, used to retrieve the refresh token cookie.
+        response: The response object, used to delete the refresh token cookie.
+        user: The currently authenticated user, obtained via dependency injection.
+        session: The database session, obtained via dependency injection.
+
+    Returns:
+        None. The response status code is 204 No Content upon successful logout
+        or if the token was already missing/invalid.
+    """
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
         logger.warning(f'No refresh token in request cookies for {user.email=}.')

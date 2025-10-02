@@ -9,7 +9,6 @@ from week_eat_planner.helpers import (
     get_email_from_token,
     get_password_hash,
     hash_refresh_token,
-    verify_hash_equals,
     verify_password,
 )
 
@@ -89,24 +88,3 @@ def test_hash_refresh_token__other_token__other_hash():
     hash_token_2 = hash_refresh_token(token_2)
 
     assert hash_token_1 != hash_token_2
-
-
-def test_verify_hash_equals__same_token__return_true():
-    token = generate_refresh_token()
-    hash_1 = hash_refresh_token(token)
-    hash_2 = hash_refresh_token(token)
-
-    result = verify_hash_equals(hash_1, hash_2)
-
-    assert result is True
-
-
-def test_verify_hash_equals__different_tokens__return_false():
-    token_1 = generate_refresh_token()
-    token_2 = generate_refresh_token()
-    hash_token_1 = hash_refresh_token(token_1)
-    hash_token_2 = hash_refresh_token(token_2)
-
-    result = verify_hash_equals(hash_token_1, hash_token_2)
-
-    assert result is False

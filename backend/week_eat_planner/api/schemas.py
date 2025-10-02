@@ -23,10 +23,15 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
-class UserCreate(BaseModel):
-    """Schema for creating a new user."""
+class Email(BaseModel):
+    """Schema to check email fields."""
 
     email: EmailStr
+
+
+class UserCreate(Email):
+    """Schema for creating a new user."""
+
     password: str
 
 
@@ -41,10 +46,22 @@ class WeekPreviewOut(BaseModel):
         from_attributes = True
 
 
-class WeekCreate(BaseModel):
-    """Schema for creating a new week."""
+class WeekBase(BaseModel):
+    """Base schema for week data."""
 
     name: str
+
+
+class WeekCreate(WeekBase):
+    """Schema for creating a new week."""
+
+    pass
+
+
+class WeekUpdate(WeekBase):
+    """Schema for updating a week's data."""
+
+    pass
 
 
 class MealSlotOut(BaseModel):
@@ -66,9 +83,3 @@ class WeekOut(WeekPreviewOut):
 
     class Config:
         from_attributes = True
-
-
-class WeekUpdate(BaseModel):
-    """Schema for updating a week's data."""
-
-    name: str
