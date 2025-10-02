@@ -1,5 +1,5 @@
-from enum import StrEnum
 from datetime import datetime, timezone
+from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, UniqueConstraint
@@ -27,6 +27,21 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f'User({self.id=}, {self.email=}, {self.is_active=}'
+
+
+class RefreshToken(Base):
+    __tablename__ = 'refresh_tokens'
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
+    revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
+    replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True)
+
+    user: Mapped['User'] = relationship()
 
 
 class Recipe(Base):

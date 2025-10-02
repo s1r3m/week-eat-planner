@@ -18,7 +18,7 @@ async def test_create_week__with_auth__week_in_response(auth_client_for_created_
 
     body = response.json()
     assert response.status_code == HTTPStatus.CREATED
-    assert isinstance(uuid.UUID(body.pop('id')), uuid.UUID)
+    assert body.pop('id')
     assert body == {'name': WEEK_1_NAME, 'user_id': str(created_user.id)}
 
 

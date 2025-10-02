@@ -1,18 +1,18 @@
-import uuid
-from typing import AsyncGenerator, Generator, TypeVar, Callable
-
 import asyncio
+from typing import AsyncGenerator, Callable, Generator, TypeVar
+from uuid import UUID
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import selectinload
+from uuid_utils import uuid7
 
 from week_eat_planner.api.schemas import UserOut, WeekOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import Week, User, MealSlot
+from week_eat_planner.db.models import MealSlot, RefreshToken, User, Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
@@ -21,9 +21,9 @@ from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
 PASSWORD = 'password_123'
-USER_ID = uuid.uuid4()
+USER_ID = UUID(str(uuid7()))
 
-WEEK_1_ID = uuid.uuid4()
+WEEK_1_ID = UUID(str(uuid7()))
 WEEK_1_NAME = 'first'
 
 T = TypeVar('T')
@@ -107,4 +107,5 @@ async def clean_db() -> AsyncGenerator[None, None]:
     async for session in db.get_db_commit():
         await session.execute(delete(MealSlot))
         await session.execute(delete(Week))
+        await session.execute(delete(RefreshToken))
         await session.execute(delete(User))

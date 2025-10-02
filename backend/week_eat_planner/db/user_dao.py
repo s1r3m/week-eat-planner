@@ -1,19 +1,19 @@
-import uuid
+from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import select
+from uuid_utils import uuid7
 
+import week_eat_planner.db.models as db_model
 from week_eat_planner.db.base import BaseDAO
-from week_eat_planner.db.models import User
 
 
 class UserDAO(BaseDAO):
     """Data Access Object for managing users."""
 
-    model = User
+    model = db_model.User
 
-    async def create_user(self, email: str, hashed_password: str) -> User:
+    async def create_user(self, email: str, hashed_password: str) -> db_model.User:
         """Creates a new user in the database.
 
         Args:
@@ -21,14 +21,14 @@ class UserDAO(BaseDAO):
             hashed_password: The hashed password for the new user.
 
         Returns:
-            The created User object.
+            The created db_model.User object.
 
         Raises:
             SQLAlchemyError: If a database error occurs.
         """
         logger.debug(f'Creating user with {email=}.')
-        user_id = uuid.uuid4()
-        user = User(id=user_id, email=email, hashed_password=hashed_password)
+        user_id = UUID(str(uuid7()))
+        user = db_model.User(id=user_id, email=email, hashed_password=hashed_password)
         try:
             self._session.add(user)
             await self._session.flush()
@@ -39,7 +39,7 @@ class UserDAO(BaseDAO):
 
         return user
 
-    async def get_user_by_email(self, email: str) -> User | None:
+    async def get_user_by_email(self, email: str) -> db_model.User | None:
         """Retrieves a user by their email address.
 
         Args:
@@ -52,16 +52,6 @@ class UserDAO(BaseDAO):
             SQLAlchemyError: If a database error occurs.
         """
         logger.info(f'Getting User by {email=}.')
-        try:
-            query = select(self.model).filter_by(email=email)
-            result = await self._session.execute(query)
-            record = result.scalar_one_or_none()
-            if record:
-                logger.info(f'User with {email=}has been successfully found.')
-            else:
-                logger.warning(f'User with {email=} not found.')
-        except SQLAlchemyError as exc:
-            logger.exception(f'Error while getting User by {email=}: {exc}.')
-            raise exc
+        record = await self._get_one_or_none(email=email)
 
         return record

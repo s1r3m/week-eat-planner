@@ -3,17 +3,14 @@ from http import HTTPStatus
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import delete
 
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.models import User
-from week_eat_planner.db.session_maker import db
 
 
 @pytest.fixture
 def login_data() -> dict[str, str]:
     """Generates a unique email and a standard password for test isolation."""
-    email = f'test_user_{uuid.uuid4().hex}@example.com'
+    email = 'test_user_123@example.com'
     password = 'a-secure-password-123'
     return {'email': email, 'password': password}
 
@@ -23,15 +20,6 @@ async def user(client, login_data) -> dict[str, str]:
     """A created user in the system."""
     await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
     return login_data
-
-
-@pytest_asyncio.fixture(autouse=True)
-async def clean_db():
-    """Clears the users table after all tests in the module have run."""
-    yield
-
-    async for session in db.get_db_commit():
-        await session.execute(delete(User))
 
 
 async def test_add_user__valid_data__user_created(client, login_data):

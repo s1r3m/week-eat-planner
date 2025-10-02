@@ -3,9 +3,9 @@ import pytest_asyncio
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tests.conftest import WEEK_1_ID, WEEK_1_NAME, USER_ID, EMAIL, PASSWORD
+from tests.conftest import EMAIL, PASSWORD, USER_ID, WEEK_1_ID, WEEK_1_NAME
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import Week, User
+from week_eat_planner.db.models import User, Week
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
 

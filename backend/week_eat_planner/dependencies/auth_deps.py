@@ -4,19 +4,19 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.db.models import User
-from week_eat_planner.db.user_dao import UserDAO
+import week_eat_planner.db.models as db_models
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.exceptions import UserNotFound
 from week_eat_planner.helpers import get_email_from_token
 
-_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
+_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
 async def get_current_user(
     token: Annotated[str, Depends(_oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> User:
+) -> db_models.User:
     """FastAPI dependency to get the current user from a JWT token.
 
     Args:
@@ -28,7 +28,9 @@ async def get_current_user(
 
     Raises:
         UserNotFound: If the user from the token does not exist.
-        InvalidJwtToken: If the token is invalid or expired.
+        NoEmailInToken: If the 'sub' claim is missing or not a string.
+        TokenExpiredException: If the token has expired.
+        InvalidJwtToken: If the token is invalid for any other reason.
     """
     email = get_email_from_token(token)
     user_in_db = await UserDAO(session).get_user_by_email(email)
@@ -38,8 +40,8 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
+    current_user: Annotated[db_models.User, Depends(get_current_user)],
+) -> db_models.User:
     """FastAPI dependency to get the current active user.
 
     This dependency relies on `get_current_user` to first resolve the user.
@@ -53,6 +55,9 @@ async def get_current_active_user(
 
     Raises:
         UserNotFound: If the user is not active.
+        NoEmailInToken: If the 'sub' claim is missing or not a string.
+        TokenExpiredException: If the token has expired.
+        InvalidJwtToken: If the token is invalid for any other reason.
     """
     if not current_user.is_active:
         raise UserNotFound

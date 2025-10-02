@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.api.schemas import WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.week_dao import WeekDAO
-from week_eat_planner.api.schemas import WeekPreviewOut, WeekCreate, WeekOut, WeekUpdate
-from week_eat_planner.db.models import Week, User
+from week_eat_planner.db.models import User, Week
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for_update
 

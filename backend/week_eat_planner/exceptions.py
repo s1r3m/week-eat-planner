@@ -1,5 +1,4 @@
-from fastapi import status, HTTPException
-
+from fastapi import HTTPException, status
 
 InvalidJwtToken = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -7,15 +6,27 @@ InvalidJwtToken = HTTPException(
 )
 
 
-NoUserIdInToken = HTTPException(
+NoEmailInToken = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='No user ID in token',
+    detail='No email in token',
 )
 
 
 TokenNotFound = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail='Token not found',
+)
+
+
+RefreshTokenMissing = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Refresh Token missing',
+)
+
+
+InvalidRefreshToken = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Invalid refresh token',
 )
 
 
