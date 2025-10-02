@@ -1,11 +1,9 @@
-from uuid import UUID
-
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from uuid_utils import uuid7
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.db.base import BaseDAO
+from week_eat_planner.helpers import generate_uuid7
 
 
 class MealSlotDAO(BaseDAO):
@@ -29,7 +27,7 @@ class MealSlotDAO(BaseDAO):
         slots: list[db_model.MealSlot] = []
         for day in db_model.DayOfWeek:
             for meal_type in db_model.MealType:
-                slot_id = UUID(str(uuid7()))
+                slot_id = generate_uuid7()
                 slot = db_model.MealSlot(id=slot_id, week_id=week.id, day_of_week=day, meal_type=meal_type)
                 try:
                     self._session.add(slot)

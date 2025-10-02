@@ -4,11 +4,11 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
-from uuid_utils import uuid7
 
 import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
 from week_eat_planner.db.base import BaseDAO
+from week_eat_planner.helpers import generate_uuid7
 
 
 class WeekDAO(BaseDAO):
@@ -30,7 +30,7 @@ class WeekDAO(BaseDAO):
             SQLAlchemyError: If a database error occurs.
         """
         logger.debug(f'Creating week for {user}.')
-        week_id = UUID(str(uuid7()))
+        week_id = generate_uuid7()
         week = db_model.Week(id=week_id, user_id=user.id, name=name)
         try:
             self._session.add(week)

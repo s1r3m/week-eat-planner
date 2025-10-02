@@ -1,14 +1,13 @@
-from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
+import week_eat_planner.api.schemas as schema
+import week_eat_planner.db.models as db_model
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import User, Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
@@ -17,12 +16,12 @@ from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for
 router = APIRouter()
 
 
-@router.post(AppUrl.WEEKS, response_model=WeekPreviewOut, status_code=HTTPStatus.CREATED)
+@router.post(AppUrl.WEEKS, response_model=schema.WeekPreviewOut, status_code=status.HTTP_201_CREATED)
 async def create_week(
-    week_data: WeekCreate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    week_data: schema.WeekCreate,
+    user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: AsyncSession = Depends(db.get_db_commit),
-) -> Week:
+) -> db_model.Week:
     """Creates a new week for the current user.
 
     Also initiates seven days for the week with meal slots.
@@ -42,11 +41,11 @@ async def create_week(
     return week
 
 
-@router.get(AppUrl.WEEKS, response_model=list[WeekPreviewOut])
+@router.get(AppUrl.WEEKS, response_model=list[schema.WeekPreviewOut])
 async def get_weeks(
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: AsyncSession = Depends(db.get_db),
-) -> list[Week]:
+) -> list[db_model.Week]:
     """Retrieves all weeks for the current user.
 
     Args:
@@ -61,10 +60,10 @@ async def get_weeks(
     return weeks
 
 
-@router.get(AppUrl.WEEKS_TPL, response_model=WeekOut)
+@router.get(AppUrl.WEEKS_TPL, response_model=schema.WeekOut)
 async def get_week(
-    week: Annotated[Week, Depends(get_week_by_id)],
-) -> Week:
+    week: Annotated[db_model.Week, Depends(get_week_by_id)],
+) -> db_model.Week:
     """Retrieves a specific week by its ID.
 
     The week must belong to the currently authenticated user.
@@ -78,12 +77,12 @@ async def get_week(
     return week
 
 
-@router.put(AppUrl.WEEKS_TPL, response_model=WeekPreviewOut)
+@router.put(AppUrl.WEEKS_TPL, response_model=schema.WeekPreviewOut)
 async def update_week(
-    new_data: WeekUpdate,
-    week: Annotated[Week, Depends(get_week_for_update)],
+    new_data: schema.WeekUpdate,
+    week: Annotated[db_model.Week, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> Week:
+) -> db_model.Week:
     """Updates a specific week.
 
     The week must belong to the currently authenticated user.
@@ -100,9 +99,9 @@ async def update_week(
     return await WeekDAO(session).update_week(week, new_data)
 
 
-@router.delete(AppUrl.WEEKS_TPL, status_code=HTTPStatus.NO_CONTENT)
+@router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_week(
-    week: Annotated[Week, Depends(get_week_for_update)],
+    week: Annotated[db_model.Week, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.

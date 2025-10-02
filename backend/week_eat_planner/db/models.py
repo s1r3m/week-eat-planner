@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
@@ -17,8 +17,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
@@ -35,13 +36,18 @@ class RefreshToken(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(nullable=False)
-    issued_at: Mapped[datetime] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
     revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
     replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True)
 
     user: Mapped['User'] = relationship()
+
+    def __repr__(self) -> str:
+        return f'RefreshToken({self.id=}, {self.user_id=}, {self.expires_at=}, {self.revoked=}, {self.replaced_by=})'
 
 
 class Recipe(Base):

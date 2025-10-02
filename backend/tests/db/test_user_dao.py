@@ -1,15 +1,15 @@
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
+import week_eat_planner.db.models as db_model
 from tests.conftest import EMAIL, PASSWORD, USER_ID
-from week_eat_planner.db.models import User
 
 DB_ERROR = 'DB User Error'
 
 
 @pytest.fixture
-def db_user() -> User:
-    return User(id=USER_ID, email=EMAIL, hashed_password=PASSWORD, is_active=True)
+def db_user() -> db_model.User:
+    return db_model.User(id=USER_ID, email=EMAIL, hashed_password=PASSWORD, is_active=True)
 
 
 async def test_user_dao_create_user__valid_data__user_created(mocked_user_dao):

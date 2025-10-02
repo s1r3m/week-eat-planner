@@ -4,7 +4,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.db.models as db_models
+import week_eat_planner.db.models as db_model
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.exceptions import UserNotFound
@@ -16,7 +16,7 @@ _oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 async def get_current_user(
     token: Annotated[str, Depends(_oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> db_models.User:
+) -> db_model.User:
     """FastAPI dependency to get the current user from a JWT token.
 
     Args:
@@ -40,8 +40,8 @@ async def get_current_user(
 
 
 async def get_current_active_user(
-    current_user: Annotated[db_models.User, Depends(get_current_user)],
-) -> db_models.User:
+    current_user: Annotated[db_model.User, Depends(get_current_user)],
+) -> db_model.User:
     """FastAPI dependency to get the current active user.
 
     This dependency relies on `get_current_user` to first resolve the user.

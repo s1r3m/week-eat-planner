@@ -1,15 +1,13 @@
-from uuid import UUID
-
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
-from uuid_utils import uuid7
 
 import week_eat_planner.db.models as db_model
 from tests.conftest import WEEK_1_ID, WEEK_1_NAME
 from week_eat_planner.api.schemas import WeekUpdate
+from week_eat_planner.helpers import generate_uuid7
 
 DB_ERROR = 'DB Week Error'
-WEEK_2_ID = UUID(str(uuid7()))
+WEEK_2_ID = generate_uuid7()
 WEEK_2_NAME = 'second'
 
 

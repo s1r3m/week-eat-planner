@@ -3,12 +3,11 @@ from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from uuid_utils import uuid7
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.config import settings
 from week_eat_planner.db.base import BaseDAO
-from week_eat_planner.helpers import hash_refresh_token
+from week_eat_planner.helpers import generate_uuid7, hash_refresh_token
 
 
 class RefreshTokenDAO(BaseDAO):
@@ -19,7 +18,7 @@ class RefreshTokenDAO(BaseDAO):
     async def create_token(self, user: db_model.User, raw_token: str) -> db_model.RefreshToken:
         logger.debug(f'Creating refresh token for {user}.')
         token_hash = hash_refresh_token(raw_token)
-        token_id = UUID(str(uuid7()))
+        token_id = generate_uuid7()
         now = datetime.now(timezone.utc)
         refresh_token = db_model.RefreshToken(
             id=token_id,

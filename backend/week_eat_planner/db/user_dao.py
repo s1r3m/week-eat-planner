@@ -1,11 +1,9 @@
-from uuid import UUID
-
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from uuid_utils import uuid7
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.db.base import BaseDAO
+from week_eat_planner.helpers import generate_uuid7
 
 
 class UserDAO(BaseDAO):
@@ -27,7 +25,7 @@ class UserDAO(BaseDAO):
             SQLAlchemyError: If a database error occurs.
         """
         logger.debug(f'Creating user with {email=}.')
-        user_id = UUID(str(uuid7()))
+        user_id = generate_uuid7()
         user = db_model.User(id=user_id, email=email, hashed_password=hashed_password)
         try:
             self._session.add(user)

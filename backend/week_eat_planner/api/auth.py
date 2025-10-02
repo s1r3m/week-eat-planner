@@ -6,8 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.api.schemas as schemas
-import week_eat_planner.db.models as db_models
+import week_eat_planner.api.schemas as schema
+import week_eat_planner.db.models as db_model
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
@@ -18,6 +18,7 @@ from week_eat_planner.exceptions import (
     InvalidEmail,
     InvalidRefreshToken,
     RefreshTokenMissing,
+    TokenExpiredException,
     UserAlreadyExists,
     UserNotFound,
 )
@@ -32,11 +33,11 @@ from week_eat_planner.helpers import (
 router = APIRouter()
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=schema.UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user(
-    user_data: schemas.UserCreate,
+    user_data: schema.UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> db_models.User:
+) -> db_model.User:
     """Adds a user.
 
     Checks if a user with the given email already exists. If not, it hashes the
@@ -64,12 +65,12 @@ async def create_user(
     return created_user
 
 
-@router.post(AppUrl.AUTH_LOGIN, response_model=schemas.Token)
+@router.post(AppUrl.AUTH_LOGIN, response_model=schema.Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> schemas.Token:
+) -> schema.Token:
     """Login the user and return an access token.
 
     Validates credentials and returns a JWT bearer token upon success.
@@ -87,7 +88,7 @@ async def login(
     """
     logger.info(f'Got POST /login request for {user_data.username}.')
     try:
-        schemas.UserCreate(email=user_data.username, password='filler')
+        schema.UserCreate(email=user_data.username, password='filler')
     except ValueError as exc:
         raise InvalidEmail from exc
 
@@ -110,16 +111,16 @@ async def login(
         path='/auth',
     )
 
-    return schemas.Token(access_token=access_token, token_type=TokenType.BEARER)
+    return schema.Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
-@router.post(AppUrl.AUTH_REFRESH, response_model=schemas.Token)
+@router.post(AppUrl.AUTH_REFRESH, response_model=schema.Token)
 async def refresh_tokens(
     request: Request,
     response: Response,
-    user: Annotated[db_models.User, Depends(get_current_active_user)],
+    user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> schemas.Token:
+) -> schema.Token:
     logger.info(f'Got POST /refresh request for {user.email=}.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
@@ -129,9 +130,13 @@ async def refresh_tokens(
     refresh_token_dao = RefreshTokenDAO(session)
     token_hash = hash_refresh_token(cookie_token)
     old_token = await refresh_token_dao.get_token_by_hash(token_hash)
-    if not old_token or old_token.revoked or old_token.expires_at <= datetime.now(timezone.utc):
+    if not old_token or old_token.revoked:
         logger.error(f'Invalid refresh token in request cookies for {user.email=}.')
         raise InvalidRefreshToken
+
+    if old_token.expires_at <= datetime.now(timezone.utc):
+        logger.error(f'Refresh token expired for {user.email=}.')
+        raise TokenExpiredException
 
     new_raw_token = generate_refresh_token()
     new_token = await refresh_token_dao.create_token(user, new_raw_token)
@@ -147,14 +152,14 @@ async def refresh_tokens(
         path='/auth',
     )
     access_token = create_access_token(user.email)
-    return schemas.Token(access_token=access_token, token_type=TokenType.BEARER)
+    return schema.Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
 @router.post(AppUrl.AUTH_LOGOUT, status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
     response: Response,
-    user: Annotated[db_models.User, Depends(get_current_active_user)],
+    user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
@@ -165,7 +170,7 @@ async def logout(
     refresh_token_dao = RefreshTokenDAO(session)
     token_hash = hash_refresh_token(refresh_token)
     db_token = await refresh_token_dao.get_token_by_hash(token_hash)
-    if not db_token:
+    if not db_token or db_token.revoked:
         logger.warning(f'Invalid refresh token in request cookies for {user.email=}.')
         return
 
@@ -174,8 +179,8 @@ async def logout(
     return
 
 
-@router.get(AppUrl.AUTH_ME, response_model=schemas.UserOut)
-async def get_user(user: Annotated[db_models.User, Depends(get_current_active_user)]) -> schemas.UserOut:
+@router.get(AppUrl.AUTH_ME, response_model=schema.UserOut)
+async def get_user(user: Annotated[db_model.User, Depends(get_current_active_user)]) -> schema.UserOut:
     """Get the current user profile.
 
     Args:
@@ -185,4 +190,4 @@ async def get_user(user: Annotated[db_models.User, Depends(get_current_active_us
         The current user's profile.
     """
     logger.info(f'Got GET /me request for {user.email}.')
-    return schemas.UserOut.model_validate(user)
+    return schema.UserOut.model_validate(user)

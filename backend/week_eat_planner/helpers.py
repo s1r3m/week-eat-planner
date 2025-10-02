@@ -4,9 +4,11 @@ import hashlib
 import hmac
 import secrets
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
+from uuid_utils import uuid7
 
 from week_eat_planner.config import settings
 from week_eat_planner.exceptions import InvalidJwtToken, NoEmailInToken, TokenExpiredException
@@ -132,3 +134,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         True if the passwords match, False otherwise.
     """
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def generate_uuid7() -> UUID:
+    """uuid7() returns uuid_utils.UUID but the DB doesn't recognise that.
+
+    Instead, convert the new value to uuid.UUID type.
+
+    Returns:
+        uuid.UUID uuid7() representation.
+    """
+    return UUID(str(uuid7()))

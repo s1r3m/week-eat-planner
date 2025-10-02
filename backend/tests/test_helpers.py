@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 import pytest
 from fastapi import HTTPException
 
@@ -23,9 +21,6 @@ EXPIRED_HASH = (
     '.rI14bmWNH4Ev4IhRY8M7hak73cSQx3SWTt9CyMJ_mIk'
 )
 PASSWORD = '123456'
-
-# REFRESH_TOKEN = '9Q_3Rclneasa6LFcA2TOxFp1hzBnkVIE8jsbCMdyvhGg5FlylOJa-9zuVa4jYXdFvKWChXf2qMx_lsYv54OcKg'
-# HASHED_REFRESH_TOKEN = '9626ebd9a1951b4e2ebb23c8e14f1a33ea54beb5daf0bb9309d79fe86c4677a3'
 
 
 def test_decode__valid_token__decoded_str(encoded_token):

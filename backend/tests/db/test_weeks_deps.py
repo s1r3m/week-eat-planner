@@ -1,11 +1,10 @@
 from http import HTTPStatus
-from uuid import UUID
 
 import pytest
 from fastapi import HTTPException
-from uuid_utils import uuid7
 
 from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for_update
+from week_eat_planner.helpers import generate_uuid7
 
 
 async def test_get_week_by_id__week_exist__week_returned(mocker, mocked_session, db_week, db_user):
@@ -37,7 +36,7 @@ async def test_get_week_by_id__week_not_owned__error_raised(mocker, mocked_sessi
     get_week_mock = mocker.AsyncMock(return_value=db_week)
     week_dao_mock = mocker.AsyncMock(get_week=get_week_mock)
     mocker.patch('week_eat_planner.dependencies.week_deps.WeekDAO', return_value=week_dao_mock)
-    db_week.user_id = UUID(str(uuid7()))
+    db_week.user_id = generate_uuid7()
 
     with pytest.raises(HTTPException) as exc:
         await get_week_by_id(str(db_week.id), db_user, mocked_session)

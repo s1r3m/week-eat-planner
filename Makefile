@@ -114,8 +114,10 @@ be_test: $(VENV_ACTIVATE)
 		coverage report --fail-under=$(COVERAGE_PERCENT)
 
 ## @Tests Create a HTML coverage report.
-coverage: be_test
-	cd $(BE_PATH) && coverage html
+coverage:
+	cd $(BE_PATH) && \
+		coverage run -m pytest tests && \
+		coverage html
 
 ## @Tests Run fe unittests.
 fe_test:
