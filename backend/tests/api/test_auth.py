@@ -1,19 +1,32 @@
-import uuid
-from http import HTTPStatus
+from datetime import datetime, timedelta, timezone
+from typing import Callable
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import delete
+from fastapi import status
+from httpx import AsyncClient
 
-from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.models import User
+import week_eat_planner.api.schemas as schema
+import week_eat_planner.db.models as db_model
+from tests.conftest import PASSWORD
+from week_eat_planner.config import settings
+from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
+from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.exceptions import (
+    InvalidEmail,
+    InvalidRefreshToken,
+    RefreshTokenMissing,
+    TokenExpiredException,
+    UserAlreadyExists,
+    UserNotFound,
+)
 
 
 @pytest.fixture
 def login_data() -> dict[str, str]:
     """Generates a unique email and a standard password for test isolation."""
-    email = f'test_user_{uuid.uuid4().hex}@example.com'
+    email = 'test_user_123@example.com'
     password = 'a-secure-password-123'
     return {'email': email, 'password': password}
 
@@ -25,35 +38,53 @@ async def user(client, login_data) -> dict[str, str]:
     return login_data
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def clean_db():
-    """Clears the users table after all tests in the module have run."""
-    yield
-
+@pytest_asyncio.fixture
+async def expired_refresh_token_user(created_user) -> schema.UserOut:
     async for session in db.get_db_commit():
-        await session.execute(delete(User))
+        token: db_model.RefreshToken = await RefreshTokenDAO(session)._get_one_or_none(user_id=created_user.id)  # noqa
+        token.expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
+        session.add(token)
+
+    return created_user
+
+
+@pytest_asyncio.fixture
+async def revoked_refresh_token_user(created_user) -> schema.UserOut:
+    async for session in db.get_db_commit():
+        rt_dao = RefreshTokenDAO(session)
+        token: db_model.RefreshToken = await rt_dao._get_one_or_none(user_id=created_user.id)  # noqa
+        await rt_dao.revoke_token(token, revoked_by_id=None)
+
+    return created_user
+
+
+@pytest_asyncio.fixture
+async def logout_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
+    auth_client = await auth_client_factory(created_user, PASSWORD)
+    await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
+    return auth_client
 
 
 async def test_add_user__valid_data__user_created(client, login_data):
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
-    assert response.status_code == HTTPStatus.CREATED
+    assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
-    assert isinstance(uuid.UUID(body.pop('id')), uuid.UUID)
+    assert body.pop('id')
     assert body == {'email': login_data['email'], 'is_active': True}
 
 
 async def test_add_user__duplicate_email__conflict_error(client, user):
     response = await client.post(AppUrl.AUTH_SIGNUP, json=user)
 
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'User with this email already exists'}
+    assert response.status_code == UserAlreadyExists.status_code
+    assert response.json() == {'detail': UserAlreadyExists.detail}
 
 
 async def test_add_user__invalid_email_format__unprocessable_entity_error(client):
     invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password'}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=invalid_login_data)
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_login__valid_credentials__token_returned(client, user):
@@ -61,10 +92,10 @@ async def test_login__valid_credentials__token_returned(client, user):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == status.HTTP_200_OK
     body = response.json()
     assert 'access_token' in body
-    assert body['token_type'] == 'bearer'
+    assert body['token_type'] == TokenType.BEARER
 
 
 async def test_login__invalid_email_format__conflict_error(client):
@@ -72,8 +103,8 @@ async def test_login__invalid_email_format__conflict_error(client):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Invalid email'}
+    assert response.status_code == InvalidEmail.status_code
+    assert response.json() == {'detail': InvalidEmail.detail}
 
 
 async def test_login__invalid_password__not_found_error(client, user):
@@ -81,8 +112,8 @@ async def test_login__invalid_password__not_found_error(client, user):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Incorrect email or password'}
+    assert response.status_code == UserNotFound.status_code
+    assert response.json() == {'detail': UserNotFound.detail}
 
 
 async def test_login__nonexistent_user__not_found_error(client, login_data):
@@ -90,16 +121,74 @@ async def test_login__nonexistent_user__not_found_error(client, login_data):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Incorrect email or password'}
+    assert response.status_code == UserNotFound.status_code
+    assert response.json() == {'detail': UserNotFound.detail}
 
 
 async def test_get_user__auth_user__user_in_response(auth_client_for_created_user, created_user):
     response = await auth_client_for_created_user.get(AppUrl.AUTH_ME)
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': str(created_user.id),
         'email': created_user.email,
         'is_active': created_user.is_active,
     }
+
+
+async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    assert body.pop('access_token')
+    assert body == {'token_type': 'bearer'}
+
+
+async def test_refresh_token__no_cookies_in_request__error_raised(logout_client_for_created_user):
+    response = await logout_client_for_created_user.post(AppUrl.AUTH_REFRESH)
+
+    assert response.status_code == RefreshTokenMissing.status_code
+    assert response.json() == {'detail': RefreshTokenMissing.detail}
+
+
+async def test_refresh_token__expired_refresh_token__error_raised(
+    auth_client_for_created_user, expired_refresh_token_user
+):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
+
+    assert response.status_code == TokenExpiredException.status_code
+    assert response.json() == {'detail': TokenExpiredException.detail}
+
+
+async def test_refresh_token__revoked_refresh_token__error_raised(
+    auth_client_for_created_user, revoked_refresh_token_user
+):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
+
+    assert response.status_code == InvalidRefreshToken.status_code
+    assert response.json() == {'detail': InvalidRefreshToken.detail}
+
+
+async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+
+
+async def test_logout__no_cookie_in_request__no_error_raised(logout_client_for_created_user):
+    response = await logout_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+
+
+async def test_logout__revoked_refresh_token__no_error_raised(auth_client_for_created_user, revoked_refresh_token_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies

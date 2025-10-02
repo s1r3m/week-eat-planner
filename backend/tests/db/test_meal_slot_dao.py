@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from week_eat_planner.db.models import DayOfWeek, MealType
+import week_eat_planner.db.models as db_model
 
 DB_ERROR = 'DB MealSlot Error'
 
@@ -11,8 +11,8 @@ async def test_init_meal_slots__valid_week__days_inited(mocked_mealslot_dao, db_
 
     for slot in slots:
         assert slot.week_id == db_week.id
-        assert slot.day_of_week in DayOfWeek  # For now
-        assert slot.meal_type in MealType  # For now
+        assert slot.day_of_week in db_model.DayOfWeek  # For now
+        assert slot.meal_type in db_model.MealType  # For now
         assert not slot.recipe_id
 
 

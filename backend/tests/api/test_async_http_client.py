@@ -1,6 +1,6 @@
+import asyncio
 from typing import AsyncGenerator
 
-import asyncio
 import httpx
 import pytest
 import pytest_asyncio

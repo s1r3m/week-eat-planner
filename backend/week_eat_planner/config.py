@@ -17,9 +17,12 @@ class Settings(BaseSettings):
     FE_HOST: str
 
     # Auth settings.
-    SECRET_KEY: str
-    ALGORITHM: str
-    TOKEN_TTL: int  # Access token time to live in minutes.
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+    JWT_ISSUER: str
+    JWT_AUDIENCE: str
+    ACCESS_TOKEN_TTL: int  # Access token time to live in minutes
+    REFRESH_TOKEN_TTL: int  # Refresh token time to live in days
 
     # Logger settings.
     FORMAT_LOG: str = '{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}'

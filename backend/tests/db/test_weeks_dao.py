@@ -1,14 +1,13 @@
-import uuid
-
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
+import week_eat_planner.db.models as db_model
 from tests.conftest import WEEK_1_ID, WEEK_1_NAME
 from week_eat_planner.api.schemas import WeekUpdate
-from week_eat_planner.db.models import Week
+from week_eat_planner.helpers import generate_uuid7
 
 DB_ERROR = 'DB Week Error'
-WEEK_2_ID = uuid.uuid4()
+WEEK_2_ID = generate_uuid7()
 WEEK_2_NAME = 'second'
 
 
@@ -32,11 +31,11 @@ async def test_create_week__db_error__week_created(mocked_session, created_user,
     'weeks_from_db',
     [
         pytest.param([], id='no_weeks'),
-        pytest.param([Week(id=WEEK_1_ID, name=WEEK_1_NAME)], id='one_week'),
+        pytest.param([db_model.Week(id=WEEK_1_ID, name=WEEK_1_NAME)], id='one_week'),
         pytest.param(
             [
-                Week(id=WEEK_1_ID, name=WEEK_1_NAME),
-                Week(id=WEEK_2_ID, name=WEEK_2_NAME),
+                db_model.Week(id=WEEK_1_ID, name=WEEK_1_NAME),
+                db_model.Week(id=WEEK_2_ID, name=WEEK_2_NAME),
             ],
             id='two_weeks',
         ),
@@ -120,7 +119,7 @@ async def test_get_week_for_update__week_exists__week_returned(mocker, mocked_se
     scalars_mock = mocker.MagicMock(return_value=db_week)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    week = await mocked_week_dao.get_week_for_update(db_week)
+    week = await mocked_week_dao.get_week(db_week.id, for_update=True)
 
     assert week == db_week
 
@@ -129,7 +128,7 @@ async def test_get_week_for_update__week_disappeared__none_returned(mocker, mock
     scalars_mock = mocker.MagicMock(return_value=None)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    week = await mocked_week_dao.get_week_for_update(db_week)
+    week = await mocked_week_dao.get_week(db_week.id, for_update=True)
 
     assert week is None
 
@@ -138,6 +137,6 @@ async def test_get_week_for_update__db_error__error_raised(mocked_session, mocke
     mocked_session.execute.side_effect = SQLAlchemyError(DB_ERROR)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await mocked_week_dao.get_week_for_update(db_week)
+        await mocked_week_dao.get_week(db_week.id, for_update=True)
 
     assert str(exc.value) == DB_ERROR

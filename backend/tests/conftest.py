@@ -1,29 +1,26 @@
-import uuid
-from typing import AsyncGenerator, Generator, TypeVar, Callable
-
 import asyncio
+from typing import AsyncGenerator, Callable, Generator, TypeVar
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import select, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy import delete
 
-from week_eat_planner.api.schemas import UserOut, WeekOut
+import week_eat_planner.api.schemas as schema
+import week_eat_planner.db.models as db_model
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.models import Week, User, MealSlot
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
-from week_eat_planner.helpers import create_access_token, get_password_hash
+from week_eat_planner.helpers import create_access_token, generate_uuid7, get_password_hash
 from week_eat_planner.main import app
 
 EMAIL = 'ya@ya.eu'
 PASSWORD = 'password_123'
-USER_ID = uuid.uuid4()
+USER_ID = generate_uuid7()
 
-WEEK_1_ID = uuid.uuid4()
+WEEK_1_ID = generate_uuid7()
 WEEK_1_NAME = 'first'
 
 T = TypeVar('T')
@@ -51,11 +48,11 @@ def encoded_token() -> str:
 
 @pytest.fixture
 def user_factory() -> Callable:
-    async def _factory(email: str, password: str) -> UserOut:
+    async def _factory(email: str, password: str) -> schema.UserOut:
         async for session in db.get_db_commit():
             hashed_password = get_password_hash(password)
             user = await UserDAO(session).create_user(email, hashed_password)
-            user_out = UserOut.model_validate(user)
+            user_out = schema.UserOut.model_validate(user)
         return user_out
 
     return _factory
@@ -63,9 +60,9 @@ def user_factory() -> Callable:
 
 @pytest.fixture
 def auth_client_factory(client: AsyncClient) -> Callable:
-    async def _factory(_user: UserOut, password: str) -> AsyncClient:
+    async def _factory(user: schema.UserOut, password: str) -> AsyncClient:
         client.headers['Authorization'] = ''
-        token_data = {'username': _user.email, 'password': password}
+        token_data = {'username': user.email, 'password': password}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
         body = response.json()
         token = body['access_token']
@@ -76,27 +73,25 @@ def auth_client_factory(client: AsyncClient) -> Callable:
 
 
 @pytest_asyncio.fixture
-async def created_user(user_factory: Callable) -> UserOut:
+async def created_user(user_factory: Callable) -> schema.UserOut:
     return await user_factory(EMAIL, PASSWORD)
 
 
 @pytest_asyncio.fixture
-async def created_week(created_user: UserOut) -> WeekOut:
+async def created_week(created_user: schema.UserOut) -> schema.WeekOut:
     async for session in db.get_db_commit():
         user = await UserDAO(session).get_user_by_email(created_user.email)
-        if not user:
-            raise ValueError('User not found!')
+        assert user, 'User was not found!'
         week = await WeekDAO(session).create_week(user, WEEK_1_NAME)
         await MealSlotDAO(session).init_meal_slots_for_week(week)
-        stmt = select(Week).where(Week.id == week.id).options(selectinload(Week.meal_slots))
-        result = await session.execute(stmt)
-        loaded_week = result.scalar_one()
-        week_out = WeekOut.model_validate(loaded_week)
+
+        loaded_week = await WeekDAO(session).get_week(week.id)
+        week_out = schema.WeekOut.model_validate(loaded_week)
     return week_out
 
 
 @pytest_asyncio.fixture
-async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
+async def auth_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
     return await auth_client_factory(created_user, PASSWORD)
 
 
@@ -105,6 +100,7 @@ async def clean_db() -> AsyncGenerator[None, None]:
     yield
 
     async for session in db.get_db_commit():
-        await session.execute(delete(MealSlot))
-        await session.execute(delete(Week))
-        await session.execute(delete(User))
+        await session.execute(delete(db_model.MealSlot))
+        await session.execute(delete(db_model.Week))
+        await session.execute(delete(db_model.RefreshToken))
+        await session.execute(delete(db_model.User))

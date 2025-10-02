@@ -20,9 +20,12 @@ services:
       - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
       - BE_HOST=http://app.dev.local
       - FE_HOST=http://app.dev.local
-      - SECRET_KEY=gV64m9aIzFG4qpgVphvQbPQrtAO0nM-7YwwOvu0XPt5KJOjAy4AfgLkqJXYEt
-      - ALGORITHM=HS256
-      - TOKEN_TTL=1440
+      - JWT_SECRET=gV64m9aIzFG4qpgVphvQbPQrtAO0nM-7YwwOvu0XPt5KJOjAy4AfgLkqJXYEt
+      - JWT_ALGORITHM=HS256
+      - JWT_ISSUER=wep-auth
+      - JWT_AUDIENCE=wep-api
+      - ACCESS_TOKEN_TTL=900
+      - REFRESH_TOKEN_TTL=30
       - ADMIN_IDS=[193191236]
       - BOT_TOKEN=your_bot_token
       - TG_API_SITE=https://api.telegram.org

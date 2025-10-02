@@ -26,6 +26,7 @@ VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate
 SHELL = /bin/bash  # Using bash as default shell
 CHECK_PYTHON = $(shell which $(PYTHON))
 CHECK_UV = $(shell which uv)
+COVERAGE_PERCENT = 100
 
 export PATH := $(VIRTUAL_ENV)/bin:$(HOME)/.local/bin:$(PATH)
 export PYTHONPATH = $(BE_PATH)
@@ -97,22 +98,26 @@ db_shell:
 lint: $(VENV_ACTIVATE)
 	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
+	isort --check --diff --color $(BE_PATH)
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
 	ruff check --fix --config $(BE_PATH)/pyproject.toml
 	ruff format --config $(BE_PATH)/pyproject.toml
+	isort $(BE_PATH)
 
 ## @Tests Run be unittests.
 be_test: $(VENV_ACTIVATE)
 	cd $(BE_PATH) && \
 		coverage run -m pytest tests && \
-		coverage report --fail-under=100
+		coverage report --fail-under=$(COVERAGE_PERCENT)
 
 ## @Tests Create a HTML coverage report.
-coverage: be_test
-	cd $(BE_PATH) && coverage html
+coverage:
+	cd $(BE_PATH) && \
+		coverage run -m pytest tests && \
+		coverage html
 
 ## @Tests Run fe unittests.
 fe_test:

@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from tests.conftest import EMAIL
-from week_eat_planner.dependencies.auth_deps import get_current_user, get_current_active_user
+from week_eat_planner.dependencies.auth_deps import get_current_active_user, get_current_user
 
 
 async def test_get_current_user__valid_user__user_in_response(mocked_session, encoded_token, mocker, created_user):

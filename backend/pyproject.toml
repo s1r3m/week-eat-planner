@@ -32,8 +32,10 @@ dependencies = [
     "httpx==0.28.1",
     "loguru==0.7.3",
     "python-jose[cryptography]==3.3.0",
-    "passlib[bcrypt]==1.7.4",
-    "gevent>=25.9.1",
+    "passlib==1.7.4",
+    "bcrypt==3.2.0",
+    "gevent==25.9.1",
+    "uuid-utils==0.11.0",
 ]
 
 [project.urls] # Optional: Links for PyPI
@@ -46,9 +48,10 @@ dev = [
     "pytest-asyncio==0.25.0",
     "pytest-cov==5.0.0",
     "pytest-mock==3.14.0",
-    "ruff>=0.11.6",
+    "ruff==0.11.6",
     "mypy==1.13.0",
-    "types-ujson==5.10.0.20240515"
+    "types-ujson==5.10.0.20240515",
+    "isort[colors]==6.1.0",
 ]
 
 # --- ENTRY POINT DEFINITION ---
@@ -125,3 +128,11 @@ omit = [
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.isort]
+profile = 'black'
+line_length = 120
+case_sensitive = true
+combine_as_imports = true
+order_by_type = false
+known_first_party = ['week_eat_planner']
