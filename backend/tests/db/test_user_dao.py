@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
 import week_eat_planner.db.models as db_model
-from tests.conftest import EMAIL, PASSWORD, USER_ID
+from tests.conftest_api import EMAIL, PASSWORD, USER_ID
 
 DB_ERROR = 'DB User Error'
 

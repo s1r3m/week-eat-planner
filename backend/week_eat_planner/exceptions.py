@@ -30,7 +30,7 @@ InvalidRefreshToken = HTTPException(
 )
 
 
-TokenExpiredException = HTTPException(
+TokenExpired = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail='Token expired',
 )
@@ -44,8 +44,11 @@ InvalidEmail = HTTPException(
 
 UserNotFound = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
-    detail='Incorrect email or password',
+    detail='The user was not found',
 )
+
+
+InvalidCredentials = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
 
 UserAlreadyExists = HTTPException(

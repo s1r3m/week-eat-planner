@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status
@@ -10,25 +9,10 @@ import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
-from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.exceptions import (
-    InvalidEmail,
-    InvalidRefreshToken,
-    RefreshTokenMissing,
-    TokenExpiredException,
-    UserAlreadyExists,
-    UserNotFound,
-)
-from week_eat_planner.helpers import (
-    create_access_token,
-    generate_refresh_token,
-    get_password_hash,
-    hash_refresh_token,
-    verify_password,
-)
+from week_eat_planner.exceptions import RefreshTokenMissing
+from week_eat_planner.services.auth_service import AuthService
 
 router = APIRouter()
 
@@ -38,30 +22,8 @@ async def create_user(
     user_data: schema.UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> db_model.User:
-    """Adds a user.
-
-    Checks if a user with the given email already exists. If not, it hashes the
-    password and creates a new user in the database.
-
-    Args:
-        user_data: The user data to create a new user.
-        session: The database session.
-
-    Returns:
-        The created user.
-
-    Raises:
-        UserAlreadyExists: If a user with the same email is already registered.
-    """
     logger.info(f'Got POST /signup request with {user_data}.')
-    user_dao = UserDAO(session)
-    user = await user_dao.get_user_by_email(user_data.email)
-    if user:
-        raise UserAlreadyExists
-
-    hashed_password = get_password_hash(user_data.password)
-    created_user = await user_dao.create_user(email=user_data.email, hashed_password=hashed_password)
-
+    created_user = await AuthService(session).register_user(str(user_data.email), user_data.password)
     return created_user
 
 
@@ -86,21 +48,8 @@ async def login(
         UserNotFound: If a user with the email is not registered.
         InvalidEmail: If the email format is invalid.
     """
-    logger.info(f'Got POST /login request for {user_data.username}.')
-    try:
-        schema.Email(email=user_data.username)
-    except ValueError as exc:
-        raise InvalidEmail from exc
-
-    db_user = await UserDAO(session).get_user_by_email(user_data.username)
-
-    if not (db_user and verify_password(user_data.password, db_user.hashed_password)):
-        raise UserNotFound
-
-    access_token = create_access_token(db_user.email)
-    refresh_token = generate_refresh_token()
-    await RefreshTokenDAO(session).create_token(db_user, refresh_token)
-
+    logger.info(f'Got POST /login request for {user_data.username=}.')
+    access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
@@ -141,37 +90,23 @@ async def refresh_tokens(
         InvalidRefreshToken: If the refresh token found in the cookie is invalid or has been revoked.
         TokenExpiredException: If the refresh token found in the cookie has expired.
     """
-    logger.info(f'Got POST /refresh request for {user.email=}.')
+    logger.info(f'Got POST /refresh request for {user}.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
-        logger.error(f'No refresh token in request cookies for {user.email=}.')
+        logger.error(f'No refresh token in request cookies for {user}.')
         raise RefreshTokenMissing
 
-    refresh_token_dao = RefreshTokenDAO(session)
-    token_hash = hash_refresh_token(cookie_token)
-    old_token = await refresh_token_dao.get_token_by_hash(token_hash)
-    if not old_token or old_token.revoked:
-        logger.error(f'Invalid refresh token in request cookies for {user.email=}.')
-        raise InvalidRefreshToken
-
-    if old_token.expires_at <= datetime.now(timezone.utc):
-        logger.error(f'Refresh token expired for {user.email=}.')
-        raise TokenExpiredException
-
-    new_raw_token = generate_refresh_token()
-    new_token = await refresh_token_dao.create_token(user, new_raw_token)
-    await refresh_token_dao.revoke_token(old_token, revoked_by_id=new_token.id)
-
+    access_token, refresh_token = await AuthService(session).refresh_tokens(user, cookie_token)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
-        value=new_raw_token,
+        value=refresh_token,
         httponly=True,
         # secure=True,  # TODO: enable HTTPS
         samesite='strict',
         max_age=settings.REFRESH_TOKEN_TTL,
         path='/auth',
     )
-    access_token = create_access_token(user.email)
+
     return schema.Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
@@ -199,32 +134,12 @@ async def logout(
         None. The response status code is 204 No Content upon successful logout
         or if the token was already missing/invalid.
     """
+    logger.info(f'Got POST /logout request for {user}.')
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for {user.email=}.')
+        logger.warning(f'No refresh token in request cookies for {user}.')
         return
 
-    refresh_token_dao = RefreshTokenDAO(session)
-    token_hash = hash_refresh_token(refresh_token)
-    db_token = await refresh_token_dao.get_token_by_hash(token_hash)
-    if not db_token or db_token.revoked:
-        logger.warning(f'Invalid refresh token in request cookies for {user.email=}.')
-        return
-
-    await refresh_token_dao.revoke_token(db_token, revoked_by_id=None)
+    await AuthService(session).logout(user, refresh_token)
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')
     return
-
-
-@router.get(AppUrl.AUTH_ME, response_model=schema.UserOut)
-async def get_user(user: Annotated[db_model.User, Depends(get_current_active_user)]) -> schema.UserOut:
-    """Get the current user profile.
-
-    Args:
-        user: The current authenticated user.
-
-    Returns:
-        The current user's profile.
-    """
-    logger.info(f'Got GET /me request for {user.email}.')
-    return schema.UserOut.model_validate(user)

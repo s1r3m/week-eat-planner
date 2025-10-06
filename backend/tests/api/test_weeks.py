@@ -1,9 +1,10 @@
 import pytest_asyncio
 from fastapi import status
 
-from tests.conftest import WEEK_1_NAME
-from tests.test_helpers import PASSWORD
+from tests.conftest_api import WEEK_1_NAME
+from tests.test_security import PASSWORD
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -48,8 +49,8 @@ async def test_get_week__user_without_week__error_in_response(auth_client_for_cr
 
     response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Week not found'}
+    assert response.status_code == WeekNotFound.status_code
+    assert response.json() == {'detail': WeekNotFound.detail}
 
 
 async def test_get_week__no_auth__error_in_response(client, created_week):
@@ -90,8 +91,8 @@ async def test_update_week__user_without_week__error_in_response(auth_client_for
         json={'name': 'test'},
     )
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Week not found'}
+    assert response.status_code == WeekNotFound.status_code
+    assert response.json() == {'detail': WeekNotFound.detail}
 
 
 async def test_delete_week__no_auth__error_in_response(client, created_week):
@@ -106,8 +107,8 @@ async def test_delete_week__user_without_week__error_in_response(auth_client_for
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Week not found'}
+    assert response.status_code == WeekNotFound.status_code
+    assert response.json() == {'detail': WeekNotFound.detail}
 
 
 async def test_delete_week__user_with_week__week_removed(auth_client_for_created_user, created_week):
@@ -123,5 +124,5 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': 'Access forbidden'}
+    assert response.status_code == WeekForbidden.status_code
+    assert response.json() == {'detail': WeekForbidden.detail}
