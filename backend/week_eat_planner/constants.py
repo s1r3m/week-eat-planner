@@ -13,7 +13,6 @@ class AppUrl(StrEnum):
 
     AUTH_LOGIN = '/auth/login'
     AUTH_LOGOUT = '/auth/logout'
-    AUTH_ME = '/auth/me'
     AUTH_REFRESH = '/auth/refresh'
     AUTH_SIGNUP = '/auth/signup'
 
@@ -21,6 +20,8 @@ class AppUrl(StrEnum):
 
     WEEKS = '/weeks'
     WEEKS_TPL = '/weeks/{week_id}'
+
+    USER = '/user'
 
 
 class TokenType(StrEnum):

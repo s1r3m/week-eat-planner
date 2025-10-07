@@ -1,25 +1,22 @@
 from datetime import datetime, timedelta, timezone
-from typing import Callable
 
 import pytest
 import pytest_asyncio
-from fastapi import status
-from httpx import AsyncClient
+from fastapi import HTTPException, status
 
 import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
-from tests.conftest import PASSWORD
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
+    InvalidCredentials,
     InvalidEmail,
     InvalidRefreshToken,
     RefreshTokenMissing,
-    TokenExpiredException,
+    TokenExpired,
     UserAlreadyExists,
-    UserNotFound,
 )
 
 
@@ -53,16 +50,9 @@ async def revoked_refresh_token_user(created_user) -> schema.UserOut:
     async for session in db.get_db_commit():
         rt_dao = RefreshTokenDAO(session)
         token: db_model.RefreshToken = await rt_dao._get_one_or_none(user_id=created_user.id)  # noqa
-        await rt_dao.revoke_token(token, revoked_by_id=None)
+        await rt_dao.revoke_token(token, revoked_by=None)
 
     return created_user
-
-
-@pytest_asyncio.fixture
-async def logout_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
-    auth_client = await auth_client_factory(created_user, PASSWORD)
-    await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
-    return auth_client
 
 
 async def test_add_user__valid_data__user_created(client, login_data):
@@ -112,8 +102,8 @@ async def test_login__invalid_password__not_found_error(client, user):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == UserNotFound.status_code
-    assert response.json() == {'detail': UserNotFound.detail}
+    assert response.status_code == InvalidCredentials.status_code
+    assert response.json() == {'detail': InvalidCredentials.detail}
 
 
 async def test_login__nonexistent_user__not_found_error(client, login_data):
@@ -121,19 +111,8 @@ async def test_login__nonexistent_user__not_found_error(client, login_data):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == UserNotFound.status_code
-    assert response.json() == {'detail': UserNotFound.detail}
-
-
-async def test_get_user__auth_user__user_in_response(auth_client_for_created_user, created_user):
-    response = await auth_client_for_created_user.get(AppUrl.AUTH_ME)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {
-        'id': str(created_user.id),
-        'email': created_user.email,
-        'is_active': created_user.is_active,
-    }
+    assert response.status_code == InvalidCredentials.status_code
+    assert response.json() == {'detail': InvalidCredentials.detail}
 
 
 async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
@@ -145,8 +124,10 @@ async def test_refresh_token__valid_user__new_token_returned(auth_client_for_cre
     assert body == {'token_type': 'bearer'}
 
 
-async def test_refresh_token__no_cookies_in_request__error_raised(logout_client_for_created_user):
-    response = await logout_client_for_created_user.post(AppUrl.AUTH_REFRESH)
+async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_for_created_user):
+    auth_client_for_created_user.cookies = []
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
     assert response.status_code == RefreshTokenMissing.status_code
     assert response.json() == {'detail': RefreshTokenMissing.detail}
@@ -157,8 +138,8 @@ async def test_refresh_token__expired_refresh_token__error_raised(
 ):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == TokenExpiredException.status_code
-    assert response.json() == {'detail': TokenExpiredException.detail}
+    assert response.status_code == TokenExpired.status_code
+    assert response.json() == {'detail': TokenExpired.detail}
 
 
 async def test_refresh_token__revoked_refresh_token__error_raised(
@@ -178,8 +159,10 @@ async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created
     assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
 
 
-async def test_logout__no_cookie_in_request__no_error_raised(logout_client_for_created_user):
-    response = await logout_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+async def test_logout__no_cookie_in_request__no_error_raised(auth_client_for_created_user):
+    auth_client_for_created_user.cookies = []
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
@@ -192,3 +175,19 @@ async def test_logout__revoked_refresh_token__no_error_raised(auth_client_for_cr
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
     assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+
+
+async def test_logout__unexpected_http_exception__error_raised(mocker, auth_client_for_created_user):
+    unexpected_error = HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail='An unexpected error occurred.',
+    )
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.logout',
+        side_effect=unexpected_error,
+    )
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == unexpected_error.status_code
+    assert response.json() == {'detail': unexpected_error.detail}
