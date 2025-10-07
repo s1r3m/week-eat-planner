@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 import pytest_asyncio
-from fastapi import status
+from fastapi import HTTPException, status
 
 import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
@@ -175,3 +175,19 @@ async def test_logout__revoked_refresh_token__no_error_raised(auth_client_for_cr
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
     assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+
+
+async def test_logout__unexpected_http_exception__error_raised(mocker, auth_client_for_created_user):
+    unexpected_error = HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="An unexpected error occurred.",
+    )
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.logout',
+        side_effect=unexpected_error,
+    )
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == unexpected_error.status_code
+    assert response.json() == {'detail': unexpected_error.detail}
