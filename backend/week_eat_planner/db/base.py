@@ -65,11 +65,11 @@ class BaseDAO(Generic[T]):
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:
-                logger.info(f'{self.model.__name__} with {filter_by} has been successfully found.')
+                logger.debug(f'{self.model.__name__} with {filter_by} has been successfully found.')
             else:
                 logger.warning(f'{self.model.__name__} with {filter_by} was not found.')
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while getting {self.model.__name__} with {filter_by}: {exc}.')
+            logger.error(f'Error while getting {self.model.__name__} with {filter_by}: {exc}.')
             raise exc
 
         return record

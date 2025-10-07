@@ -107,8 +107,12 @@ style: $(VENV_ACTIVATE)
 	ruff format --config $(BE_PATH)/pyproject.toml
 	isort $(BE_PATH)
 
+clean:
+	rm -f $(BE_PATH)/.coverage
+	rm -rf $(BE_PATH)/.htmlcov
+
 ## @Tests Run be unittests.
-be_test: $(VENV_ACTIVATE)
+be_test: $(VENV_ACTIVATE) clean
 	cd $(BE_PATH) && \
 		coverage run -m pytest tests && \
 		coverage report --fail-under=$(COVERAGE_PERCENT)

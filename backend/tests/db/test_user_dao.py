@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
 import week_eat_planner.db.models as db_model
-from tests.conftest import EMAIL, PASSWORD, USER_ID
+from tests.conftest_api import EMAIL, PASSWORD, USER_ID
 
 DB_ERROR = 'DB User Error'
 
@@ -13,7 +13,7 @@ def db_user() -> db_model.User:
 
 
 async def test_user_dao_create_user__valid_data__user_created(mocked_user_dao):
-    user = await mocked_user_dao.create_user(EMAIL, PASSWORD)
+    user = await mocked_user_dao.insert_user(EMAIL, PASSWORD)
 
     assert user.email == EMAIL
     assert user.hashed_password == PASSWORD
@@ -23,7 +23,7 @@ async def test_create_user__db_error__exception(mocked_session, mocked_user_dao)
     mocked_session.add.side_effect = SQLAlchemyError(DB_ERROR)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await mocked_user_dao.create_user(EMAIL, PASSWORD)
+        await mocked_user_dao.insert_user(EMAIL, PASSWORD)
 
     assert str(exc.value) == DB_ERROR
 

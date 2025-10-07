@@ -30,9 +30,15 @@ InvalidRefreshToken = HTTPException(
 )
 
 
-TokenExpiredException = HTTPException(
+TokenExpired = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail='Token expired',
+)
+
+
+TokenRevoked = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Token revoked',
 )
 
 
@@ -44,8 +50,11 @@ InvalidEmail = HTTPException(
 
 UserNotFound = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
-    detail='Incorrect email or password',
+    detail='The user was not found',
 )
+
+
+InvalidCredentials = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
 
 UserAlreadyExists = HTTPException(
@@ -58,7 +67,12 @@ WeekNotFound = HTTPException(
     detail='Week not found',
 )
 
-WeekForbidden = HTTPException(
+AccessForbidden = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail='Access forbidden',
 )
+
+TokenForbidden = AccessForbidden
+
+
+WeekForbidden = AccessForbidden

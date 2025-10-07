@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.user_dao import UserDAO
-from week_eat_planner.exceptions import UserNotFound
-from week_eat_planner.helpers import get_email_from_token
+from week_eat_planner.exceptions import InvalidCredentials
+from week_eat_planner.services.user_service import UserService
 
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
@@ -27,16 +26,15 @@ async def get_current_user(
         The authenticated User object.
 
     Raises:
-        UserNotFound: If the user from the token does not exist.
+        InvalidCredentials: If the user from the token does not exist.
         NoEmailInToken: If the 'sub' claim is missing or not a string.
         TokenExpiredException: If the token has expired.
         InvalidJwtToken: If the token is invalid for any other reason.
     """
-    email = get_email_from_token(token)
-    user_in_db = await UserDAO(session).get_user_by_email(email)
-    if not user_in_db:
-        raise UserNotFound
-    return user_in_db
+    user = await UserService(session).get_user_by_token(token)
+    if not user:
+        raise InvalidCredentials
+    return user
 
 
 async def get_current_active_user(
@@ -54,11 +52,11 @@ async def get_current_active_user(
         The authenticated and active User object.
 
     Raises:
-        UserNotFound: If the user is not active.
+        InvalidCredentials: If the user not found is not active.
         NoEmailInToken: If the 'sub' claim is missing or not a string.
         TokenExpiredException: If the token has expired.
         InvalidJwtToken: If the token is invalid for any other reason.
     """
     if not current_user.is_active:
-        raise UserNotFound
+        raise InvalidCredentials
     return current_user

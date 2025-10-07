@@ -4,12 +4,13 @@ from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import week_eat_planner.db.models as db_model
-from tests.conftest import EMAIL, PASSWORD, USER_ID, WEEK_1_ID, WEEK_1_NAME
+from tests.conftest_api import EMAIL, PASSWORD, USER_ID, WEEK_1_ID, WEEK_1_NAME
 from week_eat_planner.db.meal_slot_dao import MealSlotDAO
 from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
 from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.helpers import generate_uuid7
+from week_eat_planner.security.hashing import get_password_hash
 
 REFRESH_TOKEN = '9Q_3Rclneasa6LFcA2TOxFp1hzBnkVIE8jsbCMdyvhGg5FlylOJa-9zuVa4jYXdFvKWChXf2qMx_lsYv54OcKg'
 HASHED_REFRESH_TOKEN = '9626ebd9a1951b4e2ebb23c8e14f1a33ea54beb5daf0bb9309d79fe86c4677a3'
@@ -50,7 +51,7 @@ def db_week(created_user: db_model.User) -> db_model.Week:
 
 @pytest.fixture
 def db_user() -> db_model.User:
-    return db_model.User(id=USER_ID, email=EMAIL, hashed_password=PASSWORD, is_active=True)
+    return db_model.User(id=USER_ID, email=EMAIL, hashed_password=get_password_hash(PASSWORD), is_active=True)
 
 
 @pytest.fixture
