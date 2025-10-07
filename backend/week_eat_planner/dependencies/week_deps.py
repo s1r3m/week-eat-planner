@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
+from week_eat_planner.services.week_service import WeekService
 
 
 async def get_week_by_id(
@@ -32,8 +32,8 @@ async def get_week_by_id(
         WeekNotFound: If the week does not exist
         WeekForbidden: If the week does not belong to the user.
     """
-    logger.info(f'Requesting {week_id} for user {user}.')
-    week = await WeekDAO(read_session).get_week(week_id)
+    logger.info(f'Requesting {week_id} for {user}.')
+    week = await WeekService(read_session).get_week(week_id)
     if not week:
         logger.error(f'Week {week_id} does not exist.')
         raise WeekNotFound
@@ -68,7 +68,7 @@ async def get_week_for_update(
     Raises:
         WeekNotFound: If the week does not exist or has been deleted.
     """
-    week = await WeekDAO(write_session).get_week(week_snapshot.id, for_update=True)
+    week = await WeekService(write_session).get_week(week_snapshot.id, for_update=True)
     if not week:
         logger.error(f'Week {week_snapshot} disappeared.')
         raise WeekNotFound

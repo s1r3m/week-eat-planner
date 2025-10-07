@@ -1,0 +1,82 @@
+from uuid import UUID
+
+from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
+
+import week_eat_planner.api.schemas as schema
+import week_eat_planner.db.models as db_model
+from week_eat_planner.db.meal_slot_dao import MealSlotDAO
+from week_eat_planner.db.week_dao import WeekDAO
+
+
+class WeekService:
+    """Service layer for handling week-related business logic."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._week_dao = WeekDAO(session)
+        self._meal_slot_dao = MealSlotDAO(session)
+
+    async def create_week_with_slots(self, user: db_model.User, name: str) -> db_model.Week:
+        """Creates a new week with its initial meal slots for a user.
+
+        Args:
+            user: The user for whom to create the week.
+            name: The name of the week.
+
+        Returns:
+            The newly created Week object.
+        """
+        logger.info(f'Creating a new week named "{name}" for user {user.id}.')
+        week = await self._week_dao.create_week(user, name)
+        logger.info(f'Creating initial slots for week {week.id}.')
+        await self._meal_slot_dao.init_meal_slots_for_week(week)
+        logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
+        return week
+
+    async def get_week(self, week_id: str | UUID, for_update: bool = False) -> db_model.Week | None:
+        """Retrieves a single week by its ID.
+
+        Args:
+            week_id: The ID of the week to retrieve.
+            for_update: Whether to lock the database row for update.
+
+        Returns:
+            The Week object if found, otherwise None.
+        """
+        logger.info(f'Retrieving week {week_id}.')
+        return await self._week_dao.get_week(week_id, for_update=for_update)
+
+    async def get_weeks(self, user: db_model.User) -> list[db_model.Week]:
+        """Retrieves all weeks for a specific user.
+
+        Args:
+            user: The user whose weeks to retrieve.
+
+        Returns:
+            A list of the user's weeks.
+        """
+        logger.info(f'Retrieving all weeks for user {user.id}.')
+        return await self._week_dao.get_weeks(user)
+
+    async def update_week(self, week: db_model.Week, new_data: schema.WeekUpdate) -> db_model.Week:
+        """Updates the details of a specific week.
+
+        Args:
+            week: The week to be updated.
+            new_data: The new data for the week.
+
+        Returns:
+            The updated Week object.
+        """
+        logger.info(f'Updating week {week.id}.')
+        return await self._week_dao.update_week(week, new_data)
+
+    async def delete_week(self, week: db_model.Week) -> None:
+        """Deletes a specific week.
+
+        Args:
+            week: The week to be deleted.
+        """
+        logger.info(f'Deleting week {week.id} for user {week.user_id}.')
+        await self._week_dao.delete_week(week)
+        logger.info(f'Successfully deleted week {week.id}.')

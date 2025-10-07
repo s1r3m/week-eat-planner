@@ -13,7 +13,7 @@ async def test_get_current_user__valid_user__user_in_response(mocked_session, en
     current_user = await get_current_user(encoded_token, mocked_session)
 
     assert current_user == created_user
-    user_service_mock.get_user.assert_awaited_once_with(encoded_token)
+    user_service_mock.get_user_by_token.assert_awaited_once_with(encoded_token)
 
 
 async def test_get_current_user__user_not_found__error_raised(mocker, mocked_session, encoded_token):
@@ -26,7 +26,7 @@ async def test_get_current_user__user_not_found__error_raised(mocker, mocked_ses
 
     assert exc.value.status_code == InvalidCredentials.status_code
     assert exc.value.detail == InvalidCredentials.detail
-    user_service_mock.get_user.assert_awaited_once_with(encoded_token)
+    user_service_mock.get_user_by_token.assert_awaited_once_with(encoded_token)
 
 
 async def test_get_active_current_user__active_user__user_returned(db_user):

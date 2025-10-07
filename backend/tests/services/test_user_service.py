@@ -21,7 +21,7 @@ async def test_get_user__user_exists_valid_token__user_returned(
     scalars_mock = mocker.MagicMock(return_value=db_user)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    user = await mocked_user_service.get_user(encoded_token)
+    user = await mocked_user_service.get_user_by_token(encoded_token)
 
     assert user.id == db_user.id
     assert user.email == db_user.email
@@ -33,7 +33,7 @@ async def test_get_user__user_exists_invalid_token__user_returned(
     scalars_mock = mocker.MagicMock(return_value=None)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    user = await mocked_user_service.get_user(other_encoded_token)
+    user = await mocked_user_service.get_user_by_token(other_encoded_token)
 
     assert not user
 
@@ -44,6 +44,6 @@ async def test_get_user__user_not_exists_valid_token__user_returned(
     scalars_mock = mocker.MagicMock(return_value=None)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    user = await mocked_user_service.get_user(encoded_token)
+    user = await mocked_user_service.get_user_by_token(encoded_token)
 
     assert not user

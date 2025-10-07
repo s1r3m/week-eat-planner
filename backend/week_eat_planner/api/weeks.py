@@ -7,11 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.meal_slot_dao import MealSlotDAO
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for_update
+from week_eat_planner.services.week_service import WeekService
 
 router = APIRouter()
 
@@ -34,10 +33,8 @@ async def create_week(
     Returns:
         The created week object.
     """
-    logger.info(f'Request POST /weeks for user {user}.')
-    week = await WeekDAO(session).create_week(user, name=week_data.name)
-    await MealSlotDAO(session).init_meal_slots_for_week(week)
-
+    logger.info(f'Request POST /weeks for {user}.')
+    week = await WeekService(session).create_week_with_slots(user, week_data.name)
     return week
 
 
@@ -55,8 +52,8 @@ async def get_weeks(
     Returns:
         A list of weeks belonging to the user.
     """
-    logger.info(f'Request GET /weeks for user {user}.')
-    weeks = await WeekDAO(session).get_weeks(user)
+    logger.info(f'Request GET /weeks for {user}.')
+    weeks = await WeekService(session).get_weeks(user)
     return weeks
 
 
@@ -95,8 +92,8 @@ async def update_week(
     Returns:
         The updated week object.
     """
-    logger.info(f'Request PUT /weeks/{week.id} for user {week.user_id} with {new_data=}.')
-    return await WeekDAO(session).update_week(week, new_data)
+    logger.info(f'Request PUT /weeks/{week.id} for {week.user} with {new_data=}.')
+    return await WeekService(session).update_week(week, new_data)
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
@@ -112,6 +109,6 @@ async def delete_week(
         week: The week object to delete.
         session: The database session for committing the deletion.
     """
-    logger.info(f'Request DELETE /weeks/{week.id} for user {week.user_id}.')
-    await WeekDAO(session).delete_week(week)
+    logger.info(f'Request DELETE /weeks/{week.id} for {week.user}.')
+    await WeekService(session).delete_week(week)
     return None

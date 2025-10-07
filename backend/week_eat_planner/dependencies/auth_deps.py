@@ -31,7 +31,7 @@ async def get_current_user(
         TokenExpiredException: If the token has expired.
         InvalidJwtToken: If the token is invalid for any other reason.
     """
-    user = await UserService(session).get_user(token)
+    user = await UserService(session).get_user_by_token(token)
     if not user:
         raise InvalidCredentials
     return user

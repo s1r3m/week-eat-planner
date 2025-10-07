@@ -12,16 +12,12 @@ from week_eat_planner.security.token_provider import TokenProvider
 
 
 class RefreshTokenDAO(BaseDAO):
-    """Data Access Object for managing refresh tokens.
-
-    Attributes:
-        model: The SQLAlchemy model class for refresh tokens.
-    """
+    """Data Access Object for managing refresh tokens."""
 
     model = db_model.RefreshToken
 
     async def save(self, user: db_model.User, raw_token: str) -> db_model.RefreshToken:
-        """Saves a new, raw (unhashed) refresh token to the database.
+        """Saves a new refresh token to the database.
 
         The raw token is hashed before being stored.
 
@@ -35,7 +31,7 @@ class RefreshTokenDAO(BaseDAO):
         Raises:
             SQLAlchemyError: If a database error occurs during the save operation.
         """
-        logger.debug(f'Creating refresh token for {user}.')
+        logger.debug(f'Creating {self.model.__name__} record for {user.id=}.')
         token_hash = TokenProvider.hash_refresh_token(raw_token)
         token_id = generate_uuid7()
         now = datetime.now(timezone.utc)
@@ -51,10 +47,10 @@ class RefreshTokenDAO(BaseDAO):
             self._session.add(refresh_token)
             await self._session.flush()
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while creating refresh token for {user=}: {exc}.')
+            logger.error(f'Error while creating {self.model.__name__} record for {user.id=}: {exc}.')
             raise exc
 
-        logger.debug(f'Refresh token for {user=} has been successfully created.')
+        logger.debug(f'{self.model.__name__} record for {user.id=} has been successfully created.')
         return refresh_token
 
     async def get_token_by_hash(self, token_hash: str) -> db_model.RefreshToken | None:
@@ -66,7 +62,7 @@ class RefreshTokenDAO(BaseDAO):
         Returns:
             The matching RefreshToken object, or None if not found.
         """
-        logger.debug(f'Getting refresh token for {token_hash=}.')
+        logger.debug(f'Querying for {self.model.__name__} with {token_hash=}.')
         token = await self._get_one_or_none(token_hash=token_hash, options=[selectinload(self.model.user)])
         return token
 
@@ -85,14 +81,16 @@ class RefreshTokenDAO(BaseDAO):
         Raises:
             SQLAlchemyError: If a database error occurs during the update.
         """
-        logger.debug(f'Revoking {old_token} by {revoked_by}.')
+        logger.debug(
+            f'Revoking {self.model.__name__} record {old_token.id} by {revoked_by.id if revoked_by else None}.'
+        )
         old_token.revoked = True
         old_token.replaced_by = revoked_by.id if revoked_by else None
 
         try:
             self._session.add(old_token)
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while revoking {old_token}: {exc}.')
+            logger.error(f'Error while revoking {self.model.__name__} record {old_token.id}: {exc}.')
             raise exc
 
         return old_token
