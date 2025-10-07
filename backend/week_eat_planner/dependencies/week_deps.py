@@ -32,16 +32,17 @@ async def get_week_by_id(
         WeekNotFound: If the week does not exist
         WeekForbidden: If the week does not belong to the user.
     """
-    logger.info(f'Requesting {week_id} for {user}.')
+    logger.info(f'Requesting Week with {week_id=} for {user}.')
     week = await WeekService(read_session).get_week(week_id)
     if not week:
         logger.error(f'Week {week_id} does not exist.')
         raise WeekNotFound
 
     if week.user_id != user.id:
-        logger.error(f'The week {week_id} is not owned by {user}.')
+        logger.error(f'The week {week_id} is not owned by {user.id}.')
         raise WeekForbidden
 
+    logger.info(f'Successfully loaded week {week.id} read-only')
     return week
 
 
@@ -68,9 +69,11 @@ async def get_week_for_update(
     Raises:
         WeekNotFound: If the week does not exist or has been deleted.
     """
+    logger.info(f'Requesting week {week_snapshot.id} for update.')
     week = await WeekService(write_session).get_week(week_snapshot.id, for_update=True)
     if not week:
-        logger.error(f'Week {week_snapshot} disappeared.')
+        logger.error(f'Week {week_snapshot.id} disappeared.')
         raise WeekNotFound
 
+    logger.info(f'Successfully loaded week {week.id} for update')
     return week

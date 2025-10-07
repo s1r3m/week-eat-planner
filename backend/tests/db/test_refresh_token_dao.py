@@ -10,7 +10,7 @@ DB_ERROR = 'DB Week Error'
 
 
 async def test_save_token__valid_token__token_saved_and_returned(mocked_refresh_token_dao, db_user):
-    db_token = await mocked_refresh_token_dao.save(db_user, REFRESH_TOKEN)
+    db_token = await mocked_refresh_token_dao.insert_token(db_user, REFRESH_TOKEN)
 
     now = datetime.now(timezone.utc)
     assert db_token.user_id == db_user.id
@@ -25,7 +25,7 @@ async def test_save_token__db_error__error_raised(mocked_session, db_user, mocke
     mocked_session.add.side_effect = SQLAlchemyError(DB_ERROR)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await mocked_refresh_token_dao.save(db_user, REFRESH_TOKEN)
+        await mocked_refresh_token_dao.insert_token(db_user, REFRESH_TOKEN)
 
     assert str(exc.value) == DB_ERROR
 
@@ -52,7 +52,7 @@ async def test_get_token_by_hash__token_not_exist__token_returned(mocker, mocked
 
 
 async def test_revoke_token__token_exists__token_revoked(mocked_refresh_token_dao, db_user, db_refresh_token):
-    new_token = await mocked_refresh_token_dao.save(db_user, REFRESH_TOKEN)
+    new_token = await mocked_refresh_token_dao.insert_token(db_user, REFRESH_TOKEN)
 
     revoked_token = await mocked_refresh_token_dao.revoke_token(db_refresh_token, revoked_by=new_token)
 

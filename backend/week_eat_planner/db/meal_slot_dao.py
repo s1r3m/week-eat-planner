@@ -11,7 +11,7 @@ class MealSlotDAO(BaseDAO):
 
     model = db_model.MealSlot
 
-    async def init_meal_slots_for_week(self, week: db_model.Week) -> list[db_model.MealSlot]:
+    async def insert_initial_meal_slots_for_week(self, week: db_model.Week) -> list[db_model.MealSlot]:
         """Inserts initial meal slot records for a given week.
 
         Creates a meal slot for each day of the week and each meal type.

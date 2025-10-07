@@ -16,8 +16,8 @@ class RefreshTokenDAO(BaseDAO):
 
     model = db_model.RefreshToken
 
-    async def save(self, user: db_model.User, raw_token: str) -> db_model.RefreshToken:
-        """Saves a new refresh token to the database.
+    async def insert_token(self, user: db_model.User, raw_token: str) -> db_model.RefreshToken:
+        """Inserts a new refresh token record to the database.
 
         The raw token is hashed before being stored.
 

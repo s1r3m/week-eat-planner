@@ -46,8 +46,8 @@ class RefreshToken(Base):
 
     user: Mapped['User'] = relationship()
 
-    def __repr__(self) -> str:
-        return f'RefreshToken({self.id=}, {self.user_id=}, {self.expires_at=}, {self.revoked=}, {self.replaced_by=})'
+    # def __repr__(self) -> str:
+    #     return f'RefreshToken({self.id=}, {self.user_id=}, {self.expires_at=}, {self.revoked=}, {self.replaced_by=})'
 
 
 class Recipe(Base):

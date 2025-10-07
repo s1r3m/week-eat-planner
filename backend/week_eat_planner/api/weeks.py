@@ -92,8 +92,9 @@ async def update_week(
     Returns:
         The updated week object.
     """
-    logger.info(f'Request PUT /weeks/{week.id} for {week.user} with {new_data=}.')
-    return await WeekService(session).update_week(week, new_data)
+    logger.info(f'Request PUT /weeks/{week.id} for {week.user_id} with {new_data=}.')
+    new_week = await WeekService(session).update_week(week, new_data)
+    return new_week
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
@@ -109,6 +110,6 @@ async def delete_week(
         week: The week object to delete.
         session: The database session for committing the deletion.
     """
-    logger.info(f'Request DELETE /weeks/{week.id} for {week.user}.')
+    logger.info(f'Request DELETE /weeks/{week.id} for {week.user_id}.')
     await WeekService(session).delete_week(week)
     return None

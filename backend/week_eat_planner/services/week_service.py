@@ -27,9 +27,9 @@ class WeekService:
             The newly created Week object.
         """
         logger.info(f'Creating a new week named "{name}" for user {user.id}.')
-        week = await self._week_dao.create_week(user, name)
+        week = await self._week_dao.insert_week(user, name)
         logger.info(f'Creating initial slots for week {week.id}.')
-        await self._meal_slot_dao.init_meal_slots_for_week(week)
+        await self._meal_slot_dao.insert_initial_meal_slots_for_week(week)
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
         return week
 
@@ -43,8 +43,10 @@ class WeekService:
         Returns:
             The Week object if found, otherwise None.
         """
-        logger.info(f'Retrieving week {week_id}.')
-        return await self._week_dao.get_week(week_id, for_update=for_update)
+        logger.info(f'Retrieving week {week_id} {for_update=}.')
+        week = await self._week_dao.get_week_by_id(week_id, for_update=for_update)
+        logger.info(f'Successfully retrieved week {week_id}.')
+        return week
 
     async def get_weeks(self, user: db_model.User) -> list[db_model.Week]:
         """Retrieves all weeks for a specific user.
@@ -56,7 +58,9 @@ class WeekService:
             A list of the user's weeks.
         """
         logger.info(f'Retrieving all weeks for user {user.id}.')
-        return await self._week_dao.get_weeks(user)
+        weeks = await self._week_dao.get_all_weeks_by_user(user)
+        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}.')
+        return weeks
 
     async def update_week(self, week: db_model.Week, new_data: schema.WeekUpdate) -> db_model.Week:
         """Updates the details of a specific week.
@@ -68,8 +72,10 @@ class WeekService:
         Returns:
             The updated Week object.
         """
-        logger.info(f'Updating week {week.id}.')
-        return await self._week_dao.update_week(week, new_data)
+        logger.info(f'Updating week {week.id} with {new_data=}.')
+        updated_week = await self._week_dao.update_week(week, new_data)
+        logger.info(f'Successfully updated week {week.id}.')
+        return updated_week
 
     async def delete_week(self, week: db_model.Week) -> None:
         """Deletes a specific week.

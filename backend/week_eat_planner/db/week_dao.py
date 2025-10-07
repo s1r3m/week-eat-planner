@@ -16,7 +16,7 @@ class WeekDAO(BaseDAO):
 
     model = db_model.Week
 
-    async def create_week(self, user: db_model.User, name: str) -> db_model.Week:
+    async def insert_week(self, user: db_model.User, name: str) -> db_model.Week:
         """Inserts a new week record into the database.
 
         Args:
@@ -41,7 +41,7 @@ class WeekDAO(BaseDAO):
         logger.debug(f'{self.model.__name__} {week.id} created successfully.')
         return week
 
-    async def get_weeks(self, user: db_model.User) -> list[db_model.Week]:
+    async def get_all_weeks_by_user(self, user: db_model.User) -> list[db_model.Week]:
         """Retrieves all week records for a given user.
 
         Args:
@@ -65,7 +65,7 @@ class WeekDAO(BaseDAO):
 
         return list(records)
 
-    async def get_week(self, week_id: str | UUID, for_update: bool) -> db_model.Week | None:
+    async def get_week_by_id(self, week_id: str | UUID, for_update: bool) -> db_model.Week | None:
         """Retrieves a specific week record by its ID, including its meal slots.
 
         Args:

@@ -94,7 +94,7 @@ async def created_week(created_user: schema.UserOut) -> schema.WeekOut:
         # Create the week and its slots
         created_week_obj = await WeekService(session).create_week_with_slots(user, WEEK_1_NAME)
         # Re-fetch the week from the DB to ensure all relationships are loaded
-        week = await WeekDAO(session).get_week(created_week_obj.id, for_update=False)
+        week = await WeekDAO(session).get_week_by_id(created_week_obj.id, for_update=False)
         week_out = schema.WeekOut.model_validate(week)
     return week_out
 

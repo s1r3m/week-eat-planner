@@ -7,7 +7,7 @@ from week_eat_planner.exceptions import InvalidCredentials
 
 async def test_get_current_user__valid_user__user_in_response(mocked_session, encoded_token, mocker, created_user):
     get_user_mock = mocker.AsyncMock(return_value=created_user)
-    user_service_mock = mocker.AsyncMock(get_user=get_user_mock)
+    user_service_mock = mocker.AsyncMock(get_user_by_token=get_user_mock)
     mocker.patch('week_eat_planner.dependencies.auth_deps.UserService', return_value=user_service_mock)
 
     current_user = await get_current_user(encoded_token, mocked_session)
@@ -18,7 +18,7 @@ async def test_get_current_user__valid_user__user_in_response(mocked_session, en
 
 async def test_get_current_user__user_not_found__error_raised(mocker, mocked_session, encoded_token):
     get_user_mock = mocker.AsyncMock(return_value=None)
-    user_service_mock = mocker.AsyncMock(get_user=get_user_mock)
+    user_service_mock = mocker.AsyncMock(get_user_by_token=get_user_mock)
     mocker.patch('week_eat_planner.dependencies.auth_deps.UserService', return_value=user_service_mock)
 
     with pytest.raises(HTTPException) as exc:

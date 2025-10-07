@@ -84,7 +84,7 @@ class AuthService:
 
         access_token = TokenProvider.create_access_token(email)
         refresh_token = TokenProvider.create_refresh_token()
-        await self._refresh_token_dao.save(db_user, refresh_token)
+        await self._refresh_token_dao.insert_token(db_user, refresh_token)
 
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
@@ -116,7 +116,7 @@ class AuthService:
 
         access_token = TokenProvider.create_access_token(user.email)
         refresh_token = TokenProvider.create_refresh_token()
-        db_refresh_token = await self._refresh_token_dao.save(user, refresh_token)
+        db_refresh_token = await self._refresh_token_dao.insert_token(user, refresh_token)
         await self._refresh_token_dao.revoke_token(old_token, revoked_by=db_refresh_token)
 
         logger.info(f'Tokens for user {user.email} refreshed successfully.')
