@@ -36,6 +36,12 @@ TokenExpired = HTTPException(
 )
 
 
+TokenRevoked = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Token revoked',
+)
+
+
 InvalidEmail = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='Invalid email',
@@ -61,7 +67,12 @@ WeekNotFound = HTTPException(
     detail='Week not found',
 )
 
-WeekForbidden = HTTPException(
+AccessForbidden = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail='Access forbidden',
 )
+
+TokenForbidden = AccessForbidden
+
+
+WeekForbidden = AccessForbidden

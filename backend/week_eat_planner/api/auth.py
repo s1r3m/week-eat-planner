@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,13 @@ from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.exceptions import RefreshTokenMissing
+from week_eat_planner.exceptions import (
+    RefreshTokenMissing,
+    TokenExpired,
+    TokenForbidden,
+    TokenNotFound,
+    TokenRevoked,
+)
 from week_eat_planner.services.auth_service import AuthService
 
 router = APIRouter()
@@ -22,6 +28,17 @@ async def create_user(
     user_data: schema.UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> db_model.User:
+    """Registers a new user.
+
+    Args:
+        user_data: The user's email and password.
+
+    Returns:
+        The public information for the newly created user.
+
+    Raises:
+        HTTPException: 409 Conflict if a user with the same email already exists.
+    """
     logger.info(f'Got POST /signup request with {user_data}.')
     created_user = await AuthService(session).register_user(str(user_data.email), user_data.password)
     return created_user
@@ -33,20 +50,19 @@ async def login(
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
 ) -> schema.Token:
-    """Login the user and return an access token.
+    """Authenticates a user and returns an access token.
 
-    Validates credentials and returns a JWT bearer token upon success.
+    On successful authentication, an access token is returned in the response body,
+    and a refresh token is set as an HTTP-only cookie.
 
     Args:
-        user_data: The user's login credentials.
-        session: The database session.
-        response: A Response object to set cookies to.
+        user_data: The user's login credentials (username and password).
+
     Returns:
-        Access and refresh tokens.
+        A schema.Token object containing the access token.
 
     Raises:
-        UserNotFound: If a user with the email is not registered.
-        InvalidEmail: If the email format is invalid.
+        HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST /login request for {user_data.username=}.')
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
@@ -70,25 +86,17 @@ async def refresh_tokens(
     user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> schema.Token:
-    """Refreshes access and refresh tokens.
+    """Generates a new access token using a refresh token.
 
-    This endpoint takes an existing refresh token from the request cookies,
-    validates it, revokes the old token, generates a new refresh token and
-    access token, and sets the new refresh token in the response cookies.
-
-    Args:
-        request: The incoming request object, used to retrieve the refresh token cookie.
-        response: The response object, used to set the new refresh token cookie.
-        user: The currently authenticated user, obtained via dependency injection.
-        session: The database session, obtained via dependency injection.
+    This endpoint requires a valid refresh token to be present in an HTTP-only cookie.
+    If the refresh token is valid, a new access token is returned and a new
+    refresh token is set in the cookie.
 
     Returns:
-        A schema.Token object containing the new access token and its type.
+        A new access token.
 
     Raises:
-        RefreshTokenMissing: If the refresh token cookie is not found in the request.
-        InvalidRefreshToken: If the refresh token found in the cookie is invalid or has been revoked.
-        TokenExpiredException: If the refresh token found in the cookie has expired.
+        HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
     """
     logger.info(f'Got POST /refresh request for {user}.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
@@ -117,29 +125,31 @@ async def logout(
     user: Annotated[db_model.User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Logs out the current user.
+    """Logs out the current user by invalidating their session.
 
-    This endpoint revokes the refresh token associated with the current user
-    and deletes the refresh token cookie from the client. If no refresh token
-    is found, or it's already invalid/revoked, it logs a warning and proceeds
-    without error.
+    This endpoint invalidates the user's refresh token and removes the
+    corresponding cookie from the client, effectively ending the session.
 
-    Args:
-        request: The incoming request object, used to retrieve the refresh token cookie.
-        response: The response object, used to delete the refresh token cookie.
-        user: The currently authenticated user, obtained via dependency injection.
-        session: The database session, obtained via dependency injection.
+    Calling this endpoint when already logged out (e.g., with a missing or
+    invalid refresh token) will still result in a successful response.
 
     Returns:
-        None. The response status code is 204 No Content upon successful logout
-        or if the token was already missing/invalid.
+        None. A 204 No Content status code is returned on success.
     """
     logger.info(f'Got POST /logout request for {user}.')
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for {user}.')
+        logger.warning(f'No refresh token in request cookies for {user.email}.')
         return
 
-    await AuthService(session).logout(user, refresh_token)
+    try:
+        await AuthService(session).logout(user, refresh_token)
+    except HTTPException as exc:
+        # If the token was already expired, revoked, or not found, the user
+        # is effectively logged out, so we can return a success response.
+        if exc not in (TokenExpired, TokenForbidden, TokenNotFound, TokenRevoked):
+            raise
+        logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
+
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')
     return

@@ -33,7 +33,7 @@ class UserDAO(BaseDAO):
         except SQLAlchemyError as exc:
             logger.exception(f'Error while creating {self.model.__name__} record for {email=}: {exc}.')
             raise exc
-        logger.debug(f'{self.model.__name__} record for {email=} created successfully.')
+        logger.info(f'{self.model.__name__} record for {email=} created successfully.')
 
         return user
 

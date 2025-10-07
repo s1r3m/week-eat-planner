@@ -11,6 +11,9 @@ from week_eat_planner.exceptions import (
     InvalidEmail,
     InvalidRefreshToken,
     TokenExpired,
+    TokenForbidden,
+    TokenNotFound,
+    TokenRevoked,
     UserAlreadyExists,
 )
 from week_eat_planner.helpers import generate_uuid7
@@ -123,26 +126,30 @@ async def test_logout__valid_token__token_revoked(mocked_auth_service, valid_old
     assert db_refresh_token.revoked is True
 
 
-async def test_logout__not_existing_token__error_not_raised(
+async def test_logout__not_existing_token__error_raised(
     mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
 ):
     scalars_mock = mocker.MagicMock(return_value=None)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    await mocked_auth_service.logout(db_user, 'some_old_token')
+    with pytest.raises(HTTPException) as exc:
+        await mocked_auth_service.logout(db_user, 'some_old_token')
 
+    assert exc.value.status_code == TokenNotFound.status_code
+    assert exc.value.detail == TokenNotFound.detail
     assert db_refresh_token.revoked is False
 
 
-async def test_logout__expired_token__error_not_raised(
-    mocked_auth_service, expired_old_token, db_user, db_refresh_token
-):
-    await mocked_auth_service.logout(db_user, expired_old_token)
+async def test_logout__expired_token__error_raised(mocked_auth_service, expired_old_token, db_user, db_refresh_token):
+    with pytest.raises(HTTPException) as exc:
+        await mocked_auth_service.logout(db_user, expired_old_token)
 
+    assert exc.value.status_code == TokenExpired.status_code
+    assert exc.value.detail == TokenExpired.detail
     assert db_refresh_token.revoked is False
 
 
-async def test_logout__belong_to_other_user_token__error_not_raised(
+async def test_logout__belong_to_other_user_token__error_raised(
     mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
 ):
     old_token = REFRESH_TOKEN
@@ -151,12 +158,15 @@ async def test_logout__belong_to_other_user_token__error_not_raised(
     scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    await mocked_auth_service.logout(db_user, old_token)
+    with pytest.raises(HTTPException) as exc:
+        await mocked_auth_service.logout(db_user, old_token)
 
+    assert exc.value.status_code == TokenForbidden.status_code
+    assert exc.value.detail == TokenForbidden.detail
     assert db_refresh_token.revoked is False
 
 
-async def test_logout__revoked_token__error_not_raised(
+async def test_logout__revoked_token__error_raised(
     mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
 ):
     old_token = REFRESH_TOKEN
@@ -165,6 +175,9 @@ async def test_logout__revoked_token__error_not_raised(
     scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    await mocked_auth_service.logout(db_user, old_token)
+    with pytest.raises(HTTPException) as exc:
+        await mocked_auth_service.logout(db_user, old_token)
 
+    assert exc.value.status_code == TokenRevoked.status_code
+    assert exc.value.detail == TokenRevoked.detail
     assert db_refresh_token.revoked is True

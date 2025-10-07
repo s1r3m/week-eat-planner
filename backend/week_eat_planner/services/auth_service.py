@@ -13,6 +13,9 @@ from week_eat_planner.exceptions import (
     InvalidEmail,
     InvalidRefreshToken,
     TokenExpired,
+    TokenForbidden,
+    TokenNotFound,
+    TokenRevoked,
     UserAlreadyExists,
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
@@ -128,6 +131,8 @@ class AuthService:
         Args:
             user: The user who is logging out.
             raw_token: The raw (unhashed) refresh token to revoke.
+
+            REVIEW -- add error raises? Why is it silent?
         """
         logger.info(f'Logout attempt for user {user.email}.')
         token_hash = TokenProvider.hash_refresh_token(raw_token)
@@ -135,19 +140,19 @@ class AuthService:
 
         if not refresh_token:
             logger.warning(f'Attempted logout with a non-existent refresh token for {user.email}.')
-            return
+            raise TokenNotFound
 
         if refresh_token.expires_at <= datetime.now(timezone.utc):
             logger.warning(f'Attempted logout with expired refresh token for {user.email}.')
-            return
+            raise TokenExpired
 
         if refresh_token.user_id != user.id:
             logger.warning(f'Attempted logout with refresh token that does not belong to user {user.email}.')
-            return
+            raise TokenForbidden
 
         if refresh_token.revoked:
             logger.warning(f'Attempted logout with an already revoked token for user {user.email}.')
-            return
+            raise TokenRevoked
 
         await self._refresh_token_dao.revoke_token(refresh_token, revoked_by=None)
         logger.info(f'User {user.email} logged out successfully.')
