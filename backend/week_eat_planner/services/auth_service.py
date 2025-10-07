@@ -132,7 +132,11 @@ class AuthService:
             user: The user who is logging out.
             raw_token: The raw (unhashed) refresh token to revoke.
 
-            REVIEW -- add error raises? Why is it silent?
+        Raises:
+            TokenNotFound: If the refresh token does not exist.
+            TokenExpired: If the refresh token has expired.
+            TokenForbidden: If the refresh token does not belong to the user.
+            TokenRevoked: If the refresh token has already been revoked.
         """
         logger.info(f'Logout attempt for user {user.email}.')
         token_hash = TokenProvider.hash_refresh_token(raw_token)
