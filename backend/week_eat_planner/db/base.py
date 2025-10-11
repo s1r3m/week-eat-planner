@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 from uuid import UUID
 
 from loguru import logger
 from pydantic import BaseModel
-from sqlalchemy import DateTime, select, update
+from sqlalchemy import DateTime, delete as sql_delete, select, update as sql_update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -51,30 +51,25 @@ class BaseDAO(Generic[T]):
         if not self.model:
             raise ValueError('A model must be specified in child classes!')
 
-    async def add(self, model: T) -> T:
-        logger.debug(f'Creating {self.model.__name__} record from {model}.')
+    async def add(self, instance: T) -> T:
+        logger.debug(f'Creating {self.model.__name__} record from {instance}.')
         try:
-            self._session.add(model)
+            self._session.add(instance)
             await self._session.flush()
-            await self._session.refresh(model)
+            await self._session.refresh(instance)
         except SQLAlchemyError as exc:
-            logger.error(f'Error while inserting into {self.model.__name__} from {model}: {exc}.')
+            logger.error(f'Error while inserting into {self.model.__name__} from {instance}: {exc}.')
             raise exc
 
-        logger.debug(f'{self.model.__name__} from {model} has been successfully inserted.')
-        return model
+        logger.debug(f'{self.model.__name__} from {instance} has been successfully inserted.')
+        return instance
 
-    async def get_one_or_none(
-        self,
-        for_update: bool = False,
-        **filter_by: Any,
-    ) -> T | None:
-        """Fetches a single record from the database or None if not found.
+    async def find_one_or_none_by_id(self, obj_id: UUID | str, for_update: bool = False) -> T | None:
+        """Fetches a single record by id from the database or None if not found.
 
         Args:
+            obj_id:
             for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
-            **filter_by: Keyword arguments to filter the query by.
-                These are passed directly to SQLAlchemy's `filter_by`.
 
         Returns:
             An instance of the model if found, otherwise None.
@@ -82,6 +77,40 @@ class BaseDAO(Generic[T]):
         Raises:
             SQLAlchemyError: If a database error occurs during the query execution.
         """
+        logger.debug(f'Getting {self.model.__name__} by ID={obj_id}.')
+        try:
+            query = select(self.model).filter_by(id=obj_id)
+
+            if for_update:
+                query = query.with_for_update()
+
+            result = await self._session.execute(query)
+            record = result.scalar_one_or_none()
+            if record:
+                logger.debug(f'{self.model.__name__} by ID={obj_id} has been successfully found.')
+            else:
+                logger.warning(f'{self.model.__name__} by ID={obj_id} was not found.')
+        except SQLAlchemyError as exc:
+            logger.error(f'Error while getting {self.model.__name__} by ID={obj_id}: {exc}.')
+            raise exc
+
+        return record
+
+    async def find_one_or_none(self, filters: BaseModel, for_update: bool = False) -> T | None:
+        """Fetches a single record from the database or None if not found.
+
+        Args:
+            for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
+            filters:
+
+        Returns:
+            An instance of the model if found, otherwise None.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs during the query execution.
+        """
+        filter_by = filters.model_dump(exclude_unset=True)
+        logger.debug(f'Getting {self.model.__name__} with {filter_by}.')
         try:
             query = select(self.model).filter_by(**filter_by)
 
@@ -100,36 +129,53 @@ class BaseDAO(Generic[T]):
 
         return record
 
-    async def update(self, db_obj: T, values: BaseModel) -> T:
-        logger.debug(f'Updating {self.model.__name__}({db_obj.id}) with {values}.')
+    async def find_all(self, filters: BaseModel | None) -> list[T]:
+        """Retrieves all T records for a given user.
+
+        Args:
+            filters:
+
+        Returns:
+            A list of Week objects.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
+        filter_by = filters.model_dump(exclude_unset=True) if filters else {}
+        logger.debug(f'Querying for {self.model.__name__} records with {filter_by}.')
         try:
-            query = (
-                update(
-                    self.model,
-                )
-                .filter_by(
-                    id=db_obj.id,
-                )
-                .values(
-                    **values.model_dump(exclude_unset=True),
-                )
-                .returning(self.model)
-            )
+            query = select(self.model).filter_by(**filter_by)
+            result = await self._session.execute(query)
+            records = result.scalars().all()
+            logger.debug(f'Found {len(records)} {self.model.__name__} records with {filter_by}.')
+        except SQLAlchemyError as exc:
+            logger.exception(f'Error while getting {self.model.__name__} records with {filter_by}: {exc}.')
+            raise exc
+
+        return list(records)
+
+    async def update(self, filters: BaseModel, values: BaseModel) -> T:
+        filter_by = filters.model_dump(exclude_unset=True)
+        values_dict = values.model_dump(exclude_unset=True)
+        logger.debug(f'Updating {self.model.__name__} by {filters} with {values}.')
+        try:
+            query = sql_update(self.model).filter_by(**filter_by).values(**values_dict).returning(self.model)
             result = await self._session.execute(query)
             updated_db_obj = result.scalar_one()
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while updating {self.model.__name__}({db_obj.id}) with {values}: {exc}')
+            logger.exception(f'Error while updating {self.model.__name__}by {filters} with {values}: {exc}')
             raise exc
-        logger.debug(f'Successfully updated {self.model.__name__}({db_obj.id}).')
+
         return updated_db_obj
 
-    async def delete(self, db_obj: T) -> None:
-        logger.debug(f'Deleting {self.model.__name__} record {db_obj.id}.')
+    async def delete(self, filters: BaseModel) -> int:
+        filter_by = filters.model_dump(exclude_unset=True)
+        logger.debug(f'Deleting {self.model.__name__} record by {filter_by}.')
         try:
-            await self._session.delete(db_obj)
+            query = sql_delete(self.model).filter_by(**filter_by)
+            result = await self._session.execute(query)
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while deleting {self.model.__name__} record {db_obj.id}: {exc}')
+            logger.exception(f'Error while deleting {self.model.__name__} record by {filter_by}: {exc}')
             raise exc
 
-        logger.debug(f'{self.model.__name__} record {db_obj.id} has been successfully deleted.')
-        return None
+        return result.rowcount

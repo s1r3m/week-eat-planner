@@ -3,12 +3,10 @@ import pytest_asyncio
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.db.models as db_model
 from tests.conftest_api import EMAIL, PASSWORD, USER_ID, WEEK_1_ID, WEEK_1_NAME
-from week_eat_planner.db.meal_slot_dao import MealSlotDAO
-from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
-from week_eat_planner.db.user_dao import UserDAO
-from week_eat_planner.db.week_dao import WeekDAO
+from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.db.dao import MealSlotDAO, RefreshTokenDAO, UserDAO, WeekDAO
+from week_eat_planner.db.models import RefreshToken, User, Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.hashing import get_password_hash
 
@@ -45,16 +43,16 @@ def mocked_refresh_token_dao(mocked_session: AsyncSession) -> RefreshTokenDAO:
 
 
 @pytest.fixture
-def db_week(created_user: db_model.User) -> db_model.Week:
-    return db_model.Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=created_user.id)
+def db_week(created_user: UserOut) -> Week:
+    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=created_user.id)
 
 
 @pytest.fixture
-def db_user() -> db_model.User:
-    return db_model.User(id=USER_ID, email=EMAIL, hashed_password=get_password_hash(PASSWORD), is_active=True)
+def db_user() -> User:
+    return User(id=USER_ID, email=EMAIL, hashed_password=get_password_hash(PASSWORD), is_active=True)
 
 
 @pytest.fixture
-def db_refresh_token(db_user: db_model.User) -> db_model.RefreshToken:
+def db_refresh_token(db_user: User) -> RefreshToken:
     token_id = generate_uuid7()
-    return db_model.RefreshToken(id=token_id, user_id=db_user.id, token_hash=HASHED_REFRESH_TOKEN, revoked=False)
+    return RefreshToken(id=token_id, user_id=db_user.id, token_hash=HASHED_REFRESH_TOKEN, revoked=False)

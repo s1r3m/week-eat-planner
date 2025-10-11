@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
@@ -12,15 +13,15 @@ class Token(BaseModel):
     token_type: str
 
 
-class UserOut(BaseModel):
-    """Schema for user data sent to the client."""
+class RefreshTokenFromDB(BaseModel):
+    token_hash: str | None = None
+    user_id: UUID | None = None
 
-    id: UUID
-    email: str
-    is_active: bool
 
-    class Config:
-        from_attributes = True
+class TokenUpdate(BaseModel):
+    expires_at: datetime | None = None
+    replaced_by: UUID | None = None
+    revoked: bool | None = None
 
 
 class Email(BaseModel):
@@ -33,6 +34,20 @@ class UserCreate(Email):
     """Schema for creating a new user."""
 
     password: str
+
+
+class UserID(BaseModel):
+    id: UUID
+
+
+class UserOut(UserID):
+    """Schema for user data sent to the client."""
+
+    email: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
 
 
 class RecipeCreate(BaseModel):

@@ -49,7 +49,7 @@ async def test_get_week__week_exists__week_found(mocker, mocked_session, mocked_
     scalars_mock = mocker.MagicMock(return_value=db_week)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
-    week = await mocked_week_dao.get_one_or_none(id=db_week.id, for_update=False)
+    week = await mocked_week_dao.find_one_or_none(id=db_week.id, for_update=False)
 
     assert week == db_week
 

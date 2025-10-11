@@ -18,8 +18,8 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
 
-    weeks: Mapped[list['Week']] = relationship(back_populates='user')
-    recipes: Mapped[list['Recipe']] = relationship(back_populates='user')
+    weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')
+    recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
 
     def __repr__(self) -> str:
         return f'User({self.id=}, {self.email=}, {self.is_active=}'
@@ -29,10 +29,10 @@ class RefreshToken(Base):
     __tablename__ = 'refresh_tokens'
 
     token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
-    replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True)
+    replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
 
     user: Mapped['User'] = relationship(lazy='selectin')
 
@@ -48,7 +48,7 @@ class Recipe(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     is_public: Mapped[bool] = mapped_column(default=False, nullable=False)
     ingredients: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     user: Mapped['User'] = relationship(back_populates='recipes')
 
@@ -82,10 +82,12 @@ class MealSlot(Base):
 
     __tablename__ = 'meal_slots'
 
-    week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id'), nullable=False, index=True)
+    week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id', ondelete='CASCADE'), nullable=False, index=True)
     day_of_week: Mapped[DayOfWeek] = mapped_column(nullable=False)
     meal_type: Mapped[MealType] = mapped_column(nullable=False)
-    recipe_id: Mapped[UUID | None] = mapped_column(ForeignKey('recipes.id'), nullable=True, unique=False)
+    recipe_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey('recipes.id', ondelete='SET NULL'), nullable=True, unique=False
+    )
 
     week: Mapped['Week'] = relationship(back_populates='meal_slots', lazy='joined')
     recipe: Mapped['Recipe | None'] = relationship(lazy='joined')
@@ -102,7 +104,7 @@ class Week(Base):
     __tablename__ = 'weeks'
 
     name: Mapped[str] = mapped_column(nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     user: Mapped['User'] = relationship(back_populates='weeks')
     meal_slots: Mapped[list['MealSlot']] = relationship(

@@ -4,7 +4,7 @@ from fastapi import Depends, Path
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.db.models as db_model
+from week_eat_planner.api.schemas import UserOut, WeekOut, WeekPreviewOut
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
@@ -13,9 +13,9 @@ from week_eat_planner.services.week_service import WeekService
 
 async def get_week_by_id(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[db_model.User, Depends(get_current_active_user)],
+    user: Annotated[UserOut, Depends(get_current_active_user)],
     read_session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> db_model.Week:
+) -> WeekOut:
     """Retrieves a specific week by its ID.
 
     The week must belong to the currently authenticated user.
@@ -47,9 +47,9 @@ async def get_week_by_id(
 
 
 async def get_week_for_update(
-    week_snapshot: Annotated[db_model.Week, Depends(get_week_by_id)],
+    week_snapshot: Annotated[WeekOut, Depends(get_week_by_id)],
     write_session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> db_model.Week:
+) -> WeekPreviewOut:
     """Retrieves a week from the database with a lock for updating.
 
     This dependency should be used when a week needs to be updated. It re-fetches
@@ -76,4 +76,4 @@ async def get_week_for_update(
         raise WeekNotFound
 
     logger.info(f'Successfully loaded week {week.id} for update')
-    return week
+    return WeekPreviewOut.model_validate(week)

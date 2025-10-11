@@ -5,8 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.api.schemas as schema
-import week_eat_planner.db.models as db_model
+from week_eat_planner.api.schemas import Token, UserCreate, UserOut
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
@@ -23,11 +22,11 @@ from week_eat_planner.services.auth_service import AuthService
 router = APIRouter()
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=schema.UserOut, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user(
-    user_data: schema.UserCreate,
+    user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> db_model.User:
+) -> UserOut:
     """Registers a new user.
 
     Args:
@@ -39,17 +38,17 @@ async def create_user(
     Raises:
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
-    logger.info(f'Got POST /signup request with {user_data}.')
+    logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
     created_user = await AuthService(session).register_user(user_data)
-    return created_user
+    return UserOut.model_validate(created_user)
 
 
-@router.post(AppUrl.AUTH_LOGIN, response_model=schema.Token)
+@router.post(AppUrl.AUTH_LOGIN, response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> schema.Token:
+) -> Token:
     """Authenticates a user and returns an access token.
 
     On successful authentication, an access token is returned in the response body,
@@ -59,12 +58,12 @@ async def login(
         user_data: The user's login credentials (username and password).
 
     Returns:
-        A schema.Token object containing the access token.
+        A Token object containing the access token.
 
     Raises:
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
-    logger.info(f'Got POST /login request for {user_data.username=}.')
+    logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
@@ -76,16 +75,16 @@ async def login(
         path='/auth',
     )
 
-    return schema.Token(access_token=access_token, token_type=TokenType.BEARER)
+    return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
-@router.post(AppUrl.AUTH_REFRESH, response_model=schema.Token)
+@router.post(AppUrl.AUTH_REFRESH, response_model=Token)
 async def refresh_tokens(
     request: Request,
     response: Response,
-    user: Annotated[db_model.User, Depends(get_current_active_user)],
+    user: Annotated[UserOut, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> schema.Token:
+) -> Token:
     """Generates a new access token using a refresh token.
 
     This endpoint requires a valid refresh token to be present in an HTTP-only cookie.
@@ -98,7 +97,7 @@ async def refresh_tokens(
     Raises:
         HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
     """
-    logger.info(f'Got POST /refresh request for {user}.')
+    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request for {user}.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
         logger.error(f'No refresh token in request cookies for {user}.')
@@ -115,14 +114,14 @@ async def refresh_tokens(
         path='/auth',
     )
 
-    return schema.Token(access_token=access_token, token_type=TokenType.BEARER)
+    return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
 @router.post(AppUrl.AUTH_LOGOUT, status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
     response: Response,
-    user: Annotated[db_model.User, Depends(get_current_active_user)],
+    user: Annotated[UserOut, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Logs out the current user by invalidating their session.
@@ -136,10 +135,10 @@ async def logout(
     Returns:
         None. A 204 No Content status code is returned on success.
     """
-    logger.info(f'Got POST /logout request for {user}.')
+    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for {user}.')
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for {user.email}.')
+        logger.warning(f'No refresh token in request cookies for {user}.')
         return
 
     try:

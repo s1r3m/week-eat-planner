@@ -6,11 +6,11 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete
 
-import week_eat_planner.api.schemas as schema
-import week_eat_planner.db.models as db_model
+from week_eat_planner.api.schemas import UserCreate, UserOut, WeekOut
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.db.dao import WeekDAO
+from week_eat_planner.db.models import MealSlot, RefreshToken, User, Week
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.main import app
 from week_eat_planner.security.token_provider import TokenProvider
@@ -51,18 +51,17 @@ def encoded_token() -> str:
 
 @pytest.fixture
 def user_factory() -> Callable:
-    async def _factory(user_data: schema.UserCreate) -> schema.UserOut:
+    async def _factory(user_data: UserCreate) -> UserOut:
         async for session in db.get_db_commit():
             user = await AuthService(session).register_user(user_data)
-            user_out = schema.UserOut.model_validate(user)
-        return user_out
+        return user
 
     return _factory
 
 
 @pytest.fixture
 def auth_client_factory(client: AsyncClient) -> Callable:
-    async def _factory(user: schema.UserOut, password: str) -> AsyncClient:
+    async def _factory(user: UserOut, password: str) -> AsyncClient:
         client.headers['Authorization'] = ''
         token_data = {'username': user.email, 'password': password}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
@@ -76,18 +75,18 @@ def auth_client_factory(client: AsyncClient) -> Callable:
 
 @pytest.fixture
 def created_week_factory() -> Callable:
-    async def _factory(user: db_model.User, name: str) -> schema.WeekOut:
+    async def _factory(user: UserOut, name: str) -> WeekOut:
         async for session in db.get_db_commit():
-            created_week_obj = await WeekService(session).create_week_with_slots(user, name)
-            week = await WeekDAO(session).get_one_or_none(id=created_week_obj.id, for_update=False)
-            week_out = schema.WeekOut.model_validate(week)
+            created_week = await WeekService(session).create_week_with_slots(user, name)
+            week = await WeekDAO(session).find_one_or_none(created_week)
+            week_out = WeekOut.model_validate(week)
         return week_out
 
     return _factory
 
 
 @pytest_asyncio.fixture
-async def logout_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
+async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
     auth_client = await auth_client_factory(created_user, PASSWORD)
     await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
     auth_client.headers['Authorization'] = ''
@@ -95,22 +94,22 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 
 @pytest_asyncio.fixture
-async def created_user(user_factory: Callable) -> schema.UserOut:
-    return await user_factory(schema.UserCreate(email=EMAIL, password=PASSWORD))
+async def created_user(user_factory: Callable) -> UserOut:
+    return await user_factory(UserCreate(email=EMAIL, password=PASSWORD))
 
 
 @pytest_asyncio.fixture
-async def created_week(created_week_factory: Callable, created_user: schema.UserOut) -> schema.WeekOut:
+async def created_week(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
     return await created_week_factory(created_user, name=WEEK_1_NAME)
 
 
 @pytest_asyncio.fixture
-async def created_week_2(created_week_factory: Callable, created_user: schema.UserOut) -> schema.WeekOut:
+async def created_week_2(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
     return await created_week_factory(created_user, name=WEEK_2_NAME)
 
 
 @pytest_asyncio.fixture
-async def auth_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
+async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
     return await auth_client_factory(created_user, PASSWORD)
 
 
@@ -119,7 +118,7 @@ async def clean_db() -> AsyncGenerator[None, None]:
     yield
 
     async for session in db.get_db_commit():
-        await session.execute(delete(db_model.MealSlot))
-        await session.execute(delete(db_model.Week))
-        await session.execute(delete(db_model.RefreshToken))
-        await session.execute(delete(db_model.User))
+        await session.execute(delete(MealSlot))
+        await session.execute(delete(Week))
+        await session.execute(delete(RefreshToken))
+        await session.execute(delete(User))

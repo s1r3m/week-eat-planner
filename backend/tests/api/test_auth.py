@@ -4,11 +4,10 @@ import pytest
 import pytest_asyncio
 from fastapi import HTTPException, status
 
-import week_eat_planner.api.schemas as schema
-import week_eat_planner.db.models as db_model
+from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserOut
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
-from week_eat_planner.db.refresh_token_dao import RefreshTokenDAO
+from week_eat_planner.db.dao import RefreshTokenDAO
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
     InvalidCredentials,
@@ -36,21 +35,20 @@ async def user(client, login_data) -> dict[str, str]:
 
 
 @pytest_asyncio.fixture
-async def expired_refresh_token_user(created_user) -> schema.UserOut:
+async def expired_refresh_token_user(created_user) -> UserOut:
     async for session in db.get_db_commit():
-        token: db_model.RefreshToken = await RefreshTokenDAO(session).get_one_or_none(user_id=created_user.id)  # noqa
-        token.expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
-        session.add(token)
+        token = RefreshTokenFromDB(user_id=created_user.id)
+        new_expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
+        await RefreshTokenDAO(session).update(token, TokenUpdate(expires_at=new_expires_at))
 
     return created_user
 
 
 @pytest_asyncio.fixture
-async def revoked_refresh_token_user(created_user) -> schema.UserOut:
+async def revoked_refresh_token_user(created_user) -> UserOut:
     async for session in db.get_db_commit():
-        rt_dao = RefreshTokenDAO(session)
-        token: db_model.RefreshToken = await rt_dao.get_one_or_none(user_id=created_user.id)  # noqa
-        await rt_dao.revoke_token(token, revoked_by=None)
+        token = RefreshTokenFromDB(user_id=created_user.id)
+        await RefreshTokenDAO(session).update(token, TokenUpdate(revoked=True))
 
     return created_user
 

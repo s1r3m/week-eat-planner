@@ -1,8 +1,8 @@
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.db.models as db_model
-from week_eat_planner.db.user_dao import UserDAO
+from week_eat_planner.api.schemas import Email, UserOut
+from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.security.token_provider import get_email_from_token
 
 
@@ -13,7 +13,7 @@ class UserService:
         self.session = session
         self._user_dao = UserDAO(session)
 
-    async def get_user_by_token(self, token: str) -> db_model.User | None:
+    async def get_user_by_token(self, token: str) -> UserOut | None:
         """Retrieves a user based on their authentication token.
 
         Args:
@@ -23,7 +23,6 @@ class UserService:
             The User object if found, otherwise None.
         """
         logger.info(f'Retrieving user from {token=}.')
-        email = get_email_from_token(token)
-        user = await self._user_dao.get_one_or_none(email=email)
+        user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))
 
-        return user
+        return UserOut.model_validate(user)
