@@ -74,7 +74,7 @@ async def get_week(
     return week
 
 
-@router.put(AppUrl.WEEKS_TPL, response_model=schema.WeekPreviewOut)
+@router.patch(AppUrl.WEEKS_TPL, response_model=schema.WeekPreviewOut)
 async def update_week(
     new_data: schema.WeekUpdate,
     week: Annotated[db_model.Week, Depends(get_week_for_update)],

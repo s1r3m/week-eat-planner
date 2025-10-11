@@ -2,12 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import selectinload
 
 import week_eat_planner.db.models as db_model
 from week_eat_planner.config import settings
 from week_eat_planner.db.base import BaseDAO
-from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
 
 
@@ -33,15 +31,11 @@ class RefreshTokenDAO(BaseDAO):
         """
         logger.debug(f'Creating {self.model.__name__} record for {user.id=}.')
         token_hash = TokenProvider.hash_refresh_token(raw_token)
-        token_id = generate_uuid7()
         now = datetime.now(timezone.utc)
         refresh_token = db_model.RefreshToken(
-            id=token_id,
             token_hash=token_hash,
             user_id=user.id,
-            issued_at=now,
             expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
-            revoked=False,
         )
         try:
             self._session.add(refresh_token)
@@ -63,7 +57,7 @@ class RefreshTokenDAO(BaseDAO):
             The matching RefreshToken object, or None if not found.
         """
         logger.debug(f'Querying for {self.model.__name__} with {token_hash=}.')
-        token = await self._get_one_or_none(token_hash=token_hash, options=[selectinload(self.model.user)])
+        token = await self.get_one_or_none(token_hash=token_hash, also_load=self.model.user)
         return token
 
     async def revoke_token(

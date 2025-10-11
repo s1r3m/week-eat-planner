@@ -1,6 +1,7 @@
 import pytest_asyncio
 from fastapi import status
 
+import week_eat_planner.api.schemas as schema
 from tests.conftest_api import WEEK_1_NAME
 from tests.test_security import PASSWORD
 from week_eat_planner.constants import AppUrl
@@ -10,7 +11,7 @@ from week_eat_planner.helpers import generate_uuid7
 
 @pytest_asyncio.fixture
 async def created_user_2(user_factory):
-    return await user_factory('user_2@test.com', PASSWORD)
+    return await user_factory(schema.UserCreate(email='user_2@test.com', password=PASSWORD))
 
 
 async def test_create_week__with_auth__week_in_response(auth_client_for_created_user, created_user):
@@ -63,7 +64,7 @@ async def test_get_week__no_auth__error_in_response(client, created_week):
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):
     new_name = 'new_name'
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': new_name}
     )
 
@@ -77,7 +78,7 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
 
 
 async def test_update_week__no_auth__error_in_response(client, created_week):
-    response = await client.put(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', params={'name': 'new_name'})
+    response = await client.patch(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': 'new_name'})
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
@@ -86,7 +87,7 @@ async def test_update_week__no_auth__error_in_response(client, created_week):
 async def test_update_week__user_without_week__error_in_response(auth_client_for_created_user):
     bad_week_id = generate_uuid7()
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}',
         json={'name': 'test'},
     )

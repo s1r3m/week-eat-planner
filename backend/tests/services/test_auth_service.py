@@ -4,6 +4,7 @@ import pytest
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import week_eat_planner.api.schemas as schema
 from tests.conftest_api import EMAIL, PASSWORD
 from tests.conftest_mock import REFRESH_TOKEN
 from week_eat_planner.exceptions import (
@@ -43,11 +44,12 @@ def expired_old_token(mocker, mocked_session, db_refresh_token):
     return old_token
 
 
-async def test_register_user__valid_email__user_returned(mocker, mocked_session, mocked_auth_service):
-    scalars_mock = mocker.MagicMock(return_value=None)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+async def test_register_user__valid_email__user_returned(mocker, mocked_session, mocked_auth_service, db_user):
+    email_check_mock = mocker.MagicMock(return_value=None)
+    user_mock = mocker.MagicMock(return_value=db_user)
+    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=email_check_mock, scalar_one=user_mock)
 
-    user = await mocked_auth_service.register_user(EMAIL, PASSWORD)
+    user = await mocked_auth_service.register_user(schema.UserCreate(email=EMAIL, password=PASSWORD))
 
     assert user.email == EMAIL
     assert user.hashed_password != PASSWORD
@@ -58,7 +60,7 @@ async def test_register_user__invalid_email__error_raised(mocker, mocked_session
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.register_user(db_user.email, PASSWORD)
+        await mocked_auth_service.register_user(schema.UserCreate(email=EMAIL, password=PASSWORD))
 
     assert exc.value.status_code == UserAlreadyExists.status_code
     assert exc.value.detail == UserAlreadyExists.detail

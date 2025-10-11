@@ -40,7 +40,7 @@ async def create_user(
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
     logger.info(f'Got POST /signup request with {user_data}.')
-    created_user = await AuthService(session).register_user(str(user_data.email), user_data.password)
+    created_user = await AuthService(session).register_user(user_data)
     return created_user
 
 

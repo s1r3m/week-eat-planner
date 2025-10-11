@@ -18,6 +18,9 @@ class AppUrl(StrEnum):
 
     PING = '/ping'
 
+    RECIPES = '/recipes'
+    RECIPES_TPL = '/recipes/{recipe_id}'
+
     WEEKS = '/weeks'
     WEEKS_TPL = '/weeks/{week_id}'
 

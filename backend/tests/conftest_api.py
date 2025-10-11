@@ -10,7 +10,6 @@ import week_eat_planner.api.schemas as schema
 import week_eat_planner.db.models as db_model
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.db.user_dao import UserDAO
 from week_eat_planner.db.week_dao import WeekDAO
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.main import app
@@ -24,6 +23,8 @@ USER_ID = generate_uuid7()
 
 WEEK_1_ID = generate_uuid7()
 WEEK_1_NAME = 'first'
+WEEK_2_ID = generate_uuid7()
+WEEK_2_NAME = 'second'
 
 T = TypeVar('T')
 AsyncYieldFixture = AsyncGenerator[T, None]
@@ -50,9 +51,9 @@ def encoded_token() -> str:
 
 @pytest.fixture
 def user_factory() -> Callable:
-    async def _factory(email: str, password: str) -> schema.UserOut:
+    async def _factory(user_data: schema.UserCreate) -> schema.UserOut:
         async for session in db.get_db_commit():
-            user = await AuthService(session).register_user(email, password)
+            user = await AuthService(session).register_user(user_data)
             user_out = schema.UserOut.model_validate(user)
         return user_out
 
@@ -73,6 +74,18 @@ def auth_client_factory(client: AsyncClient) -> Callable:
     return _factory
 
 
+@pytest.fixture
+def created_week_factory() -> Callable:
+    async def _factory(user: db_model.User, name: str) -> schema.WeekOut:
+        async for session in db.get_db_commit():
+            created_week_obj = await WeekService(session).create_week_with_slots(user, name)
+            week = await WeekDAO(session).get_one_or_none(id=created_week_obj.id, for_update=False)
+            week_out = schema.WeekOut.model_validate(week)
+        return week_out
+
+    return _factory
+
+
 @pytest_asyncio.fixture
 async def logout_client_for_created_user(auth_client_factory: Callable, created_user: schema.UserOut) -> AsyncClient:
     auth_client = await auth_client_factory(created_user, PASSWORD)
@@ -83,20 +96,17 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 @pytest_asyncio.fixture
 async def created_user(user_factory: Callable) -> schema.UserOut:
-    return await user_factory(EMAIL, PASSWORD)
+    return await user_factory(schema.UserCreate(email=EMAIL, password=PASSWORD))
 
 
 @pytest_asyncio.fixture
-async def created_week(created_user: schema.UserOut) -> schema.WeekOut:
-    async for session in db.get_db_commit():
-        user = await UserDAO(session).get_user_by_email(created_user.email)
-        assert user, 'User was not found!'
-        # Create the week and its slots
-        created_week_obj = await WeekService(session).create_week_with_slots(user, WEEK_1_NAME)
-        # Re-fetch the week from the DB to ensure all relationships are loaded
-        week = await WeekDAO(session).get_week_by_id(created_week_obj.id, for_update=False)
-        week_out = schema.WeekOut.model_validate(week)
-    return week_out
+async def created_week(created_week_factory: Callable, created_user: schema.UserOut) -> schema.WeekOut:
+    return await created_week_factory(created_user, name=WEEK_1_NAME)
+
+
+@pytest_asyncio.fixture
+async def created_week_2(created_week_factory: Callable, created_user: schema.UserOut) -> schema.WeekOut:
+    return await created_week_factory(created_user, name=WEEK_2_NAME)
 
 
 @pytest_asyncio.fixture

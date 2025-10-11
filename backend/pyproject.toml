@@ -91,6 +91,7 @@ plugins = "pydantic.mypy"
 
 exclude = [
     '/test_.*',
+    '/migrations/*',
 ]
 
 ignore_missing_imports = true

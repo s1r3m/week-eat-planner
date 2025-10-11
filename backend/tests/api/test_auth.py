@@ -38,7 +38,7 @@ async def user(client, login_data) -> dict[str, str]:
 @pytest_asyncio.fixture
 async def expired_refresh_token_user(created_user) -> schema.UserOut:
     async for session in db.get_db_commit():
-        token: db_model.RefreshToken = await RefreshTokenDAO(session)._get_one_or_none(user_id=created_user.id)  # noqa
+        token: db_model.RefreshToken = await RefreshTokenDAO(session).get_one_or_none(user_id=created_user.id)  # noqa
         token.expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
         session.add(token)
 
@@ -49,7 +49,7 @@ async def expired_refresh_token_user(created_user) -> schema.UserOut:
 async def revoked_refresh_token_user(created_user) -> schema.UserOut:
     async for session in db.get_db_commit():
         rt_dao = RefreshTokenDAO(session)
-        token: db_model.RefreshToken = await rt_dao._get_one_or_none(user_id=created_user.id)  # noqa
+        token: db_model.RefreshToken = await rt_dao.get_one_or_none(user_id=created_user.id)  # noqa
         await rt_dao.revoke_token(token, revoked_by=None)
 
     return created_user

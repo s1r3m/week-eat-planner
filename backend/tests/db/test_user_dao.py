@@ -12,22 +12,6 @@ def db_user() -> db_model.User:
     return db_model.User(id=USER_ID, email=EMAIL, hashed_password=PASSWORD, is_active=True)
 
 
-async def test_user_dao_create_user__valid_data__user_created(mocked_user_dao):
-    user = await mocked_user_dao.insert_user(EMAIL, PASSWORD)
-
-    assert user.email == EMAIL
-    assert user.hashed_password == PASSWORD
-
-
-async def test_create_user__db_error__exception(mocked_session, mocked_user_dao):
-    mocked_session.add.side_effect = SQLAlchemyError(DB_ERROR)
-
-    with pytest.raises(SQLAlchemyError) as exc:
-        await mocked_user_dao.insert_user(EMAIL, PASSWORD)
-
-    assert str(exc.value) == DB_ERROR
-
-
 async def test_get_user_by_email__user_exists__user_found(mocker, mocked_session, db_user, mocked_user_dao):
     scalars_mock = mocker.MagicMock(return_value=db_user)
     mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)

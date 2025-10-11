@@ -54,7 +54,10 @@ UserNotFound = HTTPException(
 )
 
 
-InvalidCredentials = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+InvalidCredentials = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Could not validate credentials',
+)
 
 
 UserAlreadyExists = HTTPException(

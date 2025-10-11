@@ -35,12 +35,35 @@ class UserCreate(Email):
     password: str
 
 
-class WeekPreviewOut(BaseModel):
-    """Schema for a short representation of a week."""
+class RecipeCreate(BaseModel):
+    """Schema for creating a new recipe."""
+
+    name: str
+    is_public: bool
+    ingredients: dict[str, int | float | str]
+
+
+class RecipePreviewOut(BaseModel):
+    """Schema for a short representation of a recipe."""
 
     id: UUID
-    name: str
+
+
+class RecipeOut(BaseModel):
+    """Schema for a detailed representation of a recipe."""
+
     user_id: UUID
+    is_public: bool
+    ingredients: dict[str, int | float | str]
+
+
+class MealSlotOut(BaseModel):
+    """Schema for a meal slot representation."""
+
+    id: UUID
+    day_of_week: db_model.DayOfWeek
+    meal_type: db_model.MealType
+    recipe: RecipePreviewOut | None = None
 
     class Config:
         from_attributes = True
@@ -52,28 +75,26 @@ class WeekBase(BaseModel):
     name: str
 
 
+class WeekPreviewOut(WeekBase):
+    """Schema for a short representation of a week."""
+
+    id: UUID
+    user_id: UUID
+
+    class Config:
+        from_attributes = True
+
+
 class WeekCreate(WeekBase):
     """Schema for creating a new week."""
 
     pass
 
 
-class WeekUpdate(WeekBase):
+class WeekUpdate(BaseModel):
     """Schema for updating a week's data."""
 
-    pass
-
-
-class MealSlotOut(BaseModel):
-    """Schema for a meal slot representation."""
-
-    id: UUID
-    day_of_week: db_model.DayOfWeek
-    meal_type: db_model.MealType
-    recipe_id: UUID | None = None
-
-    class Config:
-        from_attributes = True
+    name: str
 
 
 class WeekOut(WeekPreviewOut):

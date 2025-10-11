@@ -24,6 +24,6 @@ class UserService:
         """
         logger.info(f'Retrieving user from {token=}.')
         email = get_email_from_token(token)
-        user = await self._user_dao.get_user_by_email(email)
+        user = await self._user_dao.get_one_or_none(email=email)
 
         return user
