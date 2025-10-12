@@ -24,5 +24,7 @@ class UserService:
         """
         logger.info(f'Retrieving user from {token=}.')
         user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))
-
-        return UserOut.model_validate(user)
+        logger.info(f'Retrieved {user} from DB')
+        if user:
+            user = UserOut.model_validate(user)
+        return user

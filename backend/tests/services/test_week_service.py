@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import week_eat_planner.db.models as db_model
-from tests.conftest_api import WEEK_1_NAME
+from tests.api.conftest import WEEK_1_NAME
 from week_eat_planner.services.week_service import WeekService
 
 

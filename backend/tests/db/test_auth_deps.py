@@ -1,44 +1,53 @@
+from unittest.mock import AsyncMock
+
 import pytest
 from fastapi import HTTPException
 
+from tests.constants import EMAIL
+from week_eat_planner.api.schemas import Email
 from week_eat_planner.dependencies.auth_deps import get_current_active_user, get_current_user
 from week_eat_planner.exceptions import InvalidCredentials
 
+pytestmark = pytest.mark.usefixtures('clean_db')
 
-async def test_get_current_user__valid_user__user_in_response(mocked_session, encoded_token, mocker, created_user):
-    get_user_mock = mocker.AsyncMock(return_value=created_user)
-    user_service_mock = mocker.AsyncMock(get_user_by_token=get_user_mock)
-    mocker.patch('week_eat_planner.dependencies.auth_deps.UserService', return_value=user_service_mock)
+
+@pytest.fixture
+def mocked_user_dao(mocker) -> AsyncMock:
+    user_dao_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.services.user_service.UserDAO', return_value=user_dao_mock)
+    return user_dao_mock
+
+
+async def test_get_current_user__valid_user__user_in_response(mocked_user_dao, mocked_session, encoded_token, user_out):
+    mocked_user_dao.find_one_or_none.return_value = user_out
 
     current_user = await get_current_user(encoded_token, mocked_session)
 
-    assert current_user == created_user
-    user_service_mock.get_user_by_token.assert_awaited_once_with(encoded_token)
+    assert current_user == user_out
+    mocked_user_dao.find_one_or_none.assert_awaited_once_with(Email(email=EMAIL))
 
 
-async def test_get_current_user__user_not_found__error_raised(mocker, mocked_session, encoded_token):
-    get_user_mock = mocker.AsyncMock(return_value=None)
-    user_service_mock = mocker.AsyncMock(get_user_by_token=get_user_mock)
-    mocker.patch('week_eat_planner.dependencies.auth_deps.UserService', return_value=user_service_mock)
+async def test_get_current_user__user_not_found__error_raised(mocked_user_dao, mocked_session, encoded_token):
+    mocked_user_dao.find_one_or_none.return_value = None
 
     with pytest.raises(HTTPException) as exc:
         await get_current_user(encoded_token, mocked_session)
 
     assert exc.value.status_code == InvalidCredentials.status_code
     assert exc.value.detail == InvalidCredentials.detail
-    user_service_mock.get_user_by_token.assert_awaited_once_with(encoded_token)
+    mocked_user_dao.find_one_or_none.assert_awaited_once_with(Email(email=EMAIL))
 
 
-async def test_get_active_current_user__active_user__user_returned(db_user):
-    user = await get_current_active_user(db_user)
+async def test_get_active_current_user__active_user__user_returned(user_out):
+    user = await get_current_active_user(user_out)
     assert user.is_active is True
 
 
-async def test_get_active_current_user__not_active_user__error_raised(db_user):
-    db_user.is_active = False
+async def test_get_active_current_user__not_active_user__error_raised(user_out):
+    user_out.is_active = False
 
     with pytest.raises(HTTPException) as exc:
-        await get_current_active_user(db_user)
+        await get_current_active_user(user_out)
 
     assert exc.value.status_code == InvalidCredentials.status_code
     assert exc.value.detail == InvalidCredentials.detail

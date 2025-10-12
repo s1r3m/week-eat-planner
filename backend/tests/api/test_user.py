@@ -1,6 +1,9 @@
+import pytest
 from fastapi import status
 
 from week_eat_planner.constants import AppUrl
+
+pytestmark = pytest.mark.usefixtures('clean_db')
 
 
 async def test_get_user__auth_user__user_in_response(auth_client_for_created_user, created_user):

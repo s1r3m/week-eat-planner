@@ -18,6 +18,8 @@ from week_eat_planner.exceptions import (
     UserAlreadyExists,
 )
 
+pytestmark = pytest.mark.usefixtures('clean_db')
+
 
 @pytest.fixture
 def login_data() -> dict[str, str]:

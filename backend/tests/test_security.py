@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
-from tests.conftest_api import EMAIL
+from tests.constants import EMAIL
 from week_eat_planner.exceptions import InvalidJwtToken, NoEmailInToken, TokenExpired
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider, get_email_from_token

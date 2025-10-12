@@ -36,7 +36,7 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
         return WeekPreviewOut.model_validate(week)
 
-    async def get_week(self, week_id: str | UUID, for_update: bool = False) -> WeekOut | None:
+    async def get_week(self, week_id: UUID, for_update: bool = False) -> WeekOut | None:
         """Retrieves a single week by its ID.
 
         Args:

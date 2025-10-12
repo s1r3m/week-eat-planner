@@ -1,12 +1,15 @@
+import pytest
 import pytest_asyncio
 from fastapi import status
 
 import week_eat_planner.api.schemas as schema
-from tests.conftest_api import WEEK_1_NAME
+from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.helpers import generate_uuid7
+
+pytestmark = pytest.mark.usefixtures('clean_db')
 
 
 @pytest_asyncio.fixture

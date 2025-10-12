@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import UserOut
@@ -58,5 +59,6 @@ async def get_current_active_user(
         InvalidJwtToken: If the token is invalid for any other reason.
     """
     if not current_user.is_active:
+        logger.error(f'User {current_user} is not active.')
         raise InvalidCredentials
     return current_user

@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, Path
 from loguru import logger
@@ -33,7 +34,7 @@ async def get_week_by_id(
         WeekForbidden: If the week does not belong to the user.
     """
     logger.info(f'Requesting Week with {week_id=} for {user}.')
-    week = await WeekService(read_session).get_week(week_id)
+    week = await WeekService(read_session).get_week(UUID(week_id))
     if not week:
         logger.error(f'Week {week_id} does not exist.')
         raise WeekNotFound

@@ -5,8 +5,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import week_eat_planner.api.schemas as schema
-from tests.conftest_api import EMAIL, PASSWORD
-from tests.conftest_mock import REFRESH_TOKEN
+from tests.constants import EMAIL, PASSWORD, REFRESH_TOKEN
 from week_eat_planner.exceptions import (
     InvalidCredentials,
     InvalidEmail,
