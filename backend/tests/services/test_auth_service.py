@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.exceptions import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
-import week_eat_planner.api.schemas as schema
-from tests.constants import EMAIL, PASSWORD, REFRESH_TOKEN
+from tests.constants import HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN
+from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
+from week_eat_planner.db.models import RefreshToken
 from week_eat_planner.exceptions import (
     InvalidCredentials,
     InvalidEmail,
@@ -17,168 +18,208 @@ from week_eat_planner.exceptions import (
     UserAlreadyExists,
 )
 from week_eat_planner.helpers import generate_uuid7
+from week_eat_planner.security.token_provider import TokenProvider
 from week_eat_planner.services.auth_service import AuthService
 
 
 @pytest.fixture
-def mocked_auth_service(mocked_session: AsyncSession) -> AuthService:
-    return AuthService(mocked_session)
+def mocked_user_dao(mocker) -> AsyncMock:
+    user_dao_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.services.auth_service.UserDAO', return_value=user_dao_mock)
+    return user_dao_mock
 
 
 @pytest.fixture
-def valid_old_token(mocker, mocked_session, db_refresh_token):
-    old_token = REFRESH_TOKEN
-    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(seconds=10)
-    scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
-    return old_token
+def mocked_refresh_token_dao(mocker) -> AsyncMock:
+    token_dao_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.services.auth_service.RefreshTokenDAO', return_value=token_dao_mock)
+    return token_dao_mock
 
 
 @pytest.fixture
-def expired_old_token(mocker, mocked_session, db_refresh_token):
-    old_token = REFRESH_TOKEN
-    db_refresh_token.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
-    scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
-    return old_token
+def db_refresh_token(user_out) -> RefreshToken:
+    return RefreshToken(
+        token_hash=HASHED_REFRESH_TOKEN,
+        user_id=user_out.id,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+    )
 
 
-async def test_register_user__valid_email__user_returned(mocker, mocked_session, mocked_auth_service, db_user):
-    email_check_mock = mocker.MagicMock(return_value=None)
-    user_mock = mocker.MagicMock(return_value=db_user)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=email_check_mock, scalar_one=user_mock)
+@pytest.fixture
+def new_db_refresh_token(user_out) -> RefreshToken:
+    return RefreshToken(
+        id=generate_uuid7(),
+        token_hash='some_hash',
+        user_id=user_out.id,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+    )
 
-    user = await mocked_auth_service.register_user(schema.UserCreate(email=EMAIL, password=PASSWORD))
 
-    assert user.email == EMAIL
-    assert user.hashed_password != PASSWORD
+@pytest.fixture
+def expired_db_refresh_token(user_out) -> RefreshToken:
+    return RefreshToken(
+        token_hash=HASHED_REFRESH_TOKEN,
+        user_id=user_out.id,
+        expires_at=datetime.now(timezone.utc) - timedelta(minutes=5),
+    )
 
 
-async def test_register_user__invalid_email__error_raised(mocker, mocked_session, mocked_auth_service, db_user):
-    scalars_mock = mocker.MagicMock(return_value=db_user)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+@pytest.fixture
+def revoked_db_refresh_token(user_out) -> RefreshToken:
+    return RefreshToken(
+        token_hash=HASHED_REFRESH_TOKEN,
+        user_id=user_out.id,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
+        revoked=True,
+    )
+
+
+async def test_register_user__valid_email__user_returned(mocked_user_dao, mocked_session, user_out):
+    mocked_user_dao.find_one_or_none.return_value = None
+    mocked_user_dao.add.return_value = user_out
+
+    user = await AuthService(mocked_session).register_user(UserCreate(email=user_out.email, password=PASSWORD))
+
+    assert user == user_out
+
+
+async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_session, user_out):
+    mocked_user_dao.find_one_or_none.return_value = user_out
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.register_user(schema.UserCreate(email=EMAIL, password=PASSWORD))
+        await AuthService(mocked_session).register_user(UserCreate(email=user_out.email, password=PASSWORD))
 
     assert exc.value.status_code == UserAlreadyExists.status_code
     assert exc.value.detail == UserAlreadyExists.detail
 
 
-async def test_login__valid_credentials__tokens_returned(mocker, mocked_session, mocked_auth_service, db_user):
-    scalars_mock = mocker.MagicMock(return_value=db_user)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+async def test_login__valid_credentials__tokens_returned(mocked_user_dao, mocked_session, db_user):
+    mocked_user_dao.find_one_or_none.return_value = db_user
 
-    access_token, refresh_token = await mocked_auth_service.login(db_user.email, PASSWORD)
+    access_token, refresh_token = await AuthService(mocked_session).login(db_user.email, PASSWORD)
 
     assert access_token
     assert refresh_token
 
 
-async def test_login__no_user_with_email__error_raised(mocker, mocked_session, mocked_auth_service):
-    scalars_mock = mocker.MagicMock(return_value=None)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+async def test_login__no_user_with_email__error_raised(mocked_user_dao, mocked_session, db_user):
+    mocked_user_dao.find_one_or_none.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.login('bad@email.com', PASSWORD)
+        await AuthService(mocked_session).login(db_user.email, PASSWORD)
 
     assert exc.value.status_code == InvalidCredentials.status_code
     assert exc.value.detail == InvalidCredentials.detail
 
 
-async def test_login__invalid_email__error_raised(mocked_auth_service):
+async def test_login__invalid_email__error_raised(mocked_user_dao, mocked_session):
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.login('not_email', PASSWORD)
+        await AuthService(mocked_session).login('not_an_email', PASSWORD)
 
     assert exc.value.status_code == InvalidEmail.status_code
     assert exc.value.detail == InvalidEmail.detail
 
 
-async def test_refresh_tokens__valid_old_token__new_tokens_returned(mocked_auth_service, valid_old_token, db_user):
-    access_token, refresh_token = await mocked_auth_service.refresh_tokens(db_user, valid_old_token)
+async def test_refresh_tokens__valid_old_token__new_tokens_returned(
+    mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token, new_db_refresh_token
+):
+    mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
+    mocked_refresh_token_dao.add.return_value = new_db_refresh_token
+
+    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
 
     assert access_token
-    assert refresh_token != valid_old_token
+    assert refresh_token != REFRESH_TOKEN
 
 
-async def test_refresh_tokens__invalid_token__error_raised(mocker, mocked_session, mocked_auth_service, db_user):
-    old_token = 'not_a_token'
-    scalars_mock = mocker.MagicMock(return_value=None)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+async def test_refresh_tokens__invalid_token__error_raised(mocked_refresh_token_dao, mocked_session, user_out):
+    mocked_refresh_token_dao.find_one_or_none.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.refresh_tokens(db_user, old_token)
+        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == InvalidRefreshToken.status_code
     assert exc.value.detail == InvalidRefreshToken.detail
 
 
-async def test_refresh_tokens__expired_token__error_raised(mocked_auth_service, expired_old_token, db_user):
+async def test_refresh_tokens__bad_refresh_token__error_raised(
+    mocked_refresh_token_dao, mocked_session, user_out, expired_db_refresh_token
+):
+    mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
+
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.refresh_tokens(db_user, expired_old_token)
+        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenExpired.status_code
     assert exc.value.detail == TokenExpired.detail
 
 
-async def test_logout__valid_token__token_revoked(mocked_auth_service, valid_old_token, db_user, db_refresh_token):
-    await mocked_auth_service.logout(db_user, valid_old_token)
-
-    assert db_refresh_token.revoked is True
-
-
-async def test_logout__not_existing_token__error_raised(
-    mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
+async def test_refresh_tokens__revoked_token__error_raised(
+    mocked_refresh_token_dao, mocked_session, revoked_db_refresh_token, user_out
 ):
-    scalars_mock = mocker.MagicMock(return_value=None)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+    mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.logout(db_user, 'some_old_token')
+        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
+
+    assert exc.value.status_code == InvalidRefreshToken.status_code
+    assert exc.value.detail == InvalidRefreshToken.detail
+
+
+async def test_logout__valid_token__token_revoked(mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token):
+    mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
+
+    await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+
+    refresh_token = RefreshTokenFromDB(
+        token_hash=TokenProvider.hash_refresh_token(REFRESH_TOKEN),
+        user_id=user_out.id,
+    )
+    mocked_refresh_token_dao.update.assert_awaited_once_with(refresh_token, TokenUpdate(replaced_by=None))
+
+
+async def test_logout__not_existing_token__error_raised(mocked_refresh_token_dao, mocked_session, user_out):
+    mocked_refresh_token_dao.find_one_or_none.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenNotFound.status_code
     assert exc.value.detail == TokenNotFound.detail
-    assert db_refresh_token.revoked is False
 
 
-async def test_logout__expired_token__error_raised(mocked_auth_service, expired_old_token, db_user, db_refresh_token):
+async def test_logout__expired_token__error_raised(
+    mocked_refresh_token_dao, mocked_session, user_out, expired_db_refresh_token
+):
+    mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
+
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.logout(db_user, expired_old_token)
+        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenExpired.status_code
     assert exc.value.detail == TokenExpired.detail
-    assert db_refresh_token.revoked is False
 
 
 async def test_logout__belong_to_other_user_token__error_raised(
-    mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token
 ):
-    old_token = REFRESH_TOKEN
-    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(seconds=10)
     db_refresh_token.user_id = generate_uuid7()
-    scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+    mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.logout(db_user, old_token)
+        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenForbidden.status_code
     assert exc.value.detail == TokenForbidden.detail
-    assert db_refresh_token.revoked is False
 
 
 async def test_logout__revoked_token__error_raised(
-    mocker, mocked_session, mocked_auth_service, db_user, db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_out, revoked_db_refresh_token
 ):
-    old_token = REFRESH_TOKEN
-    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(seconds=10)
-    db_refresh_token.revoked = True
-    scalars_mock = mocker.MagicMock(return_value=db_refresh_token)
-    mocked_session.execute.return_value = mocker.AsyncMock(scalar_one_or_none=scalars_mock)
+    mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await mocked_auth_service.logout(db_user, old_token)
+        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenRevoked.status_code
     assert exc.value.detail == TokenRevoked.detail
-    assert db_refresh_token.revoked is True

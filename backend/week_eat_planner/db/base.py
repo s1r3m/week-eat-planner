@@ -96,11 +96,10 @@ class BaseDAO(Generic[T]):
 
         return record
 
-    async def find_one_or_none(self, filters: BaseModel, for_update: bool = False) -> T | None:
+    async def find_one_or_none(self, filters: BaseModel) -> T | None:
         """Fetches a single record from the database or None if not found.
 
         Args:
-            for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
             filters:
 
         Returns:
@@ -113,10 +112,6 @@ class BaseDAO(Generic[T]):
         logger.debug(f'Getting {self.model.__name__} with {filter_by}.')
         try:
             query = select(self.model).filter_by(**filter_by)
-
-            if for_update:
-                query = query.with_for_update()
-
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:
@@ -129,7 +124,7 @@ class BaseDAO(Generic[T]):
 
         return record
 
-    async def find_all(self, filters: BaseModel | None) -> list[T]:
+    async def find_all(self, filters: BaseModel | None = None) -> list[T]:
         """Retrieves all T records for a given user.
 
         Args:

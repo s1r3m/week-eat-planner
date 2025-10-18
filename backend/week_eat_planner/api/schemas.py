@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
-import week_eat_planner.db.models as db_model
+from week_eat_planner.db.models import DayOfWeek, MealType
 
 
 class Token(BaseModel):
@@ -76,8 +76,8 @@ class MealSlotOut(BaseModel):
     """Schema for a meal slot representation."""
 
     id: UUID
-    day_of_week: db_model.DayOfWeek
-    meal_type: db_model.MealType
+    day_of_week: DayOfWeek
+    meal_type: MealType
     recipe: RecipePreviewOut | None = None
 
     class Config:

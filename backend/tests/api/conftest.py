@@ -4,12 +4,13 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from tests.constants import PASSWORD, WEEK_1_NAME, WEEK_2_NAME
-from week_eat_planner.api.schemas import UserOut, WeekOut
+from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
+from week_eat_planner.api.schemas import UserCreate, UserOut, WeekOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
+from week_eat_planner.services.auth_service import AuthService
 from week_eat_planner.services.week_service import WeekService
 
 T = TypeVar('T')
@@ -55,6 +56,21 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
     await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
     auth_client.headers['Authorization'] = ''
     return auth_client
+
+
+@pytest.fixture
+def user_factory() -> Callable:
+    async def _factory(user_data: UserCreate) -> UserOut:
+        async for session in db.get_db_commit():
+            user = await AuthService(session).register_user(user_data)
+        return user
+
+    return _factory
+
+
+@pytest_asyncio.fixture
+async def created_user(user_factory: Callable) -> UserOut:
+    return await user_factory(UserCreate(email=EMAIL, password=PASSWORD))
 
 
 @pytest_asyncio.fixture

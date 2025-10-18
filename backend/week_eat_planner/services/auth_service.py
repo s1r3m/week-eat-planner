@@ -45,16 +45,16 @@ class AuthService:
             UserAlreadyExists: If a user with the same email is already registered.
         """
         logger.info(f'New user registration attempt for {user_data.email=}.')
-        db_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
-        if db_user:
+        existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
+        if existing_user:
             logger.error(f'User with {user_data.email=} already exists.')
             raise UserAlreadyExists
 
         user = User(email=str(user_data.email), hashed_password=get_password_hash(user_data.password))
-        await self._user_dao.add(user)
+        created_user = await self._user_dao.add(user)
         logger.info(f'User {user_data.email=} registered successfully.')
 
-        return UserOut.model_validate(user)
+        return UserOut.model_validate(created_user)
 
     async def login(self, username: str, password: str) -> tuple[str, str]:
         """Logs a user in.

@@ -1,7 +1,8 @@
 from week_eat_planner.helpers import generate_uuid7
 
 EMAIL = 'ya@ya.eu'
-PASSWORD = 'password_123'
+PASSWORD = '123456'
+HASHED_PASSWORD = '$2b$12$LWMbERKL6XH7CzFNXR4tOO8wsxOCYzQBLpqH4qoTlZvy1s4riAVNu'
 USER_ID = generate_uuid7()
 
 WEEK_1_ID = generate_uuid7()
