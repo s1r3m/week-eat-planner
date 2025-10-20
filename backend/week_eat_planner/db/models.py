@@ -53,7 +53,7 @@ class Recipe(Base):
     user: Mapped['User'] = relationship(back_populates='recipes')
 
     def __repr__(self) -> str:
-        return f'Recipe({self.id=}, {self.name=}, {self.user_id=})'
+        return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'
 
 
 class DayOfWeek(StrEnum):

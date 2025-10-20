@@ -62,12 +62,19 @@ class RecipePreviewOut(BaseModel):
     """Schema for a short representation of a recipe."""
 
     id: UUID
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
-class RecipeOut(BaseModel):
+class RecipeUserId(BaseModel):
+    user_id: UUID
+
+
+class RecipeOut(RecipePreviewOut, RecipeUserId):
     """Schema for a detailed representation of a recipe."""
 
-    user_id: UUID
     is_public: bool
     ingredients: dict[str, int | float | str]
 

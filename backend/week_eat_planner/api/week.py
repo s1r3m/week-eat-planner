@@ -18,7 +18,7 @@ router = APIRouter()
 async def create_week(
     week_data: WeekCreate,
     user: Annotated[UserOut, Depends(get_current_active_user)],
-    session: AsyncSession = Depends(db.get_db_commit),
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> WeekPreviewOut:
     """Creates a new week for the current user.
 
@@ -40,7 +40,7 @@ async def create_week(
 @router.get(AppUrl.WEEKS, response_model=list[WeekPreviewOut])
 async def get_weeks(
     user: Annotated[UserOut, Depends(get_current_active_user)],
-    session: AsyncSession = Depends(db.get_db),
+    session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[WeekPreviewOut]:
     """Retrieves all weeks for the current user.
 

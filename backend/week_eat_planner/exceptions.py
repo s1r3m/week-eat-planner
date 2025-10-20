@@ -70,6 +70,12 @@ WeekNotFound = HTTPException(
     detail='Week not found',
 )
 
+
+RecipeNotFound = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail='Recipe not found',
+)
+
 AccessForbidden = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail='Access forbidden',

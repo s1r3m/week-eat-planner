@@ -34,7 +34,13 @@ async def get_week_by_id(
         WeekForbidden: If the week does not belong to the user.
     """
     logger.info(f'Requesting Week with {week_id=} for {user}.')
-    week = await WeekService(read_session).get_week(UUID(week_id))
+    try:
+        week_id = UUID(week_id)
+    except ValueError:
+        logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
+        raise WeekNotFound
+
+    week = await WeekService(read_session).get_week(week_id)
     if not week:
         logger.error(f'Week {week_id} does not exist.')
         raise WeekNotFound

@@ -52,16 +52,16 @@ class BaseDAO(Generic[T]):
             raise ValueError('A model must be specified in child classes!')
 
     async def add(self, instance: T) -> T:
-        logger.debug(f'Creating {self.model.__name__} record from {instance}.')
+        logger.debug(f'Adding {self.model.__name__}: {instance}.')
         try:
             self._session.add(instance)
             await self._session.flush()
             await self._session.refresh(instance)
         except SQLAlchemyError as exc:
-            logger.error(f'Error while inserting into {self.model.__name__} from {instance}: {exc}.')
+            logger.error(f'Error while inserting {self.model.__name__} {instance}: {exc}.')
             raise exc
 
-        logger.debug(f'{self.model.__name__} from {instance} has been successfully inserted.')
+        logger.debug(f'{self.model.__name__} {instance} has been successfully inserted.')
         return instance
 
     async def find_one_or_none_by_id(self, obj_id: UUID | str, for_update: bool = False) -> T | None:
