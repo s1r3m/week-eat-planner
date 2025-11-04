@@ -3,7 +3,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekOut, WeekPreviewOut, WeekUpdate, WeekCreate
+from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 

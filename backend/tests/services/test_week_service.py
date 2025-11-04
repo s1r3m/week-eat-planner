@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from tests.api.conftest import WEEK_1_NAME
-from week_eat_planner.api.schemas import UserOut, WeekOut, WeekPreviewOut, WeekUpdate, WeekCreate
+from week_eat_planner.api.schemas import UserOut, WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
 from week_eat_planner.db.models import Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.week_service import WeekService

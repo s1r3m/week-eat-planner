@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekOut, WeekCreate
+from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekCreate, WeekOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
