@@ -1,19 +1,17 @@
 import pytest
 from fastapi import HTTPException
 
-from tests.conftest_api import EMAIL
+from tests.constants import EMAIL, HASHED_PASSWORD, PASSWORD
 from week_eat_planner.exceptions import InvalidJwtToken, NoEmailInToken, TokenExpired
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider, get_email_from_token
 
 BAD_TOKEN = 'bad_token'
-HASHED_PASSWORD = '$2b$12$LWMbERKL6XH7CzFNXR4tOO8wsxOCYzQBLpqH4qoTlZvy1s4riAVNu'
 OTHER_HASH = '$2b$12$lq6H9Uj6.CXVBm2lYffICOZmnaIFalgOqEfgWBq5v7mh6Z1pZU28m'
 EXPIRED_HASH = (
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJleHAiOjE3NTg2NTY5NDR9'
     '.rI14bmWNH4Ev4IhRY8M7hak73cSQx3SWTt9CyMJ_mIk'
 )
-PASSWORD = '123456'
 
 
 def test_decode__valid_token__decoded_str(encoded_token):

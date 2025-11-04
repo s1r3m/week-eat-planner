@@ -54,7 +54,10 @@ UserNotFound = HTTPException(
 )
 
 
-InvalidCredentials = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+InvalidCredentials = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Could not validate credentials',
+)
 
 
 UserAlreadyExists = HTTPException(
@@ -62,9 +65,21 @@ UserAlreadyExists = HTTPException(
     detail='User with this email already exists',
 )
 
+MealSlotNotFound = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail='Meal slot not found',
+)
+
+
 WeekNotFound = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='Week not found',
+)
+
+
+RecipeNotFound = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail='Recipe not found',
 )
 
 AccessForbidden = HTTPException(
@@ -72,7 +87,14 @@ AccessForbidden = HTTPException(
     detail='Access forbidden',
 )
 
+
+MealSlotForbidden = AccessForbidden
+
+
 TokenForbidden = AccessForbidden
+
+
+RecipeForbidden = AccessForbidden
 
 
 WeekForbidden = AccessForbidden

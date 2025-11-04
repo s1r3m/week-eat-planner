@@ -73,11 +73,11 @@ run_db:
 	$(DOCKER_COMPOSE) up -d --wait db
 
 ## @Tests Prepare env file for be unittests
-be_tests_config:
+$(ENV_FILE):
 	cp $(BE_TEST_ENV_FILE) $(ENV_FILE)
 
 ## @App Apply migrations to DB.
-migrations: $(VENV_ACTIVATE) run_db
+migrations: $(VENV_ACTIVATE) $(ENV_FILE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
@@ -90,7 +90,7 @@ stop:
 
 ## @App Connect to database.
 db_shell:
-	PGPASSWORD=wep psql -h localhost -U wep -d wep
+	PGPASSWORD=wep psql -h 127.0.0.1 -p 5432 -U wep -d wep
 
 ## ------------------------------------------------ TESTS --------------------------------------------------------------
 

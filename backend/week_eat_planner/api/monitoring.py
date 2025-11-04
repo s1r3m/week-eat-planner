@@ -13,5 +13,5 @@ async def ping() -> Response:
     Returns:
         A response with the content 'pong'.
     """
-    logger.info('Got /ping request.')
+    logger.info(f'Got GET {AppUrl.PING} request.')
     return Response(content='pong', status_code=200)

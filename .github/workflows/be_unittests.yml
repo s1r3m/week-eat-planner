@@ -29,10 +29,6 @@ jobs:
       run: |
         make install
 
-    - name: Setup .env file
-      run: |
-        make be_tests_config
-
     - name: Run the env
       run: |
         make migrations

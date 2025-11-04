@@ -1,20 +1,17 @@
-import pytest_asyncio
 from fastapi import status
 
-from tests.conftest_api import WEEK_1_NAME
+from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
+from week_eat_planner.api.schemas import WeekCreate, WeekPreviewOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.helpers import generate_uuid7
 
 
-@pytest_asyncio.fixture
-async def created_user_2(user_factory):
-    return await user_factory('user_2@test.com', PASSWORD)
-
-
 async def test_create_week__with_auth__week_in_response(auth_client_for_created_user, created_user):
-    response = await auth_client_for_created_user.post(AppUrl.WEEKS, json={'name': WEEK_1_NAME})
+    response = await auth_client_for_created_user.post(
+        AppUrl.WEEKS, json=WeekCreate(name=WEEK_1_NAME).model_dump(mode='json')
+    )
 
     body = response.json()
     assert response.status_code == status.HTTP_201_CREATED
@@ -27,6 +24,13 @@ async def test_get_weeks__empty_db__empty_response(auth_client_for_created_user)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
+
+
+async def test_get_weeks__week_exists__week_in_response(auth_client_for_created_user, created_week):
+    response = await auth_client_for_created_user.get(AppUrl.WEEKS)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [WeekPreviewOut.model_validate(created_week.model_dump()).model_dump(mode='json')]
 
 
 async def test_get_weeks__no_auth__error_in_response(client):
@@ -44,7 +48,7 @@ async def test_get_week__user_with_week__week_in_response(auth_client_for_create
     assert body == created_week.model_dump(mode='json')
 
 
-async def test_get_week__user_without_week__error_in_response(auth_client_for_created_user):
+async def test_get_week__week_not_exist__error_in_response(auth_client_for_created_user):
     bad_week_id = generate_uuid7()
 
     response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
@@ -63,7 +67,7 @@ async def test_get_week__no_auth__error_in_response(client, created_week):
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):
     new_name = 'new_name'
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': new_name}
     )
 
@@ -77,7 +81,7 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
 
 
 async def test_update_week__no_auth__error_in_response(client, created_week):
-    response = await client.put(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', params={'name': 'new_name'})
+    response = await client.patch(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': 'new_name'})
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
@@ -86,7 +90,7 @@ async def test_update_week__no_auth__error_in_response(client, created_week):
 async def test_update_week__user_without_week__error_in_response(auth_client_for_created_user):
     bad_week_id = generate_uuid7()
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}',
         json={'name': 'test'},
     )

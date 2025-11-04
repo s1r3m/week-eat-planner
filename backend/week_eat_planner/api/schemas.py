@@ -1,8 +1,9 @@
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
-import week_eat_planner.db.models as db_model
+from week_eat_planner.db.models import DayOfWeek, MealType
 
 
 class Token(BaseModel):
@@ -12,15 +13,15 @@ class Token(BaseModel):
     token_type: str
 
 
-class UserOut(BaseModel):
-    """Schema for user data sent to the client."""
+class RefreshTokenFromDB(BaseModel):
+    token_hash: str | None = None
+    user_id: UUID | None = None
 
-    id: UUID
-    email: str
-    is_active: bool
 
-    class Config:
-        from_attributes = True
+class TokenUpdate(BaseModel):
+    expires_at: datetime | None = None
+    replaced_by: UUID | None = None
+    revoked: bool | None = None
 
 
 class Email(BaseModel):
@@ -35,15 +36,63 @@ class UserCreate(Email):
     password: str
 
 
-class WeekPreviewOut(BaseModel):
-    """Schema for a short representation of a week."""
-
+class UserID(BaseModel):
     id: UUID
-    name: str
+
+
+class UserOut(UserID):
+    """Schema for user data sent to the client."""
+
+    email: str
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ModelUserId(BaseModel):
     user_id: UUID
 
-    class Config:
-        from_attributes = True
+
+class RecipeBase(BaseModel):
+    name: str
+    is_public: bool
+
+
+class RecipeCreate(RecipeBase):
+    """Schema for creating a new recipe."""
+
+    ingredients: dict[str, int | float | str]
+
+
+class RecipeUpdate(BaseModel):
+    name: str
+    is_public: bool
+    ingredients: dict[str, int | float | str]
+
+
+class RecipePreviewOut(RecipeBase):
+    """Schema for a short representation of a recipe."""
+
+    id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RecipeOut(RecipePreviewOut, ModelUserId):
+    """Schema for a detailed representation of a recipe."""
+
+    ingredients: dict[str, int | float | str]
+
+
+class MealSlotOut(BaseModel):
+    """Schema for a meal slot representation."""
+
+    id: UUID
+    day_of_week: DayOfWeek
+    meal_type: MealType
+    recipe: RecipePreviewOut | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WeekBase(BaseModel):
@@ -52,28 +101,24 @@ class WeekBase(BaseModel):
     name: str
 
 
+class WeekPreviewOut(WeekBase, ModelUserId):
+    """Schema for a short representation of a week."""
+
+    id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class WeekCreate(WeekBase):
     """Schema for creating a new week."""
 
     pass
 
 
-class WeekUpdate(WeekBase):
+class WeekUpdate(BaseModel):
     """Schema for updating a week's data."""
 
-    pass
-
-
-class MealSlotOut(BaseModel):
-    """Schema for a meal slot representation."""
-
-    id: UUID
-    day_of_week: db_model.DayOfWeek
-    meal_type: db_model.MealType
-    recipe_id: UUID | None = None
-
-    class Config:
-        from_attributes = True
+    name: str
 
 
 class WeekOut(WeekPreviewOut):
@@ -81,5 +126,9 @@ class WeekOut(WeekPreviewOut):
 
     meal_slots: list[MealSlotOut]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MealSlotAssign(BaseModel):
+    slot_id: UUID
+    recipe_id: UUID
