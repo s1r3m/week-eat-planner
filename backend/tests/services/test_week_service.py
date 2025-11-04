@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from tests.api.conftest import WEEK_1_NAME
-from week_eat_planner.api.schemas import UserOut, WeekOut, WeekPreviewOut, WeekUpdate
+from week_eat_planner.api.schemas import UserOut, WeekOut, WeekPreviewOut, WeekUpdate, WeekCreate
 from week_eat_planner.db.models import Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.week_service import WeekService
@@ -23,7 +23,7 @@ def db_week(user_out: UserOut) -> Week:
 
 async def test_create_week__name__week_created(mocked_week_dao, mocked_session, user_out, db_week):
     mocked_week_dao.add.return_value = db_week
-    week = await WeekService(mocked_session).create_week_with_slots(user_out, WEEK_1_NAME)
+    week = await WeekService(mocked_session).create_week_with_slots(user_out, WeekCreate(name=WEEK_1_NAME))
     assert week == WeekPreviewOut.model_validate(db_week)
 
 

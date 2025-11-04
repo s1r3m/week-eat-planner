@@ -6,7 +6,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekOut
+from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekOut, WeekCreate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
@@ -82,8 +82,8 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 @pytest.fixture
 def created_week_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user: UserOut, name: str) -> WeekOut:
-        created_week = await WeekService(db_session).create_week_with_slots(user, name)
+    async def _factory(user: UserOut, week_data: WeekCreate) -> WeekOut:
+        created_week = await WeekService(db_session).create_week_with_slots(user, week_data)
         await db_session.flush()
         week = await WeekDAO(db_session).find_one_or_none(created_week)
         return WeekOut.model_validate(week)
@@ -123,12 +123,12 @@ async def created_user_2(user_factory: Callable) -> UserOut:
 
 @pytest_asyncio.fixture
 async def created_week(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
-    return await created_week_factory(created_user, name=WEEK_1_NAME)
+    return await created_week_factory(created_user, WeekCreate(name=WEEK_1_NAME))
 
 
 @pytest_asyncio.fixture
 async def created_week_2(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
-    return await created_week_factory(created_user, name=WEEK_2_NAME)
+    return await created_week_factory(created_user, WeekCreate(name=WEEK_2_NAME))
 
 
 @pytest_asyncio.fixture

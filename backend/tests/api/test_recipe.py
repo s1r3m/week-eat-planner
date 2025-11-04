@@ -22,9 +22,9 @@ async def created_recipe(created_recipe_factory: Callable, created_user: UserOut
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
-    params = {'name': RECIPE_NAME, 'is_public': RECIPE_IS_PUBLIC, 'ingredients': RECIPE_INGREDIENTS}
+    create_data = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
 
-    response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=params)
+    response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=create_data.model_dump(mode='json'))
 
     body = response.json()
     assert response.status_code == status.HTTP_201_CREATED
@@ -45,10 +45,10 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
     assert body == created_recipe.model_dump(mode='json')
 
 
-async def test_get_recipe__user_without_week__error_in_response(auth_client_for_created_user):
-    bad_week_id = generate_uuid7()
+async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_created_user):
+    bad_recipe_id = generate_uuid7()
 
-    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_week_id)}')
+    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
     assert response.status_code == RecipeNotFound.status_code
     assert response.json() == {'detail': RecipeNotFound.detail}
@@ -116,7 +116,7 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
 
     response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}',
-        json={'name': 'test'},
+        json=RecipeUpdate(name='anything', is_public=True, ingredients={'new': 2}).model_dump(mode='json'),
     )
 
     assert response.status_code == RecipeNotFound.status_code

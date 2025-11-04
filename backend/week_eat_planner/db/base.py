@@ -52,6 +52,17 @@ class BaseDAO(Generic[T]):
             raise ValueError('A model must be specified in child classes!')
 
     async def add(self, instance: T) -> T:
+        """Adds a new instance of the model to the database.
+
+        Args:
+            instance: The model instance to add.
+
+        Returns:
+            The added model instance, refreshed from the database.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         logger.debug(f'Adding {self.model.__name__}: {instance}.')
         try:
             self._session.add(instance)
@@ -68,7 +79,7 @@ class BaseDAO(Generic[T]):
         """Fetches a single record by id from the database or None if not found.
 
         Args:
-            obj_id:
+            obj_id: The ID of the object to find.
             for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
 
         Returns:
@@ -100,7 +111,7 @@ class BaseDAO(Generic[T]):
         """Fetches a single record from the database or None if not found.
 
         Args:
-            filters:
+            filters: A Pydantic model containing the filter criteria.
 
         Returns:
             An instance of the model if found, otherwise None.
@@ -125,13 +136,13 @@ class BaseDAO(Generic[T]):
         return record
 
     async def find_all(self, filters: BaseModel | None = None) -> list[T]:
-        """Retrieves all T records for a given user.
+        """Retrieves all records matching the given filters.
 
         Args:
-            filters:
+            filters: A Pydantic model containing filter criteria. If None, all records are returned.
 
         Returns:
-            A list of Week objects.
+            A list of model instances.
 
         Raises:
             SQLAlchemyError: If a database error occurs.
@@ -150,6 +161,18 @@ class BaseDAO(Generic[T]):
         return list(records)
 
     async def update(self, filters: BaseModel, values: BaseModel) -> T:
+        """Updates records matching the given filters with new values.
+
+        Args:
+            filters: A Pydantic model containing the filter criteria for the records to update.
+            values: A Pydantic model containing the new values to apply.
+
+        Returns:
+            The updated model instance.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         filter_by = filters.model_dump(exclude_unset=True)
         values_dict = values.model_dump(exclude_unset=True)
         logger.debug(f'Updating {self.model.__name__} by {filters} with {values}.')
@@ -164,6 +187,17 @@ class BaseDAO(Generic[T]):
         return updated_db_obj
 
     async def delete(self, filters: BaseModel) -> int:
+        """Deletes records matching the given filters.
+
+        Args:
+            filters: A Pydantic model containing the filter criteria for the records to delete.
+
+        Returns:
+            The number of deleted records.
+
+        Raises:
+            SQLAlchemyError: If a database error occurs.
+        """
         filter_by = filters.model_dump(exclude_unset=True)
         logger.debug(f'Deleting {self.model.__name__} record by {filter_by}.')
         try:

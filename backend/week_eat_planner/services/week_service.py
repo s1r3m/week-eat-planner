@@ -3,7 +3,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekOut, WeekPreviewOut, WeekUpdate
+from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekOut, WeekPreviewOut, WeekUpdate, WeekCreate
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 
@@ -14,7 +14,7 @@ class WeekService:
     def __init__(self, session: AsyncSession) -> None:
         self._week_dao = WeekDAO(session)
 
-    async def create_week_with_slots(self, user: UserOut, name: str) -> WeekPreviewOut:
+    async def create_week_with_slots(self, user: UserOut, week_data: WeekCreate) -> WeekPreviewOut:
         """Creates a new week with its initial meal slots for a user.
 
         This now builds the object graph in memory and persists it in one go,
@@ -22,13 +22,13 @@ class WeekService:
 
         Args:
             user: The user for whom to create the week.
-            name: The name of the week.
+            week_data: The data for the new week.
 
         Returns:
             The newly created Week object, with its slots attached.
         """
-        logger.info(f'Creating a new week named "{name}" for user {user.id}.')
-        new_week = Week(user_id=user.id, name=name)
+        logger.info(f'Creating a new week named "{week_data.name}" for user {user.id}.')
+        new_week = Week(user_id=user.id, name=week_data.name)
         new_week.meal_slots = [
             MealSlot(day_of_week=day, meal_type=meal_type) for day in DayOfWeek for meal_type in MealType
         ]
@@ -84,6 +84,7 @@ class WeekService:
         """Deletes a specific week.
 
         Args:
+            week: The week to delete.
         """
         logger.info(f'Deleting {week} for user {week.user_id}.')
         await self._week_dao.delete(week)

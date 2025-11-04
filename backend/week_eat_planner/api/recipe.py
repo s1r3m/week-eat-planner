@@ -33,6 +33,7 @@ async def get_recipe(
     recipe: Annotated[RecipeOut, Depends(get_recipe_by_id)],
     user: Annotated[UserOut, Depends(get_current_active_user)],
 ) -> RecipeOut:
+    """Retrieves a single recipe by its ID."""
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
     return recipe
 
@@ -42,6 +43,7 @@ async def get_recipes(
     user: Annotated[UserOut, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[RecipePreviewOut]:
+    """Retrieves all recipes for the current user."""
     logger.info(f'Got GET {AppUrl.RECIPES} request for {user}.')
     recipes = await RecipeService(session).get_all_user_recipes(user)
     logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
@@ -55,6 +57,7 @@ async def update_recipe(
     recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeOut:
+    """Updates a recipe."""
     logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
     return updated_recipe
@@ -65,6 +68,7 @@ async def delete_recipe(
     recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
+    """Deletes a recipe."""
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
     await RecipeService(session).delete_recipe(recipe)
     return None

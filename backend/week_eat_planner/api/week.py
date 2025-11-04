@@ -33,7 +33,7 @@ async def create_week(
         The created week object.
     """
     logger.info(f'Request POST /weeks for {user}.')
-    week = await WeekService(session).create_week_with_slots(user, week_data.name)
+    week = await WeekService(session).create_week_with_slots(user, week_data)
     return week
 
 
@@ -65,7 +65,7 @@ async def get_week(
     The week must belong to the currently authenticated user.
 
     Args:
-    :
+        week: The week object, injected by dependency.
 
     Returns:
         The requested week object.
@@ -86,6 +86,8 @@ async def update_week(
 
     Args:
         new_data: The new data for the week.
+        week: The week to be updated.
+        session: The database session.
 
     Returns:
         The updated week object.

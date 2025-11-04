@@ -48,7 +48,7 @@ async def test_get_week__user_with_week__week_in_response(auth_client_for_create
     assert body == created_week.model_dump(mode='json')
 
 
-async def test_get_week__user_without_week__error_in_response(auth_client_for_created_user):
+async def test_get_week__week_not_exist__error_in_response(auth_client_for_created_user):
     bad_week_id = generate_uuid7()
 
     response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
