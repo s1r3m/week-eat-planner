@@ -3,14 +3,16 @@ from typing import AsyncGenerator, Callable, Generator, TypeVar
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
-from week_eat_planner.api.schemas import UserCreate, UserOut, WeekOut
+from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
 from week_eat_planner.services.auth_service import AuthService
+from week_eat_planner.services.recipe_service import RecipeService
 from week_eat_planner.services.week_service import WeekService
 
 T = TypeVar('T')
@@ -19,9 +21,41 @@ YieldFixture = Generator[T, None, None]
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncYieldFixture[AsyncClient]:
+async def db_connection() -> AsyncYieldFixture[None]:
+    await db.init()
+    yield
+    await db.close()
+
+
+@pytest_asyncio.fixture
+async def db_session(db_connection: None) -> AsyncYieldFixture[AsyncSession]:
+    connection = await db.engine.connect()
+    trans = await connection.begin()
+
+    session_maker = async_sessionmaker(connection, class_=AsyncSession, expire_on_commit=False)
+    session = session_maker()
+
+    try:
+        yield session
+    finally:
+        await session.close()
+        await trans.rollback()
+        await connection.close()
+
+
+@pytest_asyncio.fixture
+async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
+    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+        yield db_session
+
+    app.dependency_overrides[db.get_db] = override_get_db
+    app.dependency_overrides[db.get_db_commit] = override_get_db
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
         yield ac
+
+    del app.dependency_overrides[db.get_db]
+    del app.dependency_overrides[db.get_db_commit]
 
 
 @pytest.fixture
@@ -38,18 +72,6 @@ def auth_client_factory(client: AsyncClient) -> Callable:
     return _factory
 
 
-@pytest.fixture
-def created_week_factory() -> Callable:
-    async def _factory(user: UserOut, name: str) -> WeekOut:
-        async for session in db.get_db_commit():
-            created_week = await WeekService(session).create_week_with_slots(user, name)
-            week = await WeekDAO(session).find_one_or_none(created_week)
-            week_out = WeekOut.model_validate(week)
-        return week_out
-
-    return _factory
-
-
 @pytest_asyncio.fixture
 async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
     auth_client = await auth_client_factory(created_user, PASSWORD)
@@ -59,11 +81,32 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 
 @pytest.fixture
-def user_factory() -> Callable:
+def created_week_factory(db_session: AsyncSession) -> Callable:
+    async def _factory(user: UserOut, name: str) -> WeekOut:
+        created_week = await WeekService(db_session).create_week_with_slots(user, name)
+        await db_session.flush()
+        week = await WeekDAO(db_session).find_one_or_none(created_week)
+        return WeekOut.model_validate(week)
+
+    return _factory
+
+
+@pytest.fixture
+def user_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user_data: UserCreate) -> UserOut:
-        async for session in db.get_db_commit():
-            user = await AuthService(session).register_user(user_data)
+        user = await AuthService(db_session).register_user(user_data)
+        await db_session.flush()
         return user
+
+    return _factory
+
+
+@pytest.fixture
+def created_recipe_factory(db_session: AsyncSession) -> Callable:
+    async def _factory(user: UserOut, recipe_data: RecipeCreate) -> RecipeOut:
+        recipe = await RecipeService(db_session).create_recipe(recipe_data, user)
+        await db_session.flush()
+        return recipe
 
     return _factory
 
@@ -71,6 +114,11 @@ def user_factory() -> Callable:
 @pytest_asyncio.fixture
 async def created_user(user_factory: Callable) -> UserOut:
     return await user_factory(UserCreate(email=EMAIL, password=PASSWORD))
+
+
+@pytest_asyncio.fixture
+async def created_user_2(user_factory: Callable) -> UserOut:
+    return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD))
 
 
 @pytest_asyncio.fixture

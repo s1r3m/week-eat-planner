@@ -8,8 +8,6 @@ from week_eat_planner.api.schemas import Email
 from week_eat_planner.dependencies.auth_deps import get_current_active_user, get_current_user
 from week_eat_planner.exceptions import InvalidCredentials
 
-pytestmark = pytest.mark.usefixtures('clean_db')
-
 
 @pytest.fixture
 def mocked_user_dao(mocker) -> AsyncMock:

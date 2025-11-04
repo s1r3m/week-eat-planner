@@ -77,7 +77,7 @@ async def get_week(
 @router.patch(AppUrl.WEEKS_TPL, response_model=WeekPreviewOut)
 async def update_week(
     new_data: WeekUpdate,
-    week: Annotated[WeekOut, Depends(get_week_for_update)],
+    week: Annotated[WeekPreviewOut, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> WeekPreviewOut:
     """Updates a specific week.

@@ -59,7 +59,7 @@ dev = [
 # This creates an executable command when the package is installed.
 # Format: command_name = "path.to.module:function_or_object"
 # We need a way to *run* the uvicorn server.
-# Let's point it to a function that starts uvicorn with our app.
+# Let's point it to a function that starts uvicorn.
 week-eat-planner-server = "week_eat_planner.main:start_app"
 
 [tool.ruff]
@@ -79,11 +79,8 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "module"
-filterwarnings = [
-    "ignore::Warning",
-]
-addopts = "--tb=short -vv"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--tb=short -vv --cache-clear"
 
 [tool.mypy]
 python_version = "3.11"

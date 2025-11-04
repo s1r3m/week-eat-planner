@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import RecipeCreate, UserOut, RecipeOut, RecipePreviewOut
+from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, RecipePreviewOut, RecipeUpdate, UserOut
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.dependencies.recipe_deps import get_recipe_by_id
+from week_eat_planner.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.services.recipe_service import RecipeService
 
 router = APIRouter()
@@ -47,3 +47,24 @@ async def get_recipes(
     logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
 
     return recipes
+
+
+@router.patch(AppUrl.RECIPES_TPL, response_model=RecipeOut)
+async def update_recipe(
+    new_data: RecipeUpdate,
+    recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> RecipeOut:
+    logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
+    updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+    return updated_recipe
+
+
+@router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
+async def delete_recipe(
+    recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> None:
+    logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
+    await RecipeService(session).delete_recipe(recipe)
+    return None

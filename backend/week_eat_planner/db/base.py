@@ -64,7 +64,7 @@ class BaseDAO(Generic[T]):
         logger.debug(f'{self.model.__name__} {instance} has been successfully inserted.')
         return instance
 
-    async def find_one_or_none_by_id(self, obj_id: UUID | str, for_update: bool = False) -> T | None:
+    async def find_one_or_none_by_id(self, obj_id: UUID, for_update: bool = False) -> T | None:
         """Fetches a single record by id from the database or None if not found.
 
         Args:

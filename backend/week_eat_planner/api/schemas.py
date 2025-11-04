@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from week_eat_planner.db.models import DayOfWeek, MealType
 
@@ -46,36 +46,41 @@ class UserOut(UserID):
     email: str
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeCreate(BaseModel):
+class ModelUserId(BaseModel):
+    user_id: UUID
+
+
+class RecipeBase(BaseModel):
+    name: str
+    is_public: bool
+
+
+class RecipeCreate(RecipeBase):
     """Schema for creating a new recipe."""
 
+    ingredients: dict[str, int | float | str]
+
+
+class RecipeUpdate(BaseModel):
     name: str
     is_public: bool
     ingredients: dict[str, int | float | str]
 
 
-class RecipePreviewOut(BaseModel):
+class RecipePreviewOut(RecipeBase):
     """Schema for a short representation of a recipe."""
 
     id: UUID
-    name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeUserId(BaseModel):
-    user_id: UUID
-
-
-class RecipeOut(RecipePreviewOut, RecipeUserId):
+class RecipeOut(RecipePreviewOut, ModelUserId):
     """Schema for a detailed representation of a recipe."""
 
-    is_public: bool
     ingredients: dict[str, int | float | str]
 
 
@@ -87,8 +92,7 @@ class MealSlotOut(BaseModel):
     meal_type: MealType
     recipe: RecipePreviewOut | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WeekBase(BaseModel):
@@ -97,14 +101,12 @@ class WeekBase(BaseModel):
     name: str
 
 
-class WeekPreviewOut(WeekBase):
+class WeekPreviewOut(WeekBase, ModelUserId):
     """Schema for a short representation of a week."""
 
     id: UUID
-    user_id: UUID
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WeekCreate(WeekBase):
@@ -124,5 +126,9 @@ class WeekOut(WeekPreviewOut):
 
     meal_slots: list[MealSlotOut]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MealSlotAssign(BaseModel):
+    slot_id: UUID
+    recipe_id: UUID

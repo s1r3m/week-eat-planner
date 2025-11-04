@@ -3,7 +3,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import UserID, UserOut, WeekOut, WeekPreviewOut, WeekUpdate
+from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekOut, WeekPreviewOut, WeekUpdate
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 
@@ -61,7 +61,7 @@ class WeekService:
             A list of the user's weeks.
         """
         logger.info(f'Retrieving all weeks for user {user.id}.')
-        weeks = await self._week_dao.find_all(UserID(id=user.id))
+        weeks = await self._week_dao.find_all(ModelUserId(user_id=user.id))
         logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}.')
 
         return [WeekPreviewOut.model_validate(week) for week in weeks]
@@ -76,9 +76,7 @@ class WeekService:
         Returns:
             The updated Week object.
         """
-        logger.info(f'Updating week {week} with {new_data}.')
-
-        updated_week = await self._week_dao.update(WeekPreviewOut(**week.model_dump()), new_data)
+        updated_week = await self._week_dao.update(week, new_data)
         logger.info(f'Successfully updated {updated_week.id}.')
         return WeekPreviewOut.model_validate(updated_week)
 
@@ -88,5 +86,5 @@ class WeekService:
         Args:
         """
         logger.info(f'Deleting {week} for user {week.user_id}.')
-        await self._week_dao.delete(WeekPreviewOut(**week.model_dump()))
+        await self._week_dao.delete(week)
         logger.info(f'Successfully deleted {week}.')

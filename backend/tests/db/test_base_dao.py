@@ -6,8 +6,6 @@ from sqlalchemy.testing.schema import mapped_column
 
 from week_eat_planner.db.base import Base, BaseDAO
 
-pytestmark = pytest.mark.usefixtures('clean_db')
-
 ERROR_MESSAGE = 'Error in DB!'
 
 

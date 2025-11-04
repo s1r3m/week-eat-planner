@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta, timezone
 
-import pytest
 import pytest_asyncio
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.constants import EMAIL, PASSWORD
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserOut
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.dao import RefreshTokenDAO
-from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
     InvalidCredentials,
     InvalidEmail,
@@ -18,44 +18,32 @@ from week_eat_planner.exceptions import (
     UserAlreadyExists,
 )
 
-pytestmark = pytest.mark.usefixtures('clean_db')
-
-
-@pytest.fixture
-def login_data() -> dict[str, str]:
-    """Generates a unique email and a standard password for test isolation."""
-    email = 'test_user_123@example.com'
-    password = 'a-secure-password-123'
-    return {'email': email, 'password': password}
+# @pytest.fixture
+# def login_data() -> dict[str, str]:
+#     email = 'test_user_123@example.com'
+#     password = 'a-secure-password-123'
+#     return {'email': email, 'password': password}
 
 
 @pytest_asyncio.fixture
-async def user(client, login_data) -> dict[str, str]:
-    """A created user in the system."""
-    await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
-    return login_data
-
-
-@pytest_asyncio.fixture
-async def expired_refresh_token_user(created_user) -> UserOut:
-    async for session in db.get_db_commit():
-        token = RefreshTokenFromDB(user_id=created_user.id)
-        new_expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
-        await RefreshTokenDAO(session).update(token, TokenUpdate(expires_at=new_expires_at))
-
+async def expired_refresh_token_user(db_session: AsyncSession, created_user: UserOut) -> UserOut:
+    token = RefreshTokenFromDB(user_id=created_user.id)
+    new_expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
+    await RefreshTokenDAO(db_session).update(token, TokenUpdate(expires_at=new_expires_at))
+    await db_session.flush()
     return created_user
 
 
 @pytest_asyncio.fixture
-async def revoked_refresh_token_user(created_user) -> UserOut:
-    async for session in db.get_db_commit():
-        token = RefreshTokenFromDB(user_id=created_user.id)
-        await RefreshTokenDAO(session).update(token, TokenUpdate(revoked=True))
-
+async def revoked_refresh_token_user(db_session: AsyncSession, created_user: UserOut) -> UserOut:
+    token = RefreshTokenFromDB(user_id=created_user.id)
+    await RefreshTokenDAO(db_session).update(token, TokenUpdate(revoked=True))
+    await db_session.flush()
     return created_user
 
 
-async def test_add_user__valid_data__user_created(client, login_data):
+async def test_add_user__valid_data__user_created(client):
+    login_data = {'email': EMAIL, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -64,8 +52,9 @@ async def test_add_user__valid_data__user_created(client, login_data):
     assert body == {'email': login_data['email'], 'is_active': True}
 
 
-async def test_add_user__duplicate_email__conflict_error(client, user):
-    response = await client.post(AppUrl.AUTH_SIGNUP, json=user)
+async def test_add_user__duplicate_email__conflict_error(client, created_user):
+    login_data = {'email': created_user.email, 'password': PASSWORD}
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     assert response.status_code == UserAlreadyExists.status_code
     assert response.json() == {'detail': UserAlreadyExists.detail}
@@ -77,8 +66,8 @@ async def test_add_user__invalid_email_format__unprocessable_entity_error(client
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_login__valid_credentials__token_returned(client, user):
-    token_data = {'username': user['email'], 'password': user['password']}
+async def test_login__valid_credentials__token_returned(client, created_user):
+    token_data = {'username': created_user.email, 'password': PASSWORD}
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
@@ -97,8 +86,8 @@ async def test_login__invalid_email_format__conflict_error(client):
     assert response.json() == {'detail': InvalidEmail.detail}
 
 
-async def test_login__invalid_password__not_found_error(client, user):
-    token_data = {'username': user['email'], 'password': 'wrong-password'}
+async def test_login__invalid_password__not_found_error(client, created_user):
+    token_data = {'username': created_user.email, 'password': 'wrong-password'}
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
@@ -106,8 +95,8 @@ async def test_login__invalid_password__not_found_error(client, user):
     assert response.json() == {'detail': InvalidCredentials.detail}
 
 
-async def test_login__nonexistent_user__not_found_error(client, login_data):
-    token_data = {'username': login_data['email'], 'password': login_data['password']}
+async def test_login__nonexistent_user__not_found_error(client):
+    token_data = {'username': 'email@not.exist', 'password': PASSWORD}
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 

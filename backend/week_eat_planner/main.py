@@ -1,19 +1,37 @@
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 import uvicorn
 from fastapi import FastAPI
 
-from week_eat_planner.api.auth import router as auth_router
-from week_eat_planner.api.monitoring import router as monitoring_router
-from week_eat_planner.api.recipe import router as recipe_router
-from week_eat_planner.api.user import router as user_router
-from week_eat_planner.api.week import router as weeks_router
+from week_eat_planner.api import auth, monitoring, recipe, user, week
+from week_eat_planner.db.session_maker import db
 
-app = FastAPI(title='Week-Eat-Planner')
-app.include_router(auth_router)
-app.include_router(monitoring_router)
-app.include_router(recipe_router)
-app.include_router(user_router)
-app.include_router(weeks_router)
+
+@asynccontextmanager
+async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None, None]:
+    await db.init()
+
+    yield
+
+    await db.close()
+
+
+def create_app() -> FastAPI:
+    fast_app = FastAPI(title='Week-Eat-Planner', lifespan=lifespan)
+
+    fast_app.include_router(auth.router)
+    fast_app.include_router(monitoring.router)
+    fast_app.include_router(recipe.router)
+    fast_app.include_router(user.router)
+    fast_app.include_router(week.router)
+
+    return fast_app
+
+
+app = create_app()
 
 
 def start_app() -> None:
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    fast_app = create_app()
+    uvicorn.run(fast_app, host='0.0.0.0', port=8000)
