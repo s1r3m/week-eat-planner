@@ -1,7 +1,7 @@
-from symtable import Class
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
+
 
 class Email(BaseModel):
     email: EmailStr
@@ -9,6 +9,7 @@ class Email(BaseModel):
 
 class UserBase(Email):
     """Base schema for user data."""
+
     pass
 
 
@@ -17,8 +18,10 @@ class UserCreate(UserBase):
 
     password: str
 
+
 class UserId(BaseModel):
     id: UUID
+
 
 class UserRead(UserBase, UserId):
     """Schema for reading user data."""

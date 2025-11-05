@@ -3,8 +3,16 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import OwnerId, UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
-from week_eat_planner.db.dao import WeekDAO
+from week_eat_planner.api.schemas import (
+    OwnerId,
+    UserRead,
+    WeekCreate,
+    WeekRead,
+    WeekReadMinimal,
+    WeekUpdate,
+    MealSlotAssign, MealSlotRead,
+)
+from week_eat_planner.db.dao import WeekDAO, RecipeDAO, MealSlotDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 
 
@@ -12,6 +20,8 @@ class WeekService:
     """Service layer for handling week-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        self._meal_slot_dao = MealSlotDAO(session)
+        self._recipe_dao = RecipeDAO(session)
         self._week_dao = WeekDAO(session)
 
     async def create_week_with_slots(self, user: UserRead, week_data: WeekCreate) -> WeekReadMinimal:

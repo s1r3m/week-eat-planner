@@ -26,8 +26,9 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from week_eat_planner.db.base import Base
+
 from week_eat_planner.db import models
+from week_eat_planner.db.base import Base
 
 target_metadata = Base.metadata
 

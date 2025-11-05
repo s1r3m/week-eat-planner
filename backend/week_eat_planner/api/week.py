@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
+from week_eat_planner.api.schemas import UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate, MealSlotAssign
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user

@@ -44,14 +44,6 @@ The `Makefile` contains all the necessary commands to run and manage the applica
 For a full list of commands, run `make help`.
 
 ## Running Tests
-<<<<<<< Updated upstream
-To run the backend tests:
-```bash
-make migrations
-make be_tests
-```
-=======
->>>>>>> Stashed changes
 
 -   **Backend:**
     ```bash
@@ -67,25 +59,6 @@ make be_tests
 
 ```
 week-eat-planner/
-<<<<<<< Updated upstream
-├── backend/
-│   ├── alembic/                # Database migrations
-│   ├── week_eat_planner/       # FastAPI application
-│   ├── tests/                  # Unit tests
-│   ├── main.py                 # Entry point for the FastAPI app
-├── frontend/
-│   ├── public/                 # Public assets
-│   ├── src/                    # Vue.js source code
-│   ├── tests/                  # Frontend tests
-│   └── package.json            # Node.js dependencies
-├── qa/                         # Base QA folder
-│   ├── docker/                 # Docker compose files
-│   ├── tests/                  # Tests 
-│   └── wep_qa                  # Autotests infrastructure
-└── README.md                   # Project documentation
-=======
-├── .github/                  # GitHub Actions workflows
-├── .idea/                    # IDE configuration
 ├── backend/                  # FastAPI application
 │   ├── alembic/              # Database migrations
 │   ├── tests/                # Unit tests
@@ -102,7 +75,6 @@ week-eat-planner/
 ├── docker-compose.yml
 ├── Makefile
 └── README.md
->>>>>>> Stashed changes
 ```
 
 ## Contributing

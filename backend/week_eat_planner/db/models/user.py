@@ -1,10 +1,15 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
+
+if TYPE_CHECKING:
+    from .recipe import Recipe
+    from .week import Week
 
 
 class User(Base):
@@ -21,7 +26,6 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f'User({self.id=}, {self.email=}, {self.is_active=}'
-
 
 
 class RefreshToken(Base):

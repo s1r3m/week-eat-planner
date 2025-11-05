@@ -1,6 +1,7 @@
+from .meal_slot import DayOfWeek, MealSlot, MealType
 from .recipe import Recipe
 from .user import RefreshToken, User
-from .week import DayOfWeek, MealSlot, MealType, Week
+from .week import Week
 
 __all__ = [
     'DayOfWeek',

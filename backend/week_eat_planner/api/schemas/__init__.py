@@ -1,7 +1,8 @@
-from .recipe import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, OwnerId
-from .token import Token, TokenUpdate, RefreshTokenFromDB
+from .meal_slot import MealSlotAssign, MealSlotRead
+from .recipe import OwnerId, RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
+from .token import RefreshTokenFromDB, Token, TokenUpdate
 from .user import Email, UserCreate, UserId, UserRead
-from .week import MealSlotAssign, MealSlotRead, WeekCreate, WeekReadMinimal, WeekUpdate, WeekRead
+from .week import WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 
 __all__ = [
     'Email',
@@ -23,3 +24,7 @@ __all__ = [
     'WeekReadMinimal',
     'WeekUpdate',
 ]
+
+
+MealSlotRead.model_rebuild()
+WeekRead.model_rebuild()
