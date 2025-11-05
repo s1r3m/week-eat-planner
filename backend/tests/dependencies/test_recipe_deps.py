@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import HTTPException
 
-from week_eat_planner.api.schemas import RecipeOut, UserOut
+from week_eat_planner.api.schemas import RecipeRead, UserRead
 from week_eat_planner.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
@@ -21,8 +21,8 @@ def mocked_recipe_dao(mocker) -> AsyncMock:
 
 
 @pytest.fixture
-def recipe_out(user_out: UserOut) -> RecipeOut:
-    return RecipeOut(
+def recipe_out(user_out: UserRead) -> RecipeRead:
+    return RecipeRead(
         id=RECIPE_ID, user_id=user_out.id, name=RECIPE_NAME, is_public=False, ingredients=RECIPE_INGREDIENTS
     )
 

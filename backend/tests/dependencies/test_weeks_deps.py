@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from tests.constants import WEEK_1_ID, WEEK_1_NAME
-from week_eat_planner.api.schemas import UserOut, WeekOut, WeekPreviewOut
+from week_eat_planner.api.schemas import UserRead, WeekRead, WeekReadMinimal
 from week_eat_planner.dependencies.week_deps import get_week_by_id, get_week_for_update
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 
@@ -17,8 +17,8 @@ def mocked_week_dao(mocker) -> AsyncMock:
 
 
 @pytest.fixture
-def week_out(user_out: UserOut) -> WeekOut:
-    return WeekOut(id=WEEK_1_ID, user_id=user_out.id, name=WEEK_1_NAME, meal_slots=[])
+def week_out(user_out: UserRead) -> WeekRead:
+    return WeekRead(id=WEEK_1_ID, user_id=user_out.id, name=WEEK_1_NAME, meal_slots=[])
 
 
 async def test_get_week_by_id__week_exist__week_returned(mocked_week_dao, mocked_session, week_out, user_out):
@@ -68,7 +68,7 @@ async def test_get_week_for_update__week_exist__week_returned(mocked_week_dao, m
 
     week = await get_week_for_update(week_out, mocked_session)
 
-    assert week == WeekPreviewOut.model_validate(week_out.model_dump())
+    assert week == WeekReadMinimal.model_validate(week_out.model_dump())
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=week_out.id, for_update=True)
 
 

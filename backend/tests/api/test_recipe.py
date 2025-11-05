@@ -4,7 +4,7 @@ import pytest_asyncio
 from fastapi import status
 
 from tests.constants import PASSWORD
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, RecipePreviewOut, RecipeUpdate, UserOut
+from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
@@ -15,7 +15,7 @@ RECIPE_INGREDIENTS = {'eggs': 2}
 
 
 @pytest_asyncio.fixture
-async def created_recipe(created_recipe_factory: Callable, created_user: UserOut) -> RecipeOut:
+async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> RecipeRead:
     recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
 
     return await created_recipe_factory(created_user, recipe_data=recipe_create)
@@ -72,7 +72,7 @@ async def test_get_recipes__recipe_exists__recipe_in_response(auth_client_for_cr
     response = await auth_client_for_created_user.get(AppUrl.RECIPES)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [RecipePreviewOut.model_validate(created_recipe.model_dump()).model_dump(mode='json')]
+    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe.model_dump()).model_dump(mode='json')]
 
 
 async def test_get_recipes__no_auth__error_in_response(client, created_recipe):

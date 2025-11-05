@@ -2,7 +2,7 @@ from fastapi import status
 
 from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
-from week_eat_planner.api.schemas import WeekCreate, WeekPreviewOut
+from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.helpers import generate_uuid7
@@ -30,7 +30,7 @@ async def test_get_weeks__week_exists__week_in_response(auth_client_for_created_
     response = await auth_client_for_created_user.get(AppUrl.WEEKS)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [WeekPreviewOut.model_validate(created_week.model_dump()).model_dump(mode='json')]
+    assert response.json() == [WeekReadMinimal.model_validate(created_week.model_dump()).model_dump(mode='json')]
 
 
 async def test_get_weeks__no_auth__error_in_response(client):

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, RecipePreviewOut, RecipeUpdate, UserOut
+from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
@@ -14,12 +14,12 @@ from week_eat_planner.services.recipe_service import RecipeService
 router = APIRouter()
 
 
-@router.post(AppUrl.RECIPES, response_model=RecipeOut, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.RECIPES, response_model=RecipeRead, status_code=status.HTTP_201_CREATED)
 async def create_recipe(
     recipe_data: RecipeCreate,
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> RecipeOut:
+) -> RecipeRead:
     """Creates a new recipe for the current user."""
     logger.info(f'Got POST {AppUrl.RECIPES} request for {user}.')
     recipe = await RecipeService(session).create_recipe(recipe_data, user)
@@ -28,21 +28,21 @@ async def create_recipe(
     return recipe
 
 
-@router.get(AppUrl.RECIPES_TPL, response_model=RecipeOut)
+@router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def get_recipe(
-    recipe: Annotated[RecipeOut, Depends(get_recipe_by_id)],
-    user: Annotated[UserOut, Depends(get_current_active_user)],
-) -> RecipeOut:
+    recipe: Annotated[RecipeRead, Depends(get_recipe_by_id)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
+) -> RecipeRead:
     """Retrieves a single recipe by its ID."""
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
     return recipe
 
 
-@router.get(AppUrl.RECIPES, response_model=list[RecipePreviewOut])
+@router.get(AppUrl.RECIPES, response_model=list[RecipeReadMinimal])
 async def get_recipes(
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> list[RecipePreviewOut]:
+) -> list[RecipeReadMinimal]:
     """Retrieves all recipes for the current user."""
     logger.info(f'Got GET {AppUrl.RECIPES} request for {user}.')
     recipes = await RecipeService(session).get_all_user_recipes(user)
@@ -51,12 +51,12 @@ async def get_recipes(
     return recipes
 
 
-@router.patch(AppUrl.RECIPES_TPL, response_model=RecipeOut)
+@router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def update_recipe(
     new_data: RecipeUpdate,
-    recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
+    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> RecipeOut:
+) -> RecipeRead:
     """Updates a recipe."""
     logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
@@ -65,7 +65,7 @@ async def update_recipe(
 
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_recipe(
-    recipe: Annotated[RecipeOut, Depends(get_recipe_for_update)],
+    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a recipe."""

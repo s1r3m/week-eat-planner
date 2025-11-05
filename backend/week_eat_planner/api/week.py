@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import UserOut, WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
+from week_eat_planner.api.schemas import UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.dependencies.auth_deps import get_current_active_user
@@ -14,12 +14,12 @@ from week_eat_planner.services.week_service import WeekService
 router = APIRouter()
 
 
-@router.post(AppUrl.WEEKS, response_model=WeekPreviewOut, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.WEEKS, response_model=WeekReadMinimal, status_code=status.HTTP_201_CREATED)
 async def create_week(
     week_data: WeekCreate,
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> WeekPreviewOut:
+) -> WeekReadMinimal:
     """Creates a new week for the current user.
 
     Also initiates seven days for the week with meal slots.
@@ -37,11 +37,11 @@ async def create_week(
     return week
 
 
-@router.get(AppUrl.WEEKS, response_model=list[WeekPreviewOut])
+@router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
 async def get_weeks(
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> list[WeekPreviewOut]:
+) -> list[WeekReadMinimal]:
     """Retrieves all weeks for the current user.
 
     Args:
@@ -56,10 +56,10 @@ async def get_weeks(
     return weeks
 
 
-@router.get(AppUrl.WEEKS_TPL, response_model=WeekOut)
+@router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
 async def get_week(
-    week: Annotated[WeekOut, Depends(get_week_by_id)],
-) -> WeekOut:
+    week: Annotated[WeekRead, Depends(get_week_by_id)],
+) -> WeekRead:
     """Retrieves a specific week by its ID.
 
     The week must belong to the currently authenticated user.
@@ -74,12 +74,12 @@ async def get_week(
     return week
 
 
-@router.patch(AppUrl.WEEKS_TPL, response_model=WeekPreviewOut)
+@router.patch(AppUrl.WEEKS_TPL, response_model=WeekReadMinimal)
 async def update_week(
     new_data: WeekUpdate,
-    week: Annotated[WeekPreviewOut, Depends(get_week_for_update)],
+    week: Annotated[WeekReadMinimal, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> WeekPreviewOut:
+) -> WeekReadMinimal:
     """Updates a specific week.
 
     The week must belong to the currently authenticated user.
@@ -99,7 +99,7 @@ async def update_week(
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_week(
-    week: Annotated[WeekPreviewOut, Depends(get_week_for_update)],
+    week: Annotated[WeekReadMinimal, Depends(get_week_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.

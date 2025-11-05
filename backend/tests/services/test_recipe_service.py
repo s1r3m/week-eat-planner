@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, RecipePreviewOut, RecipeUpdate
+from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.recipe_service import RecipeService
@@ -37,8 +37,8 @@ def db_recipe(user_out, recipe_create) -> Recipe:
 
 
 @pytest.fixture
-def recipe_out(db_recipe) -> RecipeOut:
-    return RecipeOut.model_validate(db_recipe)
+def recipe_out(db_recipe) -> RecipeRead:
+    return RecipeRead.model_validate(db_recipe)
 
 
 async def test_create_recipe__valid_data__recipe_created(
@@ -52,7 +52,7 @@ async def test_create_recipe__valid_data__recipe_created(
 async def test_get_recipe__recipe_exists__recipe_returned(mocked_session, mocked_recipe_dao, db_recipe):
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_recipe
     recipe = await RecipeService(mocked_session).get_recipe(db_recipe.id)
-    assert recipe == RecipeOut.model_validate(recipe)
+    assert recipe == RecipeRead.model_validate(recipe)
 
 
 async def test_get_recipe__recipe_not_exists__none_returned(mocked_session, mocked_recipe_dao, db_recipe):
@@ -64,7 +64,7 @@ async def test_get_recipe__recipe_not_exists__none_returned(mocked_session, mock
 async def test_get_recipes__user_with_recipes__recipes_returned(mocked_session, mocked_recipe_dao, db_recipe, user_out):
     mocked_recipe_dao.find_all.return_value = [db_recipe]
     recipe = await RecipeService(mocked_session).get_all_user_recipes(user_out)
-    assert recipe == [RecipePreviewOut.model_validate(db_recipe)]
+    assert recipe == [RecipeReadMinimal.model_validate(db_recipe)]
 
 
 @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ async def test_get_recipes__user_with_recipes__recipes_returned(mocked_session, 
 async def test_update_recipe__valid_new_data__recipe_updated(
     mocked_session, mocked_recipe_dao, db_recipe, user_out, name, is_public, ingredients
 ):
-    recipe_out = RecipeOut.model_validate(db_recipe)
+    recipe_out = RecipeRead.model_validate(db_recipe)
     updated_db_recipe = copy(db_recipe)
     updated_db_recipe.name = name or db_recipe.name
     updated_db_recipe.is_public = is_public or db_recipe.is_public
@@ -91,12 +91,12 @@ async def test_update_recipe__valid_new_data__recipe_updated(
 
     updated_recipe = await RecipeService(mocked_session).update_recipe(recipe_out, update_params)
 
-    assert updated_recipe == RecipeOut.model_validate(updated_db_recipe)
+    assert updated_recipe == RecipeRead.model_validate(updated_db_recipe)
 
 
 async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_recipe_dao, db_recipe):
     mocked_recipe_dao.delete.return_value = 1
-    recipe_out = RecipeOut.model_validate(db_recipe)
+    recipe_out = RecipeRead.model_validate(db_recipe)
 
     await RecipeService(mocked_session).delete_recipe(recipe_out)
 

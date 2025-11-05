@@ -4,7 +4,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.constants import EMAIL, HASHED_PASSWORD, USER_ID
-from week_eat_planner.api.schemas import UserOut
+from week_eat_planner.api.schemas import UserRead
 from week_eat_planner.db.models import User
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
@@ -29,10 +29,10 @@ def db_user() -> User:
 
 
 @pytest.fixture
-def user_out(db_user: User) -> UserOut:
-    return UserOut(id=db_user.id, email=db_user.email, is_active=db_user.is_active)
+def user_out(db_user: User) -> UserRead:
+    return UserRead(id=db_user.id, email=db_user.email, is_active=db_user.is_active)
 
 
 @pytest.fixture
-def user_out_2() -> UserOut:
-    return UserOut(id=generate_uuid7(), email='user2@tests.com', is_active=True)
+def user_out_2() -> UserRead:
+    return UserRead(id=generate_uuid7(), email='user2@tests.com', is_active=True)

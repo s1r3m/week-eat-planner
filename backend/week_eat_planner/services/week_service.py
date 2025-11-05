@@ -3,7 +3,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import ModelUserId, UserOut, WeekCreate, WeekOut, WeekPreviewOut, WeekUpdate
+from week_eat_planner.api.schemas import OwnerId, UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 
@@ -14,7 +14,7 @@ class WeekService:
     def __init__(self, session: AsyncSession) -> None:
         self._week_dao = WeekDAO(session)
 
-    async def create_week_with_slots(self, user: UserOut, week_data: WeekCreate) -> WeekPreviewOut:
+    async def create_week_with_slots(self, user: UserRead, week_data: WeekCreate) -> WeekReadMinimal:
         """Creates a new week with its initial meal slots for a user.
 
         This now builds the object graph in memory and persists it in one go,
@@ -34,9 +34,9 @@ class WeekService:
         ]
         week = await self._week_dao.add(new_week)
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
-        return WeekPreviewOut.model_validate(week)
+        return WeekReadMinimal.model_validate(week)
 
-    async def get_week(self, week_id: UUID, for_update: bool = False) -> WeekOut | None:
+    async def get_week(self, week_id: UUID, for_update: bool = False) -> WeekRead | None:
         """Retrieves a single week by its ID.
 
         Args:
@@ -49,9 +49,9 @@ class WeekService:
         """
         logger.info(f'Retrieving week {week_id} {for_update=}.')
         week = await self._week_dao.find_one_or_none_by_id(obj_id=week_id, for_update=for_update)
-        return WeekOut.model_validate(week) if week else None
+        return WeekRead.model_validate(week) if week else None
 
-    async def get_weeks(self, user: UserOut) -> list[WeekPreviewOut]:
+    async def get_weeks(self, user: UserRead) -> list[WeekReadMinimal]:
         """Retrieves all weeks for a specific user.
 
         Args:
@@ -61,12 +61,12 @@ class WeekService:
             A list of the user's weeks.
         """
         logger.info(f'Retrieving all weeks for user {user.id}.')
-        weeks = await self._week_dao.find_all(ModelUserId(user_id=user.id))
+        weeks = await self._week_dao.find_all(OwnerId(user_id=user.id))
         logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}.')
 
-        return [WeekPreviewOut.model_validate(week) for week in weeks]
+        return [WeekReadMinimal.model_validate(week) for week in weeks]
 
-    async def update_week(self, week: WeekPreviewOut, new_data: WeekUpdate) -> WeekPreviewOut:
+    async def update_week(self, week: WeekReadMinimal, new_data: WeekUpdate) -> WeekReadMinimal:
         """Updates the details of a specific week.
 
         Args:
@@ -78,9 +78,9 @@ class WeekService:
         """
         updated_week = await self._week_dao.update(week, new_data)
         logger.info(f'Successfully updated {updated_week.id}.')
-        return WeekPreviewOut.model_validate(updated_week)
+        return WeekReadMinimal.model_validate(updated_week)
 
-    async def delete_week(self, week: WeekPreviewOut) -> None:
+    async def delete_week(self, week: WeekReadMinimal) -> None:
         """Deletes a specific week.
 
         Args:

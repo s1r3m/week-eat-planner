@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserOut
+from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.db.dao import RefreshTokenDAO, UserDAO
 from week_eat_planner.db.models import RefreshToken, User
@@ -29,7 +29,7 @@ class AuthService:
         self._user_dao = UserDAO(session)
         self._refresh_token_dao = RefreshTokenDAO(session)
 
-    async def register_user(self, user_data: UserCreate) -> UserOut:
+    async def register_user(self, user_data: UserCreate) -> UserRead:
         """Registers a new user.
 
         Checks if a user with the given email already exists. If not, it hashes the
@@ -54,7 +54,7 @@ class AuthService:
         created_user = await self._user_dao.add(user)
         logger.info(f'User {user_data.email=} registered successfully.')
 
-        return UserOut.model_validate(created_user)
+        return UserRead.model_validate(created_user)
 
     async def login(self, username: str, password: str) -> tuple[str, str]:
         """Logs a user in.
@@ -98,7 +98,7 @@ class AuthService:
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
 
-    async def refresh_tokens(self, user: UserOut, old_refresh_token: str) -> tuple[str, str]:
+    async def refresh_tokens(self, user: UserRead, old_refresh_token: str) -> tuple[str, str]:
         """Refreshes access and refresh tokens.
 
         Args:
@@ -142,7 +142,7 @@ class AuthService:
         logger.info(f'Tokens for {user} refreshed successfully.')
         return access_token, refresh_token
 
-    async def logout(self, user: UserOut, raw_token: str) -> None:
+    async def logout(self, user: UserRead, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.
 
         Args:
