@@ -3,9 +3,18 @@ import pytest_asyncio
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tests.constants import EMAIL, HASHED_PASSWORD, USER_ID, WEEK_1_ID, WEEK_1_NAME
+from tests.constants import (
+    EMAIL,
+    HASHED_PASSWORD,
+    RECIPE_INGREDIENTS,
+    RECIPE_IS_PUBLIC,
+    RECIPE_NAME,
+    USER_ID,
+    WEEK_1_ID,
+    WEEK_1_NAME,
+)
 from week_eat_planner.api.schemas import UserRead, WeekRead
-from week_eat_planner.db.models import User
+from week_eat_planner.db.models import Recipe, User
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
 
@@ -26,6 +35,17 @@ def encoded_token() -> str:
 @pytest.fixture
 def db_user() -> User:
     return User(id=USER_ID, email=EMAIL, is_active=True, hashed_password=HASHED_PASSWORD)
+
+
+@pytest.fixture
+def db_recipe(user_read: UserRead) -> Recipe:
+    return Recipe(
+        id=generate_uuid7(),
+        name=RECIPE_NAME,
+        user_id=user_read.id,
+        is_public=RECIPE_IS_PUBLIC,
+        ingredients=RECIPE_INGREDIENTS,
+    )
 
 
 @pytest.fixture

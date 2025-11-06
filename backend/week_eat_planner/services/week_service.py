@@ -12,10 +12,10 @@ from week_eat_planner.api.schemas import (
     WeekReadMinimal,
     WeekUpdate,
 )
-from week_eat_planner.api.schemas.meal_slot import MealSlotRead, MealSlotUpdate
+from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotRead, MealSlotUpdate
 from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
-from week_eat_planner.exceptions import MealSlotAssignError, WeekForbidden, WeekNotFound
+from week_eat_planner.exceptions import MealSlotAssignException, WeekForbidden, WeekNotFound
 
 
 class WeekService:
@@ -120,13 +120,11 @@ class WeekService:
         await self._week_dao.delete(week)
         logger.info(f'Successfully deleted {week}.')
 
-    async def assign_recipes_to_meal_slots(
-        self, slots_data: list[MealSlotAssign], week: WeekRead, user: UserRead
-    ) -> None:
+    async def assign_recipes_to_meal_slots(self, week: WeekRead, *slots_data: MealSlotAssign) -> list[MealSlotRead]:
         """Assigns a recipe to a meal slot.
 
         Returns:
-            None.
+            A list of updated meal slots.
 
         Raises:
             MealSlotAssignError: if any slot or recipe are not valid.
@@ -134,28 +132,30 @@ class WeekService:
         slot_errors = []
         valid_assignments = []
 
-        logger.info(f'Validating {slots_data} for week {week.id} and user {user.id}.')
+        logger.info(f'Starting validation for {len(slots_data)} slot assignments for week {week.id}.')
         slot_uuids = []
         recipe_uuids = []
         for data in slots_data:
             try:
-                slot_uuid = UUID(data.slot_id)
-                slot_uuids.append(slot_uuid)
+                slot_uuids.append(UUID(data.slot_id))
             except ValueError:
                 logger.error(f'Invalid slot ID -- not UUID: {data.slot_id}')
                 slot_errors.append({**data.model_dump(), 'error': 'Invalid slot ID'})
-
-            if not data.recipe_id:
                 continue
 
-            try:
-                recipe_uuid = UUID(data.recipe_id)
-                recipe_uuids.append(recipe_uuid)
-            except ValueError:
-                logger.error(f'Invalid recipe ID -- not UUID: {data.recipe_id}')
-                # TODO: add just a message to the existing error if slot_id is bad, too.
-                slot_errors.append({**data.model_dump(), 'error': 'Invalid recipe ID'})
+            if data.recipe_id:
+                try:
+                    recipe_uuids.append(UUID(data.recipe_id))
+                except ValueError:
+                    logger.error(f'Invalid recipe ID -- not UUID: {data.recipe_id}')
+                    slot_errors.append({**data.model_dump(), 'error': 'Invalid recipe ID'})
+                    continue
 
+        if slot_errors:
+            logger.error(f'There were errors during validation: {slot_errors}.')
+            raise MealSlotAssignException(slot_errors)
+
+        logger.info('UUIDs validation complete!')
         db_meal_slots = await self._meal_slot_dao.find_many_by_ids(slot_uuids, for_update=True)
         db_recipes = await self._recipe_dao.find_many_by_ids(recipe_uuids, for_update=False)
 
@@ -165,30 +165,26 @@ class WeekService:
         for slot_data in slots_data:
             db_meal_slot = meal_slot_map.get(slot_data.slot_id)
             if not db_meal_slot:
-                logger.error(f'Could not find meal_slot with id {slot_data.slot_id}.')
                 slot_errors.append({**slot_data.model_dump(), 'error': 'Meal slot not found'})
                 continue
 
             if db_meal_slot.week_id != week.id:
-                logger.error(f'Meal slot is not part of week {week.id}.')
                 slot_errors.append({**slot_data.model_dump(), 'error': f'Meal slot not part of week {week.id}'})
                 continue
 
             if slot_data.recipe_id:
                 db_recipe = recipe_map.get(slot_data.recipe_id)
                 if not db_recipe:
-                    logger.error(f'Could not find recipe with id {slot_data.recipe_id}.')
                     slot_errors.append({**slot_data.model_dump(), 'error': 'Recipe not found'})
                     continue
 
-                if not db_recipe.is_public and db_recipe.user_id != user.id:
-                    logger.error(f'Recipe is not owned by user {user.id}.')
+                if not db_recipe.is_public and db_recipe.user_id != week.user_id:
                     slot_errors.append({**slot_data.model_dump(), 'error': 'Recipe not owned by user'})
                     continue
 
             valid_assignments.append(
                 {
-                    'meal_slot': MealSlotRead.model_validate(db_meal_slot),
+                    'meal_slot': MealSlotId.model_validate(db_meal_slot),
                     'recipe': MealSlotUpdate(recipe_id=slot_data.recipe_id),
                 },
             )
@@ -196,10 +192,13 @@ class WeekService:
 
         if slot_errors:
             logger.error(f'There were errors during validation: {slot_errors}.')
-            raise MealSlotAssignError(slot_errors)
+            raise MealSlotAssignException(slot_errors)
 
         logger.info(f'Updating {len(slots_data)} slots for week {week.id}.')
-        for assignment in valid_assignments:
-            await self._meal_slot_dao.update(assignment['slot'], assignment['recipe'])
-
+        updated_slots = [
+            await self._meal_slot_dao.update(assignment['meal_slot'], assignment['recipe'])
+            for assignment in valid_assignments
+        ]
+        logger.debug(f'Updated meal_slots {updated_slots}')
         logger.info(f'Successfully updated {len(slots_data)} slots for week {week.id}.')
+        return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]

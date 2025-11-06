@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.testing.schema import mapped_column
 
 from week_eat_planner.db.base import Base, BaseDAO
+from week_eat_planner.helpers import generate_uuid7
 
 ERROR_MESSAGE = 'Error in DB!'
 
@@ -90,5 +91,19 @@ async def test_base_dao_delete__error__error_raised(mocked_session):
 
     with pytest.raises(SQLAlchemyError) as exc:
         await TestDAO(mocked_session).delete(TestModelOut(field=1))
+
+    assert str(exc.value) == ERROR_MESSAGE
+
+
+async def test_find_many_by_ids__no_ids__empty_list_returned(mocked_session):
+    result = await TestDAO(mocked_session).find_many_by_ids(obj_ids=[])
+    assert result == []
+
+
+async def test_find_many_by_ids__error__error_raised(mocked_session):
+    mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
+
+    with pytest.raises(SQLAlchemyError) as exc:
+        await TestDAO(mocked_session).find_many_by_ids(obj_ids=[generate_uuid7()])
 
     assert str(exc.value) == ERROR_MESSAGE

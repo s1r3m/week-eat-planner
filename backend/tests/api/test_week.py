@@ -134,3 +134,47 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     error = WeekForbidden(created_week.id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
+
+
+async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response(
+    created_week,
+    created_recipe,
+    auth_client_for_created_user,
+):
+    slot_to_assign = created_week.meal_slots[0]
+    response = await auth_client_for_created_user.put(
+        AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
+        json=[{'slot_id': str(slot_to_assign.id), 'recipe_id': str(created_recipe.id)}],
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {
+            'id': str(slot_to_assign.id),
+            'day_of_week': slot_to_assign.day_of_week.value,
+            'meal_type': slot_to_assign.meal_type.value,
+            'recipe': {
+                'id': str(created_recipe.id),
+                'name': created_recipe.name,
+            },
+        },
+    ]
+
+
+async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_response(
+    created_week,
+    created_recipe,
+    auth_client_for_created_user,
+):
+    bad_uuid = 'bad_uuid'
+    response = await auth_client_for_created_user.put(
+        AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
+        json=[
+            {'slot_id': str(created_week.meal_slots[0].id), 'recipe_id': str(created_recipe.id)},
+            {'slot_id': bad_uuid, 'recipe_id': str(created_recipe.id)},
+        ],
+    )
+
+    error_message = {'recipe_id': str(created_recipe.id), 'slot_id': bad_uuid, 'error': 'Invalid slot ID'}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Error during assigning meal_slots: {[error_message]}'}

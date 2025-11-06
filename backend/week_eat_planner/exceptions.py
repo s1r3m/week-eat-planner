@@ -68,7 +68,7 @@ class UserAlreadyExists(LogicException):
         super().__init__(detail=f'User with {email=} already exists')
 
 
-class MealSlotAssignError(LogicException):
+class MealSlotAssignException(LogicException):
     def __init__(self, errors: list[dict]) -> None:
         super().__init__(detail=f'Error during assigning meal_slots: {errors}')
 

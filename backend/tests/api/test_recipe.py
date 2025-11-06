@@ -1,19 +1,9 @@
-from typing import Callable
-
-import pytest_asyncio
 from fastapi import status
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
-from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
+from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.helpers import generate_uuid7
-
-
-@pytest_asyncio.fixture
-async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> RecipeRead:
-    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
-
-    return await created_recipe_factory(created_user, recipe_data=recipe_create)
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):

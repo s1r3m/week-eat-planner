@@ -5,7 +5,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
+from tests.constants import EMAIL, PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, WEEK_1_NAME, WEEK_2_NAME
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, UserCreate, UserRead, WeekCreate, WeekRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
@@ -129,6 +129,13 @@ async def created_week(created_week_factory: Callable, created_user: UserRead) -
 @pytest_asyncio.fixture
 async def created_week_2(created_week_factory: Callable, created_user: UserRead) -> WeekRead:
     return await created_week_factory(created_user, WeekCreate(name=WEEK_2_NAME))
+
+
+@pytest_asyncio.fixture
+async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> RecipeRead:
+    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
+
+    return await created_recipe_factory(created_user, recipe_data=recipe_create)
 
 
 @pytest_asyncio.fixture

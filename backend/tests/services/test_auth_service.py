@@ -150,7 +150,6 @@ async def test_refresh_tokens__bad_refresh_token__error_raised(
     with pytest.raises(TokenExpired) as exc:
         await AuthService(mocked_session).refresh_tokens(user_read, REFRESH_TOKEN)
 
-    error = TokenExpired()
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Token expired'
 

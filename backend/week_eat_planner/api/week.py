@@ -6,7 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.dependencies.week_deps import get_week_by_id, get_week_for_update
-from week_eat_planner.api.schemas import MealSlotAssign, UserRead, WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
+from week_eat_planner.api.schemas import (
+    MealSlotAssign,
+    MealSlotRead,
+    UserRead,
+    WeekCreate,
+    WeekRead,
+    WeekReadMinimal,
+    WeekUpdate,
+)
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.week_service import WeekService
@@ -115,13 +123,13 @@ async def delete_week(
     return None
 
 
-@router.put(AppUrl.WEEK_SLOTS_TPL, response_model=WeekRead)
+@router.put(AppUrl.WEEK_SLOTS_TPL, response_model=list[MealSlotRead])
 async def assign_recipe_to_meal_slot(
     slots_data: list[MealSlotAssign],
     week: Annotated[WeekRead, Depends(get_week_by_id)],
-    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> None:
+) -> list[MealSlotRead]:
     """Assign the given recipe to a slot or un-assign if recipe_id is None."""
     logger.info(f'Request PUT {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
-    await WeekService(session).assign_recipes_to_meal_slots(slots_data, week, user)
+    updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
+    return updated_slots

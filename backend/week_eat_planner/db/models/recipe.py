@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
+from week_eat_planner.db.models.meal_slot import MealSlot
 
 if TYPE_CHECKING:
     from .user import User
@@ -31,6 +32,7 @@ class Recipe(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     user: Mapped['User'] = relationship(back_populates='recipes')
+    meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
 
     def __repr__(self) -> str:
         return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'

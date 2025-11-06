@@ -6,9 +6,7 @@ from fastapi import status
 
 from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.db.models import Recipe
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
-from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.recipe_service import RecipeService
 
 
@@ -23,17 +21,6 @@ def mocked_recipe_dao(mocker) -> AsyncMock:
 def recipe_create() -> RecipeCreate:
     return RecipeCreate(
         name=RECIPE_NAME,
-        is_public=RECIPE_IS_PUBLIC,
-        ingredients=RECIPE_INGREDIENTS,
-    )
-
-
-@pytest.fixture
-def db_recipe(user_read) -> Recipe:
-    return Recipe(
-        id=generate_uuid7(),
-        name=RECIPE_NAME,
-        user_id=user_read.id,
         is_public=RECIPE_IS_PUBLIC,
         ingredients=RECIPE_INGREDIENTS,
     )

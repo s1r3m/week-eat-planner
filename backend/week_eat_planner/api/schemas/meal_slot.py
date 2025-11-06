@@ -19,12 +19,15 @@ class MealSlotAssign(MealSlotUpdate):
     slot_id: str
 
 
-class MealSlotRead(BaseModel):
+class MealSlotId(BaseModel):
+    id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MealSlotRead(MealSlotId):
     """Schema for a meal slot representation."""
 
-    id: UUID
     day_of_week: DayOfWeek
     meal_type: MealType
     recipe: 'RecipeReadMinimal | None' = None
-
-    model_config = ConfigDict(from_attributes=True)

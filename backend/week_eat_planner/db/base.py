@@ -207,7 +207,9 @@ class BaseDAO(Generic[T]):
         try:
             query = sql_update(self.model).filter_by(**filter_by).values(**values_dict).returning(self.model)
             result = await self._session.execute(query)
+            await self._session.flush()
             updated_db_obj = result.scalar_one()
+            await self._session.refresh(updated_db_obj)
         except SQLAlchemyError as exc:
             logger.exception(f'Error while updating {self.model.__name__}by {filters} with {values}: {exc}')
             raise exc
