@@ -44,11 +44,15 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to retrieve.
-            user: sdf
+            user: The user requesting the recipe.
             for_update: Whether to lock the recipe for an update.
 
         Returns:
-            The recipe
+            The requested recipe object.
+
+        Raises:
+            RecipeNotFound: If the recipe does not exist or the ID is invalid.
+            RecipeForbidden: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Getting recipe {recipe_id} for {user}.')
         try:

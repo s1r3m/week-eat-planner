@@ -20,7 +20,16 @@ async def create_recipe(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeRead:
-    """Creates a new recipe for the current user."""
+    """Creates a new recipe for the current user.
+
+    Args:
+        recipe_data: The data for the new recipe.
+        user: The authenticated user, injected by dependency.
+        session: The database session.
+
+    Returns:
+        The newly created recipe.
+    """
     logger.info(f'Got POST {AppUrl.RECIPES} request for {user}.')
     recipe = await RecipeService(session).create_recipe(recipe_data, user)
     logger.info(f'Recipe "{recipe_data.name}" has been created!')
@@ -33,7 +42,17 @@ async def get_recipe(
     recipe: Annotated[RecipeRead, Depends(get_recipe_by_id)],
     user: Annotated[UserRead, Depends(get_current_active_user)],
 ) -> RecipeRead:
-    """Retrieves a single recipe by its ID."""
+    """Retrieves a single recipe by its ID.
+
+    The user must have access to the recipe (either it's public or they own it).
+
+    Args:
+        recipe: The recipe object, injected by the `get_recipe_by_id` dependency.
+        user: The authenticated user, injected by dependency.
+
+    Returns:
+        The requested recipe.
+    """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
     return recipe
 
@@ -43,7 +62,15 @@ async def get_recipes(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[RecipeReadMinimal]:
-    """Retrieves all recipes for the current user."""
+    """Retrieves all recipes for the current user.
+
+    Args:
+        user: The authenticated user, injected by dependency.
+        session: The database session.
+
+    Returns:
+        A list of recipes belonging to the user.
+    """
     logger.info(f'Got GET {AppUrl.RECIPES} request for {user}.')
     recipes = await RecipeService(session).get_all_user_recipes(user)
     logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
@@ -57,7 +84,18 @@ async def update_recipe(
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeRead:
-    """Updates a recipe."""
+    """Updates a recipe.
+
+    The user must be the owner of the recipe to update it.
+
+    Args:
+        new_data: The new data to update the recipe with.
+        recipe: The recipe to update, injected by the `get_recipe_for_update` dependency.
+        session: The database session.
+
+    Returns:
+        The updated recipe.
+    """
     logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
     return updated_recipe
@@ -68,7 +106,14 @@ async def delete_recipe(
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Deletes a recipe."""
+    """Deletes a recipe.
+
+    The user must be the owner of the recipe to delete it.
+
+    Args:
+        recipe: The recipe to delete, injected by the `get_recipe_for_update` dependency.
+        session: The database session.
+    """
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
     await RecipeService(session).delete_recipe(recipe)
     return None

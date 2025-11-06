@@ -57,6 +57,9 @@ class WeekService:
         Returns:
             The Week object if found.
 
+        Raises:
+            WeekNotFound: If the week does not exist or the ID is invalid.
+            WeekForbidden: If the week does not belong to the user.
         """
         logger.info(f'Retrieving week {week_id} {for_update=}.')
         try:

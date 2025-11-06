@@ -23,12 +23,6 @@ async def get_current_active_user(
 
     Returns:
         The authenticated User object.
-
-    Raises:
-        InvalidCredentials: If the user from the token does not exist.
-        NoEmailInToken: If the 'sub' claim is missing or not a string.
-        TokenExpiredException: If the token has expired.
-        InvalidJwtToken: If the token is invalid for any other reason.
     """
     user = await UserService(session).get_user_by_token(token)
     return user

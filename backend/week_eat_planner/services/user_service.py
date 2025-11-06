@@ -21,6 +21,9 @@ class UserService:
 
         Returns:
             The User object if found, otherwise None.
+
+        Raises:
+            InvalidCredentials: If the user is not found or is not active.
         """
         logger.info(f'Retrieving user from {token=}.')
         user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))

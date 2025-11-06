@@ -24,10 +24,6 @@ async def get_recipe_by_id(
 
     Returns:
         The RecipeRead object.
-
-    Raises:
-        RecipeNotFound: If the recipe does not exist or the ID is invalid.
-        RecipeForbidden: If the recipe is private and does not belong to the user.
     """
     logger.info(f'Requesting Read-Only Recipe {recipe_id} for {user}')
     recipe = await RecipeService(read_session).get_user_recipe(recipe_id, user, for_update=False)
@@ -49,9 +45,6 @@ async def get_recipe_for_update(
 
     Returns:
         The RecipeRead object, locked for update.
-
-    Raises:
-        RecipeNotFound: If the recipe does not exist.
     """
     logger.info(f'Requesting Recipe {recipe_id} for {user} for update.')
     recipe = await RecipeService(write_session).get_user_recipe(recipe_id, user, for_update=True)

@@ -26,10 +26,6 @@ async def get_week_by_id(
 
     Returns:
         The requested week object.
-
-    Raises:
-        WeekNotFound: If the week does not exist
-        WeekForbidden: If the week does not belong to the user.
     """
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
     week = await WeekService(read_session).get_week_for_user(week_id, user, for_update=False)
@@ -56,8 +52,6 @@ async def get_week_for_update(
 
     Returns:
         The `Week` object ready for updates
-    Raises:
-        WeekNotFound: If the week does not exist or has been deleted.
     """
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
     week = await WeekService(write_session).get_week_for_user(week_id, user, for_update=True)
