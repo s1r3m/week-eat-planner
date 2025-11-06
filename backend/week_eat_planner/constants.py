@@ -23,7 +23,7 @@ class AppUrl(StrEnum):
 
     WEEKS = '/weeks'
     WEEKS_TPL = '/weeks/{week_id}'
-    WEEK_SLOTS_TPL = '/weeks/{week_id/slots/{slot_id}'
+    WEEK_SLOTS_TPL = '/weeks/{week_id}/slots'
 
     USER = '/user'
 

@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserOut
+from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.db.dao import RefreshTokenDAO, UserDAO
 from week_eat_planner.db.models import RefreshToken, User
@@ -12,9 +12,9 @@ from week_eat_planner.exceptions import (
     InvalidCredentials,
     InvalidEmail,
     InvalidRefreshToken,
+    RefreshTokenNotFound,
     TokenExpired,
     TokenForbidden,
-    TokenNotFound,
     TokenRevoked,
     UserAlreadyExists,
 )
@@ -29,7 +29,7 @@ class AuthService:
         self._user_dao = UserDAO(session)
         self._refresh_token_dao = RefreshTokenDAO(session)
 
-    async def register_user(self, user_data: UserCreate) -> UserOut:
+    async def register_user(self, user_data: UserCreate) -> UserRead:
         """Registers a new user.
 
         Checks if a user with the given email already exists. If not, it hashes the
@@ -48,13 +48,13 @@ class AuthService:
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
         if existing_user:
             logger.error(f'User with {user_data.email=} already exists.')
-            raise UserAlreadyExists
+            raise UserAlreadyExists(user_data.email)
 
         user = User(email=str(user_data.email), hashed_password=get_password_hash(user_data.password))
         created_user = await self._user_dao.add(user)
         logger.info(f'User {user_data.email=} registered successfully.')
 
-        return UserOut.model_validate(created_user)
+        return UserRead.model_validate(created_user)
 
     async def login(self, username: str, password: str) -> tuple[str, str]:
         """Logs a user in.
@@ -77,12 +77,12 @@ class AuthService:
             email = Email(email=username)
         except ValidationError as exc:
             logger.error(f'Invalid email format for {username}: {exc}')
-            raise InvalidEmail from exc
+            raise InvalidEmail() from exc
 
         db_user = await self._user_dao.find_one_or_none(email)
         if not (db_user and verify_password(password, str(db_user.hashed_password))):
             logger.error(f'Invalid credentials for {email}!')
-            raise InvalidCredentials
+            raise InvalidCredentials()
 
         access_token = TokenProvider.create_access_token(username)
         refresh_token = TokenProvider.create_refresh_token()
@@ -98,7 +98,7 @@ class AuthService:
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
 
-    async def refresh_tokens(self, user: UserOut, old_refresh_token: str) -> tuple[str, str]:
+    async def refresh_tokens(self, user: UserRead, old_refresh_token: str) -> tuple[str, str]:
         """Refreshes access and refresh tokens.
 
         Args:
@@ -121,11 +121,11 @@ class AuthService:
 
         if not db_refresh_token or db_refresh_token.revoked:
             logger.error(f'Invalid refresh token provided for {user}.')
-            raise InvalidRefreshToken
+            raise InvalidRefreshToken()
 
         if db_refresh_token.expires_at <= datetime.now(timezone.utc):
             logger.error(f'Refresh token expired for {user}.')
-            raise TokenExpired
+            raise TokenExpired()
 
         access_token = TokenProvider.create_access_token(user.email)
         refresh_token = TokenProvider.create_refresh_token()
@@ -142,7 +142,7 @@ class AuthService:
         logger.info(f'Tokens for {user} refreshed successfully.')
         return access_token, refresh_token
 
-    async def logout(self, user: UserOut, raw_token: str) -> None:
+    async def logout(self, user: UserRead, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.
 
         Args:
@@ -164,19 +164,19 @@ class AuthService:
 
         if not db_refresh_token:
             logger.warning(f'Attempted logout with a non-existent refresh token for {user}.')
-            raise TokenNotFound
+            raise RefreshTokenNotFound(raw_token)
 
         if db_refresh_token.expires_at <= datetime.now(timezone.utc):
             logger.warning(f'Attempted logout with expired refresh token for {user}.')
-            raise TokenExpired
+            raise TokenExpired()
 
         if db_refresh_token.user_id != user.id:
             logger.warning(f'Attempted logout with refresh token that does not belong to user {user}.')
-            raise TokenForbidden
+            raise TokenForbidden(raw_token)
 
         if db_refresh_token.revoked:
             logger.warning(f'Attempted logout with an already revoked token for user {user}.')
-            raise TokenRevoked
+            raise TokenRevoked(raw_token)
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(replaced_by=None))
         logger.info(f'{user} logged out successfully.')

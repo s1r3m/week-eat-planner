@@ -1,100 +1,108 @@
+from uuid import UUID
+
 from fastapi import HTTPException, status
 
-InvalidJwtToken = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Invalid JWT token',
-)
+
+class NotFoundException(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
-NoEmailInToken = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='No email in token',
-)
+class RecipeNotFound(NotFoundException):
+    def __init__(self, recipe_id: str | UUID) -> None:
+        super().__init__(detail=f'Recipe {recipe_id} not found')
 
 
-TokenNotFound = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Token not found',
-)
+class WeekNotFound(NotFoundException):
+    def __init__(self, week_id: str | UUID) -> None:
+        super().__init__(detail=f'Week {week_id} not found')
 
 
-RefreshTokenMissing = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Refresh Token missing',
-)
+class TokenException(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
-InvalidRefreshToken = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Invalid refresh token',
-)
+class InvalidJwtToken(TokenException):
+    def __init__(self, token: str) -> None:
+        super().__init__(detail=f'Invalid JWT token: {token}')
 
 
-TokenExpired = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Token expired',
-)
+class InvalidRefreshToken(TokenException):
+    def __init__(self) -> None:
+        super().__init__(detail='Invalid refresh token')
 
 
-TokenRevoked = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Token revoked',
-)
+class NoEmailInToken(TokenException):
+    def __init__(self) -> None:
+        super().__init__(detail='No email in JWT token')
 
 
-InvalidEmail = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='Invalid email',
-)
+class RefreshTokenMissing(TokenException):
+    def __init__(self) -> None:
+        super().__init__(detail='Refresh Token missing')
 
 
-UserNotFound = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='The user was not found',
-)
+class RefreshTokenNotFound(TokenException):
+    def __init__(self, token: str) -> None:
+        super().__init__(detail=f'Token {token} not found')
 
 
-InvalidCredentials = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Could not validate credentials',
-)
+class TokenExpired(TokenException):
+    def __init__(self) -> None:
+        super().__init__(detail='Token expired')
 
 
-UserAlreadyExists = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='User with this email already exists',
-)
-
-MealSlotNotFound = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='Meal slot not found',
-)
+class TokenRevoked(TokenException):
+    def __init__(self, token: str) -> None:
+        super().__init__(detail=f'Token {token} revoked')
 
 
-WeekNotFound = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='Week not found',
-)
+class LogicException(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
-RecipeNotFound = HTTPException(
-    status_code=status.HTTP_409_CONFLICT,
-    detail='Recipe not found',
-)
-
-AccessForbidden = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail='Access forbidden',
-)
+class UserAlreadyExists(LogicException):
+    def __init__(self, email: str) -> None:
+        super().__init__(detail=f'User with {email=} already exists')
 
 
-MealSlotForbidden = AccessForbidden
+class MealSlotAssignException(LogicException):
+    def __init__(self, errors: list[dict]) -> None:
+        super().__init__(detail=f'Error during assigning meal_slots: {errors}')
 
 
-TokenForbidden = AccessForbidden
+class AccessForbiddenException(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
 
-RecipeForbidden = AccessForbidden
+class MealSlotForbidden(AccessForbiddenException):
+    def __init__(self, meal_slot_id: UUID) -> None:
+        super().__init__(detail=f'Meal slot {meal_slot_id} forbidden')
 
 
-WeekForbidden = AccessForbidden
+class TokenForbidden(AccessForbiddenException):
+    def __init__(self, token: str) -> None:
+        super().__init__(detail=f'Token {token} forbidden')
+
+
+class RecipeForbidden(AccessForbiddenException):
+    def __init__(self, recipe_id: UUID) -> None:
+        super().__init__(detail=f'Recipe {recipe_id} forbidden')
+
+
+class WeekForbidden(AccessForbiddenException):
+    def __init__(self, week_id: UUID) -> None:
+        super().__init__(detail=f'Week {week_id} forbidden')
+
+
+class InvalidEmail(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=status.HTTP_409_CONFLICT, detail='Invalid email')
+
+
+class InvalidCredentials(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')

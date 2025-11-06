@@ -1,20 +1,20 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Token, UserCreate, UserOut
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.schemas import Token, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import (
     RefreshTokenMissing,
+    RefreshTokenNotFound,
     TokenExpired,
     TokenForbidden,
-    TokenNotFound,
     TokenRevoked,
 )
 from week_eat_planner.services.auth_service import AuthService
@@ -22,11 +22,11 @@ from week_eat_planner.services.auth_service import AuthService
 router = APIRouter()
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> UserOut:
+) -> UserRead:
     """Registers a new user.
 
     Args:
@@ -40,7 +40,7 @@ async def create_user(
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
     created_user = await AuthService(session).register_user(user_data)
-    return UserOut.model_validate(created_user)
+    return UserRead.model_validate(created_user)
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)
@@ -82,7 +82,7 @@ async def login(
 async def refresh_tokens(
     request: Request,
     response: Response,
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Token:
     """Generates a new access token using a refresh token.
@@ -121,7 +121,7 @@ async def refresh_tokens(
 async def logout(
     request: Request,
     response: Response,
-    user: Annotated[UserOut, Depends(get_current_active_user)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Logs out the current user by invalidating their session.
@@ -143,11 +143,9 @@ async def logout(
 
     try:
         await AuthService(session).logout(user, refresh_token)
-    except HTTPException as exc:
+    except (TokenExpired, TokenForbidden, RefreshTokenNotFound, TokenRevoked) as exc:
         # If the token was already expired, revoked, or not found, the user
         # is effectively logged out, so we can return a success response.
-        if exc not in (TokenExpired, TokenForbidden, TokenNotFound, TokenRevoked):
-            raise
         logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')

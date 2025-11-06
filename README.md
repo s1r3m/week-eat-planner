@@ -1,7 +1,9 @@
 # Week Eat Planner
+
 A menu planner for a week. Get a shopping list in one click.
 
 ## Features
+
 - Plan meals for the entire week
 - User authentication and management
 - Integration with PostgreSQL for data storage
@@ -9,112 +11,76 @@ A menu planner for a week. Get a shopping list in one click.
 - Frontend with Vue.js
 
 ## Prerequisites
+
 - Python 3.11
-Everyting else runs in docker.
+- [uv](https://github.com/astral-sh/uv)
+- Docker
 
 ## Installation
 
-### Backend
-1. Clone the repository:
+1.  **Clone the repository:**
     ```bash
     git clone https://github.com/yourusername/week-eat-planner.git
     cd week-eat-planner/
     ```
 
-2. Create a virtual environment:
+2.  **Install dependencies:**
     ```bash
     make install
     ```
 
-5. Run the app server:
-    ```bash
-    make start
-    ```
+## Usage
 
-### Frontend
-1. Navigate to the frontend directory:
-    ```bash
-    cd ../frontend
-    ```
+The `Makefile` contains all the necessary commands to run and manage the application.
 
-2. Install the dependencies:
-    ```bash
-    yarn install
-    ```
+-   **`make install`**: Installs all the required dependencies.
+-   **`make start`**: Starts the application and its services.
+-   **`make stop`**: Stops the application and its services.
+-   **`make lint`**: Runs the linters to check the code for style and errors.
+-   **`make style`**: Formats the code according to the project's style guidelines.
+-   **`make be_test`**: Runs the backend unit tests.
+-   **`make fe_test`**: Runs the frontend unit tests (not yet implemented).
 
-3. Run the development server:
-    ```bash
-    yarn serve
-    ```
+For a full list of commands, run `make help`.
 
 ## Running Tests
-To run the backend tests:
-```bash
-make migrations
-make be_tests
-```
 
-To run the frontend tests:
-```bash
-make fe_tests
-```
+-   **Backend:**
+    ```bash
+    make be_test
+    ```
 
-
-## Autotests
-
-The project comes with autotests. All in qa/ folder.
-
-To prepare your local machine for autotests:
-```bash
-make -C qa install
-```
-
-To run the app in detached mode:
-```bash
-make -C qa start
-```
-
-To read logs:
-```bash
-make -C qa logs
-```
-
-To run autotests:
-```bash
-make -C qa test
-```
-
-To run QA linters:
-```bash
-make -C qa lint
-```
+-   **Frontend:**
+    ```bash
+    make fe_test
+    ```
 
 ## Project Structure
+
 ```
 week-eat-planner/
-├── backend/
-│   ├── alembic/                # Database migrations
-│   ├── week_eat_planner/       # FastAPI application
-│   ├── tests/                  # Unit tests
-│   ├── main.py                 # Entry point for the FastAPI app
-├── frontend/
-│   ├── public/                 # Public assets
-│   ├── src/                    # Vue.js source code
-│   ├── tests/                  # Frontend tests
-│   └── package.json            # Node.js dependencies
-├── qa/                         # Base QA folder
-│   ├── docker/                 # Docker compose files
-│   ├── tests/                  # Tests 
-│   └── wep_qa                  # Autotests infrastructure
-└── README.md                   # Project documentation
+├── backend/                  # FastAPI application
+│   ├── alembic/              # Database migrations
+│   ├── tests/                # Unit tests
+│   └── week_eat_planner/     # Application source code
+├── frontend/                 # Vue.js application
+│   ├── public/               # Public assets
+│   ├── src/                  # Vue.js source code
+│   └── tests/                # Frontend tests
+├── qa/                       # QA and testing
+│   ├── docker/               # Docker-compose files for tests
+│   ├── tests/                # Autotests
+│   └── wep_qa/               # Autotests infrastructure
+├── .gitignore
+├── docker-compose.yml
+├── Makefile
+└── README.md
 ```
 
 ## Contributing
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature-branch`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature-branch`)
-5. Create a new Pull Request
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## License
-TBD
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
