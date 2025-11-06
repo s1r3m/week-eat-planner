@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import HTTPException
+from fastapi import status
 
 from tests.api.conftest import WEEK_1_NAME
 from tests.constants import FOR_UPDATE_PARAMETRIZE
@@ -50,11 +50,11 @@ async def test_get_week_for_user__no_week__error_raised(
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(WeekNotFound) as exc:
         await WeekService(mocked_session).get_week_for_user(str_week_id, user_read, for_update=for_update)
 
-    assert exc.value.status_code == WeekNotFound.status_code
-    assert exc.value.detail == WeekNotFound.detail
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'Week {str_week_id} not found'
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
 
 
@@ -65,22 +65,22 @@ async def test_get_week_for_user__week_not_owned__error_raised(
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(WeekForbidden) as exc:
         await WeekService(mocked_session).get_week_for_user(str_week_id, user_read_2, for_update=for_update)
 
-    assert exc.value.status_code == WeekForbidden.status_code
-    assert exc.value.detail == WeekForbidden.detail
+    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc.value.detail == f'Week {db_week.id} forbidden'
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
 
 
 async def test_get_week_for_user__not_uuid__error_raised(mocked_week_dao, mocked_session, user_read):
     bad_uuid = 'not_uuid'
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(WeekNotFound) as exc:
         await WeekService(mocked_session).get_week_for_user(bad_uuid, user_read, for_update=False)
 
-    assert exc.value.status_code == WeekNotFound.status_code
-    assert exc.value.detail == WeekNotFound.detail
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'Week {bad_uuid} not found'
     mocked_week_dao.find_one_or_none_by_id.assert_not_awaited()
 
 

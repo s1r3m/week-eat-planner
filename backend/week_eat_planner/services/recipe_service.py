@@ -59,16 +59,16 @@ class RecipeService:
             recipe_uuid = UUID(recipe_id)
         except ValueError:
             logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
-            raise RecipeNotFound
+            raise RecipeNotFound(recipe_id)
 
         recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
         if not recipe:
             logger.error(f'Recipe {recipe_uuid} not found.')
-            raise RecipeNotFound
+            raise RecipeNotFound(recipe_uuid)
 
         if not recipe.is_public and recipe.user_id != user.id:
             logger.error(f'Recipe {recipe_uuid} does not belong to user {user.id}.')
-            raise RecipeForbidden
+            raise RecipeForbidden(recipe_uuid)
 
         return RecipeRead.model_validate(recipe)
 

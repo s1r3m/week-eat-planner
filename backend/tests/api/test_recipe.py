@@ -6,7 +6,6 @@ from fastapi import status
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -46,8 +45,8 @@ async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_c
 
     response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
@@ -115,8 +114,8 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
         json=RecipeUpdate(name='anything', is_public=True, ingredients={'new': 2}).model_dump(mode='json'),
     )
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_delete_recipe__no_auth__error_in_response(client, created_recipe):
@@ -131,8 +130,8 @@ async def test_delete_recipe__user_without_recipe__error_in_response(auth_client
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_delete_recipe__user_with_recipe__recipe_removed(auth_client_for_created_user, created_recipe):
@@ -148,5 +147,5 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == RecipeForbidden.status_code
-    assert response.json() == {'detail': RecipeForbidden.detail}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}

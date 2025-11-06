@@ -53,8 +53,9 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 
     response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    assert response.status_code == WeekNotFound.status_code
-    assert response.json() == {'detail': WeekNotFound.detail}
+    error = WeekNotFound(bad_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_get_week__no_auth__error_in_response(client, created_week):
@@ -95,8 +96,9 @@ async def test_update_week__user_without_week__error_in_response(auth_client_for
         json={'name': 'test'},
     )
 
-    assert response.status_code == WeekNotFound.status_code
-    assert response.json() == {'detail': WeekNotFound.detail}
+    error = WeekNotFound(bad_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_week__no_auth__error_in_response(client, created_week):
@@ -111,8 +113,9 @@ async def test_delete_week__user_without_week__error_in_response(auth_client_for
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    assert response.status_code == WeekNotFound.status_code
-    assert response.json() == {'detail': WeekNotFound.detail}
+    error = WeekNotFound(bad_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_week__user_with_week__week_removed(auth_client_for_created_user, created_week):
@@ -128,5 +131,6 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == WeekForbidden.status_code
-    assert response.json() == {'detail': WeekForbidden.detail}
+    error = WeekForbidden(created_week.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}

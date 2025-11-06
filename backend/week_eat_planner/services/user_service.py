@@ -29,7 +29,7 @@ class UserService:
         user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))
         if not user or not user.is_active:
             logger.error(f'User not found for token {token=}.')
-            raise InvalidCredentials
+            raise InvalidCredentials()
 
         logger.info(f'Retrieved {user} from DB')
         return UserRead.model_validate(user)

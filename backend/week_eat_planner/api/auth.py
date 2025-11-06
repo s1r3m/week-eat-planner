@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +12,9 @@ from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenT
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
     RefreshTokenMissing,
+    RefreshTokenNotFound,
     TokenExpired,
     TokenForbidden,
-    TokenNotFound,
     TokenRevoked,
 )
 from week_eat_planner.services.auth_service import AuthService
@@ -143,11 +143,9 @@ async def logout(
 
     try:
         await AuthService(session).logout(user, refresh_token)
-    except HTTPException as exc:
+    except (TokenExpired, TokenForbidden, RefreshTokenNotFound, TokenRevoked) as exc:
         # If the token was already expired, revoked, or not found, the user
         # is effectively logged out, so we can return a success response.
-        if exc not in (TokenExpired, TokenForbidden, TokenNotFound, TokenRevoked):
-            raise
         logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')

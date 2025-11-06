@@ -1,5 +1,4 @@
 import pytest
-from fastapi import HTTPException
 
 from tests.constants import EMAIL, HASHED_PASSWORD, PASSWORD
 from week_eat_planner.exceptions import InvalidJwtToken, NoEmailInToken, TokenExpired
@@ -20,17 +19,18 @@ def test_decode__valid_token__decoded_str(encoded_token):
 
 
 @pytest.mark.parametrize(
-    'invalid_token, error',
+    'invalid_token, error_class',
     [
         pytest.param(BAD_TOKEN, InvalidJwtToken, id='not_hash_token'),
         pytest.param(TokenProvider.create_access_token(''), NoEmailInToken, id='no_email_token'),
         pytest.param(EXPIRED_HASH, TokenExpired, id='expired_token'),
     ],
 )
-def test_decode__invalid_token__error_raised(invalid_token, error):
-    with pytest.raises(HTTPException) as exc:
+def test_decode__invalid_token__error_raised(invalid_token, error_class):
+    with pytest.raises(error_class) as exc:
         get_email_from_token(invalid_token)
 
+    error = error_class(invalid_token) if error_class == InvalidJwtToken else error_class()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 

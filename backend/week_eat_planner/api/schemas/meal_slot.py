@@ -9,11 +9,14 @@ if TYPE_CHECKING:
     from .recipe import RecipeReadMinimal
 
 
-class MealSlotAssign(BaseModel):
+class MealSlotUpdate(BaseModel):
+    recipe_id: str | None
+
+
+class MealSlotAssign(MealSlotUpdate):
     """Schema for assigning a recipe to a meal slot."""
 
-    slot_id: UUID
-    recipe_id: UUID | None
+    slot_id: str
 
 
 class MealSlotRead(BaseModel):

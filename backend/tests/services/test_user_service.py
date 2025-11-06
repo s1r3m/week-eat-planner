@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import HTTPException
+from fastapi import status
 
 from week_eat_planner.exceptions import InvalidCredentials
 from week_eat_planner.security.token_provider import TokenProvider
@@ -29,19 +29,19 @@ async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_sess
 async def test_get_user__user_not_exist__none_returned(mocked_user_dao, mocked_session, encoded_token):
     mocked_user_dao.find_one_or_none.return_value = None
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(InvalidCredentials) as exc:
         await UserService(mocked_session).get_user_by_token(encoded_token)
 
-    assert exc.value.status_code == InvalidCredentials.status_code
-    assert exc.value.detail == InvalidCredentials.detail
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc.value.detail == 'Could not validate credentials'
 
 
 async def test_get_user__not_active_user__error_raised(mocked_user_dao, mocked_session, encoded_token, user_read):
     user_read.is_active = False
     mocked_user_dao.find_one_or_none.return_value = None
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(InvalidCredentials) as exc:
         await UserService(mocked_session).get_user_by_token(encoded_token)
 
-    assert exc.value.status_code == InvalidCredentials.status_code
-    assert exc.value.detail == InvalidCredentials.detail
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert exc.value.detail == 'Could not validate credentials'

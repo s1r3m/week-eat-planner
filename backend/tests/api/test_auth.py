@@ -9,14 +9,6 @@ from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserRe
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.dao import RefreshTokenDAO
-from week_eat_planner.exceptions import (
-    InvalidCredentials,
-    InvalidEmail,
-    InvalidRefreshToken,
-    RefreshTokenMissing,
-    TokenExpired,
-    UserAlreadyExists,
-)
 
 
 @pytest_asyncio.fixture
@@ -50,8 +42,8 @@ async def test_add_user__duplicate_email__conflict_error(client, created_user):
     login_data = {'email': created_user.email, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
-    assert response.status_code == UserAlreadyExists.status_code
-    assert response.json() == {'detail': UserAlreadyExists.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f"User with email='{created_user.email}' already exists"}
 
 
 async def test_add_user__invalid_email_format__unprocessable_entity_error(client):
@@ -76,8 +68,8 @@ async def test_login__invalid_email_format__conflict_error(client):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == InvalidEmail.status_code
-    assert response.json() == {'detail': InvalidEmail.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': 'Invalid email'}
 
 
 async def test_login__invalid_password__not_found_error(client, created_user):
@@ -85,8 +77,8 @@ async def test_login__invalid_password__not_found_error(client, created_user):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == InvalidCredentials.status_code
-    assert response.json() == {'detail': InvalidCredentials.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
 
 
 async def test_login__nonexistent_user__not_found_error(client):
@@ -94,8 +86,8 @@ async def test_login__nonexistent_user__not_found_error(client):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == InvalidCredentials.status_code
-    assert response.json() == {'detail': InvalidCredentials.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
 
 
 async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
@@ -112,8 +104,8 @@ async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_fo
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == RefreshTokenMissing.status_code
-    assert response.json() == {'detail': RefreshTokenMissing.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Refresh Token missing'}
 
 
 async def test_refresh_token__expired_refresh_token__error_raised(
@@ -121,8 +113,8 @@ async def test_refresh_token__expired_refresh_token__error_raised(
 ):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == TokenExpired.status_code
-    assert response.json() == {'detail': TokenExpired.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Token expired'}
 
 
 async def test_refresh_token__revoked_refresh_token__error_raised(
@@ -130,8 +122,8 @@ async def test_refresh_token__revoked_refresh_token__error_raised(
 ):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == InvalidRefreshToken.status_code
-    assert response.json() == {'detail': InvalidRefreshToken.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Invalid refresh token'}
 
 
 async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created_user):

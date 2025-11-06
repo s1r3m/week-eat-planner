@@ -2,7 +2,7 @@ from copy import copy
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import HTTPException
+from fastapi import status
 
 from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
@@ -67,11 +67,11 @@ async def test_get_recipe__recipe_not_exist__error_raised(
     str_recipe_id = str(db_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(RecipeNotFound) as exc:
         await RecipeService(mocked_session).get_user_recipe(str_recipe_id, user_read, for_update=for_update)
 
-    assert exc.value.status_code == RecipeNotFound.status_code
-    assert exc.value.detail == RecipeNotFound.detail
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'Recipe {str_recipe_id} not found'
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_recipe.id, for_update=for_update)
 
 
@@ -83,11 +83,11 @@ async def test_get_recipe__private_recipe_not_owned___error_raised(
     str_recipe_id = str(db_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_recipe
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(RecipeForbidden) as exc:
         await RecipeService(mocked_session).get_user_recipe(str_recipe_id, user_read_2, for_update=for_update)
 
-    assert exc.value.status_code == RecipeForbidden.status_code
-    assert exc.value.detail == RecipeForbidden.detail
+    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_recipe.id, for_update=for_update)
 
 
@@ -108,11 +108,11 @@ async def test_get_recipe__public_recipe_not_owned___recipe_in_response(
 async def test_get_recipe__not_uuid__error_raised(mocked_recipe_dao, mocked_session, user_read):
     bad_uuid = 'not_uuid'
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(RecipeNotFound) as exc:
         await RecipeService(mocked_session).get_user_recipe(bad_uuid, user_read, for_update=False)
 
-    assert exc.value.status_code == RecipeNotFound.status_code
-    assert exc.value.detail == RecipeNotFound.detail
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'Recipe {bad_uuid} not found'
     mocked_recipe_dao.find_one_or_none_by_id.assert_not_awaited()
 
 
