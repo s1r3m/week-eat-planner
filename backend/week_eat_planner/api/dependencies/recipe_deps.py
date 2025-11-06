@@ -1,14 +1,12 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends, Path
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import RecipeRead, UserRead
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.services.recipe_service import RecipeService
 
 
@@ -31,45 +29,31 @@ async def get_recipe_by_id(
         RecipeNotFound: If the recipe does not exist or the ID is invalid.
         RecipeForbidden: If the recipe is private and does not belong to the user.
     """
-    try:
-        recipe_uuid = UUID(recipe_id)
-    except ValueError:
-        logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
-        raise RecipeNotFound
-
-    recipe = await RecipeService(read_session).get_recipe(recipe_uuid)
-    if not recipe:
-        logger.error(f'Recipe {recipe_uuid} does not exist.')
-        raise RecipeNotFound
-
-    if not recipe.is_public and recipe.user_id != user.id:
-        logger.error(f'Recipe {recipe_uuid} does not belong to user {user.id}.')
-        raise RecipeForbidden
-
-    logger.info(f'Successfully loaded Recipe {recipe_uuid} read-only')
+    logger.info(f'Requesting Read-Only Recipe {recipe_id} for {user}')
+    recipe = await RecipeService(read_session).get_user_recipe(recipe_id, user, for_update=False)
+    logger.info(f'Successfully loaded Read-Only Recipe {recipe.id}.')
     return recipe
 
 
 async def get_recipe_for_update(
-    recipe_snapshot: Annotated[RecipeRead, Depends(get_recipe_by_id)],
+    recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     write_session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeRead:
     """Dependency that retrieves a recipe for update and ensures it exists.
 
     Args:
-        recipe_snapshot: The recipe retrieved by get_recipe_by_id.
+        recipe_id: The ID of the recipe to retrieve.
+        user: The current active user.
         write_session: The database session for write operations.
 
     Returns:
         The RecipeRead object, locked for update.
 
     Raises:
-        RecipeNotFound: If the recipe does not exist (should not happen if get_recipe_by_id passed).
+        RecipeNotFound: If the recipe does not exist.
     """
-    recipe = await RecipeService(write_session).get_recipe(recipe_snapshot.id, for_update=True)
-    if not recipe:
-        logger.error(f'Recipe {recipe_snapshot.id} does not exist.')
-        raise RecipeNotFound
-
-    logger.info(f'Successfully loaded Recipe {recipe_snapshot.id} for update')
-    return recipe_snapshot
+    logger.info(f'Requesting Recipe {recipe_id} for {user} for update.')
+    recipe = await RecipeService(write_session).get_user_recipe(recipe_id, user, for_update=True)
+    logger.info(f'Successfully loaded Recipe {recipe.id} for update')
+    return recipe

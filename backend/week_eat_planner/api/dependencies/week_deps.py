@@ -1,14 +1,12 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends, Path
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import UserRead, WeekRead, WeekReadMinimal
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.services.week_service import WeekService
 
 
@@ -34,27 +32,14 @@ async def get_week_by_id(
         WeekForbidden: If the week does not belong to the user.
     """
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
-    try:
-        week_uuid = UUID(week_id)
-    except ValueError:
-        logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
-        raise WeekNotFound
-
-    week = await WeekService(read_session).get_week(week_uuid)
-    if not week:
-        logger.error(f'Week {week_uuid} does not exist.')
-        raise WeekNotFound
-
-    if week.user_id != user.id:
-        logger.error(f'The week {week_uuid} is not owned by {user.id}.')
-        raise WeekForbidden
-
+    week = await WeekService(read_session).get_week_for_user(week_id, user, for_update=False)
     logger.info(f'Successfully loaded week {week.id} read-only')
     return week
 
 
 async def get_week_for_update(
-    week_snapshot: Annotated[WeekRead, Depends(get_week_by_id)],
+    week_id: Annotated[str, Path(title='ID of the week to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     write_session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> WeekReadMinimal:
     """Retrieves a week from the database with a lock for updating.
@@ -65,22 +50,16 @@ async def get_week_for_update(
     row for update.
 
     Args:
-        week_snapshot: The week object to be re-fetched and locked, as
-            retrieved by `get_week_by_id`.
+        week_id: The ID of the week to retrieve.
+        user: The authenticated user.
         write_session: The database session with commit capabilities.
 
     Returns:
-        The `Week` object ready for updates, or `None` if the week has been
-        deleted since it was initially retrieved.
-
+        The `Week` object ready for updates
     Raises:
         WeekNotFound: If the week does not exist or has been deleted.
     """
-    logger.info(f'Requesting week {week_snapshot.id} for update.')
-    week = await WeekService(write_session).get_week(week_snapshot.id, for_update=True)
-    if not week:
-        logger.error(f'Week {week_snapshot.id} disappeared.')
-        raise WeekNotFound
-
+    logger.info(f'Requesting Week with raw {week_id=} for {user}.')
+    week = await WeekService(write_session).get_week_for_user(week_id, user, for_update=True)
     logger.info(f'Successfully loaded week {week.id} for update')
     return WeekReadMinimal.model_validate(week.model_dump())

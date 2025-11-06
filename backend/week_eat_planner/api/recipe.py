@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.services.recipe_service import RecipeService
 
 router = APIRouter()

@@ -5,11 +5,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import Token, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.exceptions import (
     RefreshTokenMissing,
     TokenExpired,

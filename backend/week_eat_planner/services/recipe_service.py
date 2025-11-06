@@ -13,6 +13,7 @@ from week_eat_planner.api.schemas import (
 )
 from week_eat_planner.db.dao import RecipeDAO
 from week_eat_planner.db.models import Recipe
+from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 
 
 class RecipeService:
@@ -38,19 +39,34 @@ class RecipeService:
 
         return RecipeRead.model_validate(created_recipe)
 
-    async def get_recipe(self, recipe_id: UUID, for_update: bool = False) -> RecipeRead | None:
+    async def get_user_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> RecipeRead:
         """Retrieves a single recipe by its ID.
 
         Args:
             recipe_id: The ID of the recipe to retrieve.
+            user: sdf
             for_update: Whether to lock the recipe for an update.
 
         Returns:
-            The recipe, or None if not found.
+            The recipe
         """
-        logger.info(f'Getting Recipe with id {recipe_id}.')
-        recipe = await self._recipe_dao.find_one_or_none_by_id(obj_id=recipe_id, for_update=for_update)
-        return RecipeRead.model_validate(recipe) if recipe else None
+        logger.info(f'Getting recipe {recipe_id} for {user}.')
+        try:
+            recipe_uuid = UUID(recipe_id)
+        except ValueError:
+            logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
+            raise RecipeNotFound
+
+        recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
+        if not recipe:
+            logger.error(f'Recipe {recipe_uuid} not found.')
+            raise RecipeNotFound
+
+        if not recipe.is_public and recipe.user_id != user.id:
+            logger.error(f'Recipe {recipe_uuid} does not belong to user {user.id}.')
+            raise RecipeForbidden
+
+        return RecipeRead.model_validate(recipe)
 
     async def get_all_user_recipes(self, user: UserRead) -> list[RecipeReadMinimal]:
         """Retrieves all recipes for a given user.

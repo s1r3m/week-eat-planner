@@ -1,11 +1,9 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import HTTPException
 
+from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.api.schemas import RecipeRead, UserRead
-from week_eat_planner.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
 
 RECIPE_ID = generate_uuid7()
@@ -14,94 +12,38 @@ RECIPE_NAME = 'recipe'
 
 
 @pytest.fixture
-def mocked_recipe_dao(mocker) -> AsyncMock:
-    recipe_dao_mock = mocker.AsyncMock()
-    mocker.patch('week_eat_planner.services.recipe_service.RecipeDAO', return_value=recipe_dao_mock)
-    return recipe_dao_mock
+def mocked_recipe_service(mocker) -> AsyncMock:
+    recipe_service_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.api.dependencies.recipe_deps.RecipeService', return_value=recipe_service_mock)
+    return recipe_service_mock
 
 
 @pytest.fixture
-def recipe_out(user_out: UserRead) -> RecipeRead:
+def recipe_read(user_read: UserRead) -> RecipeRead:
     return RecipeRead(
-        id=RECIPE_ID, user_id=user_out.id, name=RECIPE_NAME, is_public=False, ingredients=RECIPE_INGREDIENTS
+        id=RECIPE_ID, user_id=user_read.id, name=RECIPE_NAME, is_public=False, ingredients=RECIPE_INGREDIENTS
     )
 
 
-async def test_get_recipe_by_id__recipe_exist__recipe_returned(mocked_recipe_dao, mocked_session, recipe_out, user_out):
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = recipe_out
-
-    recipe = await get_recipe_by_id(str(recipe_out.id), user_out, mocked_session)
-
-    assert recipe == recipe_out
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=False)
-
-
-async def test_get_recipe_by_id__recipe_not_exist__error_raised(
-    mocked_recipe_dao, mocked_session, recipe_out, user_out
+async def test_get_recipe_by_id__recipe_exist__recipe_returned(
+    mocked_recipe_service, mocked_session, recipe_read, user_read
 ):
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = None
+    str_recipe_id = str(recipe_read.id)
+    mocked_recipe_service.get_user_recipe.return_value = recipe_read
 
-    with pytest.raises(HTTPException) as exc:
-        await get_recipe_by_id(str(recipe_out.id), user_out, mocked_session)
+    recipe = await get_recipe_by_id(str_recipe_id, user_read, mocked_session)
 
-    assert exc.value.status_code == RecipeNotFound.status_code
-    assert exc.value.detail == RecipeNotFound.detail
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=False)
+    assert recipe == recipe_read
+    mocked_recipe_service.get_user_recipe.assert_awaited_once_with(str_recipe_id, user_read, for_update=False)
 
 
-async def test_get_recipe_by_id__private_recipe_not_owned___error_raised(
-    mocked_recipe_dao, mocked_session, recipe_out, user_out_2
+async def test_get_recipe_for_update__recipe_exists__recipe_returned(
+    mocked_recipe_service, mocked_session, recipe_read, user_read
 ):
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = recipe_out
+    str_recipe_id = str(recipe_read.id)
+    mocked_recipe_service.get_user_recipe.return_value = recipe_read
 
-    with pytest.raises(HTTPException) as exc:
-        await get_recipe_by_id(str(recipe_out.id), user_out_2, mocked_session)
+    recipe = await get_recipe_for_update(str_recipe_id, user_read, mocked_session)
 
-    assert exc.value.status_code == RecipeForbidden.status_code
-    assert exc.value.detail == RecipeForbidden.detail
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=False)
-
-
-async def test_get_recipe_by_id__public_recipe_not_owned___recipe_in_response(
-    mocked_recipe_dao, mocked_session, recipe_out, user_out_2
-):
-    recipe_out.is_public = True
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = recipe_out
-
-    recipe = await get_recipe_by_id(str(recipe_out.id), user_out_2, mocked_session)
-
-    assert recipe == recipe_out
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=False)
-
-
-async def test_get_recipe_by_id__not_uuid__error_raised(mocked_recipe_dao, mocked_session, recipe_out, user_out):
-    bad_uuid = 'not_uuid'
-
-    with pytest.raises(HTTPException) as exc:
-        await get_recipe_by_id(bad_uuid, user_out, mocked_session)
-
-    assert exc.value.status_code == RecipeNotFound.status_code
-    assert exc.value.detail == RecipeNotFound.detail
-    mocked_recipe_dao.find_one_or_none_by_id.assert_not_awaited()
-
-
-async def test_get_recipe_for_update__recipe_exists__recipe_returned(mocked_recipe_dao, mocked_session, recipe_out):
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = recipe_out
-
-    recipe = await get_recipe_for_update(recipe_out, mocked_session)
-
-    assert recipe == recipe_out
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=True)
-
-
-async def test_get_recipe_for_update__recipe_not_exist__error_raised(
-    mocked_recipe_dao, mocked_session, recipe_out, user_out
-):
-    mocked_recipe_dao.find_one_or_none_by_id.return_value = None
-
-    with pytest.raises(HTTPException) as exc:
-        await get_recipe_for_update(recipe_out, mocked_session)
-
-    assert exc.value.status_code == RecipeNotFound.status_code
-    assert exc.value.detail == RecipeNotFound.detail
-    mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(obj_id=recipe_out.id, for_update=True)
+    assert recipe == recipe_read
+    mocked_recipe_service.get_user_recipe.assert_awaited_once_with(str_recipe_id, user_read, for_update=True)

@@ -10,10 +10,10 @@ from week_eat_planner.api.schemas import (
     WeekRead,
     WeekReadMinimal,
     WeekUpdate,
-    MealSlotAssign, MealSlotRead,
 )
-from week_eat_planner.db.dao import WeekDAO, RecipeDAO, MealSlotDAO
+from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
+from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 
 
 class WeekService:
@@ -46,11 +46,12 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
         return WeekReadMinimal.model_validate(week)
 
-    async def get_week(self, week_id: UUID, for_update: bool = False) -> WeekRead | None:
+    async def get_week_for_user(self, week_id: str, user: UserRead, for_update: bool) -> WeekRead:
         """Retrieves a single week by its ID.
 
         Args:
             week_id: The ID of the week to retrieve.
+            user: The user for whom to retrieve the week.
             for_update: Whether to lock the database row for update.
 
         Returns:
@@ -58,8 +59,22 @@ class WeekService:
 
         """
         logger.info(f'Retrieving week {week_id} {for_update=}.')
-        week = await self._week_dao.find_one_or_none_by_id(obj_id=week_id, for_update=for_update)
-        return WeekRead.model_validate(week) if week else None
+        try:
+            week_uuid = UUID(week_id)
+        except ValueError:
+            logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
+            raise WeekNotFound
+
+        week = await self._week_dao.find_one_or_none_by_id(week_uuid, for_update=for_update)
+        if not week:
+            logger.error(f'Week {week_uuid} does not exist.')
+            raise WeekNotFound
+
+        if week.user_id != user.id:
+            logger.error(f'The week {week_uuid} is not owned by {user.id}.')
+            raise WeekForbidden
+
+        return WeekRead.model_validate(week)
 
     async def get_weeks(self, user: UserRead) -> list[WeekReadMinimal]:
         """Retrieves all weeks for a specific user.

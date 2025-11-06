@@ -3,15 +3,11 @@ from typing import Callable
 import pytest_asyncio
 from fastapi import status
 
-from tests.constants import PASSWORD
+from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
-
-RECIPE_NAME = 'Eggs'
-RECIPE_IS_PUBLIC = False
-RECIPE_INGREDIENTS = {'eggs': 2}
 
 
 @pytest_asyncio.fixture

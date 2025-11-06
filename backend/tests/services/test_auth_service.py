@@ -37,57 +37,57 @@ def mocked_refresh_token_dao(mocker) -> AsyncMock:
 
 
 @pytest.fixture
-def db_refresh_token(user_out) -> RefreshToken:
+def db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
-        user_id=user_out.id,
+        user_id=user_read.id,
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
     )
 
 
 @pytest.fixture
-def new_db_refresh_token(user_out) -> RefreshToken:
+def new_db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         id=generate_uuid7(),
         token_hash='some_hash',
-        user_id=user_out.id,
+        user_id=user_read.id,
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
     )
 
 
 @pytest.fixture
-def expired_db_refresh_token(user_out) -> RefreshToken:
+def expired_db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
-        user_id=user_out.id,
+        user_id=user_read.id,
         expires_at=datetime.now(timezone.utc) - timedelta(minutes=5),
     )
 
 
 @pytest.fixture
-def revoked_db_refresh_token(user_out) -> RefreshToken:
+def revoked_db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
-        user_id=user_out.id,
+        user_id=user_read.id,
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
         revoked=True,
     )
 
 
-async def test_register_user__valid_email__user_returned(mocked_user_dao, mocked_session, user_out):
+async def test_register_user__valid_email__user_returned(mocked_user_dao, mocked_session, user_read):
     mocked_user_dao.find_one_or_none.return_value = None
-    mocked_user_dao.add.return_value = user_out
+    mocked_user_dao.add.return_value = user_read
 
-    user = await AuthService(mocked_session).register_user(UserCreate(email=user_out.email, password=PASSWORD))
+    user = await AuthService(mocked_session).register_user(UserCreate(email=user_read.email, password=PASSWORD))
 
-    assert user == user_out
+    assert user == user_read
 
 
-async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_session, user_out):
-    mocked_user_dao.find_one_or_none.return_value = user_out
+async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_session, user_read):
+    mocked_user_dao.find_one_or_none.return_value = user_read
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).register_user(UserCreate(email=user_out.email, password=PASSWORD))
+        await AuthService(mocked_session).register_user(UserCreate(email=user_read.email, password=PASSWORD))
 
     assert exc.value.status_code == UserAlreadyExists.status_code
     assert exc.value.detail == UserAlreadyExists.detail
@@ -121,105 +121,107 @@ async def test_login__invalid_email__error_raised(mocked_user_dao, mocked_sessio
 
 
 async def test_refresh_tokens__valid_old_token__new_tokens_returned(
-    mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token, new_db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_read, db_refresh_token, new_db_refresh_token
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
     mocked_refresh_token_dao.add.return_value = new_db_refresh_token
 
-    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
+    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(user_read, REFRESH_TOKEN)
 
     assert access_token
     assert refresh_token != REFRESH_TOKEN
 
 
-async def test_refresh_tokens__invalid_token__error_raised(mocked_refresh_token_dao, mocked_session, user_out):
+async def test_refresh_tokens__invalid_token__error_raised(mocked_refresh_token_dao, mocked_session, user_read):
     mocked_refresh_token_dao.find_one_or_none.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).refresh_tokens(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == InvalidRefreshToken.status_code
     assert exc.value.detail == InvalidRefreshToken.detail
 
 
 async def test_refresh_tokens__bad_refresh_token__error_raised(
-    mocked_refresh_token_dao, mocked_session, user_out, expired_db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_read, expired_db_refresh_token
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).refresh_tokens(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenExpired.status_code
     assert exc.value.detail == TokenExpired.detail
 
 
 async def test_refresh_tokens__revoked_token__error_raised(
-    mocked_refresh_token_dao, mocked_session, revoked_db_refresh_token, user_out
+    mocked_refresh_token_dao, mocked_session, revoked_db_refresh_token, user_read
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).refresh_tokens(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).refresh_tokens(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == InvalidRefreshToken.status_code
     assert exc.value.detail == InvalidRefreshToken.detail
 
 
-async def test_logout__valid_token__token_revoked(mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token):
+async def test_logout__valid_token__token_revoked(
+    mocked_refresh_token_dao, mocked_session, user_read, db_refresh_token
+):
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
 
-    await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+    await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
     refresh_token = RefreshTokenFromDB(
         token_hash=TokenProvider.hash_refresh_token(REFRESH_TOKEN),
-        user_id=user_out.id,
+        user_id=user_read.id,
     )
     mocked_refresh_token_dao.update.assert_awaited_once_with(refresh_token, TokenUpdate(replaced_by=None))
 
 
-async def test_logout__not_existing_token__error_raised(mocked_refresh_token_dao, mocked_session, user_out):
+async def test_logout__not_existing_token__error_raised(mocked_refresh_token_dao, mocked_session, user_read):
     mocked_refresh_token_dao.find_one_or_none.return_value = None
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenNotFound.status_code
     assert exc.value.detail == TokenNotFound.detail
 
 
 async def test_logout__expired_token__error_raised(
-    mocked_refresh_token_dao, mocked_session, user_out, expired_db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_read, expired_db_refresh_token
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenExpired.status_code
     assert exc.value.detail == TokenExpired.detail
 
 
 async def test_logout__belong_to_other_user_token__error_raised(
-    mocked_refresh_token_dao, mocked_session, user_out, db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_read, db_refresh_token
 ):
     db_refresh_token.user_id = generate_uuid7()
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenForbidden.status_code
     assert exc.value.detail == TokenForbidden.detail
 
 
 async def test_logout__revoked_token__error_raised(
-    mocked_refresh_token_dao, mocked_session, user_out, revoked_db_refresh_token
+    mocked_refresh_token_dao, mocked_session, user_read, revoked_db_refresh_token
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(HTTPException) as exc:
-        await AuthService(mocked_session).logout(user_out, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
     assert exc.value.status_code == TokenRevoked.status_code
     assert exc.value.detail == TokenRevoked.detail
