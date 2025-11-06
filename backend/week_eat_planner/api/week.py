@@ -123,13 +123,13 @@ async def delete_week(
     return None
 
 
-@router.put(AppUrl.WEEK_SLOTS_TPL, response_model=list[MealSlotRead])
+@router.patch(AppUrl.WEEK_SLOTS_TPL, response_model=list[MealSlotRead])
 async def assign_recipe_to_meal_slot(
     slots_data: list[MealSlotAssign],
     week: Annotated[WeekRead, Depends(get_week_by_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> list[MealSlotRead]:
     """Assign the given recipe to a slot or un-assign if recipe_id is None."""
-    logger.info(f'Request PUT {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
+    logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
     updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
     return updated_slots
