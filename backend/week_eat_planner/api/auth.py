@@ -70,9 +70,9 @@ async def login(
         value=refresh_token,
         httponly=True,
         # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
+        # samesite='strict',
         max_age=settings.REFRESH_TOKEN_TTL,
-        path='/auth',
+        path='/api/auth',
     )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)

@@ -11,21 +11,21 @@ REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 class AppUrl(StrEnum):
     """Enumeration of API endpoint URLs."""
 
-    AUTH_LOGIN = '/auth/login'
-    AUTH_LOGOUT = '/auth/logout'
-    AUTH_REFRESH = '/auth/refresh'
-    AUTH_SIGNUP = '/auth/signup'
+    AUTH_LOGIN = '/api/auth/login'
+    AUTH_LOGOUT = '/api/auth/logout'
+    AUTH_REFRESH = '/api/auth/refresh'
+    AUTH_SIGNUP = '/api/auth/signup'
 
-    PING = '/ping'
+    PING = '/api/ping'
 
-    RECIPES = '/recipes'
-    RECIPES_TPL = '/recipes/{recipe_id}'
+    RECIPES = '/api/recipes'
+    RECIPES_TPL = '/api/recipes/{recipe_id}'
 
-    WEEKS = '/weeks'
-    WEEKS_TPL = '/weeks/{week_id}'
-    WEEK_SLOTS_TPL = '/weeks/{week_id/slots/{slot_id}'
+    WEEKS = '/api/weeks'
+    WEEKS_TPL = '/api/weeks/{week_id}'
+    WEEK_SLOTS_TPL = '/api/weeks/{week_id/slots/{slot_id}'
 
-    USER = '/user'
+    USER = '/api/user'
 
 
 class TokenType(StrEnum):

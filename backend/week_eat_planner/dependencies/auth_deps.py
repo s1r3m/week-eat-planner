@@ -10,7 +10,7 @@ from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import InvalidCredentials
 from week_eat_planner.services.user_service import UserService
 
-_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
+_oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/login')
 
 
 async def get_current_user(

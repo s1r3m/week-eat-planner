@@ -70,7 +70,7 @@ endif
 
 ## @App Start the DB.
 run_db:
-	$(DOCKER_COMPOSE) up -d --wait db
+	$(DOCKER_COMPOSE) up db -d --wait db
 
 ## @Tests Prepare env file for be unittests
 $(ENV_FILE):
@@ -92,7 +92,7 @@ stop:
 db_shell:
 	PGPASSWORD=wep psql -h 127.0.0.1 -p 5432 -U wep -d wep
 
-## ------------------------------------------------ TESTS --------------------------------------------------------------
+## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
@@ -122,6 +122,19 @@ coverage:
 	cd $(BE_PATH) && \
 		coverage run -m pytest tests && \
 		coverage html
+
+
+## -------------------------------------------------- FE ---------------------------------------------------------------
+
+# @FE Install requirements
+fe_install:
+	@echo "🚀 Preparing Yarn environment inside Docker..."
+	docker compose build fe
+
+## @FE Start the app
+fe_start:
+	@echo "🏃 Starting Vue app on port 3000..."
+	$(DOCKER_COMPOSE) up fe
 
 ## @Tests Run fe unittests.
 fe_test:
