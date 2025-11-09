@@ -4,4 +4,6 @@
   </footer>
 </template>
 
-<style scoped src="../App.css"></style>
+<style scoped>
+
+</style>

@@ -136,6 +136,11 @@ fe_start:
 	@echo "🏃 Starting Vue app on port 3000..."
 	$(DOCKER_COMPOSE) up fe
 
+## @FE Run linters
+fe_lint:
+	@echo "Run ESlint"
+	docker compose run --rm fe sh -c "yarn lint"
+
 ## @Tests Run fe unittests.
 fe_test:
 	# TODO: add tests

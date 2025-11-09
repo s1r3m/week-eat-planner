@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -73,11 +73,11 @@ onMounted(fetchWeeks)
   <div class="weeks">
     <h2>Your weeks</h2>
     <p>Weeks count: {{ weeks.length }}</p>
-    <div class="week-container" :key="id" v-for="{id, name} in weeks">
+    <div v-for="{id, name} in weeks" :key="id" class="week-container">
       <span>
         {{ name }}
       </span>
-      <button @click="router.push(`/weeks/${id}`)" class="btn">See week</button>
+      <button class="btn" @click="router.push(`/weeks/${id}`)" >See week</button>
       <button class="btn btn-primary" @click="deleteWeek(id)">Delete</button>
     </div>
     <div v-if="weeks.length < 6" class="add-week-container">

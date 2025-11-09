@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
 const photos = ref([
@@ -20,4 +20,6 @@ const photos = ref([
 </template>
 
 
-<style scoped src="../App.css"></style>
+<style scoped>
+
+</style>

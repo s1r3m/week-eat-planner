@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
 const email = ref('')
@@ -28,8 +28,8 @@ async function submitSignup() {
   <div class="auth-container">
     <h2>Sign Up</h2>
     <form @submit.prevent="submitSignup">
-      <input type="email" v-model="email" placeholder="Email" required />
-      <input type="password" v-model="password" placeholder="Password" required />
+      <input v-model="email" type="email" placeholder="Email" required />
+      <input v-model="password" type="password" placeholder="Password" minlength="6" required />
       <button type="submit">Create Account</button>
     </form>
     <p v-if="message" class="success">{{ message }}</p>
@@ -37,4 +37,6 @@ async function submitSignup() {
   </div>
 </template>
 
-<style scoped src="../App.css"></style>
+<style scoped>
+
+</style>

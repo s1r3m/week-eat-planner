@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -30,22 +30,20 @@ async function fetchWeek() {
   }
 }
 
-const showMealSlot = ({ meal_type, day_of_week, recipe_id }) => {
-  alert(`${meal_type} for ${day_of_week}\nAssigned recipe: ${recipe_id}`)
-}
-
 onMounted(fetchWeek)
 </script>
-
-<style scoped>
-
-</style>
 
 <template>
   <div class="week-container">
     <h2>{{ week.name }}</h2>
     <div class="slots-container">
-      <button v-for="slot in week.meal_slots" :key="slot.id" class="slot-btn" @click="showMealSlot(slot)">{{ slot.meal_type }}</button>
+      <p v-for="slot in week.meal_slots" :key="week.id">
+        {{ slot }}
+      </p>
     </div>
   </div>
 </template>
+
+<style scoped>
+
+</style>
