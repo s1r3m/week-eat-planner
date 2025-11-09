@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const week = ref({})
@@ -7,8 +7,7 @@ const error = ref('')
 const route = useRoute()
 const router = useRouter()
 
-
-async function fetchWeek() {
+;(async () => {
   error.value = ''
 
   try {
@@ -28,9 +27,7 @@ async function fetchWeek() {
     alert(error)
     router.push('/weeks')
   }
-}
-
-onMounted(fetchWeek)
+})()
 </script>
 
 <template>

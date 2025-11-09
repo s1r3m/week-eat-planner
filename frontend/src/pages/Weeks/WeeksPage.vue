@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from "@/stores/userAuth";
 
+const authStore = useAuthStore()
 const weeks = ref([])
 const error = ref('')
 const newWeekName = ref('')
 const router = useRouter()
 
-async function fetchWeeks() {
+;(async () => {
   error.value = ''
   try {
+    console.log(`Try fetchin weeks with ${authStore.access_token}`)
+    if (authStore.access_token === null) {
+      router.push('/login')
+    }
     const res = await fetch('/api/weeks', {
       method: 'GET',
-      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      headers: {'Authorization': `Bearer ${authStore.access_token}`},
     })
 
     if (!res.ok) {
@@ -23,17 +29,16 @@ async function fetchWeeks() {
     weeks.value = await res.json()
   }
   catch (err) {
-    // router.go()
     error.value = err.message
   }
-}
+})()
 
-async function createWeek() {
+const createWeek = async () => {
   error.value = ''
   try {
     const res = await fetch('/api/weeks', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token')},
+      headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${authStore.access_token}`},
       body: JSON.stringify({name: newWeekName.value})
     })
 
@@ -48,12 +53,12 @@ async function createWeek() {
   }
 }
 
-async function deleteWeek(week_id) {
+const deleteWeek = async (week_id) => {
   error.value = ''
   try {
     const res = await fetch('/api/weeks/' + week_id, {
       method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+      headers: {'Authorization': `Bearer ${authStore.access_token}`},
     })
 
     if (res.status !== 204) {
@@ -65,8 +70,6 @@ async function deleteWeek(week_id) {
     error.value = err.message
   }
 }
-
-onMounted(fetchWeeks)
 </script>
 
 <template>

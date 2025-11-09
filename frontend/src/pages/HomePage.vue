@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAuthStore } from "@/stores/userAuth.ts"
+import { useRouter } from "vue-router"
+
+const userAuth = useAuthStore()
+const router = useRouter()
+
+if (userAuth.access_token) {
+  router.push('/weeks')
+}
 
 const photos = ref([
   {id: 'photo-1', src: '/images/meals1.jpg'},
