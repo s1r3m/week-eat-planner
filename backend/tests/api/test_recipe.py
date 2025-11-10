@@ -1,24 +1,9 @@
-from typing import Callable
-
-import pytest_asyncio
 from fastapi import status
 
-from tests.constants import PASSWORD
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, RecipePreviewOut, RecipeUpdate, UserOut
+from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
+from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.helpers import generate_uuid7
-
-RECIPE_NAME = 'Eggs'
-RECIPE_IS_PUBLIC = False
-RECIPE_INGREDIENTS = {'eggs': 2}
-
-
-@pytest_asyncio.fixture
-async def created_recipe(created_recipe_factory: Callable, created_user: UserOut) -> RecipeOut:
-    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
-
-    return await created_recipe_factory(created_user, recipe_data=recipe_create)
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -50,8 +35,8 @@ async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_c
 
     response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
@@ -72,7 +57,7 @@ async def test_get_recipes__recipe_exists__recipe_in_response(auth_client_for_cr
     response = await auth_client_for_created_user.get(AppUrl.RECIPES)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [RecipePreviewOut.model_validate(created_recipe.model_dump()).model_dump(mode='json')]
+    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe.model_dump()).model_dump(mode='json')]
 
 
 async def test_get_recipes__no_auth__error_in_response(client, created_recipe):
@@ -119,8 +104,8 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
         json=RecipeUpdate(name='anything', is_public=True, ingredients={'new': 2}).model_dump(mode='json'),
     )
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_delete_recipe__no_auth__error_in_response(client, created_recipe):
@@ -135,8 +120,8 @@ async def test_delete_recipe__user_without_recipe__error_in_response(auth_client
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == RecipeNotFound.status_code
-    assert response.json() == {'detail': RecipeNotFound.detail}
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
 async def test_delete_recipe__user_with_recipe__recipe_removed(auth_client_for_created_user, created_recipe):
@@ -152,5 +137,5 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == RecipeForbidden.status_code
-    assert response.json() == {'detail': RecipeForbidden.detail}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}

@@ -5,8 +5,8 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from tests.constants import EMAIL, PASSWORD, WEEK_1_NAME, WEEK_2_NAME
-from week_eat_planner.api.schemas import RecipeCreate, RecipeOut, UserCreate, UserOut, WeekCreate, WeekOut
+from tests.constants import EMAIL, PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, WEEK_1_NAME, WEEK_2_NAME
+from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, UserCreate, UserRead, WeekCreate, WeekRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
@@ -60,7 +60,7 @@ async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
 
 @pytest.fixture
 def auth_client_factory(client: AsyncClient) -> Callable:
-    async def _factory(user: UserOut, password: str) -> AsyncClient:
+    async def _factory(user: UserRead, password: str) -> AsyncClient:
         client.headers['Authorization'] = ''
         token_data = {'username': user.email, 'password': password}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
@@ -73,7 +73,7 @@ def auth_client_factory(client: AsyncClient) -> Callable:
 
 
 @pytest_asyncio.fixture
-async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
+async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
     auth_client = await auth_client_factory(created_user, PASSWORD)
     await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
     auth_client.headers['Authorization'] = ''
@@ -82,18 +82,18 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 @pytest.fixture
 def created_week_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user: UserOut, week_data: WeekCreate) -> WeekOut:
+    async def _factory(user: UserRead, week_data: WeekCreate) -> WeekRead:
         created_week = await WeekService(db_session).create_week_with_slots(user, week_data)
         await db_session.flush()
         week = await WeekDAO(db_session).find_one_or_none(created_week)
-        return WeekOut.model_validate(week)
+        return WeekRead.model_validate(week)
 
     return _factory
 
 
 @pytest.fixture
 def user_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user_data: UserCreate) -> UserOut:
+    async def _factory(user_data: UserCreate) -> UserRead:
         user = await AuthService(db_session).register_user(user_data)
         await db_session.flush()
         return user
@@ -103,7 +103,7 @@ def user_factory(db_session: AsyncSession) -> Callable:
 
 @pytest.fixture
 def created_recipe_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user: UserOut, recipe_data: RecipeCreate) -> RecipeOut:
+    async def _factory(user: UserRead, recipe_data: RecipeCreate) -> RecipeRead:
         recipe = await RecipeService(db_session).create_recipe(recipe_data, user)
         await db_session.flush()
         return recipe
@@ -112,25 +112,32 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
 
 
 @pytest_asyncio.fixture
-async def created_user(user_factory: Callable) -> UserOut:
+async def created_user(user_factory: Callable) -> UserRead:
     return await user_factory(UserCreate(email=EMAIL, password=PASSWORD))
 
 
 @pytest_asyncio.fixture
-async def created_user_2(user_factory: Callable) -> UserOut:
+async def created_user_2(user_factory: Callable) -> UserRead:
     return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD))
 
 
 @pytest_asyncio.fixture
-async def created_week(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
+async def created_week(created_week_factory: Callable, created_user: UserRead) -> WeekRead:
     return await created_week_factory(created_user, WeekCreate(name=WEEK_1_NAME))
 
 
 @pytest_asyncio.fixture
-async def created_week_2(created_week_factory: Callable, created_user: UserOut) -> WeekOut:
+async def created_week_2(created_week_factory: Callable, created_user: UserRead) -> WeekRead:
     return await created_week_factory(created_user, WeekCreate(name=WEEK_2_NAME))
 
 
 @pytest_asyncio.fixture
-async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserOut) -> AsyncClient:
+async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> RecipeRead:
+    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
+
+    return await created_recipe_factory(created_user, recipe_data=recipe_create)
+
+
+@pytest_asyncio.fixture
+async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
     return await auth_client_factory(created_user, PASSWORD)

@@ -107,6 +107,34 @@ class BaseDAO(Generic[T]):
 
         return record
 
+    async def find_many_by_ids(self, obj_ids: list[UUID], for_update: bool = False) -> list[T]:
+        """Finds multiple model instances by their IDs.
+
+        Args:
+            obj_ids: A list of UUIDs to search for.
+            for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
+
+        Returns:
+            A list of found model instances. Returns an empty list if no IDs
+            are provided or none are found.
+        """
+        logger.debug(f'Getting {self.model.__name__} by IDs={obj_ids}.')
+        if not obj_ids:
+            return []
+
+        try:
+            query = select(self.model).filter(self.model.id.in_(obj_ids))
+            if for_update:
+                query = query.with_for_update()
+
+            result = await self._session.execute(query)
+            records = result.scalars().all()
+        except SQLAlchemyError as exc:
+            logger.error(f'Error while getting {self.model.__name__} by IDs={obj_ids}: {exc}.')
+            raise exc
+
+        return list(records)
+
     async def find_one_or_none(self, filters: BaseModel) -> T | None:
         """Fetches a single record from the database or None if not found.
 
@@ -179,7 +207,9 @@ class BaseDAO(Generic[T]):
         try:
             query = sql_update(self.model).filter_by(**filter_by).values(**values_dict).returning(self.model)
             result = await self._session.execute(query)
+            await self._session.flush()
             updated_db_obj = result.scalar_one()
+            await self._session.refresh(updated_db_obj)
         except SQLAlchemyError as exc:
             logger.exception(f'Error while updating {self.model.__name__}by {filters} with {values}: {exc}')
             raise exc

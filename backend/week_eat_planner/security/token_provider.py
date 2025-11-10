@@ -82,10 +82,10 @@ def get_email_from_token(token: str) -> str:
         )
         email: str | None = payload.get('sub')
         if not email or not isinstance(email, str):
-            raise NoEmailInToken
+            raise NoEmailInToken()
     except ExpiredSignatureError as exc:
-        raise TokenExpired from exc
+        raise TokenExpired() from exc
     except JWTError as exc:
-        raise InvalidJwtToken from exc
+        raise InvalidJwtToken(token) from exc
 
     return email
