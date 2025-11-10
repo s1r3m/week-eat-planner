@@ -5,8 +5,8 @@
 <template>
   <div class="navigation">
     <nav>
-      <router-link to="/" class="nav-btn">Home</router-link>
       <router-link to="/weeks" class="nav-btn">My Weeks</router-link>
+      <router-link to="/recipes" class="nav-btn">Recipes</router-link>
     </nav>
   </div>
 

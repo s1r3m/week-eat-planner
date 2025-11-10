@@ -1,0 +1,31 @@
+/*@import "tailwindcss";*/
+
+/*@layer base {*/
+/*  body {*/
+/*    @apply bg-white text-gray-800 font-sans;*/
+/*  }*/
+/*}*/
+
+/*@layer components {*/
+/*  .btn {*/
+/*    @apply px-3 py-1 rounded-md text-sm font-medium transition;*/
+/*  }*/
+/*  .btn-primary {*/
+/*    @apply bg-green-600 text-white hover:bg-green-700;*/
+/*  }*/
+/*  .btn-outline {*/
+/*    @apply border border-green-600 text-green-600 hover:bg-green-50;*/
+/*  }*/
+/*}*/
+
+/*@layer theme {*/
+/*  :root {*/
+/*    --color-primary: #4CAF50;*/
+/*    --color-secondary: #FFC107;*/
+/*    --color-accent: #FF7043;*/
+/*    --color-background: #FAFAFA;*/
+/*    --color-surface: #FFFFFF;*/
+/*    --color-textPrimary: #212121;*/
+/*    --color-textSecondary: #616161;*/
+/*  }*/
+/*}*/

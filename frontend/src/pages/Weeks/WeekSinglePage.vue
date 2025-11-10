@@ -1,41 +1,42 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import apiClient from "@/api/client";
+// import {useWeeksStore} from "@/stores/weeks";
 
 const week = ref({})
 const error = ref('')
 const route = useRoute()
 const router = useRouter()
+// const weeksStore = useWeeksStore()
 
-;(async () => {
+const fetchWeek = async () => {
   error.value = ''
+  const week_id = route.params.id
+  // const cached_week = weeksStore.getWeek(week_id)
+  // if (cached_week) {
+  //   week.value = cached_week
+  //   return
+  // }
 
   try {
-    const res = await fetch(`/api/weeks/${route.params.id}`, {
-      method: 'GET',
-      headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')},
-    })
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({ detail: 'Failed to fetch week' }))
-      throw new Error(errorData.detail || 'An unknown error occurred.')
-    }
-
-    week.value = await res.json()
+    const res = await apiClient.get(`/weeks/${week_id}`)
+    week.value = res.data
   } catch (err) {
     error.value = err.message
-    alert(error)
     router.push('/weeks')
   }
-})()
+}
+
+await fetchWeek()
 </script>
 
 <template>
   <div class="week-container">
     <h2>{{ week.name }}</h2>
-    <div class="slots-container">
-      <p v-for="slot in week.meal_slots" :key="week.id">
-        {{ slot }}
+    <div class="meal_slots-container">
+      <p v-for="meal_slot in week.meal_slots" :key="week.id">
+        {{ meal_slot }}
       </p>
     </div>
   </div>
