@@ -20,7 +20,10 @@ router.beforeEach((to) => {
     const authStore = useAuthStore()
 
     if (!to.meta?.public && !authStore.isAuthenticated) {
-        return '/login'
+        return {
+            path: '/login',
+            query: { redirect: to.fullPath }
+        }
     }
 })
 

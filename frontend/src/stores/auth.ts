@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 export const useAuthStore = defineStore('auth-store', () => {
     const access_token = ref<String | null>(null)
 
-    const setSession = (data) => {
+    const setToken = (data) => {
         if (data.token_type !== 'bearer') {
             return
         }
@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     return {
         access_token,
         isAuthenticated,
-        setSession,
+        setSession: setToken,
         clearToken
     }
 })

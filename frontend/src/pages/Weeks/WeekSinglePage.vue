@@ -2,26 +2,27 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import apiClient from "@/api/client";
-// import {useWeeksStore} from "@/stores/weeks";
+import {useWeeksStore} from "@/stores/weeks";
 
 const week = ref({})
 const error = ref('')
 const route = useRoute()
 const router = useRouter()
-// const weeksStore = useWeeksStore()
+const weeksStore = useWeeksStore()
 
 const fetchWeek = async () => {
   error.value = ''
   const week_id = route.params.id
-  // const cached_week = weeksStore.getWeek(week_id)
-  // if (cached_week) {
-  //   week.value = cached_week
-  //   return
-  // }
+  const cached_week = weeksStore.getWeek(week_id)
+  if (cached_week.meal_slots) {
+    week.value = cached_week
+    return
+  }
 
   try {
     const res = await apiClient.get(`/weeks/${week_id}`)
     week.value = res.data
+    weeksStore.pushWeek(res.data)
   } catch (err) {
     error.value = err.message
     router.push('/weeks')

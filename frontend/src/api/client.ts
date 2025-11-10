@@ -28,12 +28,9 @@ apiClient.interceptors.response.use(
     },
     (error) => {
         if (error.response) {
-            // console.error('API Error: ', error.response.data)
-            const message = error.response.data?.detail || error.message
-            return Promise.reject(new Error(message))
+            return Promise.reject(error.response)
         } else if (error.request) {
-            // console.error('Network Error: ', error.request)
-            return Promise.reject(new Error('Network Error'))
+            return Promise.reject(error.request)
         }
         return Promise.reject(error)
     }

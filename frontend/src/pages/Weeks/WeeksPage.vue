@@ -11,7 +11,7 @@ const router = useRouter()
 const weeksStore = useWeeksStore()
 
 const fetchWeeks = async () => {
-  if (weeksStore.weeks.length > 0) {
+  if (weeksStore.weeks) {
     weeks.value = weeksStore.weeks
     return
   }
@@ -37,7 +37,6 @@ const createWeek = async () => {
     })
 
     weeks.value.push(res.data)
-    weeksStore.cacheWeeks(weeks.value)
     newWeekName.value = ''
   } catch (err) {
     error.value = err.message
@@ -52,7 +51,7 @@ const deleteWeek = async (week_id) => {
       throw new Error(res.data || 'An unknown error occurred.')
     }
     weeks.value = weeks.value.filter(w => w.id !== week_id)
-    weeksStore.cacheWeeks(weeks.value)
+    weeksStore.removeWeek(week_id)
   } catch (err) {
     error.value = err.message
   }
