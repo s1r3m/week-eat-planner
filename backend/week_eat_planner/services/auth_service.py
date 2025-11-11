@@ -117,7 +117,7 @@ class AuthService:
 
         db_user = db_refresh_token.user
         access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(db_user)
-        await self._refresh_token_dao.update(old_token, TokenUpdate(replaced_by=new_db_token.id))
+        await self._refresh_token_dao.update(old_token, TokenUpdate(revoked=True, replaced_by=new_db_token.id))
 
         logger.info(f'Tokens for {db_user.email} refreshed successfully.')
         return access_token, refresh_token

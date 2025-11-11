@@ -58,9 +58,9 @@ const deleteWeek = async (week_id: string) => {
     <div>
       <p>Weeks count: {{ weeks.length }}</p>
       <div v-for="{id, name} in weeks" :key="id" class="week-container">
-        <p>
+        <span>
           {{ name }}
-        </p>
+        </span>
         <button class="btn" @click="router.push(`/weeks/${id}`)" >See week</button>
         <button class="btn btn-primary" @click="deleteWeek(id)">Delete</button>
       </div>
