@@ -28,14 +28,14 @@ async def revoked_refresh_token_user(db_session: AsyncSession, created_user: Use
     return created_user
 
 
-async def test_add_user__valid_data__user_created(client):
+async def test_add_user__valid_data__user_created_and_logged_in(client):
     login_data = {'email': EMAIL, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
-    assert body.pop('id')
-    assert body == {'email': login_data['email'], 'is_active': True}
+    assert body.pop('access_token')
+    assert body == {'token_type': 'bearer'}
 
 
 async def test_add_user__duplicate_email__conflict_error(client, created_user):

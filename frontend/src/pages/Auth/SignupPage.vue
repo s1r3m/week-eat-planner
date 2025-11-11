@@ -2,22 +2,27 @@
 import { ref } from 'vue'
 
 import apiClient from "@/api/client";
+import { useAuthStore } from "@/stores/auth";
 
 const email = ref('')
 const password = ref('')
-const message = ref('')
 const error = ref('')
 
-const submitSignup = async () => {
-  message.value = ''
+const authStore = useAuthStore()
+
+
+const submitSignup: () => Promise<void> = async () => {
   error.value = ''
   try {
     const res = await apiClient.post('/auth/signup', {
       email: email.value,
       password: password.value,
     })
-    message.value = `Account ${res.data} successfully!`
-  } catch (err) {
+    if (res.status !== 201) {
+      throw new Error(`Signup failed with status ${res.status}: ${res.data}`)
+    }
+    authStore.setToken(res.data)
+  } catch (err: any) {
     error.value = err.message
   }
 }
@@ -31,16 +36,11 @@ const submitSignup = async () => {
       <input v-model="password" type="password" placeholder="Password" minlength="6" required />
       <button type="submit">Create Account</button>
     </form>
-    <p v-if="message" class="success">{{ message }}</p>
     <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
 
 <style scoped>
-.success {
-  color: #8ed307;
-}
-
 .error {
   color: #df1b1b;
 }

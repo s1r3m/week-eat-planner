@@ -14,7 +14,7 @@ export default defineConfig({
         host: '0.0.0.0', // Allow access from outside the container
         proxy: {
             '/api': {
-                target: 'http://host.docker.internal:8000',
+                target: 'http://localhost:8000',
                 changeOrigin: true,
             },
         },

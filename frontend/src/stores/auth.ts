@@ -1,10 +1,12 @@
+import type { UserLoginResponse } from '@/types/api'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth-store', () => {
-    const access_token = ref<String | null>(null)
+    const access_token = ref<string | null>(null)
 
-    const setToken = (data) => {
+    const setToken = (data: UserLoginResponse) => {
+        console.log('Setting access_token')
         if (data.token_type !== 'bearer') {
             return
         }
@@ -20,7 +22,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     return {
         access_token,
         isAuthenticated,
-        setSession: setToken,
+        setToken,
         clearToken
     }
 })

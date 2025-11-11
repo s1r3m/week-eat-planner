@@ -19,3 +19,4 @@
 sandbox.py
 **/htmlcov/
 
+node_modules/

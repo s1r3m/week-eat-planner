@@ -128,18 +128,18 @@ coverage:
 
 # @FE Install requirements
 fe_install:
-	@echo "🚀 Preparing Yarn environment inside Docker..."
-	docker compose build fe
+	@echo "🚀 Installing the packages..."
+	cd $(FE_PATH) && yarn install
 
 ## @FE Start the app
 fe_start:
 	@echo "🏃 Starting Vue app on port 3000..."
-	$(DOCKER_COMPOSE) up fe
+	cd $(FE_PATH) && yarn dev
 
 ## @FE Run linters
 fe_lint:
 	@echo "Run ESlint"
-	docker compose run --rm fe sh -c "yarn lint"
+	cd $(FE_PATH) && yarn lint
 
 ## @Tests Run fe unittests.
 fe_test:

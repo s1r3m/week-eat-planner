@@ -22,10 +22,11 @@ from week_eat_planner.services.auth_service import AuthService
 router = APIRouter()
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=Token, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    response: Response,
 ) -> UserRead:
     """Registers a new user.
 
@@ -40,7 +41,17 @@ async def create_user(
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
     created_user = await AuthService(session).register_user(user_data)
-    return UserRead.model_validate(created_user)
+    access_token, refresh_token = await AuthService(session).login(created_user.email, user_data.password)
+    response.set_cookie(
+        key=REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh_token,
+        httponly=True,
+        # secure=True,  # TODO: enable HTTPS
+        samesite='strict',
+        max_age=settings.REFRESH_TOKEN_TTL,
+        path='/api/auth',
+    )
+    return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)
@@ -70,7 +81,7 @@ async def login(
         value=refresh_token,
         httponly=True,
         # secure=True,  # TODO: enable HTTPS
-        # samesite='strict',
+        samesite='strict',
         max_age=settings.REFRESH_TOKEN_TTL,
         path='/api/auth',
     )

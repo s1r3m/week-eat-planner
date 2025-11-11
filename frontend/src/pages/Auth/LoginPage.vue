@@ -28,11 +28,12 @@ const submitLogin = async () => {
         }
       }
     )
-    authStore.setSession(res.data)
-
+    console.log(`Login response status: ${res.status} data: ${JSON.stringify(res.data)}`)
+    authStore.setToken(res.data)
     const redirectPath = route.query.redirect || '/weeks'
+    console.log(`Redirecting to: ${redirectPath}`)
     router.push(redirectPath as string)
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message
   }
 }

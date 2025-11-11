@@ -1,10 +1,28 @@
 const js = require("@eslint/js");
 const globals = require("globals");
+const tsParser = require("@typescript-eslint/parser");
 const vuePlugin = require("eslint-plugin-vue");
 const vueRecommended = require("eslint-plugin-vue/lib/configs/vue3-recommended");
 
 module.exports = [
   js.configs.recommended,
+  {
+    files: ["**/*.ts"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+    },
+  },
   {
     files: ["**/*.js", "**/*.vue"],
     languageOptions: {
@@ -12,6 +30,7 @@ module.exports = [
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
+        parser: tsParser,
       },
       globals: {
         ...globals.browser,

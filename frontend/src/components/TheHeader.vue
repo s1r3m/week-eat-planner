@@ -7,7 +7,7 @@ import apiClient from "@/api/client"
 const authStore = useAuthStore()
 const router = useRouter()
 
-const logout = async () => {
+const logout: () => Promise<void> = async () => {
   const res = await apiClient.post('/auth/logout')
   console.log(`Status ${res.status}`)
   authStore.clearToken()

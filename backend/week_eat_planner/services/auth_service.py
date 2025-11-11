@@ -84,16 +84,7 @@ class AuthService:
             logger.error(f'Invalid credentials for {email}!')
             raise InvalidCredentials()
 
-        access_token = TokenProvider.create_access_token(username)
-        refresh_token = TokenProvider.create_refresh_token()
-        now = datetime.now(timezone.utc)
-        db_refresh_token = RefreshToken(
-            token_hash=TokenProvider.hash_refresh_token(refresh_token),
-            user_id=db_user.id,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
-            revoked=False,
-        )
-        await self._refresh_token_dao.add(db_refresh_token)
+        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
@@ -127,20 +118,32 @@ class AuthService:
             logger.error(f'Refresh token expired for {user}.')
             raise TokenExpired()
 
-        access_token = TokenProvider.create_access_token(user.email)
-        refresh_token = TokenProvider.create_refresh_token()
-        now = datetime.now(timezone.utc)
-        rt_instance = RefreshToken(
-            token_hash=TokenProvider.hash_refresh_token(refresh_token),
-            user_id=user.id,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
-            revoked=False,
-        )
-        new_db_token = await self._refresh_token_dao.add(rt_instance)
+        access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(user)
         await self._refresh_token_dao.update(old_token, TokenUpdate(replaced_by=new_db_token.id))
 
         logger.info(f'Tokens for {user} refreshed successfully.')
         return access_token, refresh_token
+    
+    async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:
+        """Generates access and refresh tokens for a given user.
+
+        Args:
+            user: The user for whom to generate tokens.
+        Returns:
+            A tuple containing the access and refresh tokens, and the DB refresh token instance.
+        """
+        access_token = TokenProvider.create_access_token(db_user.email)
+        refresh_token = TokenProvider.create_refresh_token()
+        now = datetime.now(timezone.utc)
+        db_refresh_token = RefreshToken(
+            token_hash=TokenProvider.hash_refresh_token(refresh_token),
+            user_id=db_user.id,
+            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
+            revoked=False,
+        )
+        await self._refresh_token_dao.add(db_refresh_token)
+
+        return access_token, refresh_token, db_refresh_token
 
     async def logout(self, user: UserRead, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.

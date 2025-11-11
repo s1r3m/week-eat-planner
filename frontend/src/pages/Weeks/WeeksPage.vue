@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWeeksStore } from '@/stores/weeks'
 import apiClient from "@/api/client"
+import type { UserWeek } from '@/types/api'
 
-const weeks = ref([])
+const weeks: Ref<Array<UserWeek>> = ref([])
 const error = ref('')
 const newWeekName = ref('')
 const router = useRouter()
@@ -22,7 +24,7 @@ const fetchWeeks = async () => {
     weeks.value = res.data
     weeksStore.cacheWeeks(res.data)
   }
-  catch (err) {
+  catch (err: any) {
     error.value = err.message
   }
 }
@@ -38,12 +40,12 @@ const createWeek = async () => {
 
     weeks.value.push(res.data)
     newWeekName.value = ''
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message
   }
 }
 
-const deleteWeek = async (week_id) => {
+const deleteWeek = async (week_id: string) => {
   error.value = ''
   try {
     const res = await apiClient.delete(`weeks/${week_id}`)
@@ -52,7 +54,7 @@ const deleteWeek = async (week_id) => {
     }
     weeks.value = weeks.value.filter(w => w.id !== week_id)
     weeksStore.removeWeek(week_id)
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message
   }
 }
@@ -64,9 +66,9 @@ const deleteWeek = async (week_id) => {
     <div>
       <p>Weeks count: {{ weeks.length }}</p>
       <div v-for="{id, name} in weeks" :key="id" class="week-container">
-        <span>
+        <p>
           {{ name }}
-        </span>
+        </p>
         <button class="btn" @click="router.push(`/weeks/${id}`)" >See week</button>
         <button class="btn btn-primary" @click="deleteWeek(id)">Delete</button>
       </div>
