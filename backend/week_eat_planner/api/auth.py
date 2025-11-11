@@ -11,8 +11,10 @@ from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
+    LoginWithAuthException,
     RefreshTokenMissing,
     RefreshTokenNotFound,
+    SignUpWithAuthException,
     TokenExpired,
     TokenForbidden,
     TokenRevoked,
@@ -22,11 +24,11 @@ from week_eat_planner.services.auth_service import AuthService
 router = APIRouter()
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=Token, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-    response: Response,
+    request: Request,
 ) -> UserRead:
     """Registers a new user.
 
@@ -37,27 +39,24 @@ async def create_user(
         The public information for the newly created user.
 
     Raises:
+        SignUpWithAuthException: If the request contains an Authorization header.
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
+    if request.headers.get('Authorization'):
+        logger.warning('Authorization header should not be set for sign up requests.')
+        raise SignUpWithAuthException()
+
     created_user = await AuthService(session).register_user(user_data)
-    access_token, refresh_token = await AuthService(session).login(created_user.email, user_data.password)
-    response.set_cookie(
-        key=REFRESH_TOKEN_COOKIE_NAME,
-        value=refresh_token,
-        httponly=True,
-        # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
-        max_age=settings.REFRESH_TOKEN_TTL,
-        path='/api/auth',
-    )
-    return Token(access_token=access_token, token_type=TokenType.BEARER)
+
+    return created_user
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    request: Request,
     response: Response,
 ) -> Token:
     """Authenticates a user and returns an access token.
@@ -72,9 +71,14 @@ async def login(
         A Token object containing the access token.
 
     Raises:
+        LoginWithAuthException: If the request contains an Authorization header.
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
+    if request.headers.get('Authorization'):
+        logger.warning('Authorization header should not be set for login requests.')
+        raise LoginWithAuthException()
+
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,

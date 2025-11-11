@@ -84,7 +84,8 @@ class AuthService:
             logger.error(f'Invalid credentials for {email}!')
             raise InvalidCredentials()
 
-        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
+        user = UserRead.model_validate(db_user)
+        access_token, refresh_token, _ = await self._generate_tokens_for_user(user)
 
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
@@ -123,8 +124,8 @@ class AuthService:
 
         logger.info(f'Tokens for {user} refreshed successfully.')
         return access_token, refresh_token
-    
-    async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:
+
+    async def _generate_tokens_for_user(self, db_user: UserRead) -> tuple[str, str, RefreshToken]:
         """Generates access and refresh tokens for a given user.
 
         Args:

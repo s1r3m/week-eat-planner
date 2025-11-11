@@ -73,6 +73,16 @@ class MealSlotAssignException(LogicException):
         super().__init__(detail=f'Error during assigning meal_slots: {errors}')
 
 
+class LoginWithAuthException(LogicException):
+    def __init__(self) -> None:
+        super().__init__(detail='Login requests should not be authenticated')
+
+
+class SignUpWithAuthException(LogicException):
+    def __init__(self) -> None:
+        super().__init__(detail='Sign up requests should not be authenticated')
+
+
 class AccessForbiddenException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)

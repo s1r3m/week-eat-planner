@@ -28,17 +28,17 @@ async def revoked_refresh_token_user(db_session: AsyncSession, created_user: Use
     return created_user
 
 
-async def test_add_user__valid_data__user_created_and_logged_in(client):
+async def test_create_user__valid_data__user_created_and_logged_in(client):
     login_data = {'email': EMAIL, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
-    assert body.pop('access_token')
-    assert body == {'token_type': 'bearer'}
+    assert body.pop('id')
+    assert body == {'email': EMAIL, 'is_active': True}
 
 
-async def test_add_user__duplicate_email__conflict_error(client, created_user):
+async def test_create_user__duplicate_email__conflict_error(client, created_user):
     login_data = {'email': created_user.email, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
@@ -46,10 +46,21 @@ async def test_add_user__duplicate_email__conflict_error(client, created_user):
     assert response.json() == {'detail': f"User with email='{created_user.email}' already exists"}
 
 
-async def test_add_user__invalid_email_format__unprocessable_entity_error(client):
+async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
     invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password'}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=invalid_login_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_create_user__with_authorization_header__error_raised(
+    auth_client_for_created_user,
+):
+    login_data = {'email': EMAIL, 'password': PASSWORD}
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_SIGNUP, json=login_data)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': 'Sign up requests should not be authenticated'}
 
 
 async def test_login__valid_credentials__token_returned(client, created_user):
@@ -88,6 +99,15 @@ async def test_login__nonexistent_user__not_found_error(client):
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Could not validate credentials'}
+
+
+async def test_login__with_authorization_header__error_raised(auth_client_for_created_user, created_user):
+    token_data = {'username': created_user.email, 'password': PASSWORD}
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGIN, data=token_data)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': 'Login requests should not be authenticated'}
 
 
 async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
