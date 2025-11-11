@@ -34,6 +34,7 @@ class RefreshToken(Base):
     token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    device_fingerprint: Mapped[str] = mapped_column(nullable=False, default=None)
     revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
     replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
 

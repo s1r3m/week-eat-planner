@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import AsyncGenerator, Callable, Generator, TypeVar
 
 import pytest
@@ -5,7 +6,16 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from tests.constants import EMAIL, PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, WEEK_1_NAME, WEEK_2_NAME
+from tests.constants import (
+    CLIENT_ID,
+    EMAIL,
+    PASSWORD,
+    RECIPE_INGREDIENTS,
+    RECIPE_IS_PUBLIC,
+    RECIPE_NAME,
+    WEEK_1_NAME,
+    WEEK_2_NAME,
+)
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, UserCreate, UserRead, WeekCreate, WeekRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.dao import WeekDAO
@@ -62,8 +72,9 @@ async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
 def auth_client_factory(client: AsyncClient) -> Callable:
     async def _factory(user: UserRead, password: str) -> AsyncClient:
         client.headers['Authorization'] = ''
-        token_data = {'username': user.email, 'password': password}
+        token_data = {'username': user.email, 'password': password, 'client_id': CLIENT_ID}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+        assert response.status_code == HTTPStatus.OK, f'{response.status_code}: {response.text}'
         body = response.json()
         token = body['access_token']
         client.headers['Authorization'] = f'Bearer {token}'

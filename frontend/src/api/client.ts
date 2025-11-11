@@ -79,7 +79,12 @@ apiClient.interceptors.response.use(
           isRefreshing = true
           
           try {
-            const refreshResponse = await refreshClient.post('/auth/refresh')
+            if (!localStorage.getItem('client_id')) {
+              throw new Error('Client ID is missing in localStorage')
+            }
+            const refreshResponse = await refreshClient.post('/auth/refresh', {
+              client_id: localStorage.getItem('client_id'),
+            })
             authStore.setToken(refreshResponse.data)
 
             const newAccessToken = refreshResponse.data.access_token

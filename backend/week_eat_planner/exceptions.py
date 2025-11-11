@@ -28,9 +28,9 @@ class InvalidJwtToken(TokenException):
         super().__init__(detail=f'Invalid JWT token: {token}')
 
 
-class InvalidRefreshToken(TokenException):
+class RefreshTokenRevoked(TokenException):
     def __init__(self) -> None:
-        super().__init__(detail='Invalid refresh token')
+        super().__init__(detail='Refresh token revoked')
 
 
 class NoEmailInToken(TokenException):
@@ -74,8 +74,8 @@ class MealSlotAssignException(LogicException):
 
 
 class LoginWithAuthException(LogicException):
-    def __init__(self) -> None:
-        super().__init__(detail='Login requests should not be authenticated')
+    def __init__(self, detail: str | None = None) -> None:
+        super().__init__(detail=detail or 'Login requests should not be authenticated')
 
 
 class SignUpWithAuthException(LogicException):

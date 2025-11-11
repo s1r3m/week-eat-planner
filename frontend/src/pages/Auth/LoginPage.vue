@@ -15,12 +15,19 @@ const router = useRouter()
 
 const submitLogin = async () => {
   error.value = ''
+  if (!localStorage.getItem('client_id')) {
+    const newClientId = crypto.randomUUID()
+    localStorage.setItem('client_id', newClientId)
+    console.log(`Generated and stored new Client ID: ${newClientId}`)
+  }
+  
   try {
     const res = await apiClient.post(
         '/auth/login',
         {
           username: email.value,
-          password: password.value
+          password: password.value,
+          client_id: localStorage.getItem('client_id'),
         },
         {
         headers: {

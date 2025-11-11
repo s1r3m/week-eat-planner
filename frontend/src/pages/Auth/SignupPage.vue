@@ -3,12 +3,14 @@ import { ref } from 'vue'
 
 import apiClient from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
+import { useRouter } from 'vue-router'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 
 const submitSignup: () => Promise<void> = async () => {
@@ -22,6 +24,7 @@ const submitSignup: () => Promise<void> = async () => {
       throw new Error(`Signup failed with status ${res.status}: ${res.data}`)
     }
     authStore.setToken(res.data)
+    router.push('/login')
   } catch (err: any) {
     error.value = err.message
   }

@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.schemas import Token, UserCreate, UserRead
+from week_eat_planner.api.schemas import Token, TokenRefresh, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
@@ -75,20 +75,25 @@ async def login(
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
-    logger.info(f'Request headers: {request.headers}')
-    logger.info(f'Request cookies: {request.cookies}')
     if request.headers.get('Authorization'):
         logger.warning('Authorization header should not be set for login requests.')
         raise LoginWithAuthException()
 
-    access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
+    if user_data.client_id is None:
+        logger.error('Client ID is missing in login request.')
+        raise LoginWithAuthException(detail='Client ID is required for login.')
+
+    user_agent = request.headers.get('User-Agent', '')
+    access_token, refresh_token = await AuthService(session).login(
+        user_data.username, user_data.password, user_data.client_id, user_agent
+    )
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
         secure=not settings.DEBUG,
         samesite='lax' if settings.DEBUG else 'strict',
-        max_age=settings.REFRESH_TOKEN_TTL,
+        max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
         path='/',
     )
 
@@ -97,6 +102,7 @@ async def login(
 
 @router.post(AppUrl.AUTH_REFRESH, response_model=Token)
 async def refresh_tokens(
+    client_data: TokenRefresh,
     request: Request,
     response: Response,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
@@ -119,16 +125,20 @@ async def refresh_tokens(
         logger.error('No refresh token in request cookies.')
         raise RefreshTokenMissing()
 
-    access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
-    response.set_cookie(
-        key=REFRESH_TOKEN_COOKIE_NAME,
-        value=refresh_token,
-        httponly=True,
-        secure=not settings.DEBUG,
-        samesite='lax' if settings.DEBUG else 'strict',
-        max_age=settings.REFRESH_TOKEN_TTL,
-        path='/',
+    user_agent = request.headers.get('User-Agent', '')
+    access_token, refresh_token = await AuthService(session).refresh_tokens(
+        cookie_token, client_data.client_id, user_agent
     )
+    if cookie_token != refresh_token:
+        response.set_cookie(
+            key=REFRESH_TOKEN_COOKIE_NAME,
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='lax' if settings.DEBUG else 'strict',
+            max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
+            path='/',
+        )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 
