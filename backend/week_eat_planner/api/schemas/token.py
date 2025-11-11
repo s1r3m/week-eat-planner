@@ -15,6 +15,8 @@ class RefreshTokenFromDB(BaseModel):
     token_hash: str | None = None
     user_id: UUID | None = None
 
+    model_config = {'from_attributes': True}
+
 
 class TokenUpdate(BaseModel):
     expires_at: datetime | None = None

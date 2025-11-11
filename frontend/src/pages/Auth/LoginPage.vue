@@ -28,7 +28,6 @@ const submitLogin = async () => {
         }
       }
     )
-    console.log(`Login response status: ${res.status} data: ${JSON.stringify(res.data)}`)
     authStore.setToken(res.data)
     const redirectPath = route.query.redirect || '/weeks'
     console.log(`Redirecting to: ${redirectPath}`)

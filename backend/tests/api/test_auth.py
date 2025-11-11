@@ -13,8 +13,9 @@ from week_eat_planner.db.dao import RefreshTokenDAO
 
 @pytest_asyncio.fixture
 async def expired_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    token = RefreshTokenFromDB(user_id=created_user.id)
+    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFromDB(user_id=created_user.id))
     new_expires_at = datetime.now(timezone.utc) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
+    token = RefreshTokenFromDB.model_validate(db_token)
     await RefreshTokenDAO(db_session).update(token, TokenUpdate(expires_at=new_expires_at))
     await db_session.flush()
     return created_user
@@ -22,7 +23,8 @@ async def expired_refresh_token_user(db_session: AsyncSession, created_user: Use
 
 @pytest_asyncio.fixture
 async def revoked_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    token = RefreshTokenFromDB(user_id=created_user.id)
+    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFromDB(user_id=created_user.id))
+    token = RefreshTokenFromDB.model_validate(db_token)
     await RefreshTokenDAO(db_session).update(token, TokenUpdate(revoked=True))
     await db_session.flush()
     return created_user

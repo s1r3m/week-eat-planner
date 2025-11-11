@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import { ref } from 'vue'
 
 const apiClient = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,  // Include cookies for refresh token
 })
 
 const refreshClient = axios.create({
@@ -24,6 +24,7 @@ apiClient.interceptors.request.use(
     }
 
     const authStore = useAuthStore()
+    console.log(`API Client ${config.url} - isAuthenticated: ${authStore.isAuthenticated}`)
     if (authStore.isAuthenticated) {
       config.headers.Authorization = `Bearer ${authStore.access_token}`
     }

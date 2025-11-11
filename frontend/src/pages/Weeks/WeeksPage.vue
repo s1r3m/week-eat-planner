@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useWeeksStore } from '@/stores/weeks'
 import apiClient from "@/api/client"
 import type { UserWeek } from '@/types/api'
 
@@ -10,22 +9,16 @@ const weeks: Ref<Array<UserWeek>> = ref([])
 const error = ref('')
 const newWeekName = ref('')
 const router = useRouter()
-const weeksStore = useWeeksStore()
 
 const fetchWeeks = async () => {
-  if (weeksStore.weeks) {
-    weeks.value = weeksStore.weeks
-    return
-  }
-
   error.value = ''
   try {
     const res = await apiClient.get('/weeks')
     weeks.value = res.data
-    weeksStore.cacheWeeks(res.data)
   }
   catch (err: any) {
     error.value = err.message
+    router.push('/login')
   }
 }
 
@@ -53,7 +46,6 @@ const deleteWeek = async (week_id: string) => {
       throw new Error(res.data || 'An unknown error occurred.')
     }
     weeks.value = weeks.value.filter(w => w.id !== week_id)
-    weeksStore.removeWeek(week_id)
   } catch (err: any) {
     error.value = err.message
   }

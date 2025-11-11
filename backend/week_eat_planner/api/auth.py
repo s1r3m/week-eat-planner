@@ -75,6 +75,8 @@ async def login(
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
+    logger.info(f'Request headers: {request.headers}')
+    logger.info(f'Request cookies: {request.cookies}')
     if request.headers.get('Authorization'):
         logger.warning('Authorization header should not be set for login requests.')
         raise LoginWithAuthException()
@@ -85,9 +87,9 @@ async def login(
         value=refresh_token,
         httponly=True,
         # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
+        samesite='lax',
         max_age=settings.REFRESH_TOKEN_TTL,
-        path='/api/auth',
+        path='/',
     )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
@@ -97,7 +99,6 @@ async def login(
 async def refresh_tokens(
     request: Request,
     response: Response,
-    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Token:
     """Generates a new access token using a refresh token.
@@ -112,21 +113,21 @@ async def refresh_tokens(
     Raises:
         HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request for {user}.')
+    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
-        logger.error(f'No refresh token in request cookies for {user}.')
-        raise RefreshTokenMissing
+        logger.error('No refresh token in request cookies.')
+        raise RefreshTokenMissing()
 
-    access_token, refresh_token = await AuthService(session).refresh_tokens(user, cookie_token)
+    access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
         # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
+        samesite='lax',
         max_age=settings.REFRESH_TOKEN_TTL,
-        path='/auth',
+        path='/',
     )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)

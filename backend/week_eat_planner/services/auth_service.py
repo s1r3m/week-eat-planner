@@ -84,13 +84,12 @@ class AuthService:
             logger.error(f'Invalid credentials for {email}!')
             raise InvalidCredentials()
 
-        user = UserRead.model_validate(db_user)
-        access_token, refresh_token, _ = await self._generate_tokens_for_user(user)
+        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
 
-    async def refresh_tokens(self, user: UserRead, old_refresh_token: str) -> tuple[str, str]:
+    async def refresh_tokens(self, old_refresh_token: str) -> tuple[str, str]:
         """Refreshes access and refresh tokens.
 
         Args:
@@ -104,28 +103,26 @@ class AuthService:
             InvalidRefreshToken: If the provided token is invalid or revoked.
             TokenExpired: If the provided token has expired.
         """
-        logger.info(f'Attempting to refresh tokens for {user}.')
-        old_token = RefreshTokenFromDB(
-            token_hash=TokenProvider.hash_refresh_token(old_refresh_token),
-            user_id=user.id,
-        )
+        logger.info(f'Attempting to refresh tokens from {old_refresh_token}.')
+        old_token = RefreshTokenFromDB(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(old_token)
 
         if not db_refresh_token or db_refresh_token.revoked:
-            logger.error(f'Invalid refresh token provided for {user}.')
+            logger.error('Invalid refresh token provided.')
             raise InvalidRefreshToken()
 
         if db_refresh_token.expires_at <= datetime.now(timezone.utc):
-            logger.error(f'Refresh token expired for {user}.')
+            logger.error('Refresh token expired.')
             raise TokenExpired()
 
-        access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(user)
+        db_user = db_refresh_token.user
+        access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(db_user)
         await self._refresh_token_dao.update(old_token, TokenUpdate(replaced_by=new_db_token.id))
 
-        logger.info(f'Tokens for {user} refreshed successfully.')
+        logger.info(f'Tokens for {db_user.email} refreshed successfully.')
         return access_token, refresh_token
 
-    async def _generate_tokens_for_user(self, db_user: UserRead) -> tuple[str, str, RefreshToken]:
+    async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:
         """Generates access and refresh tokens for a given user.
 
         Args:
