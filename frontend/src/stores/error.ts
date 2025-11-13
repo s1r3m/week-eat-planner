@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 
-export const useErrorStore = defineStore('error-store', () => {
+export const useAlertStore = defineStore('error-store', () => {
     const errors: string[] = []
 
     const addError = (errorMessage: string) => errors.push(errorMessage)
     const clearErrors = () => errors.length = 0
     const getAllErrors = (): string[] => {
-        const saved_errors = [...errors]  // Copy array before clearing
+        const saved_errors = [...errors]
         clearErrors()
         return saved_errors
     }

@@ -4,6 +4,7 @@ import { useClientIdStore } from '@/stores/clientId'
 
 const apiClient = axios.create({
   baseURL: '/api',
+  timeout: 10000,  // 10 seconds
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,6 +13,7 @@ const apiClient = axios.create({
 
 const refreshClient = axios.create({
   baseURL: '/api',
+  timeout: 10000,  // 10 seconds
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,19 +22,15 @@ const refreshClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    if (config?.url === '/auth/refresh') {
-      throw new axios.Cancel('Request to /auth/refresh is not allowed through apiClient')
-    }
-
     const authStore = useAuthStore()
-    console.log(`API Client ${config.url} - isAuthenticated: ${authStore.isAuthenticated}`)
-    if (authStore.isAuthenticated) {
+    if (authStore.isAuthenticated && authStore.access_token) {
       config.headers.Authorization = `Bearer ${authStore.access_token}`
     }
 
     return config;
   },
   (error) => {
+    console.error('Request error:', error)
     return Promise.reject(error)
   }
 )
@@ -103,5 +101,15 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// Small helper used by the router to attempt a silent refresh when a user
+// navigates to a protected route and the access token is missing but a
+// refresh token cookie may still be present.
+export async function attemptRefresh(client_id: string) {
+  const refreshResponse = await refreshClient.post('/auth/refresh', {
+    client_id,
+  })
+  return refreshResponse.data
+}
 
 export default apiClient;

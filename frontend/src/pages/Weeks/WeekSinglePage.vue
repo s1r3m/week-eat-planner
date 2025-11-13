@@ -21,8 +21,9 @@ if (!week.value) {
     <h2>{{ week.name }}</h2>
     <div class="meal_slots-container">
       <p v-for="meal_slot in week.meal_slots" :key="meal_slot.id">
-        {{ meal_slot }}
-      </p>
+      {{ meal_slot.meal_type }} - {{ meal_slot.day_of_week }} -- {{ meal_slot.id }}
+      <span v-if="meal_slot.recipe_id">Recipe: {{ meal_slot.recipe_id }}</span>
+    </p>
     </div>
   </div>
 </template>

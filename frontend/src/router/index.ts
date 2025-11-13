@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/pages/HomePage.vue'
 import {useAuthStore} from "@/stores/auth";
-import { useErrorStore } from '@/stores/error';
+import { useAlertStore } from '@/stores/error';
+import { useClientIdStore } from '@/stores/clientId'
+import { attemptRefresh } from '@/api/client'
 
 const routes = [
     { path: '/', name: 'home', component: HomePage },
@@ -19,11 +21,25 @@ const router = createRouter({
 
 export default router
 
-// router.beforeEach(to => {
-//     const authStore = useAuthStore()
-//     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-//         const errorStore = useErrorStore()
-//         errorStore.addError('You must be logged in to access that page.')
-//         return { name: 'login' }
-//     }
-// })
+router.beforeEach(async (to, from) => {
+    const authStore = useAuthStore()
+    const errorStore = useAlertStore()
+    const clientIdStore = useClientIdStore()
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        // Attempt a silent refresh using the refresh token cookie. If it
+        // succeeds we'll set the access token and allow navigation. If it
+        // fails we redirect to login.
+        try {
+            const data = await attemptRefresh(clientIdStore.getClientId())
+            // data should be the same shape as UserLoginResponse
+            authStore.setToken(data)
+            return true
+        } catch (err: any) {
+            if (from.name !== 'login') {
+                errorStore.addError('You must be logged in to access that page.')
+            }
+            return { name: 'login' , query: { redirect: to.fullPath }}
+        }
+    }
+})

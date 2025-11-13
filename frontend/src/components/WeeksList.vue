@@ -22,8 +22,8 @@ const addWeek = () => {
             <span>
                 {{ name }}
             </span>
-            <button class="btn" @click="router.push(`/weeks/${id}`)">See week</button>
-            <button class="btn btn-primary" @click="weekStore.removeWeek(id)">X</button>
+            <button class="btn" title="View Weeks Details" aria-label="View Weeks Details" @click="router.push(`/weeks/${id}`)">View Week</button>
+            <button class="btn btn-primary"  title="Delete Week" aria-label="Delete Week" @click="weekStore.removeWeek(id)">X</button>
         </div>
         <div v-if="weekStore.weeks.length < 6" class="add-week-container">
             <form class="add-week" @submit.prevent="addWeek">

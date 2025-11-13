@@ -1,26 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from "@/stores/auth";
 import apiClient from "@/api/client";
 import { useClientIdStore } from '@/stores/clientId';
-import { useErrorStore } from '@/stores/error';
-import TheError from '@/components/TheError.vue';
+import { useAlertStore } from '@/stores/error';
+import TheError from '@/components/ErrorNotification.vue';
 
 const email = ref('')
 const password = ref('')
-const errors: Ref<string[]> = ref([])
 
 const authStore = useAuthStore()
 const clientIdStore = useClientIdStore()
-const errorStore = useErrorStore()
+const errorStore = useAlertStore()
 const route = useRoute()
 const router = useRouter()
 
 const submitLogin = async () => {
-  errors.value = errorStore.getAllErrors()
-  
   const params = new URLSearchParams({
     username: email.value,
     password: password.value,
@@ -51,9 +47,9 @@ const submitLogin = async () => {
     <TheError />
     <form @submit.prevent="submitLogin">
       <label for="email">Email:</label>
-      <input v-model="email" type="email" placeholder="Email" required />
+      <input id="email" v-model="email" type="email" placeholder="Email" required />
       <label for="password">Password:</label>
-      <input v-model="password" type="password" placeholder="Password" required minlength="6"/>
+      <input id="password" v-model="password" type="password" placeholder="Password" required minlength="6"/>
       <button type="submit">Login</button>
     </form>
   </div>

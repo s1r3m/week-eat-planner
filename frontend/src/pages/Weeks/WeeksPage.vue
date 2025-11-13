@@ -1,20 +1,10 @@
 <script setup lang="ts">
 import { useWeekStore } from '@/stores/weeks'
-import TheError from '@/components/TheError.vue'
-import TheWeeks from '@/components/TheWeeks.vue'
-import { useRouter } from 'vue-router'
+import TheError from '@/components/ErrorNotification.vue'
+import TheWeeks from '@/components/WeeksList.vue'
 
 const weekStore = useWeekStore()
-const router = useRouter()
-
-try {
-  await weekStore.fetchWeeks()
-} catch (err: any) {
-  // If unauthorized, redirect user to login so they can re-authenticate.
-  if (err?.response?.status === 401) {
-    router.push({ name: 'login', query: { redirect: '/weeks' } })
-  }
-}
+await weekStore.fetchWeeks()
 </script>
 
 <template>

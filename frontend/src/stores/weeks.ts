@@ -3,22 +3,21 @@ import type { Ref } from 'vue'
 import type { UserWeek } from '@/types/api'
 import { defineStore } from 'pinia'
 import apiClient from '@/api/client'
-import { useErrorStore } from '@/stores/error'
+import { useAlertStore } from '@/stores/error'
 
-const errorState = useErrorStore()
 
 export const useWeekStore = defineStore('weeks-store', () => {
     const weeks: Ref<Array<UserWeek>> = ref([])
 
     const fetchWeeks = async (): Promise<boolean> => {
         try {
-            const response = await apiClient.get('/weeks')
-            weeks.value = response.data as Array<UserWeek>
+            const response = await apiClient.get<UserWeek[]>('/weeks')
+            weeks.value = response.data
             return true
         } catch (error: any) {
             const error_message = error.response?.data?.detail || error.message || 'An unknown error occurred'
-            errorState.addError(`Failed to fetch weeks: ${error_message}`)
-            // If unauthorized, propagate the error so callers can react (e.g., redirect to login)
+            useAlertStore().addError(`Failed to fetch weeks: ${error_message}`)
+            // Let the page handle redirect if unauthorized.
             if (error.response?.status === 401) {
                 throw error
             }
@@ -26,15 +25,15 @@ export const useWeekStore = defineStore('weeks-store', () => {
         }
     }
 
-    const removeWeek = async (week_id: string) => {
+    const removeWeek = async (weekId: string) => {
         try {
-            const response = await apiClient.delete(`/weeks/${week_id}`)
+            const response = await apiClient.delete(`/weeks/${weekId}`)
             if (response.status !== 204) {
-                errorState.addError(response.data || 'An unknown error occurred.')
+                useAlertStore().addError(response.data || 'An unknown error occurred.')
             }
-            weeks.value = weeks.value.filter(week => week.id !== week_id)
+            weeks.value = weeks.value.filter(week => week.id !== weekId)
         } catch (err: any) {
-            errorState.addError(err.message)
+            useAlertStore().addError(err.message)
         }
     }
 
@@ -46,19 +45,19 @@ export const useWeekStore = defineStore('weeks-store', () => {
             }
             weeks.value.push(response.data as UserWeek)
         } catch (err: any) {
-            errorState.addError(err.message)
+            useAlertStore().addError(err.message)
         }
     }
 
-    const getWeek = async (week_id: string): Promise<UserWeek | null> => {
+    const getWeek = async (weekId: string): Promise<UserWeek | null> => {
         try {
-            const response = await apiClient.get(`/weeks/${week_id}`)
+            const response = await apiClient.get(`/weeks/${weekId}`)
             if (response.status !== 200) {
                 throw new Error(response.data || 'An unknown error occurred.')
             }
             return response.data as UserWeek
         } catch (err: any) {
-            errorState.addError(err.message)
+            useAlertStore().addError(err.message)
             return null
         }
     }

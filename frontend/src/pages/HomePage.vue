@@ -14,7 +14,7 @@ const photos = ref([
     <h2>Welcome to Week Eat Planner!</h2>
     <p>Plan your meals for the entire week easily.</p>
     <div>
-      <img v-for="{id, src} in photos" :key="id" :src="src" alt=""/>
+      <img v-for="{id, src} in photos" :key="id" :src="src" alt="Gallery Image"/>
     </div>
   </div>
 </template>

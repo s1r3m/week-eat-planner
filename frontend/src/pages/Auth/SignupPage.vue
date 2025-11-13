@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import TheError from '@/components/TheError.vue';
+import TheError from '@/components/ErrorNotification.vue';
 
 import apiClient from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from 'vue-router'
-import { useErrorStore } from '@/stores/error';
+import { useAlertStore } from '@/stores/error';
 
 const email = ref('')
 const password = ref('')
 
 const authStore = useAuthStore()
-const errorStore = useErrorStore()
+const errorStore = useAlertStore()
 const router = useRouter()
 
 
@@ -42,6 +42,7 @@ const submitSignup: () => Promise<void> = async () => {
     <div v-else>
       <p>You are already logged in.</p>
       // TODO: Logout button when it is in a separate component.
+    </div>
   </div>
 </template>
 

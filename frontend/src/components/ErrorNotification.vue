@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useErrorStore } from '@/stores/error'
+import { useAlertStore } from '@/stores/error'
 
-const errorStore = useErrorStore()
+const errorStore = useAlertStore()
 const displayedErrors = ref<string[]>([])
 const isVisible = ref(false)
 
