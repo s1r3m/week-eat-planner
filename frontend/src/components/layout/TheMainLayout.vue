@@ -7,7 +7,15 @@
 
         <div class="content-body">
             <Suspense>
-                <slot />
+                <template #default>
+                    <slot />
+                </template>
+              
+                <template #fallback>
+                    <div class="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+                        <LoadingSpinner :loadingName="pageName" />
+                    </div>
+                </template>
             </Suspense>
         </div>
     </section>
@@ -15,7 +23,15 @@
 </template>
 
 <script setup lang="ts">
+import LoadingSpinner from "@/components/ui/LoadingSpinner.vue";
 
+interface Props {
+    pageName?: string
+}
+
+withDefaults(defineProps<Props>(), {
+    pageName: 'data',
+})
 </script>
 
 <style scoped>

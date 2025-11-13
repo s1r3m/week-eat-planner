@@ -1,3 +1,21 @@
+<template>
+  <div class="auth-container">
+    <h2>Sign Up</h2>
+    <TheError />
+    <form v-if="!authStore.isAuthenticated" @submit.prevent="submitSignup">
+      <label for="email">Email:</label>
+      <input v-model="email" type="email" placeholder="Email" required />
+      <label for="password">Password:</label>
+      <input v-model="password" type="password" placeholder="Password" minlength="6" required />
+      <button type="submit">Create Account</button>
+    </form>
+    <div v-else>
+      <p>You are already logged in.</p>
+      // TODO: Logout button when it is in a separate component.
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue'
 import TheError from '@/components/common/ErrorNotification.vue';
@@ -28,26 +46,6 @@ const submitSignup = async () => {
 }
 </script>
 
-<template>
-  <div class="auth-container">
-    <h2>Sign Up</h2>
-    <TheError />
-    <form v-if="!authStore.isAuthenticated" @submit.prevent="submitSignup">
-      <label for="email">Email:</label>
-      <input v-model="email" type="email" placeholder="Email" required />
-      <label for="password">Password:</label>
-      <input v-model="password" type="password" placeholder="Password" minlength="6" required />
-      <button type="submit">Create Account</button>
-    </form>
-    <div v-else>
-      <p>You are already logged in.</p>
-      // TODO: Logout button when it is in a separate component.
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.error {
-  color: #df1b1b;
-}
+
 </style>

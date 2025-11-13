@@ -12,6 +12,7 @@ const routes = [
     { path: '/recipes', name: 'recipes', component: () => import('@/pages/Recipes/RecipesPage.vue'), meta: { requiresAuth: true } },
     { path: '/weeks', name: 'weeks', component: () => import('@/pages/Weeks/WeeksPage.vue'), meta: { requiresAuth: true } },
     { path: '/weeks/:id', name: 'week', component: () => import('@/pages/Weeks/WeekSinglePage.vue'), meta: { requiresAuth: true } },
+    { path: '/profile', name: 'profile', component: () => import('@/pages/Profile/ProfilePage.vue'), meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
