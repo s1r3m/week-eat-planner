@@ -6,13 +6,15 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.schemas import Token, UserCreate, UserRead
+from week_eat_planner.api.schemas import Token, TokenRefresh, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
+    LoginWithAuthException,
     RefreshTokenMissing,
     RefreshTokenNotFound,
+    SignUpWithAuthException,
     TokenExpired,
     TokenForbidden,
     TokenRevoked,
@@ -26,6 +28,7 @@ router = APIRouter()
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    request: Request,
 ) -> UserRead:
     """Registers a new user.
 
@@ -36,17 +39,24 @@ async def create_user(
         The public information for the newly created user.
 
     Raises:
+        SignUpWithAuthException: If the request contains an Authorization header.
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
+    if request.headers.get('Authorization'):
+        logger.warning('Authorization header should not be set for sign up requests.')
+        raise SignUpWithAuthException()
+
     created_user = await AuthService(session).register_user(user_data)
-    return UserRead.model_validate(created_user)
+
+    return created_user
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    request: Request,
     response: Response,
 ) -> Token:
     """Authenticates a user and returns an access token.
@@ -61,18 +71,30 @@ async def login(
         A Token object containing the access token.
 
     Raises:
+        LoginWithAuthException: If the request contains an Authorization header.
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
-    access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
+    if request.headers.get('Authorization'):
+        logger.warning('Authorization header should not be set for login requests.')
+        raise LoginWithAuthException()
+
+    if user_data.client_id is None:
+        logger.error('Client ID is missing in login request.')
+        raise LoginWithAuthException(detail='Client ID is required for login.')
+
+    user_agent = request.headers.get('User-Agent', '')
+    access_token, refresh_token = await AuthService(session).login(
+        user_data.username, user_data.password, user_data.client_id, user_agent
+    )
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
-        # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
-        max_age=settings.REFRESH_TOKEN_TTL,
-        path='/auth',
+        secure=not settings.DEBUG,
+        samesite='lax' if settings.DEBUG else 'strict',
+        max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
+        path='/',
     )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
@@ -80,9 +102,9 @@ async def login(
 
 @router.post(AppUrl.AUTH_REFRESH, response_model=Token)
 async def refresh_tokens(
+    client_data: TokenRefresh,
     request: Request,
     response: Response,
-    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Token:
     """Generates a new access token using a refresh token.
@@ -97,22 +119,26 @@ async def refresh_tokens(
     Raises:
         HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request for {user}.')
+    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
-        logger.error(f'No refresh token in request cookies for {user}.')
-        raise RefreshTokenMissing
+        logger.error('No refresh token in request cookies.')
+        raise RefreshTokenMissing()
 
-    access_token, refresh_token = await AuthService(session).refresh_tokens(user, cookie_token)
-    response.set_cookie(
-        key=REFRESH_TOKEN_COOKIE_NAME,
-        value=refresh_token,
-        httponly=True,
-        # secure=True,  # TODO: enable HTTPS
-        samesite='strict',
-        max_age=settings.REFRESH_TOKEN_TTL,
-        path='/auth',
+    user_agent = request.headers.get('User-Agent', '')
+    access_token, refresh_token = await AuthService(session).refresh_tokens(
+        cookie_token, client_data.client_id, user_agent
     )
+    if cookie_token != refresh_token:
+        response.set_cookie(
+            key=REFRESH_TOKEN_COOKIE_NAME,
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='lax' if settings.DEBUG else 'strict',
+            max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
+            path='/',
+        )
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 
@@ -148,5 +174,5 @@ async def logout(
         # is effectively logged out, so we can return a success response.
         logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
 
-    response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')
+    response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/')
     return

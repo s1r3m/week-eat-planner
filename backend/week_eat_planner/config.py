@@ -12,6 +12,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
+    DEBUG: bool
+
     DB_URL: str
     BE_HOST: str
     FE_HOST: str
@@ -23,6 +25,7 @@ class Settings(BaseSettings):
     JWT_AUDIENCE: str
     ACCESS_TOKEN_TTL: int  # Access token time to live in minutes
     REFRESH_TOKEN_TTL: int  # Refresh token time to live in days
+    ROTATE_TOKEN_EXPIRE_DELTA: int  # Time delta in minutes to rotate refresh token if it's close to expiration
 
     # Logger settings.
     FORMAT_LOG: str = '{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}'

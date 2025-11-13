@@ -11,8 +11,8 @@ from week_eat_planner.db.models import RefreshToken, User
 from week_eat_planner.exceptions import (
     InvalidCredentials,
     InvalidEmail,
-    InvalidRefreshToken,
     RefreshTokenNotFound,
+    RefreshTokenRevoked,
     TokenExpired,
     TokenForbidden,
     TokenRevoked,
@@ -56,7 +56,7 @@ class AuthService:
 
         return UserRead.model_validate(created_user)
 
-    async def login(self, username: str, password: str) -> tuple[str, str]:
+    async def login(self, username: str, password: str, client_id: str, user_agent: str) -> tuple[str, str]:
         """Logs a user in.
 
         Validates user credentials and returns access and refresh tokens upon success.
@@ -64,6 +64,8 @@ class AuthService:
         Args:
             username: The user's email.
             password: The user's password.
+            client_id: The client identifier (e.g., device fingerprint from FE).
+            user_agent: The user agent string from the request headers.
 
         Returns:
             A tuple containing the access and refresh tokens.
@@ -84,63 +86,78 @@ class AuthService:
             logger.error(f'Invalid credentials for {email}!')
             raise InvalidCredentials()
 
-        access_token = TokenProvider.create_access_token(username)
-        refresh_token = TokenProvider.create_refresh_token()
-        now = datetime.now(timezone.utc)
-        db_refresh_token = RefreshToken(
-            token_hash=TokenProvider.hash_refresh_token(refresh_token),
-            user_id=db_user.id,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
-            revoked=False,
-        )
-        await self._refresh_token_dao.add(db_refresh_token)
+        fingerprint = TokenProvider.generate_full_fingerprint(client_id, user_agent)
+        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user, fingerprint)
 
         logger.info(f'User {email} logged in successfully.')
         return access_token, refresh_token
 
-    async def refresh_tokens(self, user: UserRead, old_refresh_token: str) -> tuple[str, str]:
+    async def refresh_tokens(self, old_refresh_token: str, client_id: str, user_agent: str) -> tuple[str, str]:
         """Refreshes access and refresh tokens.
 
         Args:
             user: The user requesting the token refresh.
             old_refresh_token: The raw (unhashed) refresh token to be replaced.
+            client_id: The client identifier (e.g., device fingerprint from FE).
+            user_agent: The user agent string from the request headers.
 
         Returns:
             A tuple containing the new access and refresh tokens.
 
         Raises:
-            InvalidRefreshToken: If the provided token is invalid or revoked.
+            RefreshTokenRevoked: If the provided token is invalid or revoked.
             TokenExpired: If the provided token has expired.
         """
-        logger.info(f'Attempting to refresh tokens for {user}.')
+        logger.info(f'Attempting to refresh tokens from {old_refresh_token}.')
         old_token = RefreshTokenFromDB(
             token_hash=TokenProvider.hash_refresh_token(old_refresh_token),
-            user_id=user.id,
+            device_fingerprint=TokenProvider.generate_full_fingerprint(client_id, user_agent),
         )
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(old_token)
 
         if not db_refresh_token or db_refresh_token.revoked:
-            logger.error(f'Invalid refresh token provided for {user}.')
-            raise InvalidRefreshToken()
+            logger.error('Token is revoked.')
+            raise RefreshTokenRevoked()
 
-        if db_refresh_token.expires_at <= datetime.now(timezone.utc):
-            logger.error(f'Refresh token expired for {user}.')
+        now = datetime.now(timezone.utc)
+        if db_refresh_token.expires_at <= now:
+            logger.error('Refresh token expired.')
             raise TokenExpired()
 
-        access_token = TokenProvider.create_access_token(user.email)
+        db_user = db_refresh_token.user
+        if db_refresh_token.expires_at <= now + timedelta(minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA):
+            fingerprint = db_refresh_token.device_fingerprint
+            access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(db_user, fingerprint)
+            await self._refresh_token_dao.update(old_token, TokenUpdate(revoked=True, replaced_by=new_db_token.id))
+        else:
+            access_token = TokenProvider.create_access_token(db_user.email)
+            refresh_token = old_refresh_token
+
+        logger.info(f'Tokens for {db_user.email} refreshed successfully.')
+        return access_token, refresh_token
+
+    async def _generate_tokens_for_user(self, db_user: User, fingerprint: str) -> tuple[str, str, RefreshToken]:
+        """Generates access and refresh tokens for a given user.
+
+        Args:
+            user: The user for whom to generate tokens.
+            fingerprint: The device fingerprint associated with the refresh token.
+        Returns:
+            A tuple containing the access and refresh tokens, and the DB refresh token instance.
+        """
+        access_token = TokenProvider.create_access_token(db_user.email)
         refresh_token = TokenProvider.create_refresh_token()
         now = datetime.now(timezone.utc)
-        rt_instance = RefreshToken(
+        db_refresh_token = RefreshToken(
             token_hash=TokenProvider.hash_refresh_token(refresh_token),
-            user_id=user.id,
+            user_id=db_user.id,
+            device_fingerprint=fingerprint,
             expires_at=now + timedelta(days=settings.REFRESH_TOKEN_TTL),
             revoked=False,
         )
-        new_db_token = await self._refresh_token_dao.add(rt_instance)
-        await self._refresh_token_dao.update(old_token, TokenUpdate(replaced_by=new_db_token.id))
+        await self._refresh_token_dao.add(db_refresh_token)
 
-        logger.info(f'Tokens for {user} refreshed successfully.')
-        return access_token, refresh_token
+        return access_token, refresh_token, db_refresh_token
 
     async def logout(self, user: UserRead, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.

@@ -14,9 +14,16 @@ class Token(BaseModel):
 class RefreshTokenFromDB(BaseModel):
     token_hash: str | None = None
     user_id: UUID | None = None
+    device_fingerprint: str | None = None
+
+    model_config = {'from_attributes': True}
 
 
 class TokenUpdate(BaseModel):
     expires_at: datetime | None = None
     replaced_by: UUID | None = None
     revoked: bool | None = None
+
+
+class TokenRefresh(BaseModel):
+    client_id: str

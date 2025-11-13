@@ -1,14 +1,19 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-# COPY package.json ./
-# COPY package-lock.json ./
+# Copy only package files first for better caching
+COPY package.json yarn.lock ./
 
-# RUN yarn install
+# Install dependencies (using Yarn)
+RUN corepack enable && yarn install
 
-# COPY . ./
+# Copy rest of the project
+COPY . .
 
-# EXPOSE 3000
-# CMD ["npm", "start"]
-CMD ["echo", "Hello, World!"]
+# Default Vite dev port overrideable by ENV
+ENV PORT=3000
+EXPOSE 3000
+
+# The default command will be overridden by Makefile or compose
+CMD ["yarn", "dev", "--port", "3000", "--host", "0.0.0.0"]

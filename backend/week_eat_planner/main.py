@@ -3,6 +3,7 @@ from typing import AsyncGenerator
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from week_eat_planner.api import auth, monitoring, recipe, user, week
 from week_eat_planner.db.session_maker import db
@@ -30,6 +31,19 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+origins = [
+    'http://localhost:5173',
+    'https://yourproductionfrontend.com',
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 def start_app() -> None:
