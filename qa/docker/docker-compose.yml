@@ -7,7 +7,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - backend
-#      - frontend
+      - frontend
     networks:
       default:
         aliases:
@@ -17,6 +17,7 @@ services:
       context: ../../
       dockerfile: qa/docker/app/Dockerfile
     environment:
+      - DEBUG=true
       - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
       - BE_HOST=http://app.dev.local
       - FE_HOST=http://app.dev.local
@@ -26,6 +27,7 @@ services:
       - JWT_AUDIENCE=wep-api
       - ACCESS_TOKEN_TTL=900
       - REFRESH_TOKEN_TTL=30
+      - ROTATE_TOKEN_EXPIRE_DELTA=15
       - ADMIN_IDS=[193191236]
       - BOT_TOKEN=your_bot_token
       - TG_API_SITE=https://api.telegram.org
@@ -38,14 +40,15 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-#  frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile: Dockerfile
-#    expose:
-#      - "3000"
-#    volumes:
-#      - ./:/app
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    expose:
+      - 3000
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules
   db:
     image: postgres:13
     environment:
