@@ -8,8 +8,13 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 const logout: () => Promise<void> = async () => {
-  const res = await apiClient.post('/auth/logout')
-  console.log(`Status ${res.status}`)
+  try {
+    await apiClient.post('/auth/logout')
+  } catch (err: any) {
+    // Doesn't matter if logout request fails
+    console.error('Logout request failed:', err)
+  }
+
   authStore.clearToken()
   router.push('/')
 }

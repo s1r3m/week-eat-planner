@@ -1,35 +1,35 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from "@/stores/auth";
 import apiClient from "@/api/client";
+import { useClientIdStore } from '@/stores/clientId';
+import { useErrorStore } from '@/stores/error';
+import TheError from '@/components/TheError.vue';
 
 const email = ref('')
 const password = ref('')
-const message = ref('')
-const error = ref('')
+const errors: Ref<string[]> = ref([])
 
 const authStore = useAuthStore()
+const clientIdStore = useClientIdStore()
+const errorStore = useErrorStore()
 const route = useRoute()
 const router = useRouter()
 
 const submitLogin = async () => {
-  error.value = ''
-  if (!localStorage.getItem('client_id')) {
-    const newClientId = crypto.randomUUID()
-    localStorage.setItem('client_id', newClientId)
-    console.log(`Generated and stored new Client ID: ${newClientId}`)
-  }
+  errors.value = errorStore.getAllErrors()
   
+  const params = new URLSearchParams({
+    username: email.value,
+    password: password.value,
+    client_id: clientIdStore.getClientId(),
+  })
   try {
     const res = await apiClient.post(
-        '/auth/login',
-        {
-          username: email.value,
-          password: password.value,
-          client_id: localStorage.getItem('client_id'),
-        },
-        {
+      '/auth/login', params,
+      {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -37,10 +37,10 @@ const submitLogin = async () => {
     )
     authStore.setToken(res.data)
     const redirectPath = route.query.redirect || '/weeks'
-    console.log(`Redirecting to: ${redirectPath}`)
     router.push(redirectPath as string)
+
   } catch (err: any) {
-    error.value = err.message
+    errorStore.addError(err.response?.data?.detail || 'Login failed')
   }
 }
 </script>
@@ -48,13 +48,14 @@ const submitLogin = async () => {
 <template>
   <div class="auth-container">
     <h2>Login</h2>
+    <TheError />
     <form @submit.prevent="submitLogin">
+      <label for="email">Email:</label>
       <input v-model="email" type="email" placeholder="Email" required />
+      <label for="password">Password:</label>
       <input v-model="password" type="password" placeholder="Password" required minlength="6"/>
       <button type="submit">Login</button>
     </form>
-    <p v-if="error" class="error">{{ error }}</p>
-    <p v-if="message" class="success">{{ message }}</p>
   </div>
 </template>
 

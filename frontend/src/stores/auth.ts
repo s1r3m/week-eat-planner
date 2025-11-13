@@ -15,8 +15,7 @@ export const useAuthStore = defineStore('auth-store', () => {
 
     const clearToken = () => {
         access_token.value = null
-        localStorage.removeItem('client_id')
-        console.log('Cleared access_token and client_id from localStorage')
+        console.log('Cleared access_token from localStorage')
     }
 
     const isAuthenticated = computed(() => !!access_token.value)

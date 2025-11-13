@@ -174,5 +174,5 @@ async def logout(
         # is effectively logged out, so we can return a success response.
         logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
 
-    response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/auth')
+    response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/')
     return

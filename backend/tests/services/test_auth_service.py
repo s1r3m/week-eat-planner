@@ -138,7 +138,9 @@ async def test_refresh_tokens__valid_old_token__new_access_token_returned(
 async def test_refresh_tokens__old_about_to_expire__new_refresh_token_returned(
     mocked_refresh_token_dao, mocked_session, db_refresh_token, new_db_refresh_token
 ):
-    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA - 10)
+    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA - 10
+    )
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
     mocked_refresh_token_dao.add.return_value = new_db_refresh_token
 

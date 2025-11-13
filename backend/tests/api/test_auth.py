@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from freezegun import freeze_time
 
 import pytest_asyncio
 from fastapi import HTTPException, status
+from freezegun import freeze_time
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.constants import CLIENT_ID, EMAIL, PASSWORD
@@ -138,6 +138,13 @@ async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_fo
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Refresh Token missing'}
+
+
+async def test_refresh_token__refresh_token_far_from_expire__no_cookies_in_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH, json={'client_id': str(CLIENT_ID)})
+
+    assert response.status_code == status.HTTP_200_OK
+    assert not response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
 
 
 async def test_refresh_token__refresh_token_about_to_expire__new_token_in_cookies(auth_client_for_created_user):

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { useClientIdStore } from '@/stores/clientId'
 
 const apiClient = axios.create({
   baseURL: '/api',
@@ -19,7 +20,7 @@ const refreshClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    if (config.url === '/auth/refresh') {
+    if (config?.url === '/auth/refresh') {
       throw new axios.Cancel('Request to /auth/refresh is not allowed through apiClient')
     }
 
@@ -58,8 +59,9 @@ apiClient.interceptors.response.use(
   async (error) => {
       const originalRequest = error.config
       const authStore = useAuthStore()
+      const clientIdStore = useClientIdStore()
 
-      if (error.config.url === '/auth/login' || error.config.url === '/auth/signup') {
+      if (error?.config?.url === '/auth/login' || error.config?.url === '/auth/signup') {
         return Promise.reject(error)
       }
 
@@ -79,11 +81,9 @@ apiClient.interceptors.response.use(
           isRefreshing = true
           
           try {
-            if (!localStorage.getItem('client_id')) {
-              throw new Error('Client ID is missing in localStorage')
-            }
+            
             const refreshResponse = await refreshClient.post('/auth/refresh', {
-              client_id: localStorage.getItem('client_id'),
+              client_id: clientIdStore.getClientId(),
             })
             authStore.setToken(refreshResponse.data)
 

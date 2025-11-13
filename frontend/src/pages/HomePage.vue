@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 
 const photos = ref([
-  {id: 'photo-2', src: 'src/assets/photo2.jpg'},
-  {id: 'photo-3', src: 'src/assets/photo3.jpg'},
-  {id: 'photo-4', src: 'src/assets/photo4.jpg'},
-  {id: 'photo-5', src: 'src/assets/photo5.jpg'}
+  {id: 'photo-2', src: new URL('@/assets/photo2.jpg', import.meta.url).href},
+  {id: 'photo-3', src: new URL('@/assets/photo3.jpg', import.meta.url).href},
+  {id: 'photo-4', src: new URL('@/assets/photo4.jpg', import.meta.url).href},
+  {id: 'photo-5', src: new URL('@/assets/photo5.jpg', import.meta.url).href},
 ])
 </script>
 

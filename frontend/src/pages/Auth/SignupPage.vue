@@ -1,32 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import TheError from '@/components/TheError.vue';
 
 import apiClient from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from 'vue-router'
+import { useErrorStore } from '@/stores/error';
 
 const email = ref('')
 const password = ref('')
-const error = ref('')
 
 const authStore = useAuthStore()
+const errorStore = useErrorStore()
 const router = useRouter()
 
 
 const submitSignup: () => Promise<void> = async () => {
-  error.value = ''
   try {
     const res = await apiClient.post('/auth/signup', {
       email: email.value,
       password: password.value,
     })
-    if (res.status !== 201) {
-      throw new Error(`Signup failed with status ${res.status}: ${res.data}`)
-    }
-    authStore.setToken(res.data)
-    router.push('/login')
+    if (res.status == 201) router.push('/login')
   } catch (err: any) {
-    error.value = err.message
+    errorStore.addError(err.message)
   }
 }
 </script>
@@ -34,12 +31,17 @@ const submitSignup: () => Promise<void> = async () => {
 <template>
   <div class="auth-container">
     <h2>Sign Up</h2>
-    <form @submit.prevent="submitSignup">
+    <TheError />
+    <form v-if="!authStore.isAuthenticated" @submit.prevent="submitSignup">
+      <label for="email">Email:</label>
       <input v-model="email" type="email" placeholder="Email" required />
+      <label for="password">Password:</label>
       <input v-model="password" type="password" placeholder="Password" minlength="6" required />
       <button type="submit">Create Account</button>
     </form>
-    <p v-if="error" class="error">{{ error }}</p>
+    <div v-else>
+      <p>You are already logged in.</p>
+      // TODO: Logout button when it is in a separate component.
   </div>
 </template>
 
