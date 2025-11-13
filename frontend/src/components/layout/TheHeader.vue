@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TheNavigation from "@/components/TheNavigation.vue"
+import TheNavigation from "@/components/layout/TheNavigation.vue"
 import { useAuthStore } from "@/stores/auth"
 import { useRouter } from 'vue-router'
 import apiClient from "@/api/client"

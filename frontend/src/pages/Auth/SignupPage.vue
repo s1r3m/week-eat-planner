@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import TheError from '@/components/ErrorNotification.vue';
+import TheError from '@/components/common/ErrorNotification.vue';
 
 import apiClient from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
@@ -15,7 +15,7 @@ const errorStore = useAlertStore()
 const router = useRouter()
 
 
-const submitSignup: () => Promise<void> = async () => {
+const submitSignup = async () => {
   try {
     const res = await apiClient.post('/auth/signup', {
       email: email.value,

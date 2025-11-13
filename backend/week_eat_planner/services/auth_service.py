@@ -96,7 +96,6 @@ class AuthService:
         """Refreshes access and refresh tokens.
 
         Args:
-            user: The user requesting the token refresh.
             old_refresh_token: The raw (unhashed) refresh token to be replaced.
             client_id: The client identifier (e.g., device fingerprint from FE).
             user_agent: The user agent string from the request headers.
@@ -140,7 +139,7 @@ class AuthService:
         """Generates access and refresh tokens for a given user.
 
         Args:
-            user: The user for whom to generate tokens.
+            db_user: The user for whom to generate tokens.
             fingerprint: The device fingerprint associated with the refresh token.
         Returns:
             A tuple containing the access and refresh tokens, and the DB refresh token instance.
@@ -195,6 +194,6 @@ class AuthService:
             logger.warning(f'Attempted logout with an already revoked token for user {user}.')
             raise TokenRevoked(raw_token)
 
-        await self._refresh_token_dao.update(refresh_token, TokenUpdate(replaced_by=None))
+        await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
         logger.info(f'{user} logged out successfully.')
         return
