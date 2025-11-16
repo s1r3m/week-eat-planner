@@ -1,11 +1,3 @@
-<script setup lang="ts">
-interface Props {
-    loadingName?: string
-}
-
-withDefaults(defineProps<Props>(), { loadingName: 'data' })
-</script>
-
 <template>
 <div class="flex items-center justify-center py-12">
   <div class="text-center">
@@ -14,6 +6,14 @@ withDefaults(defineProps<Props>(), { loadingName: 'data' })
   </div>
 </div>
 </template>
+
+<script setup lang="ts">
+interface Props {
+    loadingName?: string
+}
+
+withDefaults(defineProps<Props>(), { loadingName: 'data' })
+</script>
 
 <style scoped>
 

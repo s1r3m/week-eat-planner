@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import TheHeader from '@/components/layout/TheHeader.vue'
 import TheFooter from '@/components/layout/TheFooter.vue'
+import TheMainLayout from '@/components/layout/TheMainLayout.vue'
 </script>
 
 <template>
-  <div id="app">
+  <div class="bg-surface-base text-base-color">
     <TheHeader />
-    <Suspense>
+    <TheMainLayout>
       <router-view />
-      <template #fallback>
-        <div><p>Loading...</p></div>
-      </template>
-    </Suspense>
+    </TheMainLayout>
     <TheFooter />
   </div>
 </template>

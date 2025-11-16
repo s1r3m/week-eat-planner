@@ -1,5 +1,42 @@
+<template>
+  <header class="sticky top-0 z-10 bg-surface-raised">
+    <section class="container-center flex items-center justify-between pr-2">
+      <router-link to="/" class="flex items-center gap-3">
+        <img class="max-w-14" src="@/assets//logo.png" alt="logo">
+        <h1 class="text-3xl font-mediumß">Week Eat Planner</h1>
+      </router-link>
+
+      <nav class="hidden md:block space-x-8 text-xl">
+        <router-link to="/weeks" class="hover:opacity-65">My Weeks</router-link>
+        <router-link to="/recipes" class="hover:opacity-65">Recipes</router-link>
+        <router-link to="/recipes" class="hover:opacity-65">Recipes</router-link>
+      </nav>
+
+      <div>
+        <button id="mobile-open-menu" class="text-3xl hover:opacity-65 md:hidden cursor-pointer">&#9776;</button>
+      </div>
+
+      <div class="hidden md:block">
+        <div v-if="!authStore.isAuthenticated">
+          <router-link to="/login">
+            <button>Login</button>
+          </router-link>
+          <router-link to="/signup">
+            <button>Sign Up</button>
+          </router-link>
+        </div>
+        <div v-else>
+          <router-link to="/profile">
+            <button>Profile</button>
+          </router-link>
+          <button @click="logout">Logout</button>
+        </div>
+      </div>
+    </section>
+  </header>
+</template>
+
 <script setup lang="ts">
-import TheNavigation from "@/components/layout/TheNavigation.vue"
 import { useAuthStore } from "@/stores/auth"
 import { useRouter } from 'vue-router'
 import apiClient from "@/api/client"
@@ -18,54 +55,8 @@ const logout: () => Promise<void> = async () => {
   authStore.clearToken()
   router.push('/')
 }
-
 </script>
 
-<template>
-  <header class="header">
-    <router-link to="/" class="title-link">
-      <img class="logo" src="@/assets/logo.png" alt="Logo">
-      <h2>Week Eat Planner</h2>
-    </router-link>
-    <TheNavigation />
-    <div class="auth-section">
-      <div v-if="!authStore.isAuthenticated">
-        <router-link to="/login">
-          <button class="btn">Login</button>
-        </router-link>
-        <router-link to="/signup">
-          <button class="btn btn-primary">Sign Up</button>
-        </router-link>
-      </div>
-      <div v-else>
-        <router-link to="/profile">
-          <button class="btn">Profile</button>
-        </router-link>
-        <button class="btn btn-primary" @click="logout">Logout</button>
-      </div>
-    </div>
-  </header>
-</template>
-
 <style scoped>
-.header {
-  background-color: #1a73e8;
-  color: white;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-link {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 5rem;
-  width: 5rem;;
-}
+/* Scoped styles can be added here if needed, but the core layout is now handled by Tailwind classes. */
 </style>

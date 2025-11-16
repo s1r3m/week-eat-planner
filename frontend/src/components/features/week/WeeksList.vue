@@ -1,26 +1,26 @@
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card 
+    <div>
+        <Card
             v-for="week in weekStore.weeks"
             :key="week.id"
             :name="week.name"
             interactive
-            class="cursor-pointer"
             @click="handleWeekClick(week.id)"
             @edit="handleEdit(week.id)"
             @delete="handleDelete(week.id)"
         />
         <form v-if="weekStore.weeks.length < 6" @submit.prevent="handleWeekCreate">
             <Card :interactive="false">
-                <div class="h-full flex flex-col items-center justify-end p-4">
-                    <div class="text-8xl text-gray-400 mb-4">+</div>
+                <div>
+                    <label for="new-week-name">
+                        Add a week:
+                    </label>
                     <input
-                        v-model="newWeekName"
                         id="new-week-name"
+                        v-model="newWeekName"
                         name="new-week-name"
                         type="text"
-                        placeholder="New week name"
-                        class="p-2 border rounded w-full bg-gray-150 text-white placeholder-white-400"
+                        placeholder="name"
                     />
                 </div>
             </Card>
