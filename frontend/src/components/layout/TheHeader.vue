@@ -2,7 +2,7 @@
   <header class="sticky inset-0 z-10 bg-surface-raised py-4">
     <section class="container-center flex items-center justify-between pr-2">
       <router-link to="/" class="flex items-center gap-3">
-        <img class="max-w-14" src="@/assets//logo.png" alt="logo">
+        <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
         <h1 class="text-3xl font-mediumß">Week Eat Planner</h1>
       </router-link>
 
@@ -13,7 +13,9 @@
       </nav>
 
       <div>
-        <button id="mobile-open-menu" class="text-3xl hover:opacity-65 md:hidden cursor-pointer">&#9776;</button>
+        <button id="mobile-open-menu" class="text-3xl hover:opacity-65 md:hidden cursor-pointer">
+          &#9776;
+        </button>
       </div>
 
       <div class="hidden md:block">
@@ -25,7 +27,7 @@
             <button class="btn btn-primary">Sign Up</button>
           </router-link>
         </div>
-        <div v-else  class="flex justify-between gap-4">
+        <div v-else class="flex justify-between gap-4">
           <router-link to="/profile">
             <button class="btn">Profile</button>
           </router-link>
@@ -37,24 +39,24 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "@/stores/auth"
-import { useRouter } from 'vue-router'
-import apiClient from "@/api/client"
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+import apiClient from '@/api/client';
 
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
 const logout: () => Promise<void> = async () => {
   try {
-    await apiClient.post('/auth/logout')
+    await apiClient.post('/auth/logout');
   } catch (err: any) {
     // Doesn't matter if logout request fails
-    console.error('Logout request failed:', err)
+    console.error('Logout request failed:', err);
   }
 
-  authStore.clearToken()
-  router.push('/')
-}
+  authStore.clearToken();
+  router.push('/');
+};
 </script>
 
 <style scoped>

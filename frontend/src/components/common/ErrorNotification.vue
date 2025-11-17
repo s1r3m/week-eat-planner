@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useAlertStore } from '@/stores/error'
+import { ref, onMounted } from 'vue';
+import { useAlertStore } from '@/stores/error';
 
-const errorStore = useAlertStore()
-const displayedErrors = ref<string[]>([])
-const isVisible = ref(false)
+const errorStore = useAlertStore();
+const displayedErrors = ref<string[]>([]);
+const isVisible = ref(false);
 
 onMounted(() => {
   // Fetch errors when component mounts (called from pages)
-  const errors = errorStore.getAllErrors()
+  const errors = errorStore.getAllErrors();
   if (errors.length > 0) {
-    displayedErrors.value = errors
-    isVisible.value = true
+    displayedErrors.value = errors;
+    isVisible.value = true;
     // Auto-hide after 5 seconds
     setTimeout(() => {
-      isVisible.value = false
-    }, 5000)
+      isVisible.value = false;
+    }, 5000);
   }
-})
+});
 
 const closeMessage = () => {
-  isVisible.value = false
-}
+  isVisible.value = false;
+};
 </script>
 
 <template>
@@ -34,9 +34,7 @@ const closeMessage = () => {
         <div v-if="displayedErrors.length > 1" class="header">
           {{ displayedErrors.length }} errors occurred
         </div>
-        <div v-else class="header">
-          Error
-        </div>
+        <div v-else class="header">Error</div>
         <ul v-if="displayedErrors.length > 1" class="error-list">
           <li v-for="(error, idx) in displayedErrors" :key="idx">
             {{ error }}

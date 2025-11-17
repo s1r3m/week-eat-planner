@@ -1,13 +1,7 @@
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>
-    Recipes Page – Coming soon 🍲
-  </div>
+  <div>Recipes Page – Coming soon 🍲</div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

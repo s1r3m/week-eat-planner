@@ -17,35 +17,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 import TheError from '@/components/common/ErrorNotification.vue';
 
-import apiClient from "@/api/client";
-import { useAuthStore } from "@/stores/auth";
-import { useRouter } from 'vue-router'
+import apiClient from '@/api/client';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 import { useAlertStore } from '@/stores/error';
 
-const email = ref('')
-const password = ref('')
+const email = ref('');
+const password = ref('');
 
-const authStore = useAuthStore()
-const errorStore = useAlertStore()
-const router = useRouter()
-
+const authStore = useAuthStore();
+const errorStore = useAlertStore();
+const router = useRouter();
 
 const submitSignup = async () => {
   try {
     const res = await apiClient.post('/auth/signup', {
       email: email.value,
       password: password.value,
-    })
-    if (res.status == 201) router.push('/login')
+    });
+    if (res.status == 201) router.push('/login');
   } catch (err: any) {
-    errorStore.addError(err.message)
+    errorStore.addError(err.message);
   }
-}
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
