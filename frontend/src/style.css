@@ -38,14 +38,26 @@
 
 @layer components {
     .container-center {
-        @apply max-w-4xl mx-auto;
+        @apply max-w-6xl mx-auto;
     }
 
     .flex-center {
         @apply flex justify-center items-center;
     }
 
+    .btn {
+        @apply min-w-28 border border-brand-primary rounded-2xl p-4 cursor-pointer
+    }
+
+    .btn:hover {
+        @apply bg-brand-muted;
+    }
+
     .btn-primary {
-        @apply border border-brand-primary bg-brand-muted rounded-2xl p-4 cursor-pointer
+        @apply bg-brand-muted
+    }
+
+    .btn-primary:hover {
+        @apply bg-brand-primary
     }
 }

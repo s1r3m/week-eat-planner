@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 z-10 bg-surface-raised">
+  <header class="sticky inset-0 z-10 bg-surface-raised py-4">
     <section class="container-center flex items-center justify-between pr-2">
       <router-link to="/" class="flex items-center gap-3">
         <img class="max-w-14" src="@/assets//logo.png" alt="logo">
@@ -17,19 +17,19 @@
       </div>
 
       <div class="hidden md:block">
-        <div v-if="!authStore.isAuthenticated">
+        <div v-if="!authStore.isAuthenticated" class="flex justify-between gap-4">
           <router-link to="/login">
-            <button>Login</button>
+            <button class="btn">Login</button>
           </router-link>
           <router-link to="/signup">
-            <button>Sign Up</button>
+            <button class="btn btn-primary">Sign Up</button>
           </router-link>
         </div>
-        <div v-else>
+        <div v-else  class="flex justify-between gap-4">
           <router-link to="/profile">
-            <button>Profile</button>
+            <button class="btn">Profile</button>
           </router-link>
-          <button @click="logout">Logout</button>
+          <button class="btn" @click="logout">Logout</button>
         </div>
       </div>
     </section>
