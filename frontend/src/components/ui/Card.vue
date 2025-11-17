@@ -20,7 +20,7 @@
       </button>
     </div>
     <img :src="src" :alt="name" class="w-full h-full object-cover" />
-    <div class="absolute inset-0 bg-gradient-to-t from-brand-primary/60 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-brand-primary/50 to-transparent"></div>
     <h2 class="absolute bottom-2 left-1/2 -translate-x-1/2 text-2xl font-bold text-white w-full text-center">{{ name }}</h2>
   </div>
 </template>
