@@ -13,15 +13,20 @@
     "lint": "eslint --ext .js,.ts,.vue src"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@vueuse/core": "^14.0.0",
     "axios": "^1.13.2",
     "pinia": "^3.0.4",
+    "tailwindcss": "^4.1.17",
     "vue": "^3.5.22",
     "vue-router": "4"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.7",
     "@babel/eslint-parser": "^7.28.5",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
     "@typescript-eslint/parser": "^8.46.4",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/eslint-config-prettier": "^10.2.0",
@@ -29,6 +34,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-vue": "^10.5.1",
     "globals": "^16.5.0",
+    "prettier": "^3.3.2",
     "typescript": "^5.2.2",
     "vite": "^7.1.11",
     "vite-plugin-vue-devtools": "^8.0.3",

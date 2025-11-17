@@ -195,7 +195,7 @@ async def test_logout__valid_token__token_revoked(
         token_hash=TokenProvider.hash_refresh_token(REFRESH_TOKEN),
         user_id=user_read.id,
     )
-    mocked_refresh_token_dao.update.assert_awaited_once_with(refresh_token, TokenUpdate(replaced_by=None))
+    mocked_refresh_token_dao.update.assert_awaited_once_with(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
 
 
 async def test_logout__not_existing_token__error_raised(mocked_refresh_token_dao, mocked_session, user_read):

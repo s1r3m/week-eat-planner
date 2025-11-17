@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/auth";
 import apiClient from "@/api/client";
 import { useClientIdStore } from '@/stores/clientId';
 import { useAlertStore } from '@/stores/error';
-import TheError from '@/components/ErrorNotification.vue';
+import TheError from '@/components/common/ErrorNotification.vue';
 
 const email = ref('')
 const password = ref('')
