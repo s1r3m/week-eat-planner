@@ -57,14 +57,10 @@
   }
 
   .btn {
-    @apply min-w-28 border border-brand-primary bg-surface-base rounded-2xl p-4 cursor-pointer;
-  }
-
-  .btn:hover {
-    @apply bg-brand-primary;
+    @apply min-w-40 mt-2 w-full sm:w-auto whitespace-normal text-center inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-brand-muted/70 bg-surface-raised text-base font-semibold text-base-color shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary hover:bg-surface-base/80 hover:border-brand-primary cursor-pointer;
   }
 
   .btn-primary {
-    @apply bg-brand-muted;
+    @apply bg-brand-primary text-white border-transparent shadow-lg shadow-brand-primary/35 hover:bg-brand-primary-hover;
   }
 }

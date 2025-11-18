@@ -57,7 +57,7 @@ const photos = ref([
       </article>
     </section>
 
-    <section id="sign-up" class="py-12 text-center scroll-mt-40">
+    <section id="sign-up" class="py-12 flex-center scroll-mt-40">
       <button class="btn btn-primary" @click="router.push('/signup')">Sign up now!</button>
     </section>
   </main>
