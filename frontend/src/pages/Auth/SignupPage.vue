@@ -1,8 +1,6 @@
 <template>
   <section class="container-center flex justify-center px-4 py-16">
-    <div
-      class="w-full max-w-lg bg-surface-raised border border-brand-muted rounded-3xl shadow-[0_20px_45px_rgba(15,23,42,0.12)] p-10 space-y-6"
-    >
+    <div class="auth-card">
       <div class="space-y-2 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand-primary">Join us</p>
         <h2 class="text-3xl font-semibold text-base-color">Create your account</h2>
@@ -40,10 +38,16 @@
         </div>
         <button
           type="submit"
-          class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Create account
         </button>
+        <p class="text-sm text-center text-muted">
+          Already have an account?
+          <RouterLink to="/login" class="text-brand-primary font-semibold hover:underline">
+            Log in
+          </RouterLink>
+        </p>
       </form>
       <div v-else class="space-y-2 text-center text-base text-base-color">
         <p>You are already logged in.</p>

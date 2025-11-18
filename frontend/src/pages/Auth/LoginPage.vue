@@ -38,10 +38,8 @@ const submitLogin = async () => {
 </script>
 
 <template>
-  <div class="container-center flex justify-center px-4 py-16">
-    <div
-      class="w-full max-w-lg bg-surface-raised border border-brand-muted rounded-3xl shadow-[0_20px_45px_rgba(15,23,42,0.12)] p-10 space-y-6"
-    >
+  <section class="container-center flex justify-center px-4 py-16">
+    <div class="auth-card">
       <div class="space-y-2 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand-primary">
           Welcome back
@@ -72,7 +70,7 @@ const submitLogin = async () => {
             id="password"
             v-model="password"
             type="password"
-            placeholder="Minimum 6 characters"
+            placeholder="Your password"
             autocomplete="new-password"
             minlength="6"
             required
@@ -81,13 +79,19 @@ const submitLogin = async () => {
         </div>
         <button
           type="submit"
-          class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create account
+          Log in
         </button>
+        <p class="text-sm text-center text-muted">
+          Don't have an account?
+          <RouterLink to="/signup" class="text-brand-primary font-semibold hover:underline">
+            Sign up
+          </RouterLink>
+        </p>
       </form>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped></style>
