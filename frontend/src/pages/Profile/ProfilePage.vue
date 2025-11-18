@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import TheMainLayout from '@/components/layout/TheMainLayout.vue';
+import TheMainLayout from '@/layouts/TheMainLayout.vue';
 import apiClient from '@/api/client';
 
 const user_info = ref({});

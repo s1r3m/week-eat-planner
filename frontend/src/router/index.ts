@@ -1,4 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import type { RouterScrollBehavior } from 'vue-router';
+
+type ScrollPositionResult = {
+  left: number;
+  top: number;
+  behavior?: 'auto' | 'smooth';
+};
+
+import GuestLayout from '@/layouts/TheGuestLayout.vue';
+import AuthLayout from '@/layouts/TheAuthLayout.vue';
+
 import HomePage from '@/pages/HomePage.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useAlertStore } from '@/stores/error';
@@ -6,38 +17,94 @@ import { useClientIdStore } from '@/stores/clientId';
 import { attemptRefresh } from '@/api/client';
 
 const routes = [
-  { path: '/', name: 'home', component: HomePage },
-  { path: '/login', name: 'login', component: () => import('@/pages/Auth/LoginPage.vue') },
-  { path: '/signup', name: 'signup', component: () => import('@/pages/Auth/SignupPage.vue') },
   {
-    path: '/recipes',
-    name: 'recipes',
-    component: () => import('@/pages/Recipes/RecipesPage.vue'),
-    meta: { requiresAuth: true },
+    path: '/',
+    component: GuestLayout,
+    children: [
+      { path: '', name: 'home', component: HomePage },
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('@/pages/Auth/LoginPage.vue'),
+      },
+      {
+        path: 'signup',
+        name: 'signup',
+        component: () => import('@/pages/Auth/SignupPage.vue'),
+      },
+    ],
   },
   {
-    path: '/weeks',
-    name: 'weeks',
-    component: () => import('@/pages/Weeks/WeeksPage.vue'),
+    path: '/',
+    component: AuthLayout,
     meta: { requiresAuth: true },
-  },
-  {
-    path: '/weeks/:id',
-    name: 'week',
-    component: () => import('@/pages/Weeks/WeekSinglePage.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    component: () => import('@/pages/Profile/ProfilePage.vue'),
-    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'recipes',
+        name: 'recipes',
+        component: () => import('@/pages/Recipes/RecipesPage.vue'),
+      },
+      {
+        path: 'weeks',
+        name: 'weeks',
+        component: () => import('@/pages/Weeks/WeeksPage.vue'),
+      },
+      {
+        path: 'weeks/:id',
+        name: 'week',
+        component: () => import('@/pages/Weeks/WeekSinglePage.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/pages/Profile/ProfilePage.vue'),
+      },
+    ],
   },
 ];
+
+const scrollToHashWithOffset = (hash: string): Promise<ScrollPositionResult> => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve({ left: 0, top: 0 });
+  }
+
+  return new Promise<ScrollPositionResult>((resolve) => {
+    requestAnimationFrame(() => {
+      const target = document.querySelector(hash);
+      if (!target) {
+        resolve({ left: 0, top: 0 });
+        return;
+      }
+
+      const header = document.querySelector('header.sticky');
+      const headerHeight = header?.getBoundingClientRect().height ?? 0;
+      const top = window.scrollY + target.getBoundingClientRect().top - headerHeight - 16;
+
+      resolve({
+        left: 0,
+        top: Math.max(top, 0),
+        behavior: 'smooth',
+      });
+    });
+  });
+};
+
+const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
+  if (savedPosition) {
+    return savedPosition;
+  }
+
+  if (to.hash) {
+    return scrollToHashWithOffset(to.hash);
+  }
+
+  return { left: 0, top: 0 };
+};
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior,
 });
 
 export default router;
@@ -48,12 +115,8 @@ router.beforeEach(async (to, from) => {
   const clientIdStore = useClientIdStore();
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Attempt a silent refresh using the refresh token cookie. If it
-    // succeeds we'll set the access token and allow navigation. If it
-    // fails we redirect to login.
     try {
       const data = await attemptRefresh(clientIdStore.getClientId());
-      // data should be the same shape as UserLoginResponse
       authStore.setToken(data);
       return true;
     } catch (err: any) {
