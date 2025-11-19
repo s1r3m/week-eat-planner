@@ -57,7 +57,7 @@
   }
 
   .btn {
-    @apply min-w-40 mt-2 w-full sm:w-auto whitespace-normal text-center inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-brand-muted/70 bg-surface-raised text-base font-semibold text-base-color shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary hover:bg-surface-base/80 hover:border-brand-primary cursor-pointer;
+    @apply min-w-30 mt-2 w-full sm:w-auto whitespace-normal text-center inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-brand-muted/70 bg-surface-raised text-base font-semibold text-base-color shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary hover:bg-surface-base/80 hover:border-brand-primary cursor-pointer;
   }
 
   .btn-primary {

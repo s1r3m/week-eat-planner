@@ -3,7 +3,7 @@
     <section class="container-center flex items-center justify-between pr-2">
       <router-link to="/" class="flex items-center gap-3">
         <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
-        <h1 class="text-3xl font-mediumß">Week Eat Planner</h1>
+        <h1 class="text-3xl font-medium">Week Eat Planner</h1>
       </router-link>
 
       <nav class="hidden md:block space-x-8 text-xl" aria-label="header">

@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import { useAuthStore } from '@/stores/auth';
+import TheFooter from './TheFooter.vue';
 
 const navLinks = [
   { label: 'Weeks', to: '/weeks' },
@@ -34,18 +35,19 @@ const handleLogout = async () => {
   <div class="min-h-screen bg-surface-base text-base-color flex flex-col">
     <header class="border-b border-base-color/10 bg-surface-raised px-6 py-4">
       <div class="flex items-center justify-between gap-4">
-        <router-link to="/weeks" class="text-2xl font-semibold tracking-tight">
-          Week Eat Planner
-        </router-link>
+        <router-link to="/weeks" class="flex items-center gap-3">
+        <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
+        <h1 class="text-3xl font-medium">Week Eat Planner</h1>
+      </router-link>
         <button
-          class="btn btn-primary whitespace-nowrap w-auto mt-0"
+          class="btn w-40 whitespace-nowrap mt-0"
           :disabled="isLoggingOut"
           @click="handleLogout"
         >
           {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
         </button>
       </div>
-      <nav class="mt-4 flex gap-4 text-sm font-medium md:hidden" aria-label="mobile">
+      <nav class="mt-4 flex gap-4 text-lg font-medium md:hidden" aria-label="mobile">
         <router-link
           v-for="link in navLinks"
           :key="link.to"
@@ -98,6 +100,7 @@ const handleLogout = async () => {
         </Suspense>
       </main>
     </div>
+    <TheFooter />
   </div>
 </template>
 
