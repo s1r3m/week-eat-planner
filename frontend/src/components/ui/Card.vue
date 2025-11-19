@@ -5,11 +5,17 @@
     @click="interactive ? emit('click') : null"
   >
     <div v-if="interactive" class="absolute top-3 right-3 z-20 flex gap-2">
-      <button class="p-2 bg-white/70 rounded-full hover:bg-white" @click.stop="emit('edit')">
-        ✏️
+      <button
+        class="p-2 bg-white/70 rounded-full active:ring-1 active:border-brand-primary hover:bg-brand-muted"
+        @click.stop="emit('edit')"
+      >
+        <Icon icon="mdi:pencil" class="w-6 h-6 cursor-pointer" />
       </button>
-      <button class="p-2 bg-white/70 rounded-full hover:bg-white" @click.stop="emit('delete')">
-        🗑️
+      <button
+        class="p-2 bg-white/70 rounded-full active:ring-1 active:border-brand-primary hover:bg-brand-muted"
+        @click.stop="emit('delete')"
+      >
+        <Icon icon="mdi:trash-can-outline" class="w-6 h-6 cursor-pointer" />
       </button>
     </div>
     <div class="absolute inset-0">
@@ -31,6 +37,8 @@
 </template>
 
 <script setup lang="ts">
+import { Icon } from '@iconify/vue';
+
 interface Props {
   interactive?: boolean;
   name?: string;
