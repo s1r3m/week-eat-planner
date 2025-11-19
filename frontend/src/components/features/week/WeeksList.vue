@@ -95,7 +95,6 @@ const handleWeekCreate = async () => {
 
 const handleEdit = async (weekId: string) => {
   const week = await weekStore.getWeek(weekId);
-  console.log('handleEdit called for weekId:', weekId, week);
   if (week) {
     selectedWeek.value = week;
     isEditModalOpen.value = true;
@@ -126,13 +125,11 @@ const closeDeleteModal = () => {
 };
 
 const handleWeekSave = async (updatedName: string) => {
-  console.log('handleWeekSave called with', updatedName);
   if (!selectedWeek.value) {
     return;
   }
   isSavingWeek.value = true;
   try {
-    console.log('Updating week with id:', selectedWeek.value.id);
     const updatedWeek = await weekStore.updateWeek(selectedWeek.value.id, updatedName);
     if (updatedWeek) {
       isEditModalOpen.value = false;

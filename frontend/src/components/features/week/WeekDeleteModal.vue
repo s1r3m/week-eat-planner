@@ -4,6 +4,7 @@
     eyebrow="Week planner"
     :title="modalTitle"
     subtitle="This action cannot be undone."
+    :close-on-backdrop="!props.processing"
     @update:modelValue="updateVisibility"
     @close="handleClose"
   >

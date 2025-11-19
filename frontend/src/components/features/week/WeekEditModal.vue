@@ -73,7 +73,9 @@ watch(
 
 const modalTitle = computed(() => (props.weekName ? `Edit ${props.weekName}` : 'Edit week'));
 
-const isSaveDisabled = computed(() => props.saving || !localWeekName.value.trim());
+const isSaveDisabled = computed(
+  () => props.saving || !localWeekName.value.trim() || localWeekName.value === props.weekName,
+);
 
 const updateVisibility = (value: boolean) => {
   emit('update:modelValue', value);

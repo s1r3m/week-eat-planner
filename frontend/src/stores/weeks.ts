@@ -50,14 +50,12 @@ export const useWeekStore = defineStore('weeks-store', () => {
   };
 
   const updateWeek = async (weekId: string, name: string): Promise<UserWeek | null> => {
-    console.log('Updating week', weekId, name);
     try {
       const response = await apiClient.patch(`/weeks/${weekId}`, { name });
       if (response.status !== 200) {
         throw new Error(response.data || 'An unknown error occurred.');
       }
       const updatedWeek = response.data as UserWeek;
-      console.log('Updated week', updatedWeek);
       weeks.value = weeks.value.map((week) => (week.id === weekId ? updatedWeek : week));
       return updatedWeek;
     } catch (err: any) {

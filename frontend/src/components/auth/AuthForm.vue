@@ -12,7 +12,7 @@
         id="email"
         v-model="email"
         type="email"
-        placeholder="you@email.com"
+        placeholder="your@email.com"
         autocomplete="email"
         required
         class="w-full px-4 py-3 rounded-2xl border border-brand-muted bg-surface-base text-base placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent caret-brand-primary text-base-color"
@@ -24,8 +24,8 @@
         id="password"
         v-model="password"
         type="password"
-        placeholder="Minimum 6 characters"
-        autocomplete="new-password"
+        :placeholder="buttonLabel === 'Log in' ? 'Your password' : 'Minimum 6 characters'"
+        :autocomplete="buttonLabel === 'Log in' ? '' : 'new-password'"
         minlength="6"
         required
         class="w-full px-4 py-3 rounded-2xl border border-brand-muted bg-surface-base text-base-color placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent caret-brand-primary"

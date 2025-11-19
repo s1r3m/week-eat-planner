@@ -69,7 +69,6 @@ export const useAuthStore = defineStore('auth-store', () => {
       errorStore.addError(err.response?.data?.detail || 'Logout failed');
     } finally {
       clearToken();
-      router.push('/login');
     }
   };
 
