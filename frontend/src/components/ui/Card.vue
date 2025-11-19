@@ -1,28 +1,32 @@
 <template>
   <div
-    class="relative overflow-hidden rounded-lg shadow-lg aspect-3/2 min-h-48"
+    class="relative w-full overflow-hidden rounded-3xl shadow-lg aspect-3/2"
     :class="{ 'cursor-pointer hover:shadow-xl transition-shadow duration-300': interactive }"
     @click="interactive ? emit('click') : null"
   >
-    <!-- Edit and Delete Buttons -->
-    <div v-if="interactive" class="absolute top-2 right-2 z-10 space-x-2">
+    <div v-if="interactive" class="absolute top-3 right-3 z-20 flex gap-2">
       <button class="p-2 bg-white/70 rounded-full hover:bg-white" @click.stop="emit('edit')">
         ✏️
-        <!-- Placeholder icon -->
       </button>
       <button class="p-2 bg-white/70 rounded-full hover:bg-white" @click.stop="emit('delete')">
         🗑️
-        <!-- Placeholder icon -->
       </button>
     </div>
-    <img v-if="src" :src="src" :alt="name" class="w-full h-full object-cover" />
-    <div v-else class="w-full h-full bg-surface-raised"></div>
-    <div class="absolute inset-0 bg-linear-to-t from-brand-primary/50 to-transparent"></div>
-    <h2
-      class="absolute bottom-2 left-1/2 -translate-x-1/2 text-2xl font-bold text-white w-full text-center"
-    >
-      {{ name }}
-    </h2>
+    <div class="absolute inset-0">
+      <img v-if="src" :src="src" :alt="name" class="h-full w-full object-cover" />
+      <div v-else class="h-full w-full bg-surface-raised"></div>
+    </div>
+    <div
+      v-if="showOverlay"
+      class="absolute inset-0 bg-linear-to-t from-brand-primary/30 to-transparent"
+    ></div>
+    <div class="relative z-10 flex h-full w-full items-center justify-center px-4 py-6 text-center">
+      <slot>
+        <h2 class="text-3xl font-bold text-white drop-shadow md:text-4xl">
+          {{ name }}
+        </h2>
+      </slot>
+    </div>
   </div>
 </template>
 
@@ -31,10 +35,12 @@ interface Props {
   interactive?: boolean;
   name?: string;
   src?: string;
+  showOverlay?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   interactive: true,
+  showOverlay: true,
 });
 
 const emit = defineEmits(['click', 'edit', 'delete']);

@@ -36,9 +36,9 @@ const handleLogout = async () => {
     <header class="border-b border-base-color/10 bg-surface-raised px-6 py-4">
       <div class="flex items-center justify-between gap-4">
         <router-link to="/weeks" class="flex items-center gap-3">
-        <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
-        <h1 class="text-3xl font-medium">Week Eat Planner</h1>
-      </router-link>
+          <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
+          <h1 class="text-3xl font-medium">Week Eat Planner</h1>
+        </router-link>
         <button
           class="btn w-40 whitespace-nowrap mt-0"
           :disabled="isLoggingOut"
@@ -47,7 +47,7 @@ const handleLogout = async () => {
           {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
         </button>
       </div>
-      <nav class="mt-4 flex gap-4 text-lg font-medium md:hidden" aria-label="mobile">
+      <nav class="mt-4 flex gap-4 text-lg font-medium lg:hidden" aria-label="mobile">
         <router-link
           v-for="link in navLinks"
           :key="link.to"
@@ -66,7 +66,7 @@ const handleLogout = async () => {
 
     <div class="flex flex-1 overflow-hidden">
       <aside
-        class="hidden md:flex w-64 shrink-0 flex-col gap-2 border-r border-base-color/10 bg-surface-raised/60 p-6"
+        class="hidden lg:flex w-64 shrink-0 flex-col gap-2 border-r border-base-color/10 bg-surface-raised/60 p-6"
         aria-label="sidebar"
       >
         <h2 class="text-sm uppercase tracking-wide text-base-color/70">Navigation</h2>

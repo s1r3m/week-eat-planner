@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3 lg:gap-8">
     <Card
       v-for="week in weekStore.weeks"
       :key="week.id"
@@ -9,17 +9,33 @@
       @edit="handleEdit(week.id)"
       @delete="handleDelete(week.id)"
     />
-    <form v-if="weekStore.weeks.length < 6" @submit.prevent="handleWeekCreate">
-      <div>
-        <label for="new-week-name"> Add a week: </label>
-        <input
-          id="new-week-name"
-          v-model="newWeekName"
-          name="new-week-name"
-          type="text"
-          placeholder="name"
-        />
-      </div>
+    <form
+      v-if="weekStore.weeks.length < 6"
+      class="h-full w-full"
+      @submit.prevent="handleWeekCreate"
+    >
+      <Card :interactive="false" :show-overlay="false">
+        <template #default>
+          <div class="flex h-full w-full flex-col items-center justify-center gap-4">
+            <button
+              type="submit"
+              aria-label="Create a week"
+              class="text-7xl font-black leading-none text-brand-primary transition hover:text-brand-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+            >
+              +
+            </button>
+            <label class="sr-only" for="new-week-name">Week name</label>
+            <input
+              id="new-week-name"
+              v-model="newWeekName"
+              name="new-week-name"
+              type="text"
+              placeholder="Week name"
+              class="w-full max-w-48 rounded-2xl border border-brand-muted bg-white px-4 py-2 text-center text-base text-base-color focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+            />
+          </div>
+        </template>
+      </Card>
     </form>
   </div>
 </template>
