@@ -21,6 +21,10 @@
         <button
           id="mobile-open-menu"
           class="text-3xl hover:opacity-65 md:hidden cursor-pointer relative w-8 h-8"
+          type="button"
+          aria-controls="mobile-menu"
+          :aria-expanded="isMobileMenuOpen"
+          @click="toggleMobileMenu"
         >
           &#9776;
         </button>
@@ -40,16 +44,25 @@
 
     <section
       id="mobile-menu"
-      class="hidden absolute inset-0 bg-brand-muted min-h-screen text-5xl w-full flex-col justify-start"
+      class="absolute inset-0 bg-brand-muted min-h-screen text-5xl w-full flex-col justify-start transition-all duration-300"
+      :class="isMobileMenuOpen ? 'flex' : 'hidden'"
+      aria-label="mobile"
     >
-      <button class="text-5xl self-end cursor-pointer pr-3 pt-5">&times;</button>
+      <button
+        class="text-5xl self-end cursor-pointer pr-3 pt-5"
+        type="button"
+        @click="closeMobileMenu"
+      >
+        &times;
+      </button>
 
-      <nav class="flex flex-col items-center gap-12 py-12 justify-center" aria-label="mobile">
+      <nav class="flex flex-col items-center gap-12 py-12 justify-center">
         <router-link
           v-for="link in navLinks"
           :key="link.hash"
           :to="{ path: link.path ?? '/', hash: link.hash }"
           class="hover:opacity-65"
+          @click="closeMobileMenu"
         >
           {{ link.label }}
         </router-link>
@@ -57,10 +70,10 @@
 
       <div class="flex flex-row justify-around items-center gap-4 py-12">
         <router-link to="/login">
-          <button class="btn">Login</button>
+          <button class="btn" @click="closeMobileMenu">Login</button>
         </router-link>
         <router-link to="/signup">
-          <button class="btn btn-primary">Sign Up</button>
+          <button class="btn btn-primary" @click="closeMobileMenu">Sign Up</button>
         </router-link>
       </div>
     </section>
@@ -68,7 +81,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 type NavLink = {
   hash: string;
@@ -88,26 +102,23 @@ const props = defineProps<{
 
 const navLinks = computed(() => props.navLinks ?? defaultNavLinks);
 
-const initMobileMenu = () => {
-  const hamburgerBtn = document.getElementById('mobile-open-menu');
-  const mobileMenu = document.getElementById('mobile-menu');
+const isMobileMenuOpen = ref(false);
+const route = useRoute();
 
-  if (!hamburgerBtn || !mobileMenu) {
-    return;
-  }
-
-  const toggleMenu = () => {
-    mobileMenu.classList.toggle('hidden');
-    mobileMenu.classList.toggle('flex');
-  };
-
-  hamburgerBtn.addEventListener('click', toggleMenu);
-  mobileMenu.addEventListener('click', toggleMenu);
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 
-document.addEventListener('DOMContentLoaded', initMobileMenu);
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false;
+};
+
+watch(
+  () => route.fullPath,
+  () => {
+    closeMobileMenu();
+  },
+);
 </script>
 
-<style scoped>
-/* Scoped styles can be added here if needed, but the core layouts is now handled by Tailwind classes. */
-</style>
+<style scoped></style>

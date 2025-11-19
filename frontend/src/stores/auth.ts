@@ -5,7 +5,7 @@ import { ref, computed } from 'vue';
 import apiClient from '@/api/client';
 import { useAlertStore } from '@/stores/error';
 import { useClientIdStore } from '@/stores/clientId';
-import { useRoute, useRouter } from 'vue-router';
+import router from '@/router';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const access_token = ref<string | null>(null);
@@ -28,9 +28,6 @@ export const useAuthStore = defineStore('auth-store', () => {
   const login = async (email: string, password: string) => {
     const errorStore = useAlertStore();
     const clientIdStore = useClientIdStore();
-    const route = useRoute();
-    const router = useRouter();
-
     const params = new URLSearchParams({
       username: email,
       password: password,
@@ -43,8 +40,9 @@ export const useAuthStore = defineStore('auth-store', () => {
         },
       });
       setToken(res.data);
-      const redirectPath = route.query.redirect || '/weeks';
-      router.push(redirectPath as string);
+      const redirectParam = router.currentRoute.value.query.redirect;
+      const redirectPath = typeof redirectParam === 'string' ? redirectParam : '/weeks';
+      router.push(redirectPath);
     } catch (err: any) {
       errorStore.addError(err.response?.data?.detail || 'Login failed');
     }
@@ -52,8 +50,6 @@ export const useAuthStore = defineStore('auth-store', () => {
 
   const signup = async (email: string, password: string) => {
     const errorStore = useAlertStore();
-    const router = useRouter();
-
     try {
       const res = await apiClient.post('/auth/signup', {
         email: email,
@@ -65,6 +61,18 @@ export const useAuthStore = defineStore('auth-store', () => {
     }
   };
 
+  const logout = async () => {
+    const errorStore = useAlertStore();
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (err: any) {
+      errorStore.addError(err.response?.data?.detail || 'Logout failed');
+    } finally {
+      clearToken();
+      router.push('/login');
+    }
+  };
+
   return {
     access_token,
     isAuthenticated,
@@ -72,5 +80,6 @@ export const useAuthStore = defineStore('auth-store', () => {
     clearToken,
     login,
     signup,
+    logout,
   };
 });

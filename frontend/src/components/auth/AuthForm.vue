@@ -34,7 +34,7 @@
 
     <button
       type="submit"
-      :disabled="email && password.length > 6 ? false : true"
+      :disabled="email && password.length > 5 ? false : true"
       class="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {{ buttonLabel }}
