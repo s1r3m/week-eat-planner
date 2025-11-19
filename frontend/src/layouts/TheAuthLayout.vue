@@ -38,7 +38,7 @@ const handleLogout = async () => {
           Week Eat Planner
         </router-link>
         <button
-          class="btn btn-primary whitespace-nowrap"
+          class="btn btn-primary whitespace-nowrap w-auto mt-0"
           :disabled="isLoggingOut"
           @click="handleLogout"
         >

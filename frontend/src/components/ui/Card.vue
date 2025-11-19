@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative overflow-hidden rounded-lg shadow-lg"
+    class="relative overflow-hidden rounded-lg shadow-lg aspect-3/2 min-h-48"
     :class="{ 'cursor-pointer hover:shadow-xl transition-shadow duration-300': interactive }"
     @click="interactive ? emit('click') : null"
   >
@@ -15,7 +15,8 @@
         <!-- Placeholder icon -->
       </button>
     </div>
-    <img :src="src" :alt="name" class="w-full h-full object-cover" />
+    <img v-if="src" :src="src" :alt="name" class="w-full h-full object-cover" />
+    <div v-else class="w-full h-full bg-surface-raised"></div>
     <div class="absolute inset-0 bg-linear-to-t from-brand-primary/50 to-transparent"></div>
     <h2
       class="absolute bottom-2 left-1/2 -translate-x-1/2 text-2xl font-bold text-white w-full text-center"

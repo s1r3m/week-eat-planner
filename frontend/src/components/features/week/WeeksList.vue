@@ -10,18 +10,16 @@
       @delete="handleDelete(week.id)"
     />
     <form v-if="weekStore.weeks.length < 6" @submit.prevent="handleWeekCreate">
-      <Card :interactive="false">
-        <div>
-          <label for="new-week-name"> Add a week: </label>
-          <input
-            id="new-week-name"
-            v-model="newWeekName"
-            name="new-week-name"
-            type="text"
-            placeholder="name"
-          />
-        </div>
-      </Card>
+      <div>
+        <label for="new-week-name"> Add a week: </label>
+        <input
+          id="new-week-name"
+          v-model="newWeekName"
+          name="new-week-name"
+          type="text"
+          placeholder="name"
+        />
+      </div>
     </form>
   </div>
 </template>

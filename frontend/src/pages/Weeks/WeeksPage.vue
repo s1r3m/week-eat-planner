@@ -1,5 +1,4 @@
 <template>
-  <h2>My Weeks</h2>
   <WeeksList />
 </template>
 
