@@ -1,10 +1,11 @@
 <template>
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3 lg:gap-8">
+  <div class="grid grid-cols-1 justify-items-center gap-6 lg:grid-cols-2 2xl:grid-cols-3 lg:gap-8">
     <Card
       v-for="week in weekStore.weeks"
       :key="week.id"
       :name="week.name"
       interactive
+      class="w-full max-w-xl"
       @click="handleWeekClick(week.id)"
       @edit="handleEdit(week.id)"
       @delete="handleDelete(week.id)"
@@ -14,7 +15,7 @@
       class="h-full w-full"
       @submit.prevent="handleWeekCreate"
     >
-      <Card :interactive="false" :show-overlay="false">
+      <Card :interactive="false" :show-overlay="false" class="w-full max-w-xl">
         <template #default>
           <div class="flex h-full w-full flex-col items-center justify-center gap-4">
             <button
