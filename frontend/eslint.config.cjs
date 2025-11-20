@@ -1,18 +1,20 @@
-const js = require("@eslint/js");
-const globals = require("globals");
-const tsParser = require("@typescript-eslint/parser");
-const vuePlugin = require("eslint-plugin-vue");
-const vueRecommended = require("eslint-plugin-vue/lib/configs/vue3-recommended");
+const js = require('@eslint/js');
+const globals = require('globals');
+const tsParser = require('@typescript-eslint/parser');
+const vuePlugin = require('eslint-plugin-vue');
+const vueRecommended = require('eslint-plugin-vue/lib/configs/vue3-recommended');
+const prettierPlugin = require('eslint-plugin-prettier');
+const prettierConfig = require('eslint-config-prettier');
 
 module.exports = [
   js.configs.recommended,
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
       globals: {
         ...globals.browser,
@@ -20,16 +22,16 @@ module.exports = [
       },
     },
     rules: {
-      "no-unused-vars": "off",
+      'no-unused-vars': 'off',
     },
   },
   {
-    files: ["**/*.js", "**/*.vue"],
+    files: ['**/*.js', '**/*.vue'],
     languageOptions: {
-      parser: require("vue-eslint-parser"),
+      parser: require('vue-eslint-parser'),
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
         parser: tsParser,
       },
       globals: {
@@ -39,12 +41,15 @@ module.exports = [
     },
     plugins: {
       vue: vuePlugin,
+      prettier: prettierPlugin,
     },
     rules: {
       ...vueRecommended.rules,
-      "vue/multi-word-component-names": "off",
-      "vue/html-self-closing": "off",
-      "no-unused-vars": "warn",
+      ...prettierConfig.rules,
+      'vue/multi-word-component-names': 'off',
+      'vue/html-self-closing': 'off',
+      'no-unused-vars': 'warn',
+      'prettier/prettier': 'error',
     },
   },
 ];

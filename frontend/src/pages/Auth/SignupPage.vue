@@ -1,51 +1,37 @@
 <template>
-  <div class="auth-container">
-    <h2>Sign Up</h2>
+  <section class="container-center flex justify-center px-4 py-16">
     <TheError />
-    <form v-if="!authStore.isAuthenticated" @submit.prevent="submitSignup">
-      <label for="email">Email:</label>
-      <input v-model="email" type="email" placeholder="Email" required />
-      <label for="password">Password:</label>
-      <input v-model="password" type="password" placeholder="Password" minlength="6" required />
-      <button type="submit">Create Account</button>
-    </form>
-    <div v-else>
-      <p>You are already logged in.</p>
-      // TODO: Logout button when it is in a separate component.
-    </div>
-  </div>
+    <AuthCard eyebrow="Join us" title="Create your account">
+      <AuthForm buttonLabel="Create account" @submit="submitSignup">
+        <template #after>
+          <p class="text-sm text-center text-muted">
+            Already have an account?
+            <router-link to="/login" class="text-brand-primary font-semibold hover:underline">
+              Log in
+            </router-link>
+          </p>
+        </template>
+      </AuthForm>
+    </AuthCard>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import TheError from '@/components/common/ErrorNotification.vue';
+import AuthCard from '@/components/auth/AuthCard.vue';
+import AuthForm from '@/components/auth/AuthForm.vue';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
-import apiClient from "@/api/client";
-import { useAuthStore } from "@/stores/auth";
-import { useRouter } from 'vue-router'
-import { useAlertStore } from '@/stores/error';
+const authStore = useAuthStore();
+const router = useRouter();
 
-const email = ref('')
-const password = ref('')
-
-const authStore = useAuthStore()
-const errorStore = useAlertStore()
-const router = useRouter()
-
-
-const submitSignup = async () => {
-  try {
-    const res = await apiClient.post('/auth/signup', {
-      email: email.value,
-      password: password.value,
-    })
-    if (res.status == 201) router.push('/login')
-  } catch (err: any) {
-    errorStore.addError(err.message)
+const submitSignup = async (email: string, password: string) => {
+  const success = await authStore.signup(email, password);
+  if (success) {
+    router.push('/login');
   }
-}
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

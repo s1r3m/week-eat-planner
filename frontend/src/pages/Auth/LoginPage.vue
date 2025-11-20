@@ -1,60 +1,50 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from "@/stores/auth";
-import apiClient from "@/api/client";
-import { useClientIdStore } from '@/stores/clientId';
-import { useAlertStore } from '@/stores/error';
-import TheError from '@/components/common/ErrorNotification.vue';
-
-const email = ref('')
-const password = ref('')
-
-const authStore = useAuthStore()
-const clientIdStore = useClientIdStore()
-const errorStore = useAlertStore()
-const route = useRoute()
-const router = useRouter()
-
-const submitLogin = async () => {
-  const params = new URLSearchParams({
-    username: email.value,
-    password: password.value,
-    client_id: clientIdStore.getClientId(),
-  })
-  try {
-    const res = await apiClient.post(
-      '/auth/login', params,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    )
-    authStore.setToken(res.data)
-    const redirectPath = route.query.redirect || '/weeks'
-    router.push(redirectPath as string)
-
-  } catch (err: any) {
-    errorStore.addError(err.response?.data?.detail || 'Login failed')
-  }
-}
-</script>
-
 <template>
-  <div class="auth-container">
-    <h2>Login</h2>
+  <section class="container-center flex justify-center px-4 py-16">
     <TheError />
-    <form @submit.prevent="submitLogin">
-      <label for="email">Email:</label>
-      <input id="email" v-model="email" type="email" placeholder="Email" required />
-      <label for="password">Password:</label>
-      <input id="password" v-model="password" type="password" placeholder="Password" required minlength="6"/>
-      <button type="submit">Login</button>
-    </form>
-  </div>
+    <AuthCard eyebrow="Welcome back" title="Log in to your account">
+      <AuthForm buttonLabel="Log in" @submit="submitLogin">
+        <template #after>
+          <p class="text-sm text-center text-muted">
+            Forgot your password?
+            <router-link
+              to="/reset-password"
+              class="text-brand-primary font-semibold hover:underline"
+            >
+              Reset it
+            </router-link>
+          </p>
+          <p class="text-sm text-center text-muted">
+            Don't have an account?
+            <router-link to="/signup" class="text-brand-primary font-semibold hover:underline">
+              Sign up
+            </router-link>
+          </p>
+        </template>
+      </AuthForm>
+    </AuthCard>
+  </section>
 </template>
 
-<style scoped>
+<script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import TheError from '@/components/common/ErrorNotification.vue';
+import AuthCard from '@/components/auth/AuthCard.vue';
+import AuthForm from '@/components/auth/AuthForm.vue';
 
-</style>
+const authStore = useAuthStore();
+const router = useRouter();
+const route = useRoute();
+
+const submitLogin = async (email: string, password: string) => {
+  const success = await authStore.login(email, password);
+  if (!success) {
+    return;
+  }
+  const redirectParam = route.query.redirect;
+  const redirectPath = typeof redirectParam === 'string' ? redirectParam : '/weeks';
+  router.push(redirectPath);
+};
+</script>
+
+<style scoped></style>

@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

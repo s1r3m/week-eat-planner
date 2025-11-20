@@ -1,63 +1,71 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 @theme {
-    --color-brand-primary: #3aa27a;
-    --color-brand-primary-hover: #2d8d6b;
-    --color-brand-muted: #bfe4d5;
+  --color-brand-primary: #3aa27a;
+  --color-brand-primary-hover: #2d8d6b;
+  --color-brand-muted: #bfe4d5;
 
-    --color-surface-base: #f8faf9;
-    --color-surface-raised: #ffffff;
-    --color-surface-sunken: #eef3f1;
+  --color-surface-base: #f8faf9;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eef3f1;
 
-    --color-base-color: #1f2937;
-    --color-muted: #6b7280;
+  --color-base-color: #1f2937;
+  --color-muted: #6b7280;
 
-    --color-accent-breakfast: #f4f0d9;
-    --color-accent-lunch: #dff5e8;
-    --color-accent-dinner: #e7f0f0;
-    --color-accent-snacks: #f0f5ea;
+  --color-accent-breakfast: #f4f0d9;
+  --color-accent-lunch: #dff5e8;
+  --color-accent-dinner: #e7f0f0;
+  --color-accent-snacks: #f0f5ea;
 
-    --color-accent-peach: #f5c8b8;
+  --color-accent-peach: #f5c8b8;
 }
 
 @layer base {
-    html, body, #app {
-        height: 100%;
-    }
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
 
-    body {
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-          sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-          "Segoe UI Symbol", "Noto Color Emoji";
-        line-height: 1.5;
-    }
+  body {
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'Noto Sans',
+      sans-serif,
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      'Noto Color Emoji';
+    line-height: 1.5;
+  }
 }
 
-
 @layer components {
-    .container-center {
-        @apply max-w-6xl mx-auto;
-    }
+  .container-center {
+    @apply max-w-6xl mx-auto;
+  }
 
-    .flex-center {
-        @apply flex justify-center items-center;
-    }
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
 
-    .btn {
-        @apply min-w-28 border border-brand-primary rounded-2xl p-4 cursor-pointer
-    }
+  .btn {
+    @apply min-w-30 mt-2 w-full sm:w-auto whitespace-normal text-center inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-brand-muted/70 bg-surface-raised text-base font-semibold text-base-color shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary hover:bg-surface-base/80 hover:border-brand-primary cursor-pointer;
+  }
 
-    .btn:hover {
-        @apply bg-brand-muted;
-    }
+  .btn-primary {
+    @apply bg-brand-primary text-white border-transparent shadow-lg shadow-brand-primary/35 hover:bg-brand-primary-hover;
+  }
 
-    .btn-primary {
-        @apply bg-brand-muted
-    }
-
-    .btn-primary:hover {
-        @apply bg-brand-primary
-    }
+  .auth-card {
+    @apply w-full max-w-lg bg-surface-raised border border-brand-muted rounded-3xl p-10 space-y-6;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+  }
 }
