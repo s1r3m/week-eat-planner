@@ -26,14 +26,24 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import TheError from '@/components/common/ErrorNotification.vue';
 import AuthCard from '@/components/auth/AuthCard.vue';
 import AuthForm from '@/components/auth/AuthForm.vue';
 
+const authStore = useAuthStore();
+const router = useRouter();
+const route = useRoute();
+
 const submitLogin = async (email: string, password: string) => {
-  const authStore = useAuthStore();
-  authStore.login(email, password);
+  const success = await authStore.login(email, password);
+  if (!success) {
+    return;
+  }
+  const redirectParam = route.query.redirect;
+  const redirectPath = typeof redirectParam === 'string' ? redirectParam : '/weeks';
+  router.push(redirectPath);
 };
 </script>
 

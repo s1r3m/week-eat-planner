@@ -25,7 +25,7 @@
         v-model="password"
         type="password"
         :placeholder="buttonLabel === 'Log in' ? 'Your password' : 'Minimum 6 characters'"
-        :autocomplete="buttonLabel === 'Log in' ? '' : 'new-password'"
+        :autocomplete="buttonLabel === 'Log in' ? 'current-password' : 'new-password'"
         minlength="6"
         required
         class="w-full px-4 py-3 rounded-2xl border border-brand-muted bg-surface-base text-base-color placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent caret-brand-primary"

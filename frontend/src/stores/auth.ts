@@ -5,7 +5,6 @@ import { ref, computed } from 'vue';
 import apiClient from '@/api/client';
 import { useAlertStore } from '@/stores/error';
 import { useClientIdStore } from '@/stores/clientId';
-import router from '@/router';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const access_token = ref<string | null>(null);
@@ -25,7 +24,7 @@ export const useAuthStore = defineStore('auth-store', () => {
 
   const isAuthenticated = computed(() => !!access_token.value);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     const errorStore = useAlertStore();
     const clientIdStore = useClientIdStore();
     const params = new URLSearchParams({
@@ -40,24 +39,24 @@ export const useAuthStore = defineStore('auth-store', () => {
         },
       });
       setToken(res.data);
-      const redirectParam = router.currentRoute.value.query.redirect;
-      const redirectPath = typeof redirectParam === 'string' ? redirectParam : '/weeks';
-      router.push(redirectPath);
+      return true;
     } catch (err: any) {
       errorStore.addError(err.response?.data?.detail || 'Login failed');
+      return false;
     }
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string, password: string): Promise<boolean> => {
     const errorStore = useAlertStore();
     try {
       const res = await apiClient.post('/auth/signup', {
         email: email,
         password: password,
       });
-      if (res.status == 201) router.push('/login');
+      return res.status === 201;
     } catch (err: any) {
       errorStore.addError(err.message);
+      return false;
     }
   };
 

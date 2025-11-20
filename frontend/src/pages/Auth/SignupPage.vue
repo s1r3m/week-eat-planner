@@ -21,10 +21,16 @@ import TheError from '@/components/common/ErrorNotification.vue';
 import AuthCard from '@/components/auth/AuthCard.vue';
 import AuthForm from '@/components/auth/AuthForm.vue';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
 
 const submitSignup = async (email: string, password: string) => {
-  const authStore = useAuthStore();
-  authStore.signup(email, password);
+  const success = await authStore.signup(email, password);
+  if (success) {
+    router.push('/login');
+  }
 };
 </script>
 

@@ -42,7 +42,6 @@ const photos = ref([
           :name="forWhom"
           :src="src"
           variant="hero"
-          text-tone="dark"
         />
       </div>
     </section>

@@ -33,7 +33,6 @@
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 
-type TextTone = 'light' | 'dark';
 type Variant = 'default' | 'hero';
 
 interface Props {
@@ -41,14 +40,12 @@ interface Props {
   name?: string;
   src?: string;
   showOverlay?: boolean;
-  textTone?: TextTone;
   variant?: Variant;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   interactive: true,
   showOverlay: true,
-  textTone: 'light' as TextTone,
   variant: 'default' as Variant,
 });
 
