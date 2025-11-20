@@ -3,7 +3,7 @@
     <Transition name="modal-fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 z-50 flex items-end justify-center px-4 py-6 sm:items-center sm:px-6"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-6"
         role="dialog"
         aria-modal="true"
       >
