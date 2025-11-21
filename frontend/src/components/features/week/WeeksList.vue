@@ -1,5 +1,5 @@
 <template>
-  <section class="space-y-0">
+  <section class="md:mt-10 space-y-0">
     <div
       class="grid grid-cols-1 justify-items-center gap-8 lg:grid-cols-2 2xl:grid-cols-3 lg:gap-x-8 lg:gap-y-16"
     >
@@ -10,7 +10,7 @@
         interactive
         class="w-full max-w-xl mx-auto"
         :show-overlay="true"
-        @click="handleWeekClick(week.id)"
+        @click="router.push(`/weeks/${week.id}`)"
         @edit="handleEdit(week.id)"
         @delete="handleDelete(week.id)"
       />
@@ -81,10 +81,6 @@ const isDeletingWeek = ref(false);
 
 const selectedWeekName = computed(() => selectedWeek.value?.name ?? '');
 
-const handleWeekClick = (weekId: string) => {
-  router.push(`/weeks/${weekId}`);
-};
-
 const handleWeekCreate = async () => {
   if (!newWeekName.value.trim()) {
     return;
@@ -116,16 +112,12 @@ const handleDelete = async (weekId: string) => {
 
 const closeEditModal = () => {
   isEditModalOpen.value = false;
-  if (!isDeleteModalOpen.value) {
-    selectedWeek.value = null;
-  }
+  selectedWeek.value = null;
 };
 
 const closeDeleteModal = () => {
   isDeleteModalOpen.value = false;
-  if (!isEditModalOpen.value) {
-    selectedWeek.value = null;
-  }
+  selectedWeek.value = null;
 };
 
 const handleWeekSave = async (updatedName: string) => {

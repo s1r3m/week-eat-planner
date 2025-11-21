@@ -6,13 +6,9 @@
           <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
           <h1 class="text-3xl font-medium">Week Eat Planner</h1>
         </router-link>
-        <button
-          class="btn w-40 whitespace-nowrap mt-0"
-          :disabled="isLoggingOut"
-          @click="handleLogout"
-        >
+        <RoundedButton :disabled="isLoggingOut" @click="handleLogout">
           {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
-        </button>
+        </RoundedButton>
       </div>
       <nav class="mt-4 flex gap-4 text-lg font-medium lg:hidden" aria-label="mobile">
         <router-link
@@ -77,8 +73,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import TheLoadingSpinner from '@/components/ui/TheLoadingSpinner.vue';
 import { useAuthStore } from '@/stores/auth';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
+import TheLoadingSpinner from '@/layouts/TheLoadingSpinner.vue';
 import TheFooter from './TheFooter.vue';
 
 const navLinks = [

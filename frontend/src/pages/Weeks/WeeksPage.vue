@@ -1,5 +1,5 @@
 <template>
-  <WeeksList class="md:mt-10" />
+  <WeeksList />
 </template>
 
 <script setup lang="ts">

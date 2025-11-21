@@ -13,29 +13,18 @@
     </p>
 
     <template #footer>
-      <button
-        type="button"
-        class="btn w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
-        :disabled="props.processing"
-        @click="$emit('close')"
-      >
-        No
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
-        :disabled="props.processing"
-        @click="handleYes"
-      >
+      <RoundedButton @click="$emit('close')">No</RoundedButton>
+      <RoundedButton variant="danger" :disabled="props.processing" @click="handleYes">
         {{ props.processing ? 'Deleting...' : 'Yes' }}
-      </button>
+      </RoundedButton>
     </template>
   </ModalBase>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import ModalBase from '@/components/ui/ModalBase.vue';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 interface Props {
   modelValue: boolean;

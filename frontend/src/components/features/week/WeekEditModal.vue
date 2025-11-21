@@ -1,7 +1,7 @@
 <template>
   <ModalBase
     :model-value="modelValue"
-    eyebrow="Week planner"
+    eyebrow="Week Eat Planner"
     :title="`Edit ${props.weekName}`"
     subtitle="Update the name so the plan stays organized."
     @close="$emit('close')"
@@ -19,22 +19,10 @@
     </form>
 
     <template #footer>
-      <button
-        type="button"
-        class="btn w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
-        :disabled="props.saving"
-        @click="$emit('close')"
-      >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        class="btn btn-primary w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
-        form="week-edit-form"
-        :disabled="isSaveDisabled"
-      >
+      <RoundedButton :disabled="props.saving" @click="$emit('close')"> Cancel </RoundedButton>
+      <RoundedButton variant="primary" form="week-edit-form" :disabled="isSaveDisabled">
         {{ props.saving ? 'Saving...' : 'Save' }}
-      </button>
+      </RoundedButton>
     </template>
   </ModalBase>
 </template>
@@ -42,6 +30,8 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
 import ModalBase from '@/components/ui/ModalBase.vue';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 interface Props {
   modelValue: boolean;

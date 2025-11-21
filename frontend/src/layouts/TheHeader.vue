@@ -33,10 +33,10 @@
       <div class="hidden md:block">
         <div class="flex justify-between gap-4">
           <router-link to="/login">
-            <button class="btn">Login</button>
+            <RoundedButton>Login</RoundedButton>
           </router-link>
           <router-link to="/signup">
-            <button class="btn btn-primary">Sign Up</button>
+            <RoundedButton variant="primary">Sign Up</RoundedButton>
           </router-link>
         </div>
       </div>
@@ -68,12 +68,12 @@
         </router-link>
       </nav>
 
-      <div class="flex flex-row justify-around items-center gap-4 py-12">
+      <div class="flex flex-col justify-around items-center gap-4 py-12">
         <router-link to="/login">
-          <button class="btn" @click="closeMobileMenu">Login</button>
+          <RoundedButton @click="closeMobileMenu">Login</RoundedButton>
         </router-link>
         <router-link to="/signup">
-          <button class="btn btn-primary" @click="closeMobileMenu">Sign Up</button>
+          <RoundedButton variant="primary" @click="closeMobileMenu">Sign Up</RoundedButton>
         </router-link>
       </div>
     </section>
@@ -83,6 +83,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 type NavLink = {
   hash: string;
