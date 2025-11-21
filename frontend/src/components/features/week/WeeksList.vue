@@ -9,6 +9,7 @@
         :name="week.name"
         interactive
         class="w-full max-w-xl mx-auto"
+        :show-overlay="true"
         @click="handleWeekClick(week.id)"
         @edit="handleEdit(week.id)"
         @delete="handleDelete(week.id)"
@@ -55,7 +56,6 @@
       :week-name="selectedWeekName"
       :processing="isDeletingWeek"
       @confirm="handleDeleteConfirm"
-      @cancel="closeDeleteModal"
       @close="closeDeleteModal"
     />
   </section>
@@ -94,19 +94,23 @@ const handleWeekCreate = async () => {
 };
 
 const handleEdit = async (weekId: string) => {
-  const week = await weekStore.getWeek(weekId);
+  const week = weekStore.weeks.find((item) => item.id === weekId);
   if (week) {
+    console.log('Editing week:', week);
     selectedWeek.value = week;
     isEditModalOpen.value = true;
+  } else {
+    console.warn(`Week with id ${weekId} not found for editing.`);
   }
 };
 
 const handleDelete = async (weekId: string) => {
-  const week =
-    weekStore.weeks.find((item) => item.id === weekId) || (await weekStore.getWeek(weekId));
+  const week = weekStore.weeks.find((item) => item.id === weekId);
   if (week) {
     selectedWeek.value = week;
     isDeleteModalOpen.value = true;
+  } else {
+    console.warn(`Week with id ${weekId} not found for deletion.`);
   }
 };
 

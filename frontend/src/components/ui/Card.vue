@@ -1,15 +1,15 @@
 <template>
-  <div :class="rootClasses" @click="interactive ? emit('click') : null">
+  <div :class="rootClasses" @click="interactive ? $emit('click') : null">
     <div v-if="interactive" class="absolute top-3 right-3 z-20 flex gap-2">
       <button
         class="p-2 bg-white/70 rounded-full active:ring-1 active:border-brand-primary hover:bg-brand-muted"
-        @click.stop="emit('edit')"
+        @click.stop="$emit('edit')"
       >
         <Icon icon="mdi:pencil" class="w-6 h-6 cursor-pointer" />
       </button>
       <button
         class="p-2 bg-white/70 rounded-full active:ring-1 active:border-brand-primary hover:bg-brand-muted"
-        @click.stop="emit('delete')"
+        @click.stop="$emit('delete')"
       >
         <Icon icon="mdi:trash-can-outline" class="w-6 h-6 cursor-pointer" />
       </button>
@@ -17,10 +17,13 @@
     <figure :class="figureClasses">
       <img v-if="src" :src="src" :alt="name" :class="imageClasses" />
       <div v-else class="h-full w-full bg-surface-raised"></div>
-      <div v-if="showOverlay" class="absolute inset-0" :class="overlayClass"></div>
+      <div
+        v-if="showOverlay"
+        class="absolute inset-0 bg-linear-to-t from-brand-primary/60 via-brand-primary/10 to-transparent"
+      ></div>
       <div :class="contentClasses">
         <slot>
-          <h2 :class="['text-3xl font-bold md:text-4xl', textClass]">
+          <h2 :class="['text-3xl font-bold md:text-4xl text-white drop-shadow']">
             {{ name }}
           </h2>
         </slot>
@@ -77,13 +80,11 @@ const contentClasses = computed(
     }`,
 );
 
-const textClass = computed(() => 'text-white drop-shadow');
-
-const overlayClass = computed(
-  () => 'bg-gradient-to-t from-brand-primary/50 via-brand-primary/25 to-transparent',
-);
-
-const emit = defineEmits(['click', 'edit', 'delete']);
+defineEmits<{
+  click: [];
+  edit: [];
+  delete: [];
+}>();
 </script>
 
 <style scoped></style>

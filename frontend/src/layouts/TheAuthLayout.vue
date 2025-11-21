@@ -1,36 +1,3 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
-import { useAuthStore } from '@/stores/auth';
-import TheFooter from './TheFooter.vue';
-
-const navLinks = [
-  { label: 'Weeks', to: '/weeks' },
-  { label: 'Recipes', to: '/recipes' },
-  { label: 'Profile', to: '/profile' },
-];
-
-const authStore = useAuthStore();
-const route = useRoute();
-const router = useRouter();
-const activePath = computed(() => route.path);
-const isLoggingOut = ref(false);
-
-const isActiveLink = (path: string) => activePath.value.startsWith(path);
-
-const handleLogout = async () => {
-  if (isLoggingOut.value) return;
-  isLoggingOut.value = true;
-  try {
-    await authStore.logout();
-  } finally {
-    isLoggingOut.value = false;
-    router.push('/');
-  }
-};
-</script>
-
 <template>
   <div class="min-h-screen bg-surface-base text-base-color flex flex-col">
     <header class="border-b border-base-color/10 bg-surface-raised px-6 py-4">
@@ -88,20 +55,56 @@ const handleLogout = async () => {
       </aside>
 
       <main class="flex-1 overflow-y-auto p-6">
-        <Suspense>
-          <template #default>
-            <router-view />
+        <RouterView v-slot="{ Component, route }">
+          <template v-if="Component">
+            <Suspense timeout="1000">
+              <component :is="Component" />
+
+              <template #fallback>
+                <div class="flex h-full w-full items-center justify-center">
+                  <TheLoadingSpinner :loading-name="route.name" />
+                </div>
+              </template>
+            </Suspense>
           </template>
-          <template #fallback>
-            <div class="flex h-full items-center justify-center py-12">
-              <LoadingSpinner />
-            </div>
-          </template>
-        </Suspense>
+        </RouterView>
       </main>
     </div>
     <TheFooter />
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import TheLoadingSpinner from '@/components/ui/TheLoadingSpinner.vue';
+import { useAuthStore } from '@/stores/auth';
+import TheFooter from './TheFooter.vue';
+
+const navLinks = [
+  { label: 'Weeks', to: '/weeks' },
+  { label: 'Recipes', to: '/recipes' },
+  { label: 'Profile', to: '/profile' },
+];
+
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+const activePath = computed(() => route.path);
+const isLoggingOut = ref(false);
+
+const isActiveLink = (path: string) => activePath.value.startsWith(path);
+
+const handleLogout = async () => {
+  if (isLoggingOut.value) return;
+  isLoggingOut.value = true;
+  try {
+    await authStore.logout();
+  } finally {
+    isLoggingOut.value = false;
+    router.push('/');
+  }
+};
+</script>
 
 <style scoped></style>

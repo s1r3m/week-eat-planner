@@ -2,15 +2,13 @@
   <ModalBase
     :model-value="modelValue"
     eyebrow="Week planner"
-    :title="modalTitle"
+    :title="`Delete ${props.weekName}?`"
     subtitle="This action cannot be undone."
-    :close-on-backdrop="!props.processing"
-    @update:modelValue="updateVisibility"
-    @close="handleClose"
+    @close="$emit('close')"
   >
     <p class="text-base text-base-color">
       Are you sure you want to delete
-      <span class="font-semibold text-brand-primary">{{ weekName || 'this week' }}</span
+      <span class="font-semibold text-brand-primary">{{ props.weekName }}</span
       >?
     </p>
 
@@ -19,7 +17,7 @@
         type="button"
         class="btn w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
         :disabled="props.processing"
-        @click="handleNo"
+        @click="$emit('close')"
       >
         No
       </button>
@@ -50,33 +48,14 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean];
   confirm: [];
   close: [];
-  cancel: [];
 }>();
-
-const modalTitle = computed(() => (props.weekName ? `Delete ${props.weekName}?` : 'Delete week?'));
-
-const updateVisibility = (value: boolean) => {
-  emit('update:modelValue', value);
-};
-
-const handleClose = () => {
-  emit('cancel');
-  emit('close');
-};
 
 const handleYes = () => {
   if (props.processing) {
     return;
   }
   emit('confirm');
-};
-
-const handleNo = () => {
-  emit('update:modelValue', false);
-  emit('cancel');
-  emit('close');
 };
 </script>

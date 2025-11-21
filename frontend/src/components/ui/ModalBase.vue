@@ -9,7 +9,7 @@
       >
         <div
           class="absolute inset-0 bg-base-color/70 backdrop-blur-sm"
-          @click="handleBackdropClick"
+          @click="$emit('close')"
         ></div>
         <div
           class="relative z-10 w-full max-w-xl rounded-3xl border border-brand-muted/70 bg-surface-raised p-6 shadow-2xl sm:p-8 lg:max-w-2xl"
@@ -33,7 +33,7 @@
               class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-muted/70 text-base-color transition hover:border-brand-primary hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
               type="button"
               aria-label="Close dialog"
-              @click="close"
+              @click="$emit('close')"
             >
               <Icon icon="mdi:close" class="h-5 w-5" />
             </button>
@@ -61,41 +61,25 @@ interface Props {
   title?: string;
   subtitle?: string;
   eyebrow?: string;
-  closeOnBackdrop?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  closeOnBackdrop: true,
-});
+defineProps<Props>();
 
-const emit = defineEmits<{
-  'update:modelValue': [boolean];
+defineEmits<{
   close: [];
 }>();
-
-const close = () => {
-  emit('update:modelValue', false);
-  emit('close');
-};
-
-const handleBackdropClick = () => {
-  if (props.closeOnBackdrop) {
-    close();
-  }
-};
 </script>
 
 <style scoped>
+@import 'tailwindcss';
+
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition:
-    opacity 200ms ease,
-    transform 200ms ease;
+  @apply transition-opacity duration-200 ease-in-out;
 }
 
 .modal-fade-enter-from,
 .modal-fade-leave-to {
-  opacity: 0;
-  transform: translateY(1rem);
+  @apply transition duration-200 opacity-0 translate-y-4;
 }
 </style>
