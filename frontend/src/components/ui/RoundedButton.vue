@@ -48,7 +48,7 @@ defineEmits<{
 }
 
 .danger {
-  @apply bg-danger/70  shadow-danger/35 hover:bg-danger border-transparent
+  @apply bg-danger/70  shadow-danger/35 hover:bg-danger/30 border-transparent
   hover:border-danger focus-visible:outline-danger;
 }
 </style>
