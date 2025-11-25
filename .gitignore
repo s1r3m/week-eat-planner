@@ -20,4 +20,4 @@
 sandbox.py
 **/htmlcov/
 
-node_modules/
+.DS_Store

@@ -1,5 +1,5 @@
 <template>
-  <button class="base" :class="styles[variant]" @click="$emit('click')">
+  <button class="base" :class="styles[variant]" @click="$emit('click', $event)">
     <slot />
   </button>
 </template>
@@ -21,7 +21,7 @@ const styles = {
 };
 
 defineEmits<{
-  click: [];
+  click: [event: MouseEvent];
 }>();
 </script>
 

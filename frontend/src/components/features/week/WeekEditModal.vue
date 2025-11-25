@@ -1,6 +1,6 @@
 <template>
   <ModalBase
-    :model-value="modelValue"
+    :model-value="props.modelValue"
     eyebrow="Week Eat Planner"
     :title="`Edit ${props.weekName}`"
     subtitle="Update the name so the plan stays organized."

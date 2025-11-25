@@ -1,32 +1,23 @@
 <template>
-  <div class="grid-item mx-auto">
-    <img :src="bgImage[props.variant]" alt="Week Image" class="" />
-    <div v-if="variant === 'showWeek'" class="gradient-layout" @click.stop="$emit('click')"></div>
+  <div class="card-container hovered">
+    <img :src="bgImage[props.variant]" alt="Week Image" @click="$emit('create-week')" />
+    <div v-if="variant === 'showWeek'" class="gradient-layout" @click="$emit('click')"></div>
     <div v-if="variant === 'showWeek'" class="controls">
-      <RoundedButton @click="$emit('edit')"
+      <RoundedButton @click.stop="$emit('edit')"
         ><Icon icon="mdi:pencil" class="w-6 h-6 cursor-pointer"
       /></RoundedButton>
-      <RoundedButton @click="$emit('delete')"
+      <RoundedButton @click.stop="$emit('delete')"
         ><Icon icon="mdi:trash-can-outline" class="w-6 h-6 cursor-pointer"
       /></RoundedButton>
     </div>
     <h3 v-if="variant === 'showWeek'" class="text-2xl font-semibold text-center mb-2">
       {{ name }}
     </h3>
-    <form @submit.prevent="onCreateWeek">
-      <input
-        v-if="variant === 'addWeek'"
-        v-model="newWeekName"
-        class="text-2xl"
-        type="text"
-        placeholder="week name"
-      />
-    </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import RoundedButton from '@/components/ui/RoundedButton.vue';
 import { Icon } from '@iconify/vue';
 
@@ -40,57 +31,52 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { name: '', variant: 'showWeek' });
 
-const emit = defineEmits<{
+defineEmits<{
   click: [];
   edit: [];
   delete: [];
-  createWeek: [weekName: string];
+  'create-week': [];
 }>();
 
 const defaultWeekBg = new URL('@/assets/week_bg.svg', import.meta.url).href;
 const weekImage = computed(() => props.src || defaultWeekBg);
 const bgImage = {
   showWeek: new URL(weekImage.value, import.meta.url).href,
-  addWeek: new URL('@/assets/plus.png', import.meta.url).href,
-};
-
-// Create a new week.
-const newWeekName = ref('');
-const onCreateWeek = () => {
-  if (!newWeekName.value) {
-    return;
-  }
-  emit('createWeek', newWeekName.value);
-  newWeekName.value = '';
+  addWeek: new URL('@/assets/add_week_bg_1.png', import.meta.url).href,
 };
 </script>
 
 <style scoped>
-@import '../../theme.css';
+@import '@/theme.css';
 @import 'tailwindcss';
 
-.grid-item {
+.card-container {
   display: grid;
-  place-items: end;
-  @apply rounded-2xl shadow-lg hover:shadow-xl hover:border hover:-m-px  hover:border-brand-primary transition-shadow duration-300;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  @apply rounded-2xl shadow-lg;
 
   h3,
   img,
   .controls,
-  .gradient-layout {
+  .gradient-layout,
+  form {
     grid-column: 1 / 2;
     grid-row: 1 / 2;
   }
 
   h3 {
-    width: 100%;
+    align-self: end;
   }
 
   img {
-    object-fit: scale-down;
+    object-fit: cover;
     object-position: center;
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 100%;
+    align-self: center;
+    justify-self: center;
     border-radius: 1rem;
   }
 
@@ -103,8 +89,11 @@ const onCreateWeek = () => {
   }
 
   .gradient-layout {
-    @apply rounded-2xl bg-linear-to-t from-brand-primary/50 via-brand-primary/10 
+    @apply rounded-2xl bg-linear-to-t from-brand-primary/50 via-brand-primary/10
     to-transparent w-full h-full cursor-pointer;
   }
+}
+.hovered {
+  @apply hover:shadow-xl hover:border hover:border-brand-primary transition-shadow duration-300;
 }
 </style>
