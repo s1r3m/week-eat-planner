@@ -29,7 +29,7 @@
 
     <div class="flex flex-1 overflow-hidden">
       <aside
-        class="hidden lg:flex w-64 shrink-0 flex-col gap-2 border-r border-base-color/10 bg-surface-raised/60 p-6"
+        class="hidden md:flex w-64 shrink-0 flex-col gap-2 border-r border-base-color/10 bg-surface-raised/60 p-6"
         aria-label="sidebar"
       >
         <h2 class="text-sm uppercase tracking-wide text-base-color/70">Navigation</h2>

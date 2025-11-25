@@ -70,10 +70,10 @@
 
       <div class="flex flex-col justify-around items-center gap-4 py-12">
         <router-link v-if="!isLogin" to="/login" class="w-full px-4">
-          <RoundedButton @click="closeMobileMenu" class="w-full">Login</RoundedButton>
+          <RoundedButton class="w-full" @click="closeMobileMenu">Login</RoundedButton>
         </router-link>
         <router-link v-if="!isSignup" to="/signup" class="w-full px-4">
-          <RoundedButton variant="primary" @click="closeMobileMenu" class="w-full"
+          <RoundedButton variant="primary" class="w-full" @click="closeMobileMenu"
             >Sign Up</RoundedButton
           >
         </router-link>

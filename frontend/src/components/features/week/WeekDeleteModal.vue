@@ -8,7 +8,7 @@
   >
     <p class="text-base text-base-color">
       Are you sure you want to delete
-      <span class="font-semibold text-brand-primary">{{ props.weekName }}</span
+      <span class="font-semibold text-danger">{{ props.weekName }}</span
       >?
     </p>
 
