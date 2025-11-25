@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onBeforeUnmount } from 'vue';
 import { Icon } from '@iconify/vue';
 
 interface Props {
@@ -65,9 +66,16 @@ interface Props {
 
 defineProps<Props>();
 
-defineEmits<{
+const emit = defineEmits<{
   close: [];
 }>();
+
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') emit('close');
+};
+
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <style scoped>

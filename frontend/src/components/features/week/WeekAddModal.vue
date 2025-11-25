@@ -51,10 +51,10 @@ const emit = defineEmits<{
 }>();
 
 const onCreate = () => {
-  if (!newName.value) {
+  if (!newName.value.trim() || props.processing) {
     return;
   }
-  emit('create', { name: newName.value } as WeekPayload);
+  emit('create', { name: newName.value.trim() } as WeekPayload);
   newName.value = '';
 };
 </script>
