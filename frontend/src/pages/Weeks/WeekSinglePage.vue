@@ -1,9 +1,14 @@
+<template>
+  <div class="grid-container">test</div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 import type { UserWeek } from '@/types/api';
 import { useRoute, useRouter } from 'vue-router';
 import { useWeekStore } from '@/stores/weeks';
+// import PresentCard from '@/components/ui/PresentCard.vue';
 
 const week: Ref<UserWeek | null> = ref(null);
 const weekStore = useWeekStore();
@@ -16,16 +21,15 @@ if (!week.value) {
 }
 </script>
 
-<template>
-  <div v-if="week" class="week-container">
-    <h2>{{ week.name }}</h2>
-    <div class="meal_slots-container">
-      <p v-for="meal_slot in week.meal_slots" :key="meal_slot.id">
-        {{ meal_slot.meal_type }} - {{ meal_slot.day_of_week }} -- {{ meal_slot.id }}
-        <span v-if="meal_slot.recipe_id">Recipe: {{ meal_slot.recipe_id }}</span>
-      </p>
-    </div>
-  </div>
-</template>
+<style scoped>
+@import '@/theme.css';
+@import 'tailwindcss';
 
-<style scoped></style>
+.grid-container {
+  @apply grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-7;
+}
+
+.grid-item {
+  @apply max-h-60;
+}
+</style>
