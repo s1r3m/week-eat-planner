@@ -1,24 +1,5 @@
 @import 'tailwindcss';
-
-@theme {
-  --color-brand-primary: #3aa27a;
-  --color-brand-primary-hover: #2d8d6b;
-  --color-brand-muted: #bfe4d5;
-
-  --color-surface-base: #f8faf9;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #eef3f1;
-
-  --color-base-color: #1f2937;
-  --color-muted: #6b7280;
-
-  --color-accent-breakfast: #f4f0d9;
-  --color-accent-lunch: #dff5e8;
-  --color-accent-dinner: #e7f0f0;
-  --color-accent-snacks: #f0f5ea;
-
-  --color-accent-peach: #f5c8b8;
-}
+@import './theme.css';
 
 @layer base {
   html,

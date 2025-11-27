@@ -32,11 +32,11 @@
 
       <div class="hidden md:block">
         <div class="flex justify-between gap-4">
-          <router-link to="/login">
-            <button class="btn">Login</button>
+          <router-link v-if="!isLogin" to="/login">
+            <RoundedButton>Login</RoundedButton>
           </router-link>
-          <router-link to="/signup">
-            <button class="btn btn-primary">Sign Up</button>
+          <router-link v-if="!isSignup" to="/signup">
+            <RoundedButton variant="primary">Sign Up</RoundedButton>
           </router-link>
         </div>
       </div>
@@ -68,12 +68,14 @@
         </router-link>
       </nav>
 
-      <div class="flex flex-row justify-around items-center gap-4 py-12">
-        <router-link to="/login">
-          <button class="btn" @click="closeMobileMenu">Login</button>
+      <div class="flex flex-col justify-around items-center gap-4 py-12">
+        <router-link v-if="!isLogin" to="/login" class="w-full px-4">
+          <RoundedButton class="w-full" @click="closeMobileMenu">Login</RoundedButton>
         </router-link>
-        <router-link to="/signup">
-          <button class="btn btn-primary" @click="closeMobileMenu">Sign Up</button>
+        <router-link v-if="!isSignup" to="/signup" class="w-full px-4">
+          <RoundedButton variant="primary" class="w-full" @click="closeMobileMenu"
+            >Sign Up</RoundedButton
+          >
         </router-link>
       </div>
     </section>
@@ -83,6 +85,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 type NavLink = {
   hash: string;
@@ -105,6 +109,8 @@ const navLinks = computed(() => props.navLinks ?? defaultNavLinks);
 const isMobileMenuOpen = ref(false);
 const route = useRoute();
 
+const isLogin = computed(() => route.path === '/login');
+const isSignup = computed(() => route.path === '/signup');
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };

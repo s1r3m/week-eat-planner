@@ -1,11 +1,10 @@
 <template>
   <ModalBase
-    :model-value="modelValue"
-    eyebrow="Week planner"
-    :title="modalTitle"
+    :model-value="props.modelValue"
+    eyebrow="Week Eat Planner"
+    :title="`Edit ${props.weekName}`"
     subtitle="Update the name so the plan stays organized."
-    @update:modelValue="updateVisibility"
-    @close="handleClose"
+    @close="$emit('close')"
   >
     <form id="week-edit-form" class="space-y-3" @submit.prevent="handleSave">
       <label for="week-name" class="text-sm font-semibold text-muted">Week name</label>
@@ -20,26 +19,23 @@
     </form>
 
     <template #footer>
-      <button type="button" class="btn w-full sm:w-auto" @click="handleCancel">Cancel</button>
-      <button
-        type="submit"
-        class="btn btn-primary w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
-        form="week-edit-form"
-        :disabled="isSaveDisabled"
-      >
+      <RoundedButton :disabled="props.saving" @click="$emit('close')"> Cancel </RoundedButton>
+      <RoundedButton variant="primary" form="week-edit-form" :disabled="isSaveDisabled">
         {{ props.saving ? 'Saving...' : 'Save' }}
-      </button>
+      </RoundedButton>
     </template>
   </ModalBase>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import ModalBase from '@/components/ui/ModalBase.vue';
+
+import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 interface Props {
   modelValue: boolean;
-  weekName?: string;
+  weekName: string;
   saving?: boolean;
 }
 
@@ -48,52 +44,27 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [boolean];
   save: [string];
   close: [];
 }>();
 
-const localWeekName = ref(props.weekName ?? '');
+const localWeekName = ref(props.weekName);
 
-watch(
-  () => props.weekName,
-  (newName) => {
-    localWeekName.value = newName ?? '';
-  },
-);
-
-watch(
-  () => props.modelValue,
-  (visible) => {
-    if (!visible) {
-      localWeekName.value = props.weekName ?? '';
-    }
-  },
-);
-
-const modalTitle = computed(() => (props.weekName ? `Edit ${props.weekName}` : 'Edit week'));
+watchEffect(() => {
+  if (props.modelValue) {
+    localWeekName.value = props.weekName;
+  }
+});
 
 const isSaveDisabled = computed(
-  () => props.saving || !localWeekName.value.trim() || localWeekName.value === props.weekName,
+  () =>
+    props.saving || !localWeekName.value.trim() || localWeekName.value.trim() === props.weekName,
 );
-
-const updateVisibility = (value: boolean) => {
-  emit('update:modelValue', value);
-};
-
-const handleClose = () => {
-  emit('close');
-};
 
 const handleSave = () => {
   if (isSaveDisabled.value) {
     return;
   }
   emit('save', localWeekName.value.trim());
-};
-
-const handleCancel = () => {
-  emit('update:modelValue', false);
-  emit('close');
 };
 </script>

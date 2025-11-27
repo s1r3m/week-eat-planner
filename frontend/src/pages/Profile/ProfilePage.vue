@@ -1,12 +1,11 @@
 <template>
-  <TheMainLayout pageName="profile">
+  <main>
     <p>{{ JSON.stringify(user_info) }}</p>
-  </TheMainLayout>
+  </main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import TheMainLayout from '@/layouts/TheMainLayout.vue';
 import apiClient from '@/api/client';
 
 const user_info = ref({});
