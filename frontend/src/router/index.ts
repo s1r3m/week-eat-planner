@@ -111,18 +111,19 @@ export default router;
 
 router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
-  const errorStore = useAlertStore();
   const clientIdStore = useClientIdStore();
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  if (authStore.isAuthenticated) {
+    if (!to.meta.requiresAuth) {
+      return { name: 'weeks' }; // TODO: redo that after main page is accessable to all.
+    }
+  } else {
     try {
       const data = await attemptRefresh(clientIdStore.getClientId());
       authStore.setToken(data);
-      return true;
-    } catch (err: any) {
-      if (from.name !== 'login') {
-        errorStore.addError('You must be logged in to access that page.');
-      }
+    } catch (e: any) {
+      console.error('The error happend during the silent refresh attempt: ', e);
+      authStore.clearToken();
       return { name: 'login', query: { redirect: to.fullPath } };
     }
   }

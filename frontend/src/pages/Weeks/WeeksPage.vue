@@ -1,5 +1,5 @@
 <template>
-  <div class="grid-contianer justify-items-center gap-8">
+  <div class="grid-container justify-items-center gap-8">
     <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
       <WeekShowContent
         :week="week"
@@ -17,20 +17,20 @@
     :week-name="selectedWeekName"
     :saving="isProcessing"
     @save="handleEdit"
-    @close="handleEditClose"
+    @close="closeEditModal"
   />
   <WeekDeleteModal
     v-model="isDeleteModalOpen"
     :week-name="selectedWeekName"
     :processing="isProcessing"
     @confirm="handleDelete"
-    @close="handleDeleteClose"
+    @close="closeDeleteModal"
   />
   <WeekAddModal
     v-model="isAddWeekModalOpen"
     :processing="isProcessing"
     @create="handleCreateWeek"
-    @close="handleAddClose"
+    @close="closeAddModal"
   />
 </template>
 
@@ -40,7 +40,6 @@ import type { WeekPayload } from '@/types/week';
 
 import { ref, computed } from 'vue';
 import { useWeekStore } from '@/stores/weeks';
-import { useRouter } from 'vue-router';
 
 import PresentCard from '@/components/ui/PresentCard.vue';
 import WeekEditModal from '@/components/features/week/WeekEditModal.vue';
@@ -49,7 +48,6 @@ import WeekAddModal from '@/components/features/week/WeekAddModal.vue';
 import WeekShowContent from '@/components/features/week/WeekShowContent.vue';
 import WeekAddContent from '@/components/features/week/WeekAddContent.vue';
 
-const router = useRouter();
 const weekStore = useWeekStore();
 await weekStore.fetchWeeks();
 
@@ -65,7 +63,7 @@ const handleEdit = async (newName: string) => {
   const week = selectedWeek.value;
   if (week) {
     isProcessing.value = true;
-    handleEditClose();
+    closeEditModal();
     try {
       await weekStore.updateWeek(week.id, newName);
     } finally {
@@ -80,7 +78,7 @@ const handleDelete = async () => {
   const week = selectedWeek.value;
   if (week) {
     console.log('Deleted week:', week);
-    handleDeleteClose();
+    closeDeleteModal();
     isProcessing.value = true;
     try {
       await weekStore.removeWeek(week.id);
@@ -94,7 +92,7 @@ const handleDelete = async () => {
 
 const handleCreateWeek = async (weekData: WeekPayload) => {
   try {
-    handleAddClose();
+    closeAddModal();
     isProcessing.value = true;
     await weekStore.addWeek(weekData.name);
   } finally {
@@ -107,7 +105,7 @@ const openEditModal = (weekId: string) => {
   isEditModalOpen.value = true;
   selectedWeek.value = weekStore.weeks.find((week) => week.id === weekId) as UserWeek;
 };
-const handleEditClose = () => {
+const closeEditModal = () => {
   isEditModalOpen.value = false;
   selectedWeek.value = null;
 };
@@ -115,19 +113,19 @@ const openDeleteModal = (weekId: string) => {
   isDeleteModalOpen.value = true;
   selectedWeek.value = weekStore.weeks.find((week) => week.id === weekId) as UserWeek;
 };
-const handleDeleteClose = () => {
+const closeDeleteModal = () => {
   isDeleteModalOpen.value = false;
   selectedWeek.value = null;
 };
 const openAddModal = () => (isAddWeekModalOpen.value = true);
-const handleAddClose = () => (isAddWeekModalOpen.value = false);
+const closeAddModal = () => (isAddWeekModalOpen.value = false);
 </script>
 
 <style scoped>
 @import 'tailwindcss';
 @import '@/theme.css';
 
-.grid-contianer {
+.grid-container {
   @apply grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3;
 }
 
