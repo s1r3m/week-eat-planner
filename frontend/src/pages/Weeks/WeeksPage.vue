@@ -3,7 +3,6 @@
     <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
       <WeekShowContent
         :week="week"
-        @click="router.push(`/weeks/${week.id}`)"
         @edit="openEditModal(week.id)"
         @delete="openDeleteModal(week.id)"
       />

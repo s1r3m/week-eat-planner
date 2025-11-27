@@ -3,11 +3,27 @@ export interface UserLoginResponse {
   token_type: string;
 }
 
+export type DayOfWeek =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
+
+export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
+
+export interface MealSlotRecipe {
+  id: string;
+  name: string;
+}
+
 export interface MealSlot {
   id: string;
-  meal_type: string;
-  day_of_week: string;
-  recipe_id: string | null;
+  meal_type: MealType;
+  day_of_week: DayOfWeek;
+  recipe: MealSlotRecipe | null;
 }
 
 export interface UserWeek {
