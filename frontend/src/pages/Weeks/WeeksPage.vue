@@ -1,5 +1,5 @@
 <template>
-  <div class="grid-container justify-items-center gap-8">
+  <div class="grid-container">
     <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
       <WeekShowContent :week="week" />
     </PresentCard>
@@ -22,10 +22,9 @@ await weekStore.fetchWeeks();
 
 <style scoped>
 @import 'tailwindcss';
-@import '@/theme.css';
 
 .grid-container {
-  @apply grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3;
+  @apply grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 justify-items-center gap-8;
 }
 
 .grid-item {

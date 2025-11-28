@@ -3,11 +3,7 @@
     <div v-for="(day, index) in groupedMealSlots" :key="days[index]" class="day-column">
       <h3 class="day-header">{{ days[index] }}</h3>
       <PresentCard v-for="mealSlot in day" :key="mealSlot.id">
-        <MealSlotContent
-          :meal-slot="mealSlot"
-          @assign="console.log(`Open AssignRecipe to slot ${mealSlot.id}`)"
-          @remove="console.log(`Delete AssignRecipe to slot ${mealSlot.id}`)"
-        />
+        <MealSlotContent :meal-slot="mealSlot" />
       </PresentCard>
     </div>
   </div>
@@ -37,7 +33,6 @@ week.value = await weekStore.getWeek(route.params.id as string);
 </script>
 
 <style scoped>
-@import '@/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
