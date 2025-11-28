@@ -7,25 +7,67 @@
       {{ week.name }}
     </h3>
     <div class="controls">
-      <RoundedButton class="btn-circle" @click.stop="$emit('edit')">
+      <RoundedButton class="btn-circle" @click.stop="isEditModalOpen = true">
         <Icon icon="mdi:pencil" class="icon" />
       </RoundedButton>
-      <RoundedButton class="btn-circle" @click.stop="$emit('delete')">
+      <RoundedButton class="btn-circle" @click.stop="isDeleteModalOpen = true">
         <Icon icon="mdi:trash-can-outline" class="icon" />
       </RoundedButton>
     </div>
   </div>
+  <WeekEditModal
+    v-model="isEditModalOpen"
+    :week-name="week.name"
+    :saving="isProcessing"
+    @save="handleEdit"
+    @close="isEditModalOpen = false"
+  />
+  <WeekDeleteModal
+    v-model="isDeleteModalOpen"
+    :week-name="week.name"
+    :processing="isProcessing"
+    @confirm="handleDelete"
+    @close="isDeleteModalOpen = false"
+  />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import RoundedButton from '@/components/ui/RoundedButton.vue';
+import WeekEditModal from '@/components/features/week/WeekEditModal.vue';
+import WeekDeleteModal from '@/components/features/week/WeekDeleteModal.vue';
 import { Icon } from '@iconify/vue';
 import type { UserWeek } from '@/types/api';
+import { useWeekStore } from '@/stores/weeks';
 
 const props = defineProps<{ week: UserWeek }>();
-defineEmits<{ edit: []; delete: [] }>();
 
 const default_img = new URL('@/assets/week_bg.svg', import.meta.url).href;
+
+const isEditModalOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const isProcessing = ref(false);
+const weekStore = useWeekStore();
+
+const handleEdit = async (newName: string) => {
+  isProcessing.value = true;
+  isEditModalOpen.value = false;
+  try {
+    await weekStore.updateWeek(props.week.id, newName);
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+const handleDelete = async () => {
+  isDeleteModalOpen.value = false;
+  isProcessing.value = true;
+  try {
+    await weekStore.removeWeek(props.week.id);
+  } finally {
+    isProcessing.value = false;
+  }
+};
 </script>
 
 <style scoped>

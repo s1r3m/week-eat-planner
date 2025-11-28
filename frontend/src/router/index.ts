@@ -12,7 +12,6 @@ import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
 import HomePage from '@/pages/HomePage.vue';
 import { useAuthStore } from '@/stores/auth';
-import { useAlertStore } from '@/stores/error';
 import { useClientIdStore } from '@/stores/clientId';
 import { attemptRefresh } from '@/api/client';
 
