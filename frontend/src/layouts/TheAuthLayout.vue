@@ -2,8 +2,10 @@
   <div class="min-h-screen bg-surface-base text-base-color flex flex-col">
     <header class="border-b border-base-color/10 bg-surface-raised px-6 py-4">
       <div class="flex items-center justify-between gap-4">
-        <router-link to="/weeks" class="flex items-center gap-3">
+        <router-link to="/promo" class="flex items-center gap-3">
           <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
+        </router-link>
+        <router-link to="/weeks" class="flex items-center gap-3">
           <h1 class="text-3xl font-medium">Week Eat Planner</h1>
         </router-link>
         <RoundedButton :disabled="isLoggingOut" @click="handleLogout">
@@ -56,15 +58,7 @@
       <main class="flex-1 overflow-y-auto p-6">
         <RouterView v-slot="{ Component, route }">
           <template v-if="Component">
-            <Suspense timeout="1000">
-              <component :is="Component" />
-
-              <template #fallback>
-                <div class="flex h-full w-full items-center justify-center">
-                  <TheLoadingSpinner :loading-name="route.name" />
-                </div>
-              </template>
-            </Suspense>
+            <component :is="Component" />
           </template>
         </RouterView>
       </main>
@@ -79,7 +73,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 import RoundedButton from '@/components/ui/RoundedButton.vue';
-import TheLoadingSpinner from '@/layouts/TheLoadingSpinner.vue';
 import TheFooter from './TheFooter.vue';
 
 const navLinks = [

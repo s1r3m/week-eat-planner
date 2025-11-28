@@ -20,7 +20,7 @@ const routes = [
     path: '/',
     component: GuestLayout,
     children: [
-      { path: '', name: 'home', component: HomePage },
+      { path: '/promo', name: 'promo', component: HomePage },
       {
         path: 'login',
         name: 'login',
@@ -111,12 +111,16 @@ export default router;
 router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
   const clientIdStore = useClientIdStore();
+  console.log('user goes to ', to.name, to.fullPath);
 
   if (authStore.isAuthenticated) {
-    if (!to.meta.requiresAuth) {
+    if (!to.meta.requiresAuth && to.name !== 'promo') {
+      console.log('Logged in user goes to ', to.name, to.fullPath);
       return { name: 'weeks' }; // TODO: redo that after main page is accessable to all.
     }
+    console.log('Bypassed the check somehow');
   } else {
+    console.log('Hello, guest!');
     try {
       const data = await attemptRefresh(clientIdStore.getClientId());
       authStore.setToken(data);

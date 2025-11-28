@@ -7,7 +7,7 @@ from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import UserRead
 from week_eat_planner.constants import AppUrl
 
-router = APIRouter()
+router = APIRouter(tags=['User'])
 
 
 @router.get(AppUrl.USER, response_model=UserRead)

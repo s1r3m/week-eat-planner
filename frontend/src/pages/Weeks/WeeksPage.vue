@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useWeekStore } from '@/stores/weeks';
 
 import PresentCard from '@/components/ui/PresentCard.vue';
@@ -17,7 +18,7 @@ import WeekShowContent from '@/components/features/week/WeekShowContent.vue';
 import WeekAddContent from '@/components/features/week/WeekAddContent.vue';
 
 const weekStore = useWeekStore();
-await weekStore.fetchWeeks();
+onMounted(async () => await weekStore.fetchWeeks());
 </script>
 
 <style scoped>

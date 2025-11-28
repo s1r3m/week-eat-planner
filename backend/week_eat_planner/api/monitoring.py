@@ -3,7 +3,7 @@ from loguru import logger
 
 from week_eat_planner.constants import AppUrl
 
-router = APIRouter()
+router = APIRouter(tags=['Monitoring'])
 
 
 @router.get(AppUrl.PING)
