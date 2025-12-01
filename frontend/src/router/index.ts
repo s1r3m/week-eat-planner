@@ -1,26 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouterScrollBehavior } from 'vue-router';
 
-type ScrollPositionResult = {
-  left: number;
-  top: number;
-  behavior?: 'auto' | 'smooth';
-};
-
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
 import HomePage from '@/pages/HomePage.vue';
 import { useAuthStore } from '@/stores/auth';
-import { useClientIdStore } from '@/stores/clientId';
-import { attemptRefresh } from '@/api/client';
 
 const routes = [
   {
     path: '/',
     component: GuestLayout,
     children: [
-      { path: '/promo', name: 'promo', component: HomePage },
+      { path: '', name: 'home', component: HomePage },
       {
         path: 'login',
         name: 'login',
@@ -60,7 +52,16 @@ const routes = [
       },
     ],
   },
+
+  // otherwise redirect to home
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
+
+type ScrollPositionResult = {
+  left: number;
+  top: number;
+  behavior?: 'auto' | 'smooth';
+};
 
 const scrollToHashWithOffset = (hash: string): Promise<ScrollPositionResult> => {
   if (typeof window === 'undefined') {
@@ -108,26 +109,11 @@ const router = createRouter({
 
 export default router;
 
-router.beforeEach(async (to, from) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore();
-  const clientIdStore = useClientIdStore();
-  console.log('user goes to ', to.name, to.fullPath);
-
-  if (authStore.isAuthenticated) {
-    if (!to.meta.requiresAuth && to.name !== 'promo') {
-      console.log('Logged in user goes to ', to.name, to.fullPath);
-      return { name: 'weeks' }; // TODO: redo that after main page is accessable to all.
-    }
-    console.log('Bypassed the check somehow');
-  } else {
-    console.log('Hello, guest!');
-    try {
-      const data = await attemptRefresh(clientIdStore.getClientId());
-      authStore.setToken(data);
-    } catch (e: any) {
-      console.error('The error happend during the silent refresh attempt: ', e);
-      authStore.clearToken();
-      return { name: 'login', query: { redirect: to.fullPath } };
-    }
+  console.log('User goes to ', to.fullPath);
+  if (!authStore.isAuthenticated && to.meta.requiresAuth) {
+    console.log('access_token', authStore.accessToken);
+    return { name: 'login', query: { redirect: to.fullPath } };
   }
 });

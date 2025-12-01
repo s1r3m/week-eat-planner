@@ -1,27 +1,42 @@
 <template>
-  <div class="grid-container">
-    <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
-      <WeekShowContent :week="week" />
-    </PresentCard>
-    <PresentCard v-if="weekStore.weeks.length < 6" class="grid-item">
-      <WeekAddContent />
-    </PresentCard>
-  </div>
+  <template v-if="weekStore.error">
+    <div>
+      <h3>Could not load your weeks at the moment. Please try again.</h3>
+      <RoundedButton>Retry now</RoundedButton>
+    </div>
+  </template>
+
+  <template v-else-if="weekStore.isLoading">
+    <TheLoadingSpinner loading-name="weeks" />
+  </template>
+
+  <template v-else>
+    <div class="grid-container">
+      <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
+        <WeekShowContent :week="week" />
+      </PresentCard>
+      <PresentCard v-if="weekStore.weeks.length < 6" class="grid-item">
+        <WeekAddContent />
+      </PresentCard>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { useWeekStore } from '@/stores/weeks';
 
 import PresentCard from '@/components/ui/PresentCard.vue';
 import WeekShowContent from '@/components/features/week/WeekShowContent.vue';
 import WeekAddContent from '@/components/features/week/WeekAddContent.vue';
+import RoundedButton from '@/components/ui/RoundedButton.vue';
+import TheLoadingSpinner from '@/layouts/TheLoadingSpinner.vue';
 
 const weekStore = useWeekStore();
-onMounted(async () => await weekStore.fetchWeeks());
+weekStore.fetchWeeks();
 </script>
 
 <style scoped>
+@import '@/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
@@ -29,6 +44,6 @@ onMounted(async () => await weekStore.fetchWeeks());
 }
 
 .grid-item {
-  @apply max-h-80;
+  @apply max-h-80 bg-surface-raised;
 }
 </style>

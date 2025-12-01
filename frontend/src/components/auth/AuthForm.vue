@@ -43,15 +43,19 @@
     <slot name="after"></slot>
   </form>
 
-  <div v-else class="space-y-2 text-center text-base text-base-color">
+  <div v-else class="space-y-4 mt-4 text-center text-base text-base-color">
     <p>You are already logged in.</p>
-    <p class="text-sm text-muted">You can continue planning your meals from the dashboard.</p>
+    <p class="text-sm text-muted">You can continue planning your meals!</p>
+    <RoundedButton variant="primary">
+      <router-link to="/weeks">Go to planning</router-link>
+    </RoundedButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import RoundedButton from '../ui/RoundedButton.vue';
 
 const authStore = useAuthStore();
 

@@ -24,7 +24,6 @@ const handleCreateWeek = async (weekData: WeekPayload) => {
   isProcessing.value = true;
   isAddWeekModalOpen.value = false;
   // TODO: Add error handling.
-  await weekStore.addWeek(weekData.name);
   try {
     await weekStore.addWeek(weekData.name);
   } finally {

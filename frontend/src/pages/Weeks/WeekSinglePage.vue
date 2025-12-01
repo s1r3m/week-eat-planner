@@ -2,7 +2,7 @@
   <div class="grid-container">
     <div v-for="(day, index) in groupedMealSlots" :key="days[index]" class="day-column">
       <h3 class="day-header">{{ days[index] }}</h3>
-      <PresentCard v-for="mealSlot in day" :key="mealSlot.id">
+      <PresentCard v-for="mealSlot in day" :key="mealSlot.id" class="grid-item">
         <MealSlotContent :meal-slot="mealSlot" />
       </PresentCard>
     </div>
@@ -33,6 +33,7 @@ onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as s
 </script>
 
 <style scoped>
+@import '@/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
@@ -50,6 +51,6 @@ onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as s
 }
 
 .grid-item {
-  @apply max-h-80;
+  @apply max-h-80 bg-surface-raised;
 }
 </style>

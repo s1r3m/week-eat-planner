@@ -6,10 +6,7 @@
         <template #after>
           <p class="text-sm text-center text-muted">
             Forgot your password?
-            <router-link
-              to="/reset-password"
-              class="text-brand-primary font-semibold hover:underline"
-            >
+            <router-link to="/" class="text-brand-primary font-semibold hover:underline">
               Reset it
             </router-link>
           </p>

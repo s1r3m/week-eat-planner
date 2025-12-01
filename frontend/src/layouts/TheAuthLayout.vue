@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-surface-base text-base-color flex flex-col">
     <header class="border-b border-base-color/10 bg-surface-raised px-6 py-4">
       <div class="flex items-center justify-between gap-4">
-        <router-link to="/promo" class="flex items-center gap-3">
+        <router-link to="/" class="flex items-center gap-3">
           <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
         </router-link>
         <router-link to="/weeks" class="flex items-center gap-3">
