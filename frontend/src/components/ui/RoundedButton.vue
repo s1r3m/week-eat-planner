@@ -26,7 +26,7 @@ defineEmits<{
 </script>
 
 <style scoped>
-@import '../../theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .base {

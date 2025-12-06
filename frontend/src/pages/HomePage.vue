@@ -61,7 +61,10 @@ const photos = ref([
     </section>
 
     <section id="sign-up" class="py-12 flex-center scroll-mt-40">
-      <RoundedButton variant="primary" class="w-full" @click="router.push('/signup')"
+      <RoundedButton
+        variant="primary"
+        class="w-full md:text-lg mx-4"
+        @click="router.push('/signup')"
         >Start planning now!</RoundedButton
       >
     </section>

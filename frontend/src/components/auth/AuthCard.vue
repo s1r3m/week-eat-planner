@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-card space-y-2 w-lg">
+  <div class="auth-card space-y-2 w-sm md:w-md lg:w-lg">
     <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand-primary text-center">
       {{ eyebrow }}
     </p>

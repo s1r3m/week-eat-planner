@@ -64,7 +64,7 @@ const handleRemoveRecipe = () => {
 </script>
 
 <style scoped>
-@import '@/theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .content {

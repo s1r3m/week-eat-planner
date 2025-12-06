@@ -33,7 +33,7 @@ onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as s
 </script>
 
 <style scoped>
-@import '@/theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
