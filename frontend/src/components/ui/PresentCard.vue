@@ -5,7 +5,7 @@
 </template>
 
 <style scoped>
-@import '@/theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .card {

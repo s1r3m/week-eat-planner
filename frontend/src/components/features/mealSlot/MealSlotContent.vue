@@ -1,24 +1,30 @@
 <template>
   <div class="content">
     <img src="@/assets/add_week_bg_1.png" alt="Add recipe image" class="background" />
-    <div class="gradient-layout" :class="gradientColor[mealSlot.meal_type]" @click="onClick"></div>
+    <div
+      class="gradient-layout"
+      :class="gradientColor[mealSlot.meal_type]"
+      @click="handleAssignRecipe"
+    ></div>
+
     <router-link
       v-if="props.mealSlot.recipe"
       :to="`/recipes/${props.mealSlot.recipe.id}`"
       class="absolute inset-0 z-20"
     ></router-link>
+
     <div class="controls">
       <RoundedButton
         v-if="!!props.mealSlot.recipe"
         class="btn-circle"
-        @click.stop="$emit('assign')"
+        @click.stop="handleAssignRecipe"
       >
         <Icon icon="mdi:pencil" class="icon" />
       </RoundedButton>
       <RoundedButton
         v-if="!!props.mealSlot.recipe"
         class="btn-circle"
-        @click.stop="$emit('remove')"
+        @click.stop="handleRemoveRecipe"
       >
         <Icon icon="mdi:trash-can-outline" class="icon" />
       </RoundedButton>
@@ -36,10 +42,6 @@ import type { MealSlot, MealType } from '@/types/api';
 const props = defineProps<{
   mealSlot: MealSlot;
 }>();
-const emit = defineEmits<{
-  assign: [];
-  remove: [];
-}>();
 
 const gradientColor: Record<MealType, string> = {
   BREAKFAST: 'from-accent-breakfast/50 via-accent-breakfast/10',
@@ -48,15 +50,21 @@ const gradientColor: Record<MealType, string> = {
   SNACK: 'from-accent-snacks/50 via-accent-snacks/10',
 };
 
-const onClick = () => {
+const handleAssignRecipe = () => {
   if (!props.mealSlot.recipe) {
-    emit('assign');
+    console.log(`Open AssignRecipe to slot ${props.mealSlot.id}`);
+  }
+};
+
+const handleRemoveRecipe = () => {
+  if (props.mealSlot.recipe) {
+    console.log(`Delete ${props.mealSlot.recipe.name} to slot ${props.mealSlot.id}`);
   }
 };
 </script>
 
 <style scoped>
-@import '@/theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .content {

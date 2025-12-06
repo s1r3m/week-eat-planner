@@ -1,114 +1,91 @@
-import axios from 'axios';
+import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import { useClientIdStore } from '@/stores/clientId';
+import type { UserLoginResponse } from '@/types/api';
 
-const apiClient = axios.create({
-  baseURL: '/api',
-  timeout: 10000, // 10 seconds
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Include cookies for refresh token
-});
-
-const refreshClient = axios.create({
-  baseURL: '/api',
-  timeout: 10000, // 10 seconds
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Include cookies for refresh token
-});
-
-apiClient.interceptors.request.use(
-  (config) => {
-    const authStore = useAuthStore();
-    if (authStore.isAuthenticated && authStore.access_token) {
-      config.headers.Authorization = `Bearer ${authStore.access_token}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
-  },
-);
-
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (error: any) => void;
-}> = [];
-
-const processQueue = (error: any, access_token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(access_token);
-    }
+const createApiClient = (baseUrl: string, withCredentials: boolean = false) =>
+  axios.create({
+    baseURL: baseUrl,
+    timeout: 5000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    withCredentials: withCredentials,
   });
-  failedQueue = [];
+
+const apiClient = createApiClient('/api');
+export const refreshClient = createApiClient('/api/auth', true); // Include cookies if available
+
+// Add Auth header.
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const authStore = useAuthStore();
+  if (authStore.isAuthenticated) {
+    config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+  }
+  return config;
+});
+
+// Store all incoming requests while refresh is attempting.
+let isRefreshing = false;
+let pendingRequests: ((newToken: string | null) => void)[] = [];
+
+const resolveRequests = (newToken: string | null) => {
+  pendingRequests.forEach((cb) => cb(newToken));
+  pendingRequests = [];
 };
 
+// Handle 401 of the request.
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
     const authStore = useAuthStore();
     const clientIdStore = useClientIdStore();
-
-    if (error?.config?.url === '/auth/login' || error.config?.url === '/auth/signup') {
+    const originalRequest = error.config;
+    if (
+      !originalRequest ||
+      originalRequest.url === '/auth/login' || // Don't try with other auth methods
+      originalRequest.url === '/auth/signup' // Don't try with other auth methods
+    ) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const status = error.response?.status;
+    if (status === 401) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((access_token) => {
-            originalRequest.headers['Authorization'] = `Bearer ${access_token}`;
-            return apiClient(originalRequest);
-          })
-          .catch((err: any) => Promise.reject(err));
+        // Push the request to the queue and quit.
+        return new Promise((resolve, reject) =>
+          pendingRequests.push((newToken: string | null) => {
+            if (!newToken) {
+              reject(error);
+              return;
+            }
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(apiClient(originalRequest));
+          }),
+        );
       }
 
-      originalRequest._retry = true;
+      // Let's try to refresh the token and finally resolve all queued requests.
       isRefreshing = true;
-
       try {
-        const refreshResponse = await refreshClient.post('/auth/refresh', {
+        const refreshResponse = await refreshClient.post('/refresh', {
           client_id: clientIdStore.getClientId(),
         });
-        authStore.setToken(refreshResponse.data);
-
-        const newAccessToken = refreshResponse.data.access_token;
-        processQueue(null, newAccessToken);
-
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
+        if (refreshResponse.status == 200) {
+          authStore.setToken(refreshResponse.data as UserLoginResponse);
+        }
+        throw new AxiosError('Refresh was 401. Stop the show. Go to login page.');
+      } catch (refreshError: any) {
         authStore.clearToken();
-        return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
+        resolveRequests(authStore.accessToken);
       }
     }
+
+    // All non-401 errors should go further.
     return Promise.reject(error);
   },
 );
-
-// Small helper used by the router to attempt a silent refresh when a user
-// navigates to a protected route and the access token is missing but a
-// refresh token cookie may still be present.
-export async function attemptRefresh(client_id: string) {
-  const refreshResponse = await refreshClient.post('/auth/refresh', {
-    client_id,
-  });
-  return refreshResponse.data;
-}
 
 export default apiClient;

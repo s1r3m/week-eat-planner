@@ -2,19 +2,15 @@
   <div class="grid-container">
     <div v-for="(day, index) in groupedMealSlots" :key="days[index]" class="day-column">
       <h3 class="day-header">{{ days[index] }}</h3>
-      <PresentCard v-for="mealSlot in day" :key="mealSlot.id">
-        <MealSlotContent
-          :meal-slot="mealSlot"
-          @assign="console.log(`Open AssignRecipe to slot ${mealSlot.id}`)"
-          @remove="console.log(`Delete AssignRecipe to slot ${mealSlot.id}`)"
-        />
+      <PresentCard v-for="mealSlot in day" :key="mealSlot.id" class="grid-item">
+        <MealSlotContent :meal-slot="mealSlot" />
       </PresentCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { Ref } from 'vue';
 import type { UserWeek } from '@/types/api';
 import { useRoute } from 'vue-router';
@@ -25,19 +21,19 @@ import MealSlotContent from '@/components/features/mealSlot/MealSlotContent.vue'
 const week: Ref<UserWeek | null> = ref(null);
 const weekStore = useWeekStore();
 const route = useRoute();
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; // TODO: Use constants
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']; // TODO: Use constants WEP-46
 
-// TODO: update API response to include that.
+// TODO: update API response to include -- WEP-46.
 const groupedMealSlots = computed(() => {
   const uniqueDays = [...new Set(week.value?.meal_slots.map((m) => m.day_of_week))];
   return uniqueDays.map((day) => week.value?.meal_slots.filter((m) => m.day_of_week === day));
 });
 
-week.value = await weekStore.getWeek(route.params.id as string);
+onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as string)));
 </script>
 
 <style scoped>
-@import '@/theme.css';
+@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
@@ -55,6 +51,6 @@ week.value = await weekStore.getWeek(route.params.id as string);
 }
 
 .grid-item {
-  @apply max-h-80;
+  @apply max-h-80 bg-surface-raised;
 }
 </style>

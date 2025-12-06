@@ -19,7 +19,7 @@ from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.week_service import WeekService
 
-router = APIRouter()
+router = APIRouter(tags=['Weeks'])
 
 
 @router.post(AppUrl.WEEKS, response_model=WeekReadMinimal, status_code=status.HTTP_201_CREATED)

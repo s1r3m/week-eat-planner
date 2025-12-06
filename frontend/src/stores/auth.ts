@@ -1,28 +1,43 @@
 import type { UserLoginResponse } from '@/types/api';
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, type Ref } from 'vue';
 
-import apiClient from '@/api/client';
+import apiClient, { refreshClient } from '@/api/client';
 import { useAlertStore } from '@/stores/error';
 import { useClientIdStore } from '@/stores/clientId';
 
 export const useAuthStore = defineStore('auth-store', () => {
-  const access_token = ref<string | null>(null);
+  const accessToken: Ref<string | null> = ref(null);
 
   const setToken = (data: UserLoginResponse) => {
-    console.log('Setting access_token');
     if (data.token_type !== 'bearer') {
       return;
     }
-    access_token.value = data.access_token;
+    accessToken.value = data.access_token;
   };
 
   const clearToken = () => {
-    access_token.value = null;
-    console.log('Cleared access_token from localStorage');
+    accessToken.value = null;
+    console.log('Cleared access_token');
   };
 
-  const isAuthenticated = computed(() => !!access_token.value);
+  const refreshToken = async () => {
+    const clientIdStore = useClientIdStore();
+    try {
+      const response = await refreshClient.post('/refresh', {
+        client_id: clientIdStore.getClientId(),
+      });
+      if (response.status !== 200) {
+        throw new Error(`Status: ${response.status}`);
+      }
+      setToken(response.data as UserLoginResponse);
+    } catch (err: any) {
+      console.error(`An error during silent refresh on start: ${err}`);
+      clearToken();
+    }
+  };
+
+  const isAuthenticated = computed(() => !!accessToken.value);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const errorStore = useAlertStore();
@@ -72,10 +87,11 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   return {
-    access_token,
+    accessToken,
     isAuthenticated,
     setToken,
     clearToken,
+    refreshToken,
     login,
     signup,
     logout,

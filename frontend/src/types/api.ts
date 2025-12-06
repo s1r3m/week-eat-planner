@@ -3,6 +3,10 @@ export interface UserLoginResponse {
   token_type: string;
 }
 
+export interface ErrorResponse {
+  detail: string;
+}
+
 export type DayOfWeek =
   | 'MONDAY'
   | 'TUESDAY'

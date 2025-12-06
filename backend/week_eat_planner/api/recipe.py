@@ -11,7 +11,7 @@ from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.recipe_service import RecipeService
 
-router = APIRouter()
+router = APIRouter(tags=['Recipe'])
 
 
 @router.post(AppUrl.RECIPES, response_model=RecipeRead, status_code=status.HTTP_201_CREATED)

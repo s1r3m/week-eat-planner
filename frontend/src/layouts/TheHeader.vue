@@ -1,7 +1,7 @@
 <template>
   <header class="sticky inset-0 z-10 bg-surface-raised py-4">
     <section class="container-center flex items-center justify-between pr-2">
-      <router-link to="/" class="flex items-center gap-3">
+      <router-link to="/" class="flex gap-2 items-center">
         <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
         <h1 class="text-3xl font-medium">Week Eat Planner</h1>
       </router-link>
@@ -98,6 +98,7 @@ const defaultNavLinks: NavLink[] = [
   { hash: '#hero', label: 'Home' },
   { hash: '#use-cases', label: 'Use Cases' },
   { hash: '#get-started', label: 'Get Started' },
+  { hash: '#weeks', label: 'Start Planning', path: '/weeks' },
 ];
 
 const props = defineProps<{

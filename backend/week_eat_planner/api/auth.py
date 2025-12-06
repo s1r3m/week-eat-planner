@@ -21,7 +21,7 @@ from week_eat_planner.exceptions import (
 )
 from week_eat_planner.services.auth_service import AuthService
 
-router = APIRouter()
+router = APIRouter(tags=['Auth'])
 
 
 @router.post(AppUrl.AUTH_SIGNUP, response_model=UserRead, status_code=status.HTTP_201_CREATED)
