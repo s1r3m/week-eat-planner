@@ -1,11 +1,14 @@
 <template>
-  <footer class="bg-brand-muted">
-    <div class="container-center flex justify-between items-center px-2">
-      <p class="text-xl font-medium my-4">© {{ currentYear }} Week Eat Planner</p>
-      <p class="text-xl font-medium my-4 text-muted">
+  <footer class="border-t bg-background/80 text-muted-foreground">
+    <div class="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-6 text-sm md:flex-row md:items-center">
+      <p class="font-medium text-foreground">© {{ currentYear }} Week Eat Planner</p>
+      <p class="flex items-center gap-1">
         Design by
-        <a href="https://github.com/s1r3m/week-eat-planner">
-          <span class="text-base-color hover:underline">s1r3m</span>
+        <a
+          href="https://github.com/s1r3m/week-eat-planner"
+          class="font-medium text-foreground hover:text-primary hover:underline"
+        >
+          s1r3m
         </a>
       </p>
     </div>
