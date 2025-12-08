@@ -9,8 +9,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Pass { disableTransition: false } to enable transitions
-const mode = useColorMode();
+// Keep transitions when switching themes and scope the class to <html>
+const mode = useColorMode({
+  selector: 'html',
+  attribute: 'class',
+  initialValue: 'auto',
+  storageKey: 'week-eat-theme',
+  disableTransition: false,
+});
 </script>
 
 <template>

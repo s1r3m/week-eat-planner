@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky inset-0 z-10 bg-surface-raised py-4">
+  <header class="sticky inset-0 z-10 py-4">
     <section class="container-center flex items-center justify-between pr-2">
       <router-link to="/" class="flex gap-2 items-center">
         <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
@@ -17,7 +17,8 @@
         </router-link>
       </nav>
 
-      <div>
+      <div class="space-x-2">
+        <ModeToggle />
         <button
           id="mobile-open-menu"
           class="text-3xl hover:opacity-65 md:hidden cursor-pointer relative w-8 h-8"
@@ -31,7 +32,7 @@
       </div>
 
       <div class="hidden md:block">
-        <div class="flex justify-between gap-4">
+        <div class="flex items-center justify-between gap-4">
           <router-link v-if="!isLogin" to="/login">
             <RoundedButton>Login</RoundedButton>
           </router-link>
@@ -86,6 +87,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import ModeToggle from '@/components/ui/ModeToggle.vue';
 import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 type NavLink = {
