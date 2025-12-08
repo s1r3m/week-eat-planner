@@ -1,11 +1,7 @@
 <template>
   <div class="content">
     <img src="@/assets/add_week_bg_1.png" alt="Add recipe image" class="background" />
-    <div
-      class="gradient-layout"
-      :class="gradientColor[mealSlot.meal_type]"
-      @click="handleAssignRecipe"
-    ></div>
+    <div class="gradient-layout" @click="handleAssignRecipe"></div>
 
     <router-link
       v-if="props.mealSlot.recipe"
@@ -14,27 +10,19 @@
     ></router-link>
 
     <div class="controls">
-      <RoundedButton
-        v-if="!!props.mealSlot.recipe"
-        class="btn-circle"
-        @click.stop="handleAssignRecipe"
-      >
+      <Button v-if="!!props.mealSlot.recipe" class="btn-circle" @click.stop="handleAssignRecipe">
         <Icon icon="mdi:pencil" class="icon" />
-      </RoundedButton>
-      <RoundedButton
-        v-if="!!props.mealSlot.recipe"
-        class="btn-circle"
-        @click.stop="handleRemoveRecipe"
-      >
+      </Button>
+      <Button v-if="!!props.mealSlot.recipe" class="btn-circle" @click.stop="handleRemoveRecipe">
         <Icon icon="mdi:trash-can-outline" class="icon" />
-      </RoundedButton>
+      </Button>
     </div>
     <h3>{{ mealSlot.meal_type }}</h3>
   </div>
 </template>
 
 <script setup lang="ts">
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/vue';
 
 import type { MealSlot, MealType } from '@/types/api';
@@ -42,13 +30,6 @@ import type { MealSlot, MealType } from '@/types/api';
 const props = defineProps<{
   mealSlot: MealSlot;
 }>();
-
-const gradientColor: Record<MealType, string> = {
-  BREAKFAST: 'from-accent-breakfast/50 via-accent-breakfast/10',
-  LUNCH: 'from-accent-lunch/50 via-accent-lunch/10',
-  DINNER: 'from-accent-dinner/50 via-accent-dinner/10',
-  SNACK: 'from-accent-snacks/50 via-accent-snacks/10',
-};
 
 const handleAssignRecipe = () => {
   if (!props.mealSlot.recipe) {
@@ -64,7 +45,6 @@ const handleRemoveRecipe = () => {
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .content {

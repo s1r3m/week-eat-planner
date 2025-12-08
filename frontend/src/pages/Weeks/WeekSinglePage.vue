@@ -33,7 +33,6 @@ onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as s
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .grid-container {
@@ -51,6 +50,6 @@ onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as s
 }
 
 .grid-item {
-  @apply max-h-80 bg-surface-raised;
+  @apply max-h-80;
 }
 </style>

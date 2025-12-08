@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import Card from '@/components/ui/Card.vue';
-import RoundedButton from '@/components/ui/RoundedButton.vue';
 
 const router = useRouter();
 
@@ -61,12 +60,7 @@ const photos = ref([
     </section>
 
     <section id="sign-up" class="py-12 flex-center scroll-mt-40">
-      <RoundedButton
-        variant="primary"
-        class="w-full md:text-lg mx-4"
-        @click="router.push('/signup')"
-        >Start planning now!</RoundedButton
-      >
+      <Button @click="router.push('/signup')">Start planning now!</Button>
     </section>
   </main>
 </template>

@@ -20,10 +20,8 @@
     </template>
 
     <template #footer>
-      <RoundedButton @click="$emit('close')"> Cancel </RoundedButton>
-      <RoundedButton variant="primary" :disabled="isDisabled" @click="onCreate">
-        Create
-      </RoundedButton>
+      <Button @click="$emit('close')"> Cancel </Button>
+      <Button :disabled="isDisabled" @click="onCreate"> Create </Button>
     </template>
   </ModalBase>
 </template>
@@ -32,7 +30,7 @@
 import type { WeekPayload } from '@/types/week';
 import { ref, computed } from 'vue';
 import ModalBase from '@/components/ui/ModalBase.vue';
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   modelValue: boolean;

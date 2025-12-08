@@ -19,10 +19,10 @@
     </form>
 
     <template #footer>
-      <RoundedButton :disabled="props.saving" @click="$emit('close')"> Cancel </RoundedButton>
-      <RoundedButton variant="primary" form="week-edit-form" :disabled="isSaveDisabled">
+      <Button :disabled="props.saving" @click="$emit('close')"> Cancel </Button>
+      <Button form="week-edit-form" :disabled="isSaveDisabled">
         {{ props.saving ? 'Saving...' : 'Save' }}
-      </RoundedButton>
+      </Button>
     </template>
   </ModalBase>
 </template>
@@ -31,7 +31,7 @@
 import { computed, ref, watchEffect } from 'vue';
 import ModalBase from '@/components/ui/ModalBase.vue';
 
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   modelValue: boolean;

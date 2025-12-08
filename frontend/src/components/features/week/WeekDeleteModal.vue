@@ -13,10 +13,10 @@
     </p>
 
     <template #footer>
-      <RoundedButton @click="$emit('close')">No</RoundedButton>
-      <RoundedButton variant="danger" :disabled="props.processing" @click="handleYes">
+      <Button @click="$emit('close')">No</Button>
+      <Button :disabled="props.processing" @click="handleYes">
         {{ props.processing ? 'Deleting...' : 'Yes' }}
-      </RoundedButton>
+      </Button>
     </template>
   </ModalBase>
 </template>
@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import ModalBase from '@/components/ui/ModalBase.vue';
 
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   modelValue: boolean;

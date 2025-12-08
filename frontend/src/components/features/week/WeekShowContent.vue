@@ -7,12 +7,12 @@
       {{ week.name }}
     </h3>
     <div class="controls">
-      <RoundedButton class="btn-circle" @click.stop="isEditModalOpen = true">
+      <Button class="btn-circle" @click.stop="isEditModalOpen = true">
         <Icon icon="mdi:pencil" class="icon" />
-      </RoundedButton>
-      <RoundedButton class="btn-circle" @click.stop="isDeleteModalOpen = true">
+      </Button>
+      <Button class="btn-circle" @click.stop="isDeleteModalOpen = true">
         <Icon icon="mdi:trash-can-outline" class="icon" />
-      </RoundedButton>
+      </Button>
     </div>
   </div>
   <WeekEditModal
@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 import WeekEditModal from '@/components/features/week/WeekEditModal.vue';
 import WeekDeleteModal from '@/components/features/week/WeekDeleteModal.vue';
 import { Icon } from '@iconify/vue';
@@ -71,7 +71,6 @@ const handleDelete = async () => {
 </script>
 
 <style scoped>
-@import '@/assets/theme.css';
 @import 'tailwindcss';
 
 .content {

@@ -1,83 +1,73 @@
 <template>
-  <header class="sticky inset-0 z-10 py-4">
-    <section class="container-center flex items-center justify-between pr-2">
-      <router-link to="/" class="flex gap-2 items-center">
-        <img class="max-w-14" src="@/assets//logo.png" alt="logo" />
-        <h1 class="text-3xl font-medium">Week Eat Planner</h1>
+  <header class="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
+      <router-link to="/" class="flex items-center gap-2 text-foreground hover:text-foreground/80">
+        <img class="h-10 w-auto" src="@/assets//logo.png" alt="Week Eat Planner logo" />
+        <span class="text-lg font-semibold tracking-tight md:text-xl">Week Eat Planner</span>
       </router-link>
 
-      <nav class="hidden md:block space-x-8 text-xl" aria-label="header">
+      <nav class="ml-6 hidden items-center gap-6 text-sm font-medium md:flex" aria-label="header">
         <router-link
           v-for="link in navLinks"
           :key="link.hash"
           :to="{ path: link.path ?? '/', hash: link.hash }"
-          class="hover:opacity-65"
+          class="text-muted-foreground transition hover:text-foreground"
         >
           {{ link.label }}
         </router-link>
       </nav>
 
-      <div class="space-x-2">
+      <div class="ml-auto flex items-center gap-2">
         <ModeToggle />
-        <button
-          id="mobile-open-menu"
-          class="text-3xl hover:opacity-65 md:hidden cursor-pointer relative w-8 h-8"
+        <Button v-if="!isLogin" variant="ghost" size="sm" as-child class="hidden md:inline-flex">
+          <router-link to="/login">Login</router-link>
+        </Button>
+        <Button v-if="!isSignup" size="sm" as-child class="hidden md:inline-flex">
+          <router-link to="/signup">Sign Up</router-link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="md:hidden"
           type="button"
           aria-controls="mobile-menu"
           :aria-expanded="isMobileMenuOpen"
           @click="toggleMobileMenu"
         >
-          &#9776;
-        </button>
+          <Icon v-if="!isMobileMenuOpen" icon="radix-icons:hamburger-menu" class="h-5 w-5" />
+          <Icon v-else icon="radix-icons:cross-2" class="h-5 w-5" />
+          <span class="sr-only">Toggle menu</span>
+        </Button>
       </div>
+    </div>
 
-      <div class="hidden md:block">
-        <div class="flex items-center justify-between gap-4">
-          <router-link v-if="!isLogin" to="/login">
-            <RoundedButton>Login</RoundedButton>
-          </router-link>
-          <router-link v-if="!isSignup" to="/signup">
-            <RoundedButton variant="primary">Sign Up</RoundedButton>
-          </router-link>
-        </div>
-      </div>
-    </section>
-
-    <section
-      id="mobile-menu"
-      class="absolute inset-0 bg-brand-muted min-h-screen text-5xl w-full flex-col justify-start transition-all duration-300"
-      :class="isMobileMenuOpen ? 'flex' : 'hidden'"
-      aria-label="mobile"
-    >
-      <button
-        class="text-5xl self-end cursor-pointer pr-3 pt-5"
-        type="button"
-        @click="closeMobileMenu"
-      >
-        &times;
-      </button>
-
-      <nav class="flex flex-col items-center gap-12 py-12 justify-center">
-        <router-link
-          v-for="link in navLinks"
-          :key="link.hash"
-          :to="{ path: link.path ?? '/', hash: link.hash }"
-          class="hover:opacity-65"
-          @click="closeMobileMenu"
-        >
-          {{ link.label }}
-        </router-link>
-      </nav>
-
-      <div class="flex flex-col justify-around items-center gap-4 py-12">
-        <router-link v-if="!isLogin" to="/login" class="w-full px-4">
-          <RoundedButton class="w-full" @click="closeMobileMenu">Login</RoundedButton>
-        </router-link>
-        <router-link v-if="!isSignup" to="/signup" class="w-full px-4">
-          <RoundedButton variant="primary" class="w-full" @click="closeMobileMenu"
-            >Sign Up</RoundedButton
+    <section id="mobile-menu" class="md:hidden" v-if="isMobileMenuOpen" aria-label="mobile">
+      <div class="border-t bg-background/95 backdrop-blur">
+        <nav class="flex flex-col gap-2 px-4 py-3 text-base font-medium">
+          <router-link
+            v-for="link in navLinks"
+            :key="link.hash"
+            :to="{ path: link.path ?? '/', hash: link.hash }"
+            class="rounded-md px-3 py-2 text-foreground transition hover:bg-muted"
+            @click="closeMobileMenu"
           >
-        </router-link>
+            {{ link.label }}
+          </router-link>
+        </nav>
+        <div class="flex items-center gap-2 px-4 pb-4">
+          <Button
+            v-if="!isLogin"
+            variant="secondary"
+            class="flex-1"
+            as-child
+            @click="closeMobileMenu"
+          >
+            <router-link to="/login">Login</router-link>
+          </Button>
+          <Button v-if="!isSignup" class="flex-1" as-child @click="closeMobileMenu">
+            <router-link to="/signup">Sign Up</router-link>
+          </Button>
+        </div>
       </div>
     </section>
   </header>
@@ -86,9 +76,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { Icon } from '@iconify/vue';
 
 import ModeToggle from '@/components/ui/ModeToggle.vue';
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 
 type NavLink = {
   hash: string;

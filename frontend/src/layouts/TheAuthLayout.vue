@@ -9,9 +9,9 @@
           <h1 class="text-3xl font-medium">Week Eat Planner</h1>
         </router-link>
         <ModeToggle />
-        <RoundedButton :disabled="isLoggingOut" @click="handleLogout">
+        <Button :disabled="isLoggingOut" @click="handleLogout">
           {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
-        </RoundedButton>
+        </Button>
       </div>
     </header>
     <nav
@@ -73,7 +73,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
-import RoundedButton from '@/components/ui/RoundedButton.vue';
+import { Button } from '@/components/ui/button';
 import TheFooter from './TheFooter.vue';
 import ModeToggle from '@/components/ui/ModeToggle.vue';
 
