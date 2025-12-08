@@ -8,6 +8,7 @@
         <router-link to="/weeks" class="flex items-center gap-3">
           <h1 class="text-3xl font-medium">Week Eat Planner</h1>
         </router-link>
+        <ModeToggle />
         <RoundedButton :disabled="isLoggingOut" @click="handleLogout">
           {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
         </RoundedButton>
@@ -74,6 +75,7 @@ import { useAuthStore } from '@/stores/auth';
 
 import RoundedButton from '@/components/ui/RoundedButton.vue';
 import TheFooter from './TheFooter.vue';
+import ModeToggle from '@/components/ui/ModeToggle.vue';
 
 const navLinks = [
   { label: 'Weeks', to: '/weeks' },
