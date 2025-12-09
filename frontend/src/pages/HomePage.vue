@@ -1,16 +1,8 @@
-<script setup lang="ts">
-import { Button } from '@/components/ui/button';
-</script>
-
 <template>
   <main class="mx-auto flex max-w-6xl flex-col gap-20 px-4 pb-20 pt-10">
     <section id="hero" class="grid items-center gap-10 md:grid-cols-2 scroll-mt-24">
       <article class="space-y-4 text-center md:text-left">
-        <p
-          class="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-        >
-          Smarter meal planning
-        </p>
+        <Badge variant="secondary"> Smarter meal planning </Badge>
         <h1 class="text-4xl font-semibold leading-tight text-foreground md:text-5xl">
           Plan once. Eat better all week.
         </h1>
@@ -22,22 +14,18 @@ import { Button } from '@/components/ui/button';
           <Button size="lg" class="w-full md:w-auto" @click="$router.push('/signup')">
             Start planning
           </Button>
-          <Button variant="ghost" size="lg" class="w-full md:w-auto" as-child>
+          <Button variant="secondary" size="lg" class="w-full md:w-auto" as-child>
             <router-link to="#use-cases">See how it works</router-link>
           </Button>
         </div>
       </article>
-      <div class="relative">
-        <div
-          class="absolute inset-4 rounded-3xl bg-gradient-to-tr from-primary/20 via-primary/5 to-transparent blur-3xl"
-          aria-hidden="true"
-        />
+      <AspectRatio :ratio="1 / 1" class="bg-muted rounded-xl">
         <img
-          class="relative z-10 w-full overflow-hidden rounded-3xl border bg-card object-cover shadow-xl shadow-black/10"
           src="@/assets/photo2.jpg"
           alt="Weekly meal plan preview"
+          class="w-full h-full rounded-xl"
         />
-      </div>
+      </AspectRatio>
     </section>
 
     <section id="use-cases" class="space-y-6 scroll-mt-24">
@@ -65,6 +53,31 @@ import { Button } from '@/components/ui/button';
           </p>
         </div>
       </div>
+    </section>
+
+    <section id="carousel">
+      <Carousel
+        class="w-full max-w-sm md:max-w-lg lg:max-w-xl"
+        :opts="{ align: 'start', loop: true }"
+      >
+        <CarouselContent class="-ml-1">
+          <CarouselItem
+            v-for="{ id, src } in photos"
+            :key="id"
+            class="pl-1 md:basis-1/2 lg:basis-1/3"
+          >
+            <Card class="p-1">
+              <CardContent>
+                <AspectRatio :ratio="1 / 1" class="bg-muted rounded-lg">
+                  <img :src="src" alt="carousel item" class="w-full h-full rounded-lg" />
+                </AspectRatio>
+              </CardContent>
+            </Card>
+          </CarouselItem>
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
     </section>
 
     <section
@@ -121,7 +134,7 @@ import { Button } from '@/components/ui/button';
             <Button class="w-full sm:w-auto" @click="$router.push('/signup')"
               >Create account</Button
             >
-            <Button variant="ghost" class="w-full sm:w-auto" as-child>
+            <Button variant="secondary" class="w-full sm:w-auto" as-child>
               <router-link to="/login">Log in</router-link>
             </Button>
           </div>
@@ -131,4 +144,22 @@ import { Button } from '@/components/ui/button';
   </main>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '@/components/ui/carousel';
+
+const photos = [
+  { id: 1, src: new URL('@/assets/photo3.jpg', import.meta.url).href },
+  { id: 2, src: new URL('@/assets/photo4.jpg', import.meta.url).href },
+  { id: 3, src: new URL('@/assets/photo5.jpg', import.meta.url).href },
+];
+</script>

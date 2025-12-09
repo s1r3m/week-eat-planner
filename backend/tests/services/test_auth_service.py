@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-
 from tests.constants import CLIENT_ID, HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN, USERAGENT
+
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
 from week_eat_planner.config import settings
 from week_eat_planner.db.models import RefreshToken
@@ -42,7 +42,7 @@ def db_refresh_token(user_read) -> RefreshToken:
     token = RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
         user_id=user_read.id,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=settings.REFRESH_TOKEN_TTL),
+        expires_at=datetime.now(UTC) + timedelta(minutes=settings.REFRESH_TOKEN_TTL),
     )
     token.user = user_read
     return token
@@ -54,7 +54,7 @@ def new_db_refresh_token(user_read) -> RefreshToken:
         id=generate_uuid7(),
         token_hash='some_hash',
         user_id=user_read.id,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=settings.REFRESH_TOKEN_TTL),
+        expires_at=datetime.now(UTC) + timedelta(minutes=settings.REFRESH_TOKEN_TTL),
     )
 
 
@@ -63,7 +63,7 @@ def expired_db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
         user_id=user_read.id,
-        expires_at=datetime.now(timezone.utc) - timedelta(minutes=5),
+        expires_at=datetime.now(UTC) - timedelta(minutes=5),
     )
 
 
@@ -72,7 +72,7 @@ def revoked_db_refresh_token(user_read) -> RefreshToken:
     return RefreshToken(
         token_hash=HASHED_REFRESH_TOKEN,
         user_id=user_read.id,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
+        expires_at=datetime.now(UTC) + timedelta(minutes=10),
         revoked=True,
     )
 
@@ -138,9 +138,7 @@ async def test_refresh_tokens__valid_old_token__new_access_token_returned(
 async def test_refresh_tokens__old_about_to_expire__new_refresh_token_returned(
     mocked_refresh_token_dao, mocked_session, db_refresh_token, new_db_refresh_token
 ):
-    db_refresh_token.expires_at = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA - 10
-    )
+    db_refresh_token.expires_at = datetime.now(UTC) + timedelta(minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA - 10)
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
     mocked_refresh_token_dao.add.return_value = new_db_refresh_token
 

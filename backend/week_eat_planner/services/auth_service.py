@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from loguru import logger
 from pydantic import ValidationError
@@ -118,7 +118,7 @@ class AuthService:
             logger.error('Token is revoked.')
             raise RefreshTokenRevoked()
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if db_refresh_token.expires_at <= now:
             logger.error('Refresh token expired.')
             raise TokenExpired()
@@ -146,7 +146,7 @@ class AuthService:
         """
         access_token = TokenProvider.create_access_token(db_user.email)
         refresh_token = TokenProvider.create_refresh_token()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         db_refresh_token = RefreshToken(
             token_hash=TokenProvider.hash_refresh_token(refresh_token),
             user_id=db_user.id,
@@ -182,7 +182,7 @@ class AuthService:
             logger.warning(f'Attempted logout with a non-existent refresh token for {user}.')
             raise RefreshTokenNotFound(raw_token)
 
-        if db_refresh_token.expires_at <= datetime.now(timezone.utc):
+        if db_refresh_token.expires_at <= datetime.now(UTC):
             logger.warning(f'Attempted logout with expired refresh token for {user}.')
             raise TokenExpired()
 
@@ -196,4 +196,3 @@ class AuthService:
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
         logger.info(f'{user} logged out successfully.')
-        return

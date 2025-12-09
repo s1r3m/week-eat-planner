@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator, Callable, Generator
 from http import HTTPStatus
-from typing import AsyncGenerator, Callable, Generator, TypeVar
+from typing import TypeVar
 
 import pytest
 import pytest_asyncio

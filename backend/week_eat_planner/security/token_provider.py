@@ -1,6 +1,6 @@
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import ExpiredSignatureError, JWTError, jwt
 
@@ -19,7 +19,7 @@ class TokenProvider:
         Returns:
             The encoded JWT access token.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expire = now + timedelta(minutes=settings.ACCESS_TOKEN_TTL)
         to_encode = {
             'sub': email,

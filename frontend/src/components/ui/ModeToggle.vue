@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useColorMode } from '@vueuse/core';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -16,6 +18,13 @@ const mode = useColorMode({
   initialValue: 'auto',
   storageKey: 'week-eat-theme',
   disableTransition: false,
+});
+
+const menuValue = computed({
+  get: () => mode.store.value,
+  set: (v) => {
+    mode.store.value = v;
+  },
 });
 </script>
 
@@ -35,9 +44,11 @@ const mode = useColorMode({
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
-      <DropdownMenuItem @click="mode = 'light'"> Light </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'dark'"> Dark </DropdownMenuItem>
-      <DropdownMenuItem @click="mode = 'auto'"> System </DropdownMenuItem>
+      <DropdownMenuRadioGroup v-model="menuValue">
+        <DropdownMenuRadioItem value="light"> Light </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="dark"> Dark </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="auto"> System </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

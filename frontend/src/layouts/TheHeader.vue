@@ -3,7 +3,9 @@
     <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
       <router-link to="/" class="flex items-center gap-2 text-foreground hover:text-foreground/80">
         <img class="h-10 w-auto" src="@/assets//logo.png" alt="Week Eat Planner logo" />
-        <span class="text-lg font-semibold tracking-tight md:text-xl">Week Eat Planner</span>
+        <span class="text-lg font-semibold tracking-tight text-brand-primary md:text-xl"
+          >Week Eat Planner</span
+        >
       </router-link>
 
       <nav class="ml-6 hidden items-center gap-6 text-sm font-medium md:flex" aria-label="header">
@@ -41,7 +43,7 @@
       </div>
     </div>
 
-    <section id="mobile-menu" class="md:hidden" v-if="isMobileMenuOpen" aria-label="mobile">
+    <section v-if="isMobileMenuOpen" id="mobile-menu" class="md:hidden" aria-label="mobile">
       <div class="border-t bg-background/95 backdrop-blur">
         <nav class="flex flex-col gap-2 px-4 py-3 text-base font-medium">
           <router-link
