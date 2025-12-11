@@ -111,9 +111,7 @@ export default router;
 
 router.beforeEach((to, from) => {
   const authStore = useAuthStore();
-  console.log('User goes to ', to.fullPath);
   if (!authStore.isAuthenticated && to.meta.requiresAuth) {
-    console.log('access_token', authStore.accessToken);
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 });

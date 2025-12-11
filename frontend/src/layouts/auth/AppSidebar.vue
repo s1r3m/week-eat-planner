@@ -14,21 +14,7 @@
       </div>
     </SidebarHeader>
     <SidebarContent>
-      <nav class="flex flex-col gap-2 mt-3">
-        <router-link
-          v-for="link in navLinks"
-          :key="link.to"
-          :to="link.to"
-          class="px-3 py-2 rounded-md transition-colors font-medium"
-          :class="
-            isActiveLink(link.to)
-              ? 'bg-brand-primary/15 text-brand-primary'
-              : 'text-base-color/70 hover:text-base-color'
-          "
-        >
-          {{ link.label }}
-        </router-link>
-      </nav>
+      <NavMain />
     </SidebarContent>
     <SidebarFooter>
       <NavUser :user="user" />
@@ -38,25 +24,13 @@
 
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/ui/sidebar';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
 import NavUser from '@/layouts/auth/NavUser.vue';
-import { useWeekStore } from '@/stores/weeks';
-
-const route = useRoute();
-const activePath = computed(() => route.path);
-const isActiveLink = (path: string) => activePath.value.startsWith(path);
-const weekStore = useWeekStore();
+import NavMain from '@/layouts/auth/NavMain.vue';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 });
-
-const navLinks = [
-  { label: 'Weeks', to: '/weeks' },
-  { label: 'Recipes', to: '/recipes' },
-];
 
 const user = {
   name: 'user',
