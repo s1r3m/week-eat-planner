@@ -43,7 +43,12 @@
       </div>
     </div>
 
-    <section v-if="isMobileMenuOpen" id="mobile-menu" class="md:hidden" aria-label="mobile">
+    <section
+      v-if="isMobileMenuOpen"
+      id="mobile-menu"
+      class="absolute inset-x-0 top-full z-40 md:hidden"
+      aria-label="mobile"
+    >
       <div class="border-t bg-background/95 backdrop-blur">
         <nav class="flex flex-col gap-2 px-4 py-3 text-base font-medium">
           <router-link
@@ -57,13 +62,7 @@
           </router-link>
         </nav>
         <div class="flex items-center gap-2 px-4 pb-4">
-          <Button
-            v-if="!isLogin"
-            variant="secondary"
-            class="flex-1"
-            as-child
-            @click="closeMobileMenu"
-          >
+          <Button v-if="!isLogin" variant="ghost" class="flex-1" as-child @click="closeMobileMenu">
             <router-link to="/login">Login</router-link>
           </Button>
           <Button v-if="!isSignup" class="flex-1" as-child @click="closeMobileMenu">

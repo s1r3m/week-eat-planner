@@ -2,7 +2,7 @@
   <main class="mx-auto flex max-w-6xl flex-col gap-20 px-4 pb-20 pt-10">
     <section id="hero" class="grid items-center gap-10 md:grid-cols-2 scroll-mt-24">
       <article class="space-y-4 text-center md:text-left">
-        <Badge variant="secondary"> Smarter meal planning </Badge>
+        <Badge variant="default"> Smarter meal planning </Badge>
         <h1 class="text-4xl font-semibold leading-tight text-foreground md:text-5xl">
           Plan once. Eat better all week.
         </h1>
@@ -55,28 +55,23 @@
       </div>
     </section>
 
-    <section id="carousel">
-      <Carousel
-        class="w-full max-w-sm md:max-w-lg lg:max-w-xl"
-        :opts="{ align: 'start', loop: true }"
-      >
-        <CarouselContent class="-ml-1">
+    <section id="carousel" class="flex justify-center py-16 md:py-20">
+      <Carousel class="w-full max-w-5xl" :opts="{ align: 'center', loop: true }">
+        <CarouselContent class="-ml-2 md:-ml-4">
           <CarouselItem
             v-for="{ id, src } in photos"
             :key="id"
-            class="pl-1 md:basis-1/2 lg:basis-1/3"
+            class="pl-2 md:pl-4 basis-11/12 sm:basis-3/4 md:basis-2/3 lg:basis-1/2"
           >
-            <Card class="p-1">
+            <Card class="p-2 md:p-3">
               <CardContent>
-                <AspectRatio :ratio="1 / 1" class="bg-muted rounded-lg">
-                  <img :src="src" alt="carousel item" class="w-full h-full rounded-lg" />
+                <AspectRatio :ratio="1 / 1" class="bg-muted rounded-xl">
+                  <img :src="src" alt="carousel item" class="w-full h-full rounded-xl" />
                 </AspectRatio>
               </CardContent>
             </Card>
           </CarouselItem>
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
       </Carousel>
     </section>
 
@@ -149,13 +144,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const photos = [
   { id: 1, src: new URL('@/assets/photo3.jpg', import.meta.url).href },

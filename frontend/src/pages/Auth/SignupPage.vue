@@ -30,11 +30,7 @@
               />
             </Field>
           </FieldGroup>
-          <Button
-            type="submit"
-            class="w-full"
-            :disabled="isSubmitting || !email || password.length < 6"
-          >
+          <Button type="submit" class="w-full">
             <template v-if="isSubmitting">
               <Spinner />
               Creating the account

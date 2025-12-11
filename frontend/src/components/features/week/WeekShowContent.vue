@@ -42,7 +42,7 @@ import { useWeekStore } from '@/stores/weeks';
 
 const props = defineProps<{ week: UserWeek }>();
 
-const default_img = new URL('@/assets/week_bg.svg', import.meta.url).href;
+const default_img = new URL('@/assets/week_tpl.png', import.meta.url).href;
 
 const isEditModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
@@ -80,9 +80,9 @@ const handleDelete = async () => {
     @apply w-full h-full object-cover object-center z-0;
   }
 
-  .gradient-layout {
+  /* .gradient-layout {
     @apply absolute inset-0 z-10 bg-linear-to-t from-brand-primary/50 via-brand-primary/10 to-transparent;
-  }
+  } */
 
   .controls {
     @apply absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto;

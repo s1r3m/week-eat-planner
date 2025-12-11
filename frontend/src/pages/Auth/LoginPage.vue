@@ -30,11 +30,7 @@
               />
             </Field>
           </FieldGroup>
-          <Button
-            type="submit"
-            class="w-full"
-            :disabled="isSubmitting || !email || password.length < 6"
-          >
+          <Button type="submit" class="w-full">
             <template v-if="isSubmitting">
               <Spinner />
               Logging in
@@ -44,7 +40,7 @@
         </FieldSet>
       </form>
     </CardContent>
-    <FieldSeparator> or </FieldSeparator>
+    <FieldSeparator>or</FieldSeparator>
     <CardFooter class="flex flex-col gap-2">
       <Button variant="outline" class="w-full">Login with Google</Button>
       <CardDescription class="mt-2">
