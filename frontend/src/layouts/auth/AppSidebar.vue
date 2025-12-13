@@ -1,17 +1,32 @@
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <div class="flex items-center h-8">
-        <router-link
-          to="/"
-          class="flex items-center gap-2 text-foreground hover:text-foreground/80"
-        >
-          <img class="h-10 w-auto" src="@/assets//logo.png" alt="Week Eat Planner logo" />
-          <span class="text-lg font-semibold tracking-tight text-brand-primary md:text-xl"
-            >Week Eat Planner</span
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            as-child
+            class="pl-0 group-data-[collapsible=icon]:pl-0! active:text-brand-primary hover:bg-transparent hover:text-brand-primary"
           >
-        </router-link>
-      </div>
+            <router-link to="/" class="flex items-center justify-start text-brand-primary">
+              <div
+                class="flex size-10 shrink-0 bg-transparent group-data-[collapsible=icon]:size-10"
+              >
+                <img
+                  class="h-full w-full object-contain"
+                  src="@/assets/logo.png"
+                  alt="Week Eat Planner logo"
+                />
+              </div>
+
+              <span
+                class="text-lg font-semibold tracking-tight md:text-xl group-data-[collapsible=icon]:hidden"
+              >
+                Week Eat Planner
+              </span>
+            </router-link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
       <NavMain />
@@ -24,7 +39,15 @@
 
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/ui/sidebar';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 import NavUser from '@/layouts/auth/NavUser.vue';
 import NavMain from '@/layouts/auth/NavMain.vue';
 

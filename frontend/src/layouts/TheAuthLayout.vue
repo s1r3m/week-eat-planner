@@ -5,7 +5,7 @@
       <header class="flex h-13 shrink-0 items-center transition-[width,height] ease-linear">
         <div class="flex items-center">
           <div class="flex flex-1 items-center gap-2 px-4">
-            <SidebarTrigger class="-ml-1" />
+            <SidebarTrigger class="-ml-1 size-10" />
             <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
             <Breadcrumb>
               <BreadcrumbList>

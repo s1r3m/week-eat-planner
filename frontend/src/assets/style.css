@@ -128,8 +128,8 @@
     default ghost: bg transparent, text foreground
     hover ghost/outline: bg-accent (#EAF5F3), text-accent-foreground (#0F3E38)
   */
-  --accent: #e88c3d;
-  --accent-foreground: #f7e6d6;
+  --accent: #d9f5f2;
+  --accent-foreground: #0c3d3a;
 
   /* destructive — удаление недели/слота и т.п. */
   --destructive: #e5484d;
@@ -153,8 +153,8 @@
   --sidebar-primary: #3bb8a9;
   --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: #d9f5f2;
-  --sidebar-accent-foreground: #0c3d3a;
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
 
   --sidebar-border: #d4dedd;
   --sidebar-ring: #3bb8a9;
@@ -164,21 +164,22 @@
 .dark {
   color-scheme: dark;
 
-  --background: #0f1111; /* общий тёмный фон */
-  --foreground: #e6eded; /* основной текст */
+  /* тёплый тёмно-хвойный фон, чтобы тёмная тема не была «чисто чёрной» */
+  --background: #111b19;
+  --foreground: #e7f2f1;
 
-  --card: #161a1a;
-  --card-foreground: #e6eded;
+  --card: #182421;
+  --card-foreground: #e7f2f1;
 
-  --popover: #161a1a;
-  --popover-foreground: #e6eded;
+  --popover: #182421;
+  --popover-foreground: #e7f2f1;
 
   /*
     PRIMARY CTA в тёмной теме:
     default: bg #4ED3C5, text #041514
     hover:   bg-primary/90 → примерно #3ABDAF
   */
-  --primary: #4ed3c5;
+  --primary: #48cfc0;
   --primary-foreground: #041514;
 
   /*
@@ -186,51 +187,51 @@
     default: bg #1A1F1F, text #E6EDED
     hover:   bg-secondary/80 → около #232A2A
   */
-  --secondary: #1a1f1f;
-  --secondary-foreground: #e6eded;
+  --secondary: #1c2725;
+  --secondary-foreground: #e7f2f1;
 
   /*
     muted — тёмные нейтральные области (tablе backgrounds и т.п.)
   */
-  --muted: #1a1f1f;
-  --muted-foreground: #a4b3b2;
+  --muted: #1a2523;
+  --muted-foreground: #a9beba;
 
   /*
     GHOST / OUTLINE в тёмной теме:
     default: bg transparent, text foreground (#E6EDED)
-    hover:   bg-accent (#16312E), text-accent-foreground (#EAFBF8)
+    hover:   bg-accent (#1F342F), text-accent-foreground (#DFF7F2)
     чтобы иконки и текст не терялись.
   */
-  --accent: #ffb26b;
-  --accent-foreground: #3a2918;
+  --accent: #1f342f;
+  --accent-foreground: #dff7f2;
 
   /* destructive — красные элементы в dark */
   --destructive: #ff6f73;
 
   /* бордеры / инпуты / ring */
-  --border: rgba(230, 237, 237, 0.14);
-  --input: rgba(230, 237, 237, 0.18);
-  --ring: #4ed3c5;
+  --border: rgba(231, 242, 241, 0.16);
+  --input: rgba(231, 242, 241, 0.2);
+  --ring: #48cfc0;
 
   /* графики / статусы */
   --chart-1: #4c8dff;
-  --chart-2: #31c58c;
+  --chart-2: #37c598;
   --chart-3: #edc94f;
   --chart-4: #ff6f73;
-  --chart-5: #3abdaf;
+  --chart-5: #3fc2b2;
 
   /* sidebar: навигация в тёмной теме */
-  --sidebar: #111515;
-  --sidebar-foreground: #e6eded;
+  --sidebar: #121d1b;
+  --sidebar-foreground: #e7f2f1;
 
-  --sidebar-primary: #4ed3c5;
+  --sidebar-primary: #48cfc0;
   --sidebar-primary-foreground: #041514;
 
-  --sidebar-accent: #1a1f1f;
-  --sidebar-accent-foreground: #e6eded;
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
 
-  --sidebar-border: rgba(230, 237, 237, 0.12);
-  --sidebar-ring: #4ed3c5;
+  --sidebar-border: rgba(231, 242, 241, 0.14);
+  --sidebar-ring: #48cfc0;
 }
 
 /* базовые tailwind-привязки */
