@@ -92,12 +92,18 @@ export const useWeekStore = defineStore('weeks-store', () => {
     }
   };
 
+  const getWeekNameById = (weekId: string) => {
+    const week = weeks.value.find((w) => w.id === weekId);
+    return week?.name ?? 'undefined';
+  };
+
   return {
     weeks,
     error,
     isLoading,
     addWeek,
     getWeek,
+    getWeekNameById,
     fetchWeeks,
     removeWeek,
     updateWeek,
