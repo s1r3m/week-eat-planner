@@ -17,7 +17,6 @@
                   alt="Week Eat Planner logo"
                 />
               </div>
-
               <span
                 class="text-lg font-semibold tracking-tight md:text-xl group-data-[collapsible=icon]:hidden"
               >

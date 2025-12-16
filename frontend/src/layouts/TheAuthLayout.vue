@@ -2,7 +2,7 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
-      <header class="h-13 flex transition-[width,height] ease-linear border-b mb-4">
+      <header class="h-13 flex transition-[width,height] ease-linear border-b">
         <div class="flex flex-1 items-center">
           <div class="flex flex-1 items-center gap-2 px-4">
             <SidebarTrigger class="-ml-1 size-10" />

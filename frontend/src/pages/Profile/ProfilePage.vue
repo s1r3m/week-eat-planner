@@ -4,9 +4,36 @@
   </template>
 
   <template v-else>
-    <main>
-      <p>{{ JSON.stringify(user_info) }}</p>
-    </main>
+    <Card v-if="userInfo" class="mt-4 mx-4">
+      <CardHeader class="text-lg font-semibold">
+        <span>User info:</span>
+      </CardHeader>
+      <CardContent>
+        <FieldSet>
+          <FieldGroup>
+            <Field orientation="vertical">
+              <FieldLabel for="email">Email</FieldLabel>
+              <Input id="email" v-model="userInfo.email" />
+            </Field>
+            <Field orientation="vertical">
+              <FieldLabel for="old_pwd">Old password</FieldLabel>
+              <Input id="old_pwd" type="password" />
+            </Field>
+            <Field orientation="vertical">
+              <FieldLabel for="new_pwd">New password</FieldLabel>
+              <Input id="new_pwd" type="password" />
+            </Field>
+          </FieldGroup>
+          <FieldSeparator />
+          <FieldGroup>
+            <Field orientation="horizontal">
+              <Checkbox id="active" v-model="userInfo.is_active" disabled />
+              <Label for="active">Active user</Label>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+      </CardContent>
+    </Card>
   </template>
 </template>
 
@@ -15,8 +42,15 @@ import { ref } from 'vue';
 import apiClient from '@/api/client';
 
 import TheLoadingSpinner from '@/layouts/TheLoadingSpinner.vue';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
-const user_info = ref({});
+import type { UserInfo } from '@/types/api';
+import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
+
+const userInfo = ref<UserInfo>();
 const loading = ref(false);
 
 const fetchUser = async () => {
@@ -24,7 +58,7 @@ const fetchUser = async () => {
   try {
     const res = await apiClient.get('/user');
     if (res.status === 200) {
-      user_info.value = await res.data;
+      userInfo.value = res.data as UserInfo;
     }
   } finally {
     loading.value = false;

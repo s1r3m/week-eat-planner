@@ -6,7 +6,7 @@
           <SidebarMenuButton size="lg">
             <Avatar class="h-8 w-8 rounded-lg">
               <AvatarImage :src="user.avatar" :alt="user.name" />
-              <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
+              <AvatarFallback class="rounded-lg"> FA </AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">{{ user.name }}</span>
@@ -37,7 +37,11 @@
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem as-child>
-              <router-link to="/profile" class="flex w-full items-center gap-2">
+              <router-link
+                to="/profile"
+                class="flex w-full items-center gap-2"
+                @click="handleNavigation"
+              >
                 <BadgeCheck />
                 Profile
               </router-link>
@@ -85,7 +89,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
-const { isMobile } = useSidebar();
+const { isMobile, setOpenMobile } = useSidebar();
 const isLoggingOut = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
@@ -106,6 +110,12 @@ const handleLogout = async () => {
   } finally {
     isLoggingOut.value = false;
     router.push('/');
+  }
+};
+
+const handleNavigation = () => {
+  if (isMobile.value) {
+    setOpenMobile(false);
   }
 };
 </script>

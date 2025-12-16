@@ -2,10 +2,10 @@
   <SidebarGroup>
     <SidebarGroupLabel>Navigation</SidebarGroupLabel>
     <SidebarMenu>
-      <Collapsible v-for="item in navLinks" :key="item.label">
+      <Collapsible v-for="item in navLinks" :key="item.label" :default-open="true">
         <SidebarMenuItem>
           <SidebarMenuButton as-child :is-active="isActiveLink(item.to)">
-            <router-link :to="item.to">
+            <router-link :to="item.to" @click="handleNavigation">
               <component :is="item.icon" />
               <span> {{ item.label }} </span>
             </router-link>
@@ -21,7 +21,7 @@
               <SidebarMenuSub>
                 <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.id">
                   <SidebarMenuSubButton as-child :is-active="isActiveLink(`/weeks/${subItem.id}`)">
-                    <router-link :to="`/weeks/${subItem.id}`">
+                    <router-link :to="`/weeks/${subItem.id}`" @click="handleNavigation">
                       <span> {{ subItem.name }} </span>
                     </router-link>
                   </SidebarMenuSubButton>
@@ -50,6 +50,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Calendar, ChevronRight, ForkKnife } from 'lucide-vue-next';
 import { useWeekStore } from '@/stores/weeks';
@@ -69,4 +70,11 @@ const navLinks = computed(() => [
   },
   { label: 'Recipes', to: '/recipes', icon: ForkKnife },
 ]);
+
+const { isMobile, setOpenMobile } = useSidebar();
+const handleNavigation = () => {
+  if (isMobile.value) {
+    setOpenMobile(false);
+  }
+};
 </script>

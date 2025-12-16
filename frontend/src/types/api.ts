@@ -36,3 +36,9 @@ export interface UserWeek {
   user_id: string;
   meal_slots: Array<MealSlot>;
 }
+
+export interface UserInfo {
+  user_id: string;
+  email: string;
+  is_active: boolean;
+}
