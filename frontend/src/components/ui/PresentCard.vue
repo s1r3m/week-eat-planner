@@ -1,14 +1,7 @@
 <template>
-  <div class="card">
+  <div
+    class="group relative h-64 overflow-hidden border-0 rounded-2xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+  >
     <slot />
   </div>
 </template>
-
-<style scoped>
-@import 'tailwindcss';
-
-.card {
-  @apply flex overflow-hidden rounded-2xl shadow-xl aspect-4/3
-  transition-shadow duration-300;
-}
-</style>

@@ -11,13 +11,19 @@
   </template>
 
   <template v-else>
-    <div class="grid-container">
-      <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="grid-item">
-        <WeekShowContent :week="week" />
-      </PresentCard>
-      <PresentCard v-if="weekStore.weeks.length < 6" class="grid-item">
-        <WeekAddContent />
-      </PresentCard>
+    <div class="space-y-8">
+      <div class="px-8 pt-8">
+        <h1 class="text-2xl font-bold tracking-tight">My Weeks</h1>
+        <p class="text-muted-foreground">Plan your meals for an entire week</p>
+      </div>
+      <div class="grid gap-8 lg:grid-cols-2 2xl:grid-cols-3 px-8">
+        <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="max-h-80">
+          <WeekShowContent :week="week" />
+        </PresentCard>
+        <PresentCard v-if="weekStore.weeks.length < 6" class="max-h-80">
+          <WeekAddContent />
+        </PresentCard>
+      </div>
     </div>
   </template>
 </template>
@@ -39,7 +45,7 @@ weekStore.fetchWeeks();
 @import 'tailwindcss';
 
 .grid-container {
-  @apply grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 justify-items-center gap-8;
+  @apply grid gap-4 lg:grid-cols-2 2xl:grid-cols-3;
 }
 
 .grid-item {

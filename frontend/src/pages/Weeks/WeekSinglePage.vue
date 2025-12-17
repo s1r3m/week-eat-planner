@@ -1,4 +1,8 @@
 <template>
+  <!-- <div class="px-8 pt-8">
+    <h1 class="text-2xl font-bold tracking-tight">{{ week?.name }}</h1>
+    <p class="text-muted-foreground">Plan your meals for each day</p>
+  </div> -->
   <div class="flex w-full flex-col gap-6">
     <Tabs class="w-full" default-value="Monday">
       <TabsList>

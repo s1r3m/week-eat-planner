@@ -1,19 +1,34 @@
 <template>
-  <div class="content">
-    <img :src="default_img" alt="Week Image" class="background" />
-    <div class="gradient-layout"></div>
-    <router-link :to="`/weeks/${props.week.id}`" class="absolute inset-0 z-20"></router-link>
-    <h3>
+  <img
+    :src="default_img"
+    alt="Week Image"
+    loading="lazy"
+    class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+  />
+
+  <div class="flex absolute bottom-0 z-10 bg-primary/50 h-16 w-full items-center">
+    <h3 class="pl-8 text-xl font-semibold text-white drop-shadow-md">
       {{ week.name }}
     </h3>
-    <div class="controls">
-      <Button class="btn-circle" @click.stop="isEditModalOpen = true">
-        <Icon icon="mdi:pencil" class="icon" />
-      </Button>
-      <Button class="btn-circle" @click.stop="isDeleteModalOpen = true">
-        <Icon icon="mdi:trash-can-outline" class="icon" />
-      </Button>
-    </div>
+  </div>
+  <router-link
+    :to="{ name: 'week', params: { id: week.id } }"
+    class="absolute inset-0 z-20"
+  ></router-link>
+  <div class="absolute bottom-0 left-0 p-4"></div>
+  <div class="absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto">
+    <Button
+      class="p-4 rounded-full cursor-pointer bg-primary/60 backdrop-blur-lg"
+      @click.stop="isEditModalOpen = true"
+    >
+      <Pencil />
+    </Button>
+    <Button
+      class="p-4 rounded-full cursor-pointer bg-primary/60 backdrop-blur-lg"
+      @click.stop="isDeleteModalOpen = true"
+    >
+      <Trash2 />
+    </Button>
   </div>
   <WeekEditModal
     v-model="isEditModalOpen"
@@ -36,13 +51,14 @@ import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import WeekEditModal from '@/components/features/week/WeekEditModal.vue';
 import WeekDeleteModal from '@/components/features/week/WeekDeleteModal.vue';
-import { Icon } from '@iconify/vue';
+import { Pencil, Trash2 } from 'lucide-vue-next';
+
 import type { UserWeek } from '@/types/api';
 import { useWeekStore } from '@/stores/weeks';
 
 const props = defineProps<{ week: UserWeek }>();
 
-const default_img = new URL('@/assets/week_tpl.png', import.meta.url).href;
+const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 
 const isEditModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
@@ -69,35 +85,3 @@ const handleDelete = async () => {
   }
 };
 </script>
-
-<style scoped>
-@import 'tailwindcss';
-
-.content {
-  @apply relative rounded-2xl overflow-hidden;
-
-  .background {
-    @apply w-full h-full object-cover object-center z-0;
-  }
-
-  /* .gradient-layout {
-    @apply absolute inset-0 z-10 bg-linear-to-t from-brand-primary/50 via-brand-primary/10 to-transparent;
-  } */
-
-  .controls {
-    @apply absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto;
-  }
-
-  h3 {
-    @apply absolute bottom-2 w-full text-center text-2xl font-semibold z-30 pointer-events-none;
-  }
-}
-
-.btn-circle {
-  @apply p-2 rounded-full active:ring-1 bg-white/80 backdrop-blur;
-}
-
-.icon {
-  @apply size-6 cursor-pointer;
-}
-</style>
