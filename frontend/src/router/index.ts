@@ -5,8 +5,8 @@ import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
 import HomePage from '@/pages/HomePage.vue';
-import { useAuthStore } from '@/stores/auth';
-import { useWeekStore } from '@/stores/weeks';
+import { useAuthStore } from '@/features/auth/store/auth';
+import { useWeekStore } from '@/features/week/store/weeks';
 
 interface Breadcrumbs {
   to?: string;

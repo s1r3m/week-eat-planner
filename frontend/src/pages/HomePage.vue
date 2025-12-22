@@ -4,7 +4,7 @@
       <article class="space-y-4 text-center md:text-left">
         <Badge variant="default"> Smarter meal planning </Badge>
         <h1 class="text-4xl font-semibold leading-tight text-foreground md:text-5xl">
-          Plan once. Eat better all week.
+          Plan once. <span class="text-primary">Eat better all week</span>
         </h1>
         <p class="text-lg text-muted-foreground">
           Build a week of meals, keep your budget on track, and reduce waste with auto-generated

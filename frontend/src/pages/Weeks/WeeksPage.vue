@@ -13,15 +13,14 @@
   <template v-else>
     <div class="space-y-8">
       <div class="px-8 pt-8">
-        <h1 class="text-2xl font-bold tracking-tight">My Weeks</h1>
-        <p class="text-muted-foreground">Plan your meals for an entire week</p>
+        <h1 class="text-2xl font-semibold tracking-tight">My Weeks</h1>
       </div>
       <div class="grid gap-8 lg:grid-cols-2 2xl:grid-cols-3 px-8">
         <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="max-h-80">
-          <WeekShowContent :week="week" />
+          <WeekDetails :week="week" />
         </PresentCard>
         <PresentCard v-if="weekStore.weeks.length < 6" class="max-h-80">
-          <WeekAddContent />
+          <WeekCreateForm />
         </PresentCard>
       </div>
     </div>
@@ -29,13 +28,13 @@
 </template>
 
 <script setup lang="ts">
-import { useWeekStore } from '@/stores/weeks';
+import { useWeekStore } from '@/features/week/store/weeks';
 
-import PresentCard from '@/components/ui/PresentCard.vue';
-import WeekShowContent from '@/components/features/week/WeekShowContent.vue';
-import WeekAddContent from '@/components/features/week/WeekAddContent.vue';
+import PresentCard from '@/components/shared/PresentCard.vue';
+import WeekDetails from '@/features/week/components/WeekDetails.vue';
+import WeekCreateForm from '@/features/week/components/WeekCreateForm.vue';
 import { Button } from '@/components/ui/button';
-import TheLoadingSpinner from '@/layouts/TheLoadingSpinner.vue';
+import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
 
 const weekStore = useWeekStore();
 weekStore.fetchWeeks();

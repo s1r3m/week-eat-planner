@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/features/auth/store/auth';
 import { useClientIdStore } from '@/stores/clientId';
 import type { UserLoginResponse } from '@/types/api';
 

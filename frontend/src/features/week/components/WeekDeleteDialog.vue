@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import ModalBase from '@/components/ui/ModalBase.vue';
+import ModalBase from '@/components/shared/ModalBase.vue';
 
 import { Button } from '@/components/ui/button';
 

@@ -7,7 +7,7 @@
   />
 
   <div class="flex absolute bottom-0 z-10 bg-primary/50 h-16 w-full items-center">
-    <h3 class="pl-8 text-xl font-semibold text-white drop-shadow-md">
+    <h3 class="pl-8 text-lg font-semibold text-white drop-shadow-md">
       {{ week.name }}
     </h3>
   </div>
@@ -30,14 +30,14 @@
       <Trash2 />
     </Button>
   </div>
-  <WeekEditModal
+  <WeekEditDialog
     v-model="isEditModalOpen"
     :week-name="week.name"
     :saving="isProcessing"
     @save="handleEdit"
     @close="isEditModalOpen = false"
   />
-  <WeekDeleteModal
+  <WeekDeleteDialog
     v-model="isDeleteModalOpen"
     :week-name="week.name"
     :processing="isProcessing"
@@ -49,12 +49,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Button } from '@/components/ui/button';
-import WeekEditModal from '@/components/features/week/WeekEditModal.vue';
-import WeekDeleteModal from '@/components/features/week/WeekDeleteModal.vue';
+import WeekEditDialog from '@/features/week/components/WeekEditDialog.vue';
+import WeekDeleteDialog from '@/features/week/components/WeekDeleteDialog.vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
 import type { UserWeek } from '@/types/api';
-import { useWeekStore } from '@/stores/weeks';
+import { useWeekStore } from '@/features/week/store/weeks';
 
 const props = defineProps<{ week: UserWeek }>();
 

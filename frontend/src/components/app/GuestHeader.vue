@@ -79,7 +79,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Icon } from '@iconify/vue';
 
-import ModeToggle from '@/components/ui/ModeToggle.vue';
+import ModeToggle from '@/components/shared/ModeToggle.vue';
 import { Button } from '@/components/ui/button';
 
 type NavLink = {

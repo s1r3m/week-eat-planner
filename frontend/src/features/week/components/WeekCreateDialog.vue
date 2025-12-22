@@ -27,9 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import type { WeekPayload } from '@/types/week';
+import type { WeekPayload } from '@/features/week/types/week';
 import { ref, computed } from 'vue';
-import ModalBase from '@/components/ui/ModalBase.vue';
+import ModalBase from '@/components/shared/ModalBase.vue';
 import { Button } from '@/components/ui/button';
 
 interface Props {

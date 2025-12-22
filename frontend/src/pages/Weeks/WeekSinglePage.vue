@@ -1,8 +1,4 @@
 <template>
-  <!-- <div class="px-8 pt-8">
-    <h1 class="text-2xl font-bold tracking-tight">{{ week?.name }}</h1>
-    <p class="text-muted-foreground">Plan your meals for each day</p>
-  </div> -->
   <div class="flex w-full flex-col gap-6">
     <Tabs class="w-full" default-value="Monday">
       <TabsList>
@@ -26,9 +22,9 @@ import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { UserWeek } from '@/types/api';
 import { useRoute } from 'vue-router';
-import { useWeekStore } from '@/stores/weeks';
-import PresentCard from '@/components/ui/PresentCard.vue';
-import MealSlotContent from '@/components/features/mealSlot/MealSlotContent.vue';
+import { useWeekStore } from '@/features/week/store/weeks';
+import PresentCard from '@/components/shared/PresentCard.vue';
+import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const week: Ref<UserWeek | null> = ref(null);

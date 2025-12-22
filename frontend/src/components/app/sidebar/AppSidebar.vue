@@ -47,8 +47,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import NavUser from '@/layouts/auth/NavUser.vue';
-import NavMain from '@/layouts/auth/NavMain.vue';
+import NavUser from '@/components/app/sidebar/NavUser.vue';
+import NavMain from '@/components/app/sidebar/NavMain.vue';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',

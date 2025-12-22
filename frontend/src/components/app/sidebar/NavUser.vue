@@ -86,7 +86,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/features/auth/store/auth';
 import { useRouter } from 'vue-router';
 
 const { isMobile, setOpenMobile } = useSidebar();

@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import ModalBase from '@/components/ui/ModalBase.vue';
+import ModalBase from '@/components/shared/ModalBase.vue';
 
 import { Button } from '@/components/ui/button';
 
