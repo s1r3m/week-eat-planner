@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full flex-col gap-6">
+  <div class="flex w-full flex-col gap-6 mb-8">
     <Tabs class="w-full" default-value="Monday">
       <TabsList>
         <TabsTrigger v-for="day in days" :key="day" :value="day">
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
-import type { UserWeek } from '@/types/api';
+import type { UserWeek } from '@/api/types/api';
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week/store/weeks';
 import PresentCard from '@/components/shared/PresentCard.vue';

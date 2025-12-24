@@ -25,7 +25,7 @@
                 id="password"
                 v-model="password"
                 type="password"
-                placeholder="********"
+                placeholder="Type your password"
                 autocomplete="current-password"
               />
             </Field>

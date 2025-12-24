@@ -47,7 +47,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 
-import type { UserInfo } from '@/types/api';
+import type { UserInfo } from '@/api/types/api';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 
 const userInfo = ref<UserInfo>();

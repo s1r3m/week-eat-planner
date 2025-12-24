@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { ErrorResponse, UserWeek } from '@/types/api';
+import type { ErrorResponse, UserWeek } from '@/api/types/api';
 import { defineStore } from 'pinia';
 import apiClient from '@/api/client';
 import { useAlertStore } from '@/stores/error';

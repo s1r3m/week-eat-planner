@@ -11,7 +11,7 @@
   </template>
 
   <template v-else>
-    <div class="space-y-8">
+    <div class="space-y-8 mb-8">
       <div class="px-8 pt-8">
         <h1 class="text-2xl font-semibold tracking-tight">My Weeks</h1>
       </div>

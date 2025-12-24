@@ -25,7 +25,7 @@
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/vue';
 
-import type { MealSlot } from '@/types/api';
+import type { MealSlot } from '@/api/types/api';
 
 const props = defineProps<{
   mealSlot: MealSlot;

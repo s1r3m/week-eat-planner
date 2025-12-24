@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { useClientIdStore } from '@/stores/clientId';
-import type { UserLoginResponse } from '@/types/api';
+import type { UserLoginResponse } from '@/api/types/api';
 
 const createApiClient = (baseUrl: string, withCredentials: boolean = false) =>
   axios.create({
