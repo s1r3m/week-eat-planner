@@ -38,6 +38,9 @@ interface Breadcrumbs {
 }
 const route = useRoute();
 const buildItems = (route: RouteLocationNormalizedLoadedGeneric) => {
+  if (route.matched.length < 2) {
+    return [{ label: 'Home' }] as Breadcrumbs[];
+  }
   const pageMeta = route.matched[1].meta.breadcrumbs;
   const crumbs = typeof pageMeta === 'function' ? pageMeta(route) : pageMeta;
   return crumbs as Breadcrumbs[];

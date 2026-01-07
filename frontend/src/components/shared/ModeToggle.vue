@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useColorMode } from '@vueuse/core';
-import { MoonIcon, Sun, SunIcon } from 'lucide-vue-next';
+import { MoonIcon, SunIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

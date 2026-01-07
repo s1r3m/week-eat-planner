@@ -35,7 +35,7 @@ export const useWeekStore = defineStore(
       try {
         const response = await apiClient.delete(`/weeks/${weekId}`);
         if (response.status !== 204) {
-          useAlertStore().addError(response.data || 'An unknown error occurred.');
+          throw new Error(response.data || 'An unknown error occurred.');
         }
         weeks.value = weeks.value.filter((week) => week.id !== weekId);
       } catch (err: any) {
@@ -80,6 +80,7 @@ export const useWeekStore = defineStore(
     };
 
     const getWeek = async (weekId: string) => {
+      isLoading.value = true;
       try {
         const response = await apiClient.get(`/weeks/${weekId}`);
         if (response.status !== 200) {

@@ -12,7 +12,6 @@ interface Breadcrumbs {
   to?: string;
   label: string;
 }
-[];
 
 const routes = [
   {

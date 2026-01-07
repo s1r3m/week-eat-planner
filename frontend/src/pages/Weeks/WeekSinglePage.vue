@@ -2,7 +2,7 @@
   <template v-if="weekStore.error">
     <div>
       <h3>Could not load your weeks at the moment. Please try again.</h3>
-      <Button>Retry now</Button>
+      <Button @click="weekStore.getWeek(route.params.id as string)">Retry now</Button>
     </div>
   </template>
 
