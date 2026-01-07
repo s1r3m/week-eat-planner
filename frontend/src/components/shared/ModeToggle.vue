@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Icon } from '@iconify/vue';
 import { useColorMode } from '@vueuse/core';
+import { MoonIcon, Sun, SunIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -32,13 +32,9 @@ const menuValue = computed({
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
       <Button variant="ghost">
-        <Icon
-          icon="radix-icons:moon"
-          class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-        />
-        <Icon
-          icon="radix-icons:sun"
-          class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+        <MoonIcon class="size-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <SunIcon
+          class="absolute size-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
         />
         <span class="sr-only">Toggle theme</span>
       </Button>

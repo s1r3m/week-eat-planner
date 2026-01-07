@@ -35,7 +35,7 @@
               aria-label="Close dialog"
               @click="$emit('close')"
             >
-              <Icon icon="mdi:close" class="h-5 w-5" />
+              <X class="h-5 w-5" />
             </button>
           </header>
           <section class="mt-4 text-base text-base-color">
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
-import { Icon } from '@iconify/vue';
+import { X } from 'lucide-vue-next';
 
 interface Props {
   modelValue: boolean;
