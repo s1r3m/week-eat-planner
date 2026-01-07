@@ -12,16 +12,14 @@
 
   <template v-else>
     <div class="space-y-8 mb-8">
-      <div class="px-8 pt-8">
-        <h1 class="text-2xl font-semibold tracking-tight">My Weeks</h1>
-      </div>
-      <div class="grid gap-8 lg:grid-cols-2 2xl:grid-cols-3 px-8">
-        <PresentCard v-for="week in weekStore.weeks" :key="week.id" class="max-h-80">
+      <PageTitle header="My Weeks" description="Manage your weekly meal plans here" />
+      <div class="grid gap-8 lg:grid-cols-2 lg:gap-12 2xl:grid-cols-3 2xl:gap-24 px-8">
+        <Card v-for="week in weekStore.weeks" :key="week.id" variant="week">
           <WeekDetails :week="week" />
-        </PresentCard>
-        <PresentCard v-if="weekStore.weeks.length < 6" class="max-h-80">
+        </Card>
+        <Card v-if="weekStore.weeks.length < 6" variant="empty">
           <WeekCreateForm />
-        </PresentCard>
+        </Card>
       </div>
     </div>
   </template>
@@ -30,24 +28,13 @@
 <script setup lang="ts">
 import { useWeekStore } from '@/features/week/store/weeks';
 
-import PresentCard from '@/components/shared/PresentCard.vue';
 import WeekDetails from '@/features/week/components/WeekDetails.vue';
 import WeekCreateForm from '@/features/week/components/WeekCreateForm.vue';
 import { Button } from '@/components/ui/button';
 import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import PageTitle from '@/components/shared/PageTitle.vue';
+import { Card } from '@/components/ui/card';
 
 const weekStore = useWeekStore();
 weekStore.fetchWeeks();
 </script>
-
-<style scoped>
-@import 'tailwindcss';
-
-.grid-container {
-  @apply grid gap-4 lg:grid-cols-2 2xl:grid-cols-3;
-}
-
-.grid-item {
-  @apply max-h-80;
-}
-</style>

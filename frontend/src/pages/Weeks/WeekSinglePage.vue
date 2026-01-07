@@ -1,20 +1,30 @@
 <template>
-  <div class="flex w-full flex-col gap-6 mb-8">
-    <Tabs class="w-full" default-value="Monday">
-      <TabsList>
-        <TabsTrigger v-for="day in days" :key="day" :value="day">
-          {{ day.slice(0, 3) }}
-        </TabsTrigger>
-      </TabsList>
-      <template v-for="(day, idx) in groupedMealSlots" :key="days[idx]">
-        <TabsContent :value="days[idx]" class="mx-auto space-y-10">
-          <PresentCard v-for="mealSlot in day" :key="mealSlot.id" class="max-h-70">
+  <template v-if="weekStore.error">
+    <div>
+      <h3>Could not load your weeks at the moment. Please try again.</h3>
+      <Button>Retry now</Button>
+    </div>
+  </template>
+
+  <template v-else-if="weekStore.isLoading">
+    <TheLoadingSpinner loading-name="weeks" />
+  </template>
+  <template v-else-if="week">
+    <div class="space-y-8 mb-8">
+      <PageTitle :header="week.name" description="Plan your meal to each day" />
+
+      <Card v-for="(day, idx) in groupedMealSlots" :key="days[idx]" class="mx-4">
+        <CardHeader>
+          <CardTitle> {{ days[idx] }}</CardTitle>
+        </CardHeader>
+        <CardContent class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card v-for="mealSlot in day" :key="mealSlot.id" variant="slot">
             <MealSlotContent :meal-slot="mealSlot" />
-          </PresentCard>
-        </TabsContent>
-      </template>
-    </Tabs>
-  </div>
+          </Card>
+        </CardContent>
+      </Card>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -23,9 +33,11 @@ import type { Ref } from 'vue';
 import type { UserWeek } from '@/api/types/api';
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week/store/weeks';
-import PresentCard from '@/components/shared/PresentCard.vue';
 import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageTitle from '@/components/shared/PageTitle.vue';
+import { Button } from '@/components/ui/button';
+import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const week: Ref<UserWeek | null> = ref(null);
 const weekStore = useWeekStore();
@@ -42,25 +54,3 @@ watch(route, async () => (week.value = await weekStore.getWeek(route.params.id a
   immediate: true,
 });
 </script>
-
-<style scoped>
-@import 'tailwindcss';
-
-.grid-container {
-  @apply grid justify-center gap-8;
-  /* TODO: Fix min size on screens after WEP-46 */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.day-column {
-  @apply flex flex-col gap-6;
-}
-
-.day-header {
-  @apply text-3xl text-center pb-8 border-b;
-}
-
-.grid-item {
-  @apply max-h-80;
-}
-</style>

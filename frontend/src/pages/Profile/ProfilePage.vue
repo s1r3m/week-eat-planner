@@ -4,10 +4,9 @@
   </template>
 
   <template v-else>
+    <PageTitle header="User settings" />
     <Card v-if="userInfo" class="mt-4 mx-4">
-      <CardHeader class="text-lg font-semibold">
-        <span>User info:</span>
-      </CardHeader>
+      <CardHeader class="text-lg font-semibold"> Profile Information </CardHeader>
       <CardContent>
         <FieldSet>
           <FieldGroup>
@@ -46,6 +45,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import PageTitle from '@/components/shared/PageTitle.vue';
 
 import type { UserInfo } from '@/api/types/api';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';

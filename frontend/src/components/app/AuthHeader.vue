@@ -1,6 +1,6 @@
 <template>
   <header
-    class="sticky top-0 z-60 h-13 bg-background/80 backdrop-blur flex transition-[width,height] ease-linear border-b"
+    class="sticky top-0 z-50 h-13 bg-background/80 backdrop-blur flex transition-[width,height] ease-linear border-b"
   >
     <div class="flex flex-1 items-center">
       <div class="flex flex-1 items-center gap-2 px-4">

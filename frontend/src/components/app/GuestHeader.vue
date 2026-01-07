@@ -1,6 +1,6 @@
 <template>
   <header class="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
+    <div class="flex h-16 items-center gap-4 px-4">
       <router-link to="/" class="flex items-center gap-2 text-foreground hover:text-foreground/80">
         <img class="h-10 w-auto" src="@/assets//logo.png" alt="Week Eat Planner logo" />
         <span class="text-lg font-semibold tracking-tight text-brand-primary md:text-xl"
@@ -36,8 +36,8 @@
           :aria-expanded="isMobileMenuOpen"
           @click="toggleMobileMenu"
         >
-          <Icon v-if="!isMobileMenuOpen" icon="radix-icons:hamburger-menu" class="h-5 w-5" />
-          <Icon v-else icon="radix-icons:cross-2" class="h-5 w-5" />
+          <MenuIcon v-if="!isMobileMenuOpen" class="size-6" />
+          <X v-else class="size-6" />
           <span class="sr-only">Toggle menu</span>
         </Button>
       </div>
@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Icon } from '@iconify/vue';
+import { MenuIcon, X } from 'lucide-vue-next';
 
 import ModeToggle from '@/components/shared/ModeToggle.vue';
 import { Button } from '@/components/ui/button';
