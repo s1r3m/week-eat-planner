@@ -48,10 +48,9 @@ dev = [
     "pytest-asyncio==0.25.0",
     "pytest-cov==5.0.0",
     "pytest-mock==3.14.0",
-    "ruff==0.11.6",
+    "ruff==0.14.*",
     "mypy==1.13.0",
     "types-ujson==5.10.0.20240515",
-    "isort[colors]==6.1.0",
     "freezegun>=1.5.5",
 ]
 
@@ -77,6 +76,36 @@ quote-style = "single"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ['week_eat_planner']
+case-sensitive = true
+combine-as-imports = true
+order-by-type = false
+
+[tool.ruff.lint]
+select = [
+    'E',   # pycodestyle: PEP8 style & formatting rules
+    'W',   # pycodestyle: warnings
+    'F',   # pyflakes: syntax and logical errors
+    'I',   # isort: import sorting
+    'B',   # flake8-bugbear: common bug patterns
+    'UP',  # pyupgrade: modernize Python code
+    'N',   # pep8-naming: naming conventions
+    'PT',  # flake8-pytest-style: pytest-specific rules
+    'SIM', # flake8-simplify: simplify expressions & control flow
+    'PL',  # pylint (subset): useful pylint-like checks
+]
+
+ignore = [
+    'D',        # ignore pydocstyle (no docstring enforcement)
+    'ANN',      # ignore type annotation rules (flake8-annotations)
+    'PLR0913',  # allow functions with many arguments
+    'PT006',    # allow string argument list in pytest.parametrize('a, b')
+]
+
+fixable = ['ALL']
+unfixable = []
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

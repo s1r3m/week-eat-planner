@@ -2,9 +2,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-
 from tests.api.conftest import WEEK_1_NAME
 from tests.constants import FOR_UPDATE_PARAMETRIZE, WEEK_1_ID
+
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     MealSlotRead,

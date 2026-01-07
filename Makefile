@@ -98,14 +98,12 @@ db_shell:
 lint: $(VENV_ACTIVATE)
 	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
-	isort --check --diff --color $(BE_PATH)
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
 	ruff check --fix --config $(BE_PATH)/pyproject.toml
 	ruff format --config $(BE_PATH)/pyproject.toml
-	isort $(BE_PATH)
 
 clean:
 	rm -f $(BE_PATH)/.coverage

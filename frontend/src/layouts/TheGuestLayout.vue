@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-surface-base">
-    <TheHeader />
-    <div class="flex-1 flex flex-col">
+  <div class="flex min-h-screen max-w-7xl mx-auto flex-col bg-background text-foreground">
+    <GuestHeader />
+    <main class="flex-1">
       <router-view />
-    </div>
-    <TheFooter />
+    </main>
+    <GuestFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import TheHeader from '@/layouts/TheHeader.vue';
-import TheFooter from '@/layouts/TheFooter.vue';
+import GuestHeader from '@/components/app/GuestHeader.vue';
+import GuestFooter from '@/components/app/GuestFooter.vue';
 </script>
 
 <style scoped></style>

@@ -1,11 +1,17 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationNormalizedLoaded } from 'vue-router';
 import type { RouterScrollBehavior } from 'vue-router';
 
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
 import HomePage from '@/pages/HomePage.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/features/auth/store/auth';
+import { useWeekStore } from '@/features/week/store/weeks';
+
+interface Breadcrumbs {
+  to?: string;
+  label: string;
+}
 
 const routes = [
   {
@@ -34,21 +40,31 @@ const routes = [
         path: 'recipes',
         name: 'recipes',
         component: () => import('@/pages/Recipes/RecipesPage.vue'),
+        meta: { breadcrumbs: [{ label: 'All recipes' }] },
       },
       {
         path: 'weeks',
         name: 'weeks',
         component: () => import('@/pages/Weeks/WeeksPage.vue'),
+        meta: { breadcrumbs: [{ label: 'My weeks' }] },
       },
       {
         path: 'weeks/:id',
         name: 'week',
         component: () => import('@/pages/Weeks/WeekSinglePage.vue'),
+        meta: {
+          breadcrumbs: (route: RouteLocationNormalizedLoaded) => {
+            const weekStore = useWeekStore();
+            const weekName = weekStore.getWeekNameById(route.params.id as string);
+            return [{ to: '/weeks', label: 'My weeks' }, { label: weekName }];
+          },
+        },
       },
       {
         path: 'profile',
         name: 'profile',
         component: () => import('@/pages/Profile/ProfilePage.vue'),
+        meta: { breadcrumbs: [{ label: 'My profile' }] },
       },
     ],
   },
@@ -111,9 +127,7 @@ export default router;
 
 router.beforeEach((to, from) => {
   const authStore = useAuthStore();
-  console.log('User goes to ', to.fullPath);
   if (!authStore.isAuthenticated && to.meta.requiresAuth) {
-    console.log('access_token', authStore.accessToken);
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 });

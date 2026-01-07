@@ -1,5 +1,7 @@
 @import 'tailwindcss';
-@import './theme.css';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
 
 @layer base {
   html,
@@ -28,25 +30,217 @@
   }
 }
 
-@layer components {
-  .container-center {
-    @apply max-w-6xl mx-auto;
+/* Привязка tailwind-токенов к CSS-переменным shadcn-стиля */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* брендовый цвет для логотипа/акцентных линий */
+  --color-brand-primary: #3bb8a9;
+}
+
+/* LIGHT THEME — Fresh Mint (CTA зелёный, обычные/ghost нейтральные) */
+:root {
+  color-scheme: light;
+
+  --radius: 0.625rem;
+
+  /* базовые поверхности и текст */
+  --background: #fafaf9; /* общий фон */
+  --foreground: #1a1a1a; /* основной текст */
+
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+
+  /*
+    PRIMARY CTA:
+    default:  bg #3BB8A9, text #FFFFFF
+    hover:    shadcn делает bg-primary/90 → примерно #2FA190
+  */
+  --primary: #3bb8a9;
+  --primary-foreground: #ffffff;
+
+  /*
+    Обычная кнопка (secondary):
+    default:  bg #F2F4F5, text #1A1A1A
+    hover:    bg-secondary/80 → около #E3E7E8, всё ещё нейтрально-серое
+  */
+  --secondary: #f2f4f5;
+  --secondary-foreground: #1a1a1a;
+
+  /*
+    muted — для таблиц, пустых состояний, второстепенных блоков
+  */
+  --muted: #f4f6f6;
+  --muted-foreground: #51605f;
+
+  /*
+    GHOST / OUTLINE hover:
+    shadcn по умолчанию использует accent для hover у outline/ghost,
+    так что делаем accent лёгким мятно-зелёным фоном, не primary.
+    default ghost: bg transparent, text foreground
+    hover ghost/outline: bg-accent (#EAF5F3), text-accent-foreground (#0F3E38)
+  */
+  --accent: #d9f5f2;
+  --accent-foreground: #0c3d3a;
+
+  /* destructive — удаление недели/слота и т.п. */
+  --destructive: #e5484d;
+
+  /* бордеры / инпуты / ring */
+  --border: #d4dedd;
+  --input: #d4dedd;
+  --ring: #3bb8a9;
+
+  /* графики, статусы, метрики */
+  --chart-1: #2f7cf7; /* info */
+  --chart-2: #1f9e6f; /* success */
+  --chart-3: #dfaf00; /* warning */
+  --chart-4: #e5484d; /* danger */
+  --chart-5: #3bb8a9; /* дополнительный мятный акцент */
+
+  /* sidebar: Weeks / Recipes / Grocery list */
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #1a1a1a;
+
+  --sidebar-primary: #3bb8a9;
+  --sidebar-primary-foreground: #ffffff;
+
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+
+  --sidebar-border: #d4dedd;
+  --sidebar-ring: #3bb8a9;
+}
+
+/* DARK THEME — Fresh Mint (CTA светится, обычные/ghost читаются) */
+.dark {
+  color-scheme: dark;
+
+  /* тёплый тёмно-хвойный фон, чтобы тёмная тема не была «чисто чёрной» */
+  --background: #111b19;
+  --foreground: #e7f2f1;
+
+  --card: #182421;
+  --card-foreground: #e7f2f1;
+
+  --popover: #182421;
+  --popover-foreground: #e7f2f1;
+
+  /*
+    PRIMARY CTA в тёмной теме:
+    default: bg #4ED3C5, text #041514
+    hover:   bg-primary/90 → примерно #3ABDAF
+  */
+  --primary: #48cfc0;
+  --primary-foreground: #041514;
+
+  /*
+    Обычная кнопка (secondary) в тёмной теме:
+    default: bg #1A1F1F, text #E6EDED
+    hover:   bg-secondary/80 → около #232A2A
+  */
+  --secondary: #1c2725;
+  --secondary-foreground: #e7f2f1;
+
+  /*
+    muted — тёмные нейтральные области (tablе backgrounds и т.п.)
+  */
+  --muted: #1a2523;
+  --muted-foreground: #a9beba;
+
+  /*
+    GHOST / OUTLINE в тёмной теме:
+    default: bg transparent, text foreground (#E6EDED)
+    hover:   bg-accent (#1F342F), text-accent-foreground (#DFF7F2)
+    чтобы иконки и текст не терялись.
+  */
+  --accent: #1f342f;
+  --accent-foreground: #dff7f2;
+
+  /* destructive — красные элементы в dark */
+  --destructive: #ff6f73;
+
+  /* бордеры / инпуты / ring */
+  --border: rgba(231, 242, 241, 0.16);
+  --input: rgba(231, 242, 241, 0.2);
+  --ring: #48cfc0;
+
+  /* графики / статусы */
+  --chart-1: #4c8dff;
+  --chart-2: #37c598;
+  --chart-3: #edc94f;
+  --chart-4: #ff6f73;
+  --chart-5: #3fc2b2;
+
+  /* sidebar: навигация в тёмной теме */
+  --sidebar: #121d1b;
+  --sidebar-foreground: #e7f2f1;
+
+  --sidebar-primary: #48cfc0;
+  --sidebar-primary-foreground: #041514;
+
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+
+  --sidebar-border: rgba(231, 242, 241, 0.14);
+  --sidebar-ring: #48cfc0;
+}
+
+/* базовые tailwind-привязки */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
 
-  .flex-center {
-    @apply flex justify-center items-center;
-  }
-
-  .btn {
-    @apply min-w-30 mt-2 w-full sm:w-auto whitespace-normal text-center inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-brand-muted/70 bg-surface-raised text-base font-semibold text-base-color shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary hover:bg-surface-base/80 hover:border-brand-primary cursor-pointer;
-  }
-
-  .btn-primary {
-    @apply bg-brand-primary text-white border-transparent shadow-lg shadow-brand-primary/35 hover:bg-brand-primary-hover;
-  }
-
-  .auth-card {
-    @apply w-full max-w-lg bg-surface-raised border border-brand-muted rounded-3xl p-10 space-y-6;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+  body {
+    @apply bg-background text-foreground;
   }
 }

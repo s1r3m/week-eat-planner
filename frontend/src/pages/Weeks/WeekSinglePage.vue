@@ -1,22 +1,43 @@
 <template>
-  <div class="grid-container">
-    <div v-for="(day, index) in groupedMealSlots" :key="days[index]" class="day-column">
-      <h3 class="day-header">{{ days[index] }}</h3>
-      <PresentCard v-for="mealSlot in day" :key="mealSlot.id" class="grid-item">
-        <MealSlotContent :meal-slot="mealSlot" />
-      </PresentCard>
+  <template v-if="weekStore.error">
+    <div>
+      <h3>Could not load your weeks at the moment. Please try again.</h3>
+      <Button @click="weekStore.getWeek(route.params.id as string)">Retry now</Button>
     </div>
-  </div>
+  </template>
+
+  <template v-else-if="weekStore.isLoading">
+    <TheLoadingSpinner loading-name="weeks" />
+  </template>
+  <template v-else-if="week">
+    <div class="space-y-8 mb-8">
+      <PageTitle :header="week.name" description="Plan your meal to each day" />
+
+      <Card v-for="(day, idx) in groupedMealSlots" :key="days[idx]" class="mx-4">
+        <CardHeader>
+          <CardTitle> {{ days[idx] }}</CardTitle>
+        </CardHeader>
+        <CardContent class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card v-for="mealSlot in day" :key="mealSlot.id" variant="slot">
+            <MealSlotContent :meal-slot="mealSlot" />
+          </Card>
+        </CardContent>
+      </Card>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
-import type { UserWeek } from '@/types/api';
+import type { UserWeek } from '@/api/types/api';
 import { useRoute } from 'vue-router';
-import { useWeekStore } from '@/stores/weeks';
-import PresentCard from '@/components/ui/PresentCard.vue';
-import MealSlotContent from '@/components/features/mealSlot/MealSlotContent.vue';
+import { useWeekStore } from '@/features/week/store/weeks';
+import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';
+import PageTitle from '@/components/shared/PageTitle.vue';
+import { Button } from '@/components/ui/button';
+import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const week: Ref<UserWeek | null> = ref(null);
 const weekStore = useWeekStore();
@@ -29,28 +50,7 @@ const groupedMealSlots = computed(() => {
   return uniqueDays.map((day) => week.value?.meal_slots.filter((m) => m.day_of_week === day));
 });
 
-onMounted(async () => (week.value = await weekStore.getWeek(route.params.id as string)));
+watch(route, async () => (week.value = await weekStore.getWeek(route.params.id as string)), {
+  immediate: true,
+});
 </script>
-
-<style scoped>
-@import '@/assets/theme.css';
-@import 'tailwindcss';
-
-.grid-container {
-  @apply grid justify-center gap-8;
-  /* TODO: Fix min size on screens after WEP-46 */
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.day-column {
-  @apply flex flex-col gap-6;
-}
-
-.day-header {
-  @apply text-3xl text-center pb-8 border-b;
-}
-
-.grid-item {
-  @apply max-h-80 bg-surface-raised;
-}
-</style>

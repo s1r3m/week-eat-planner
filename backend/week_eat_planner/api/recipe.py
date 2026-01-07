@@ -116,4 +116,3 @@ async def delete_recipe(
     """
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
     await RecipeService(session).delete_recipe(recipe)
-    return None

@@ -120,7 +120,6 @@ async def delete_week(
     """
     logger.info(f'Request DELETE /weeks/{week.id} for {week.user_id}.')
     await WeekService(session).delete_week(week)
-    return None
 
 
 @router.patch(AppUrl.WEEK_SLOTS_TPL, response_model=list[MealSlotRead])
