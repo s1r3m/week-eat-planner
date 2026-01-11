@@ -16,7 +16,7 @@ async function startApp() {
   app.use(pinia);
 
   const authStore = useAuthStore();
-  await authStore.refreshToken();
+  await authStore.init();
 
   app.use(router);
   app.mount('#app');

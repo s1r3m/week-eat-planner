@@ -30,7 +30,7 @@
               />
             </Field>
           </FieldGroup>
-          <Button type="submit" class="w-full">
+          <Button type="submit" class="w-full" :disabled="!email.length || password.length < 6">
             <template v-if="isSubmitting">
               <Spinner />
               Logging in
@@ -98,5 +98,3 @@ const submitLogin = async () => {
   }
 };
 </script>
-
-<style scoped></style>

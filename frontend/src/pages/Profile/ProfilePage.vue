@@ -47,7 +47,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import PageTitle from '@/components/shared/PageTitle.vue';
 
-import type { UserInfo } from '@/api/types/api';
+import type { UserInfo } from '@/api/types';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 
 const userInfo = ref<UserInfo>();

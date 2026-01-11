@@ -1,51 +1,22 @@
-import type { UserLoginResponse } from '@/api/types/api';
+import type { AccessToken } from '@/api/types';
 import { defineStore } from 'pinia';
-import { ref, computed, type Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
-import apiClient, { refreshClient } from '@/api/client';
+import { apiClient, authClient, getErrorMessage } from '@/api/client';
 import { useAlertStore } from '@/stores/error';
-import { useClientIdStore } from '@/stores/clientId';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
 
-  const setToken = (data: UserLoginResponse) => {
-    if (data.token_type !== 'bearer') {
-      return;
-    }
-    accessToken.value = data.access_token;
+  const setAccessToken = (newToken: string | null) => {
+    accessToken.value = newToken;
   };
-
-  const clearToken = () => {
-    accessToken.value = null;
-    console.log('Cleared access_token');
-  };
-
-  const refreshToken = async () => {
-    const clientIdStore = useClientIdStore();
-    try {
-      const response = await refreshClient.post('/refresh', {
-        client_id: clientIdStore.getClientId(),
-      });
-      if (response.status !== 200) {
-        throw new Error(`Status: ${response.status}`);
-      }
-      setToken(response.data as UserLoginResponse);
-    } catch (err: any) {
-      console.error(`An error during silent refresh on start: ${err}`);
-      clearToken();
-    }
-  };
-
-  const isAuthenticated = computed(() => !!accessToken.value);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const errorStore = useAlertStore();
-    const clientIdStore = useClientIdStore();
     const params = new URLSearchParams({
       username: email,
       password: password,
-      client_id: clientIdStore.getClientId(),
     });
     try {
       const res = await apiClient.post('/auth/login', params, {
@@ -53,10 +24,10 @@ export const useAuthStore = defineStore('auth-store', () => {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      setToken(res.data);
+      accessToken.value = (res.data as AccessToken).access_token;
       return true;
-    } catch (err: any) {
-      errorStore.addError(err.response?.data?.detail || 'Login failed');
+    } catch (err: unknown) {
+      errorStore.addError(getErrorMessage(err));
       return false;
     }
   };
@@ -69,8 +40,8 @@ export const useAuthStore = defineStore('auth-store', () => {
         password: password,
       });
       return res.status === 201;
-    } catch (err: any) {
-      errorStore.addError(err.message);
+    } catch (err: unknown) {
+      errorStore.addError(getErrorMessage(err));
       return false;
     }
   };
@@ -79,19 +50,29 @@ export const useAuthStore = defineStore('auth-store', () => {
     const errorStore = useAlertStore();
     try {
       await apiClient.post('/auth/logout');
-    } catch (err: any) {
-      errorStore.addError(err.response?.data?.detail || 'Logout failed');
+    } catch (err: unknown) {
+      errorStore.addError(getErrorMessage(err));
     } finally {
-      clearToken();
+      setAccessToken(null);
+      console.log('Cleared access_token');
+    }
+  };
+
+  const init = async () => {
+    try {
+      const res = await authClient.post<AccessToken>('auth/refresh');
+      const newToken = res.data.access_token;
+      setAccessToken(newToken);
+      console.log('Initialized access_token from refresh');
+    } catch (err: unknown) {
+      console.log('No valid refresh token found: ', getErrorMessage(err));
     }
   };
 
   return {
     accessToken,
-    isAuthenticated,
-    setToken,
-    clearToken,
-    refreshToken,
+    setAccessToken,
+    init,
     login,
     signup,
     logout,

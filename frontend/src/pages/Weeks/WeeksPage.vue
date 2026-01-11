@@ -2,11 +2,13 @@
   <template v-if="weekStore.error">
     <div>
       <h3>Could not load your weeks at the moment. Please try again.</h3>
-      <Button @click="weekStore.fetchWeeks()">Retry now</Button>
+      <Button :disabled="weekStore.isFetchingWeeks" @click="weekStore.fetchWeeks()"
+        >Retry now</Button
+      >
     </div>
   </template>
 
-  <template v-else-if="weekStore.isLoading">
+  <template v-else-if="weekStore.isFetchingWeeks">
     <TheLoadingSpinner loading-name="weeks" />
   </template>
 
@@ -26,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useWeekStore } from '@/features/week/store/weeks';
 
 import WeekDetails from '@/features/week/components/WeekDetails.vue';
@@ -36,5 +39,8 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 import { Card } from '@/components/ui/card';
 
 const weekStore = useWeekStore();
-weekStore.fetchWeeks();
+
+onMounted(() => {
+  weekStore.fetchWeeks();
+});
 </script>

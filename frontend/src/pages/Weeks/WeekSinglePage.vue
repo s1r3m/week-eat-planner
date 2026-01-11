@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
-import type { UserWeek } from '@/api/types/api';
+import type { UserWeek } from '@/api/types';
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week/store/weeks';
 import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';

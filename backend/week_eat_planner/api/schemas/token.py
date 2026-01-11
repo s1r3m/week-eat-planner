@@ -23,7 +23,3 @@ class TokenUpdate(BaseModel):
     expires_at: datetime | None = None
     replaced_by: UUID | None = None
     revoked: bool | None = None
-
-
-class TokenRefresh(BaseModel):
-    client_id: str

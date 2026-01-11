@@ -1,7 +1,7 @@
 <template>
-  <footer class="border-t bg-background/80 text-muted-foreground">
+  <footer class="p-4 border-t bg-background/80 text-muted-foreground">
     <div
-      class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 py-4 text-sm md:flex-row md:items-center"
+      class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 text-sm md:flex-row md:items-center"
     >
       <p class="font-medium text-foreground">© {{ currentYear }} Week Eat Planner</p>
       <p class="flex items-center gap-1">

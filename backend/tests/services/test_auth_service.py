@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-from tests.constants import CLIENT_ID, HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN, USERAGENT
+from tests.constants import HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN
 
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
 from week_eat_planner.config import settings
@@ -99,7 +99,7 @@ async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_
 async def test_login__valid_credentials__tokens_returned(mocked_user_dao, mocked_session, db_user):
     mocked_user_dao.find_one_or_none.return_value = db_user
 
-    access_token, refresh_token = await AuthService(mocked_session).login(db_user.email, PASSWORD, CLIENT_ID, USERAGENT)
+    access_token, refresh_token = await AuthService(mocked_session).login(db_user.email, PASSWORD)
 
     assert access_token
     assert refresh_token
@@ -109,7 +109,7 @@ async def test_login__no_user_with_email__error_raised(mocked_user_dao, mocked_s
     mocked_user_dao.find_one_or_none.return_value = None
 
     with pytest.raises(InvalidCredentials) as exc:
-        await AuthService(mocked_session).login(db_user.email, PASSWORD, CLIENT_ID, USERAGENT)
+        await AuthService(mocked_session).login(db_user.email, PASSWORD)
 
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Could not validate credentials'
@@ -117,7 +117,7 @@ async def test_login__no_user_with_email__error_raised(mocked_user_dao, mocked_s
 
 async def test_login__invalid_email__error_raised(mocked_session):
     with pytest.raises(InvalidEmail) as exc:
-        await AuthService(mocked_session).login('not_an_email', PASSWORD, CLIENT_ID, USERAGENT)
+        await AuthService(mocked_session).login('not_an_email', PASSWORD)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT
     assert exc.value.detail == 'Invalid email'
@@ -129,7 +129,7 @@ async def test_refresh_tokens__valid_old_token__new_access_token_returned(
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
     mocked_refresh_token_dao.add.return_value = new_db_refresh_token
 
-    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN, CLIENT_ID, USERAGENT)
+    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert access_token
     assert refresh_token == REFRESH_TOKEN
@@ -142,7 +142,7 @@ async def test_refresh_tokens__old_about_to_expire__new_refresh_token_returned(
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
     mocked_refresh_token_dao.add.return_value = new_db_refresh_token
 
-    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN, CLIENT_ID, USERAGENT)
+    access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert access_token
     assert refresh_token != REFRESH_TOKEN
@@ -152,7 +152,7 @@ async def test_refresh_tokens__invalid_token__error_raised(mocked_refresh_token_
     mocked_refresh_token_dao.find_one_or_none.return_value = None
 
     with pytest.raises(RefreshTokenRevoked) as exc:
-        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN, CLIENT_ID, USERAGENT)
+        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Refresh token revoked'
@@ -164,7 +164,7 @@ async def test_refresh_tokens__bad_refresh_token__error_raised(
     mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
 
     with pytest.raises(TokenExpired) as exc:
-        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN, CLIENT_ID, USERAGENT)
+        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Token expired'
@@ -176,7 +176,7 @@ async def test_refresh_tokens__revoked_token__error_raised(
     mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(RefreshTokenRevoked) as exc:
-        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN, CLIENT_ID, USERAGENT)
+        await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Refresh token revoked'

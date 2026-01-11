@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests.constants import (
-    CLIENT_ID,
     EMAIL,
     PASSWORD,
     RECIPE_INGREDIENTS,
@@ -73,7 +72,7 @@ async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
 def auth_client_factory(client: AsyncClient) -> Callable:
     async def _factory(user: UserRead, password: str) -> AsyncClient:
         client.headers['Authorization'] = ''
-        token_data = {'username': user.email, 'password': password, 'client_id': CLIENT_ID}
+        token_data = {'username': user.email, 'password': password}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
         assert response.status_code == HTTPStatus.OK, f'{response.status_code}: {response.text}'
         body = response.json()

@@ -30,12 +30,12 @@
               />
             </Field>
           </FieldGroup>
-          <Button type="submit" class="w-full">
+          <Button type="submit" class="w-full" :disabled="!email.length || password.length < 6">
             <template v-if="isSubmitting">
               <Spinner />
               Creating the account
             </template>
-            <template v-else> Login </template>
+            <template v-else> Sign up </template>
           </Button>
         </FieldSet>
       </form>
@@ -80,7 +80,6 @@ const isSubmitting = ref(false);
 const submitSignup = async () => {
   if (isSubmitting.value) return;
   isSubmitting.value = true;
-  setTimeout('', 2000);
   try {
     const success = await authStore.signup(email.value, password.value);
     if (success) {
