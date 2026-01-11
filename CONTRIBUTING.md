@@ -4,7 +4,7 @@ First off, thank you for considering contributing to Week Eat Planner! It's peop
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the [Week Eat Planner Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [email@example.com](mailto:email@example.com).
+This project and everyone participating in it is governed by the [Week Eat Planner Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [s1r3m@yahoo](mailto:s1r3m@yahoo.com).
 
 ## How Can I Contribute?
 
