@@ -1,9 +1,5 @@
 <template>
-  <form
-    v-if="!authStore.isAuthenticated"
-    class="flex flex-col gap-4"
-    @submit.prevent="handleSubmit"
-  >
+  <form v-if="!authStore.accessToken" class="flex flex-col gap-4" @submit.prevent="handleSubmit">
     <slot name="before"></slot>
 
     <div class="flex flex-col gap-1.5">

@@ -11,7 +11,7 @@ export const useAlertStore = defineStore('error-store', () => {
     clearErrors();
     return saved_errors;
   };
-  const isEmpty = computed(() => errors.length === 0);
+  const isEmpty = computed(() => !errors.length);
 
   return {
     addError,

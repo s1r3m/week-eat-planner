@@ -1,6 +1,9 @@
+/// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
+import type { UserConfig } from 'vite';
+import { CoverageV8Options } from 'vitest/node';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import tailwindcss from '@tailwindcss/vite';
@@ -10,6 +13,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/components/ui'],
     },
   },
   server: {
@@ -22,4 +33,4 @@ export default defineConfig({
       },
     },
   },
-});
+} as UserConfig & { test: CoverageV8Options });

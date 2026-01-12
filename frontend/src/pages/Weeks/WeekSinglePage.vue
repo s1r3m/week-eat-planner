@@ -50,7 +50,11 @@ const groupedMealSlots = computed(() => {
   return uniqueDays.map((day) => week.value?.meal_slots.filter((m) => m.day_of_week === day));
 });
 
-watch(route, async () => (week.value = await weekStore.getWeek(route.params.id as string)), {
-  immediate: true,
-});
+watch(
+  route,
+  async () => (week.value = (await weekStore.getWeek(route.params.id as string)) as UserWeek),
+  {
+    immediate: true,
+  },
+);
 </script>

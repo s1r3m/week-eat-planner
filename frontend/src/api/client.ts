@@ -26,19 +26,21 @@ export const authClient = axios.create({
 });
 
 // Add Auth header.
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const authStore = useAuthStore();
-
-  if (authStore.accessToken) {
-    config.headers.Authorization = `Bearer ${authStore.accessToken}`;
-  }
-
-  return config;
-});
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const authStore = useAuthStore();
+    if (authStore.accessToken) {
+      config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+    }
+    return config;
+  },
+);
 
 // Error handling helpers
 export const getErrorMessage = (err: unknown): string => {
-  if (!axios.isAxiosError(err)) return 'Unexpected error';
+  if (!axios.isAxiosError(err)) {
+    return 'Unexpected error';
+  }
 
   const data = err.response?.data as ErrorResponse | undefined;
   return data?.detail || err.message || 'Request Failed';
@@ -53,30 +55,35 @@ const resolveRequests = (newToken: string | null) => {
   pendingRequests = [];
 };
 
+export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
+
 const isAuthExcluded = (url: string | undefined): boolean => {
-  if (!url) return false;
+  if (!url) {
+    return false;
+  }
 
   const path = url.startsWith('/') ? url : `/${url}`;
-  return (
-    path === '/auth/login' ||
-    path === '/auth/refresh' ||
-    path === '/auth/signup' ||
-    path === '/auth/logout'
-  );
+  return AUTH_EXCLUDED_PATHS.includes(path);
 };
 
 // Handle 401 responses and try to refresh the token.
 apiClient.interceptors.response.use(
   (response) => response,
   async (err: unknown) => {
-    if (!axios.isAxiosError(err)) return Promise.reject(err);
+    if (!axios.isAxiosError(err)) {
+      return Promise.reject(err);
+    }
 
     const error = err as AxiosError;
     const originalConfig = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
-    if (!originalConfig || isAuthExcluded(originalConfig.url)) return Promise.reject(error);
+    if (!originalConfig || isAuthExcluded(originalConfig.url)) {
+      return Promise.reject(error);
+    }
 
     const status = error.response?.status;
-    if (status !== 401 || originalConfig._retry) return Promise.reject(error);
+    if (status !== 401 || originalConfig._retry) {
+      return Promise.reject(error);
+    }
 
     if (isRefreshing) {
       // Push the request to the queue and quit.

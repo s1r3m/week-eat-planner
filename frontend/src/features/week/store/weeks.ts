@@ -1,9 +1,7 @@
 import { ref } from 'vue';
-import type { ErrorResponse, UserWeek } from '@/api/types';
+import type { UserWeek } from '@/api/types';
 import { defineStore } from 'pinia';
 import { apiClient, getErrorMessage } from '@/api/client';
-import { useAlertStore } from '@/stores/error';
-import axios from 'axios';
 
 export const useWeekStore = defineStore('weeks-store', () => {
   const weeks = ref<UserWeek[]>([]);
@@ -28,14 +26,10 @@ export const useWeekStore = defineStore('weeks-store', () => {
 
   const removeWeek = async (weekId: string) => {
     try {
-      const response = await apiClient.delete(`/weeks/${weekId}`);
-      if (response.status !== 204) {
-        throw new Error(response.data || 'An unknown error occurred.');
-      }
+      await apiClient.delete(`/weeks/${weekId}`);
       weeks.value = weeks.value.filter((week) => week.id !== weekId);
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err);
-      error.value = errorMessage;
+      error.value = getErrorMessage(err);
     }
   };
 
@@ -44,8 +38,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
       const response = await apiClient.post<UserWeek>('/weeks', { name });
       weeks.value.push(response.data as UserWeek);
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err);
-      error.value = errorMessage;
+      error.value = getErrorMessage(err);
     }
   };
 
@@ -56,22 +49,17 @@ export const useWeekStore = defineStore('weeks-store', () => {
       weeks.value = weeks.value.map((week) => (week.id === weekId ? updatedWeek : week));
       return updatedWeek;
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err);
-      error.value = errorMessage;
+      error.value = getErrorMessage(err);
     }
   };
 
-  const getWeek = async (weekId: string) => {
+  const getWeek = async (weekId: string): Promise<UserWeek | undefined> => {
     isLoading.value = true;
     try {
-      const response = await apiClient.get(`/weeks/${weekId}`);
-      if (response.status !== 200) {
-        throw new Error(response.data || 'An unknown error occurred.');
-      }
-      return response.data as UserWeek;
+      const response = await apiClient.get<UserWeek>(`/weeks/${weekId}`);
+      return response.data;
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err);
-      error.value = errorMessage;
+      error.value = getErrorMessage(err);
     } finally {
       isLoading.value = false;
     }

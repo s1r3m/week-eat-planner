@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import apiClient from '@/api/client';
+import { apiClient } from '@/api/client';
 
 import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

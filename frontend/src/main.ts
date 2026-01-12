@@ -7,7 +7,7 @@ import router from '@/router/index';
 import '@/assets/style.css';
 import { useAuthStore } from './features/auth/store/auth';
 
-startApp();
+await startApp();
 
 async function startApp() {
   const app = createApp(App);

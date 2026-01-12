@@ -148,7 +148,7 @@ fe_style:
 
 ## @Tests Run fe unittests.
 fe_test:
-	# TODO: add tests
+	cd $(FE_PATH) && yarn test:coverage
 
 
 ## ------------------------------------------------ Build --------------------------------------------------------------

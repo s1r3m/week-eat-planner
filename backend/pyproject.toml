@@ -97,13 +97,6 @@ select = [
     'PL',  # pylint (subset): useful pylint-like checks
 ]
 
-ignore = [
-    'D',        # ignore pydocstyle (no docstring enforcement)
-    'ANN',      # ignore type annotation rules (flake8-annotations)
-    'PLR0913',  # allow functions with many arguments
-    'PT006',    # allow string argument list in pytest.parametrize('a, b')
-]
-
 fixable = ['ALL']
 unfixable = []
 

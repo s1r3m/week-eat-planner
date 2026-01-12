@@ -7,13 +7,7 @@ class Email(BaseModel):
     email: EmailStr
 
 
-class UserBase(Email):
-    """Base schema for user data."""
-
-    pass
-
-
-class UserCreate(UserBase):
+class UserCreate(Email):
     """Schema for creating a new user."""
 
     password: str
@@ -23,7 +17,7 @@ class UserId(BaseModel):
     id: UUID
 
 
-class UserRead(UserBase, UserId):
+class UserRead(Email, UserId):
     """Schema for reading user data."""
 
     is_active: bool
