@@ -56,10 +56,10 @@ import WeekEditDialog from '@/features/week/components/WeekEditDialog.vue';
 import WeekDeleteDialog from '@/features/week/components/WeekDeleteDialog.vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
-import type { UserWeek } from '@/api/types';
+import type { UserWeekMinimal } from '@/api/types';
 import { useWeekStore } from '@/features/week/store/weeks';
 
-const props = defineProps<{ week: UserWeek }>();
+const props = defineProps<{ week: UserWeekMinimal }>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 

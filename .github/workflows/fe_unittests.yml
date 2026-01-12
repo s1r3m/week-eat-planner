@@ -1,4 +1,4 @@
-name: Frontend linters
+name: Frontend unittests
 
 on:
   push:
@@ -34,6 +34,6 @@ jobs:
       run: |
         make fe_install
 
-    - name: Analysing the code with ESLint
+    - name: Run fe unittests
       run: |
-        make fe_lint
+        make fe_test

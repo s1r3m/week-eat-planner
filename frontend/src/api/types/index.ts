@@ -30,6 +30,12 @@ export interface MealSlot {
   recipe: MealSlotRecipe | null;
 }
 
+export interface UserWeekMinimal {
+  id: string;
+  name: string;
+  user_id: string;
+}
+
 export interface UserWeek {
   id: string;
   name: string;

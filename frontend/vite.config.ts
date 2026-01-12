@@ -21,6 +21,12 @@ export default defineConfig({
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/components/ui'],
+      thresholds: {
+        statements: 100,
+        branches: 95, // TODO: make it 100!
+        functions: 100,
+        lines: 100,
+      },
     },
   },
   server: {

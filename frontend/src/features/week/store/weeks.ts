@@ -1,10 +1,10 @@
 import { ref } from 'vue';
-import type { UserWeek } from '@/api/types';
+import type { UserWeek, UserWeekMinimal } from '@/api/types';
 import { defineStore } from 'pinia';
 import { apiClient, getErrorMessage } from '@/api/client';
 
 export const useWeekStore = defineStore('weeks-store', () => {
-  const weeks = ref<UserWeek[]>([]);
+  const weeks = ref<UserWeekMinimal[]>([]);
   const error = ref<string | null>(null);
   const isLoading = ref<boolean>(false);
   const isFetchingWeeks = ref<boolean>(false);
@@ -13,7 +13,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
     isFetchingWeeks.value = true;
     error.value = null;
     try {
-      const response = await apiClient.get<UserWeek[]>('/weeks');
+      const response = await apiClient.get<UserWeekMinimal[]>('/weeks');
       weeks.value = response.data;
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err);
@@ -35,8 +35,8 @@ export const useWeekStore = defineStore('weeks-store', () => {
 
   const addWeek = async (name: string) => {
     try {
-      const response = await apiClient.post<UserWeek>('/weeks', { name });
-      weeks.value.push(response.data as UserWeek);
+      const response = await apiClient.post<UserWeekMinimal>('/weeks', { name });
+      weeks.value.push(response.data);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
     }
@@ -44,8 +44,8 @@ export const useWeekStore = defineStore('weeks-store', () => {
 
   const updateWeek = async (weekId: string, name: string) => {
     try {
-      const response = await apiClient.patch(`/weeks/${weekId}`, { name });
-      const updatedWeek = response.data as UserWeek;
+      const response = await apiClient.patch<UserWeekMinimal>(`/weeks/${weekId}`, { name });
+      const updatedWeek = response.data;
       weeks.value = weeks.value.map((week) => (week.id === weekId ? updatedWeek : week));
       return updatedWeek;
     } catch (err: unknown) {
@@ -53,7 +53,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
     }
   };
 
-  const getWeek = async (weekId: string): Promise<UserWeek | undefined> => {
+  const getWeek = async (weekId: string) => {
     isLoading.value = true;
     try {
       const response = await apiClient.get<UserWeek>(`/weeks/${weekId}`);
