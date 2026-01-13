@@ -19,7 +19,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     coverage: {
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['src/**/*.{ts,tsx,vue}'],
       exclude: ['src/components/ui'],
       thresholds: {
         statements: 100,
