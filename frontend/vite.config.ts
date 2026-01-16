@@ -31,11 +31,12 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // Allow access from outside the container
+    port: 3000,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''), // Strip /api prefix before forwarding
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

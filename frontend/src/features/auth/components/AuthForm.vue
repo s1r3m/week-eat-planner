@@ -1,43 +1,36 @@
 <template>
   <template v-if="!authStore.accessToken">
-    <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-      <slot name="before"></slot>
-
-      <div class="flex flex-col gap-1.5">
-        <label for="email" class="text-sm font-medium text-muted">Email</label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
-          autocomplete="email"
-          required
-          class="w-full px-4 py-3 rounded-2xl border border-brand-muted bg-surface-base text-base placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent caret-brand-primary text-base-color"
-        />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label for="password" class="text-sm font-medium text-muted">Password</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          :placeholder="variant === 'login' ? 'Your password' : 'Minimum 6 characters'"
-          :autocomplete="variant === 'login' ? 'current-password' : 'new-password'"
-          minlength="6"
-          required
-          class="w-full px-4 py-3 rounded-2xl border border-brand-muted bg-surface-base text-base-color placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent caret-brand-primary"
-        />
-      </div>
-
-      <Button
-        type="submit"
-        :disabled="!email || password.length < 6"
-        class="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {{ variant === 'login' ? 'Log in' : 'Sign up' }}
-      </Button>
-
-      <slot name="after"></slot>
+    <form @submit.prevent="$emit('submit', email, password)">
+      <FieldSet>
+        <FieldGroup>
+          <Field>
+            <FieldLabel for="email"> Email </FieldLabel>
+            <Input id="email" v-model="email" type="email" placeholder="your@email.com" />
+          </Field>
+          <Field>
+            <FieldLabel for="password"> Password </FieldLabel>
+            <Input
+              id="password"
+              v-model="password"
+              type="password"
+              :placeholder="variant === 'login' ? 'Minimum 6 characters' : 'Your password'"
+            />
+          </Field>
+        </FieldGroup>
+        <Button
+          type="submit"
+          class="w-full"
+          :class="{ 'cursor-not-allowed': btnDisabled, 'cursor-pointer': !btnDisabled }"
+          :disabled="btnDisabled"
+        >
+          <template v-if="submitting">
+            <Spinner />
+            {{ variant === 'login' ? 'Logging in' : 'Signing ...' }}
+          </template>
+          <template v-else> {{ variant === 'login' ? 'Login' : 'Sign up' }} </template>
+        </Button>
+        <FieldSeparator> or </FieldSeparator>
+      </FieldSet>
     </form>
   </template>
 
@@ -53,25 +46,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { Button } from '@/components/ui/button';
+import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
+import { Spinner } from '@/components/ui/spinner';
+import { Input } from '@/components/ui/input';
 
 const authStore = useAuthStore();
 
 const email = ref('');
 const password = ref('');
 
-interface Props {
+const btnDisabled = computed(() => !email.value.length || password.value.length < 6);
+
+defineProps<{
   variant: 'login' | 'signup';
-}
-defineProps<Props>();
+  submitting: boolean;
+}>();
 
-const emit = defineEmits<{ submit: [string, string] }>();
-
-const handleSubmit = () => {
-  emit('submit', email.value, password.value);
-};
+defineEmits<{ submit: [string, string] }>();
 </script>
 
 <style scoped></style>

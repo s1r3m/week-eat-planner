@@ -13,6 +13,7 @@ describe('AuthForm', () => {
     const wrapper = mount(AuthForm, {
       props: {
         variant: 'login',
+        submitting: false,
       },
       global: {
         stubs: ['router-link'],
@@ -22,13 +23,14 @@ describe('AuthForm', () => {
     expect(wrapper.find('form').exists()).toBe(true);
     expect(wrapper.find('label[for="email"]').text()).toBe('Email');
     expect(wrapper.find('label[for="password"]').text()).toBe('Password');
-    expect(wrapper.find('button[type="submit"]').text()).toBe('Log in');
+    expect(wrapper.find('button[type="submit"]').text()).toBe('Login');
   });
 
   it('renders correctly for signup variant', () => {
     const wrapper = mount(AuthForm, {
       props: {
         variant: 'signup',
+        submitting: false,
       },
       global: {
         stubs: ['router-link'],
@@ -36,7 +38,7 @@ describe('AuthForm', () => {
     });
 
     expect(wrapper.find('button[type="submit"]').text()).toBe('Sign up');
-    expect(wrapper.find('#password').attributes('placeholder')).toBe('Minimum 6 characters');
+    expect(wrapper.find('#password').attributes('placeholder')).toBe('Your password');
   });
 
   it('renders "already logged in" message when authStore has accessToken', () => {
@@ -46,6 +48,7 @@ describe('AuthForm', () => {
     const wrapper = mount(AuthForm, {
       props: {
         variant: 'login',
+        submitting: false,
       },
       global: {
         stubs: ['router-link'],
@@ -60,6 +63,7 @@ describe('AuthForm', () => {
     const wrapper = mount(AuthForm, {
       props: {
         variant: 'login',
+        submitting: false,
       },
       global: {
         stubs: ['router-link'],
@@ -82,6 +86,7 @@ describe('AuthForm', () => {
     const wrapper = mount(AuthForm, {
       props: {
         variant: 'login',
+        submitting: false,
       },
       global: {
         stubs: ['router-link'],
@@ -91,18 +96,18 @@ describe('AuthForm', () => {
     const button = wrapper.find('button[type="submit"]');
 
     // Initial state (empty)
-    expect(button.element.disabled).toBe(true);
+    expect((button.element as HTMLButtonElement).disabled).toBe(true);
 
     // Email only
     await wrapper.find('#email').setValue('test@example.com');
-    expect(button.element.disabled).toBe(true);
+    expect((button.element as HTMLButtonElement).disabled).toBe(true);
 
     // Password too short
     await wrapper.find('#password').setValue('12345');
-    expect(button.element.disabled).toBe(true);
+    expect((button.element as HTMLButtonElement).disabled).toBe(true);
 
     // Valid
     await wrapper.find('#password').setValue('123456');
-    expect(button.element.disabled).toBe(false);
+    expect((button.element as HTMLButtonElement).disabled).toBe(false);
   });
 });
