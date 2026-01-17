@@ -25,9 +25,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-interface Props {
+defineProps<{
   title: string;
   description: string;
-}
-defineProps<Props>();
+}>();
 </script>

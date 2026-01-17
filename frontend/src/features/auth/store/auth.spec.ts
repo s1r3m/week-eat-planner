@@ -32,6 +32,22 @@ describe('auth store', () => {
     expect(store.accessToken).toBe('test-token');
   });
 
+  describe('isAuthenticated', () => {
+    it('should be true if accessToken is present', () => {
+      const store = useAuthStore();
+      store.setAccessToken('test-token');
+
+      expect(store.isAuthenticated).toBe(true);
+    });
+
+    it('should be false if accessToken is null', () => {
+      const store = useAuthStore();
+      store.setAccessToken(null);
+
+      expect(store.isAuthenticated).toBe(false);
+    });
+  });
+
   describe('login', () => {
     it('should login successfully', async () => {
       const store = useAuthStore();

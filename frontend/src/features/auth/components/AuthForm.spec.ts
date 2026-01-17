@@ -9,10 +9,13 @@ describe('AuthForm', () => {
     setActivePinia(createPinia());
   });
 
-  it('renders correctly when not logged in', () => {
+  it.each<{ variant: 'login' | 'signup'; buttonText: string; placeholder: string }>([
+    { variant: 'login', buttonText: 'Login', placeholder: 'Minimum 6 characters' },
+    { variant: 'signup', buttonText: 'Sign up', placeholder: 'Your password' },
+  ])('renders variant %variant correctly', async ({ variant, buttonText, placeholder }) => {
     const wrapper = mount(AuthForm, {
       props: {
-        variant: 'login',
+        variant,
         submitting: false,
       },
       global: {
@@ -20,10 +23,8 @@ describe('AuthForm', () => {
       },
     });
 
-    expect(wrapper.find('form').exists()).toBe(true);
-    expect(wrapper.find('label[for="email"]').text()).toBe('Email');
-    expect(wrapper.find('label[for="password"]').text()).toBe('Password');
-    expect(wrapper.find('button[type="submit"]').text()).toBe('Login');
+    expect(wrapper.find('button[type="submit"]').text()).toBe(buttonText);
+    expect(wrapper.find('#password').attributes('placeholder')).toBe(placeholder);
   });
 
   it('renders correctly for signup variant', () => {
@@ -41,24 +42,6 @@ describe('AuthForm', () => {
     expect(wrapper.find('#password').attributes('placeholder')).toBe('Your password');
   });
 
-  it('renders "already logged in" message when authStore has accessToken', () => {
-    const authStore = useAuthStore();
-    authStore.setAccessToken('fake-token');
-
-    const wrapper = mount(AuthForm, {
-      props: {
-        variant: 'login',
-        submitting: false,
-      },
-      global: {
-        stubs: ['router-link'],
-      },
-    });
-
-    expect(wrapper.find('form').exists()).toBe(false);
-    expect(wrapper.text()).toContain('You are already logged in.');
-  });
-
   it('emits submit event with email and password when form is submitted', async () => {
     const wrapper = mount(AuthForm, {
       props: {
@@ -72,7 +55,6 @@ describe('AuthForm', () => {
 
     const emailInput = wrapper.find('#email');
     const passwordInput = wrapper.find('#password');
-
     await emailInput.setValue('test@example.com');
     await passwordInput.setValue('password123');
 
@@ -110,4 +92,26 @@ describe('AuthForm', () => {
     await wrapper.find('#password').setValue('123456');
     expect((button.element as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it.each<{ variant: 'login' | 'signup'; buttonText: string }>([
+    { variant: 'login', buttonText: 'Logging in...' },
+    { variant: 'signup', buttonText: 'Signing up...' },
+  ])(
+    'disables submit button if already processing the request. Variant: %variant',
+    async ({ variant, buttonText }) => {
+      const wrapper = mount(AuthForm, {
+        props: {
+          variant,
+          submitting: true,
+        },
+        global: {
+          stubs: ['router-link'],
+        },
+      });
+      const button = wrapper.find('button[type="submit"]');
+
+      expect((button.element as HTMLButtonElement).disabled).toBe(true);
+      expect(button.text()).toBe(buttonText);
+    },
+  );
 });

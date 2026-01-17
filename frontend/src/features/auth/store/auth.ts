@@ -1,3 +1,4 @@
+import { computed } from 'vue';
 import type { AccessToken } from '@/api/types';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
@@ -7,6 +8,9 @@ import { useAlertStore } from '@/stores/error';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
+  const isLoading: Ref<boolean> = ref(false);
+
+  const isAuthenticated = computed(() => !!accessToken.value);
 
   const setAccessToken = (newToken: string | null) => {
     accessToken.value = newToken;
@@ -18,6 +22,8 @@ export const useAuthStore = defineStore('auth-store', () => {
       username: email,
       password: password,
     });
+
+    isLoading.value = true;
     try {
       const res = await apiClient.post('/auth/login', params, {
         headers: {
@@ -29,11 +35,14 @@ export const useAuthStore = defineStore('auth-store', () => {
     } catch (err: unknown) {
       errorStore.addError(getErrorMessage(err));
       return false;
+    } finally {
+      isLoading.value = false;
     }
   };
 
   const signup = async (email: string, password: string): Promise<boolean> => {
     const errorStore = useAlertStore();
+    isLoading.value = true;
     try {
       const res = await apiClient.post('/auth/signup', {
         email: email,
@@ -43,11 +52,14 @@ export const useAuthStore = defineStore('auth-store', () => {
     } catch (err: unknown) {
       errorStore.addError(getErrorMessage(err));
       return false;
+    } finally {
+      isLoading.value = false;
     }
   };
 
   const logout = async () => {
     const errorStore = useAlertStore();
+    isLoading.value = true;
     try {
       await apiClient.post('/auth/logout');
     } catch (err: unknown) {
@@ -55,6 +67,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     } finally {
       setAccessToken(null);
       console.log('Cleared access_token');
+      isLoading.value = false;
     }
   };
 
@@ -76,5 +89,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     login,
     signup,
     logout,
+    isAuthenticated,
+    isLoading,
   };
 });

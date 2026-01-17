@@ -19,4 +19,22 @@ describe('AuthCard', () => {
     expect(wrapper.find('.test-slot').exists()).toBe(true);
     expect(wrapper.find('.test-slot').text()).toBe('Slot Content');
   });
+
+  it('renders slots correctly', () => {
+    const wrapper = mount(AuthCard, {
+      props: {
+        title: 'test',
+        description: 'test',
+      },
+      slots: {
+        default: '<div class="default-slot">Default Slot</div>',
+        footer: '<div class="footer-slot">Footer Slot</div>',
+      },
+    });
+
+    expect(wrapper.find('.default-slot').exists()).toBe(true);
+    expect(wrapper.find('.default-slot').text()).toBe('Default Slot');
+    expect(wrapper.find('.footer-slot').exists()).toBe(true);
+    expect(wrapper.find('.footer-slot').text()).toBe('Footer Slot');
+  });
 });
