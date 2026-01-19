@@ -16,18 +16,10 @@
     class="absolute inset-0 z-20"
   ></router-link>
   <div class="absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto">
-    <Button
-      class="p-4 rounded-full cursor-pointer bg-primary/60 backdrop-blur-lg"
-      :disabled="isProcessing"
-      @click.stop="isEditModalOpen = true"
-    >
+    <Button variant="circle" :disabled="isProcessing" @click.stop="isEditModalOpen = true">
       <Pencil />
     </Button>
-    <Button
-      class="p-4 rounded-full cursor-pointer bg-primary/60 backdrop-blur-lg"
-      :disabled="isProcessing"
-      @click.stop="isDeleteModalOpen = true"
-    >
+    <Button variant="circle" :disabled="isProcessing" @click.stop="isDeleteModalOpen = true">
       <Trash2 />
     </Button>
   </div>

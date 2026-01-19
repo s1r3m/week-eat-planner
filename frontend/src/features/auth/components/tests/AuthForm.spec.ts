@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import AuthForm from './AuthForm.vue';
-import { useAuthStore } from '@/features/auth/store/auth';
+import AuthForm from '@/features/auth/components/AuthForm.vue';
 
 describe('AuthForm', () => {
   beforeEach(() => {
@@ -12,7 +11,7 @@ describe('AuthForm', () => {
   it.each<{ variant: 'login' | 'signup'; buttonText: string; placeholder: string }>([
     { variant: 'login', buttonText: 'Login', placeholder: 'Minimum 6 characters' },
     { variant: 'signup', buttonText: 'Sign up', placeholder: 'Your password' },
-  ])('renders variant %variant correctly', async ({ variant, buttonText, placeholder }) => {
+  ])('renders variant %variant correctly', ({ variant, buttonText, placeholder }) => {
     const wrapper = mount(AuthForm, {
       props: {
         variant,
@@ -98,7 +97,7 @@ describe('AuthForm', () => {
     { variant: 'signup', buttonText: 'Signing up...' },
   ])(
     'disables submit button if already processing the request. Variant: %variant',
-    async ({ variant, buttonText }) => {
+    ({ variant, buttonText }) => {
       const wrapper = mount(AuthForm, {
         props: {
           variant,

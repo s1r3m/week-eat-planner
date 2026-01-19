@@ -1,37 +1,48 @@
 <template>
-  <ModalBase
-    :model-value="props.modelValue"
-    eyebrow="Week Eat Planner"
-    :title="`Edit ${props.weekName}`"
-    subtitle="Update the name so the plan stays organized."
-    @close="$emit('close')"
-  >
-    <form id="week-edit-form" class="space-y-3" @submit.prevent="handleSave">
-      <label for="week-name" class="text-sm font-semibold text-muted">Week name</label>
-      <input
-        id="week-name"
-        v-model="localWeekName"
-        type="text"
-        name="week-name"
-        placeholder="E.g. Week 1"
-        class="w-full rounded-2xl border border-brand-muted bg-surface-base px-4 py-3 text-base text-base-color placeholder:text-muted focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
-      />
+  <Dialog :open="props.modelValue">
+    <form id="weekEditForm" @submit.prevent="handleSave">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle> Edit {{ props.weekName }} </DialogTitle>
+          <DialogDescription> Update the name so the plan stays organized. </DialogDescription>
+        </DialogHeader>
+        <FieldGroup>
+          <FieldLabel for="weekName"> Week name </FieldLabel>
+          <Input id="weekName" v-model="localWeekName" type="text" , placeholder="E.g. Week 1" />
+        </FieldGroup>
+        <DialogFooter>
+          <DialogClose as-child>
+            <Button variant="outline" :disabled="props.saving" @click="$emit('close')">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button form="weekEditForm" type="submit" :disabled="isSaveDisabled">
+            <template v-if="props.saving">
+              <Spinner />
+            </template>
+            {{ props.saving ? 'Saving...' : 'Save' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </form>
-
-    <template #footer>
-      <Button :disabled="props.saving" @click="$emit('close')"> Cancel </Button>
-      <Button form="week-edit-form" :disabled="isSaveDisabled">
-        {{ props.saving ? 'Saving...' : 'Save' }}
-      </Button>
-    </template>
-  </ModalBase>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import ModalBase from '@/components/shared/ModalBase.vue';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   modelValue: boolean;

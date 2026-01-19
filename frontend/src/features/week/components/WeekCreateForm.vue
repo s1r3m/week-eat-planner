@@ -1,5 +1,5 @@
 <template>
-  <div class="" @click.stop="isAddWeekModalOpen = true">
+  <div @click.stop="isAddWeekModalOpen = true">
     <span class="text-9xl font-bold text-primary">+</span>
   </div>
 

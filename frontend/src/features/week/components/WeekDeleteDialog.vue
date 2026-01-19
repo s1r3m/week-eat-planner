@@ -13,8 +13,8 @@
     </p>
 
     <template #footer>
-      <Button @click="$emit('close')">No</Button>
-      <Button :disabled="props.processing" @click="handleYes">
+      <Button variant="secondary" @click="$emit('close')">No</Button>
+      <Button variant="destructive" :disabled="props.processing" @click="handleYes">
         {{ props.processing ? 'Deleting...' : 'Yes' }}
       </Button>
     </template>

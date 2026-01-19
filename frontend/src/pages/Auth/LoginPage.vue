@@ -38,6 +38,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { AuthCard, AuthFooter, AuthForm } from '@/features/auth/components';
 import { CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const authStore = useAuthStore();
 const router = useRouter();

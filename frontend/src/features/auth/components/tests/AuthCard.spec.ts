@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import AuthCard from './AuthCard.vue';
+import AuthCard from '@/features/auth/components/AuthCard.vue';
 
 describe('AuthCard', () => {
   it('renders props correctly', () => {

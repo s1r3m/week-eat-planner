@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import AuthFooter from './AuthFooter.vue';
+import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 
 describe('AuthFooter', () => {
   it('should render the component no slots', () => {

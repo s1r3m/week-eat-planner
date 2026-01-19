@@ -20,7 +20,7 @@
     </template>
 
     <template #footer>
-      <Button @click="$emit('close')"> Cancel </Button>
+      <Button variant="secondary" @click="$emit('close')"> Cancel </Button>
       <Button :disabled="isDisabled" @click="onCreate"> Create </Button>
     </template>
   </ModalBase>

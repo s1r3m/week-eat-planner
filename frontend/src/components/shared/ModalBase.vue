@@ -1,4 +1,10 @@
 <template>
+  <!-- <Dialog>
+    <form>
+      <
+    </form>
+  </Dialog> -->
+
   <Teleport to="body">
     <Transition name="modal-fade">
       <div
@@ -12,31 +18,35 @@
           @click="$emit('close')"
         ></div>
         <div
-          class="relative z-10 w-full max-w-xl rounded-3xl border border-brand-muted/70 bg-surface-raised p-6 shadow-2xl sm:p-8 lg:max-w-2xl"
+          class="relative z-10 w-full max-w-xl rounded-3xl border border-brand-muted/70 bg-surface-raised p-6 shadow-2xl sm:p-9 lg:max-w-2xl"
         >
-          <header class="flex items-start gap-4">
+          <header class="flex items-start gap-3">
             <div class="flex-1 space-y-1">
               <p
                 v-if="eyebrow"
+                id="modal-eyebrow"
                 class="text-sm font-semibold uppercase tracking-wide text-brand-primary"
               >
                 {{ eyebrow }}
               </p>
-              <h3 v-if="title" class="text-2xl font-bold text-base-color">
+              <h3 v-if="title" id="modal-title" class="text-2xl font-bold text-base-color">
                 {{ title }}
               </h3>
-              <p v-if="subtitle" class="text-base text-muted">
+              <p v-if="subtitle" id="modal-subtitle" class="text-base text-muted">
                 {{ subtitle }}
               </p>
             </div>
-            <button
+            <Button variant="circle" size="icon" aria-label="Close dialog" @click="$emit('close')">
+              <X class="size-6" />
+            </Button>
+            <!-- <button
               class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-muted/70 text-base-color transition hover:border-brand-primary hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
               type="button"
               aria-label="Close dialog"
               @click="$emit('close')"
             >
               <X class="h-5 w-5" />
-            </button>
+            </button> -->
           </header>
           <section class="mt-4 text-base text-base-color">
             <slot />
@@ -56,6 +66,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
 import { X } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   modelValue: boolean;
