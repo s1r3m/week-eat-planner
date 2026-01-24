@@ -5,7 +5,7 @@
 
   <WeekCreateDialog
     v-model="isAddWeekModalOpen"
-    :processing="isProcessing"
+    :processing="weekStore.isLoading"
     @create="handleCreateWeek"
     @close="isAddWeekModalOpen = false"
   />
@@ -17,18 +17,15 @@ import WeekCreateDialog from '@/features/week/components/WeekCreateDialog.vue';
 import { useWeekStore } from '@/features/week/store/weeks';
 import type { WeekPayload } from '@/features/week/types/week';
 
-const isProcessing = ref(false);
 const isAddWeekModalOpen = ref(false);
 const weekStore = useWeekStore();
 
 const handleCreateWeek = async (weekData: WeekPayload) => {
-  isProcessing.value = true;
-  isAddWeekModalOpen.value = false;
   // TODO: Add error handling.
   try {
     await weekStore.addWeek(weekData.name);
   } finally {
-    isProcessing.value = false;
+    isAddWeekModalOpen.value = false;
   }
 };
 </script>

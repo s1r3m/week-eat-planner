@@ -1,29 +1,43 @@
 <template>
-  <ModalBase
-    :model-value="modelValue"
-    eyebrow="Week planner"
-    :title="`Delete ${props.weekName}?`"
-    subtitle="This action cannot be undone."
-    @close="$emit('close')"
-  >
-    <p class="text-base text-base-color">
-      Are you sure you want to delete
-      <span class="font-semibold text-danger">{{ props.weekName }}</span
-      >?
-    </p>
+  <Dialog :open="modelValue" @update:open="$emit('close')">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle> Delete {{ props.weekName }}? </DialogTitle>
+        <DialogDescription> This action cannot be undone. </DialogDescription>
+      </DialogHeader>
 
-    <template #footer>
-      <Button variant="secondary" @click="$emit('close')">No</Button>
-      <Button variant="destructive" :disabled="props.processing" @click="handleYes">
-        {{ props.processing ? 'Deleting...' : 'Yes' }}
-      </Button>
-    </template>
-  </ModalBase>
+      <p class="text-base text-popover-foreground">
+        Are you sure you want to delete
+        <span class="font-semibold text-primary">{{ props.weekName }}</span
+        >?
+      </p>
+
+      <DialogFooter>
+        <DialogClose as-child>
+          <Button variant="outline" @click="$emit('close')"> No </Button>
+        </DialogClose>
+        <Button variant="destructive" :disabled="props.processing" @click="handleYes">
+          <template v-if="props.processing">
+            <Spinner />
+          </template>
+          {{ props.processing ? 'Deleting...' : 'Yes' }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import ModalBase from '@/components/shared/ModalBase.vue';
-
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 
 interface Props {

@@ -1,30 +1,32 @@
 <template>
-  <Dialog :open="props.modelValue">
-    <form id="weekEditForm" @submit.prevent="handleSave">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle> Edit {{ props.weekName }} </DialogTitle>
-          <DialogDescription> Update the name so the plan stays organized. </DialogDescription>
-        </DialogHeader>
+  <Dialog :open="props.modelValue" @update:open="$emit('close')">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle> Edit {{ props.weekName }} </DialogTitle>
+        <DialogDescription> Update the name so the plan stays organized. </DialogDescription>
+      </DialogHeader>
+
+      <form id="weekEditForm" @submit.prevent="handleSave">
         <FieldGroup>
-          <FieldLabel for="weekName"> Week name </FieldLabel>
+          <FieldLabel for="weekName"> New week name </FieldLabel>
           <Input id="weekName" v-model="localWeekName" type="text" , placeholder="E.g. Week 1" />
         </FieldGroup>
-        <DialogFooter>
-          <DialogClose as-child>
-            <Button variant="outline" :disabled="props.saving" @click="$emit('close')">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button form="weekEditForm" type="submit" :disabled="isSaveDisabled">
-            <template v-if="props.saving">
-              <Spinner />
-            </template>
-            {{ props.saving ? 'Saving...' : 'Save' }}
+      </form>
+
+      <DialogFooter>
+        <DialogClose as-child>
+          <Button variant="outline" :disabled="props.saving" @click="$emit('close')">
+            Cancel
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </form>
+        </DialogClose>
+        <Button form="weekEditForm" type="submit" :disabled="isSaveDisabled">
+          <template v-if="props.saving">
+            <Spinner />
+          </template>
+          {{ props.saving ? 'Saving...' : 'Save' }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   </Dialog>
 </template>
 

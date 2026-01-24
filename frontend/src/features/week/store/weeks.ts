@@ -34,11 +34,14 @@ export const useWeekStore = defineStore('weeks-store', () => {
   };
 
   const addWeek = async (name: string) => {
+    isLoading.value = true;
     try {
       const response = await apiClient.post<UserWeekMinimal>('/weeks', { name });
       weeks.value.push(response.data);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
+    } finally {
+      isLoading.value = false;
     }
   };
 

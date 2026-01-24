@@ -1,36 +1,49 @@
 <template>
-  <ModalBase
-    :model-value="props.modelValue"
-    eyebrow="Week Eat Planner"
-    :title="`Add new Week`"
-    subtitle="Fill the following form:"
-    @close="$emit('close')"
-  >
-    <template #default>
-      <form id="add-week-form" class="space-y-3" @submit.prevent="onCreate">
-        <label for="week-name" class="text-sm font-semibold text-muted">New week name: </label>
-        <input
-          id="week-name"
-          v-model="newName"
-          type="text"
-          placeholder="E.g. Week 1"
-          class="w-full rounded-2xl border border-brand-muted bg-surface-base px-4 py-3 text-base text-base-color placeholder:text-muted focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
-        />
-      </form>
-    </template>
+  <Dialog :open="props.modelValue" @update:open="$emit('close')">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle> Add new Week </DialogTitle>
+        <DialogDescription> Fill the following form: </DialogDescription>
+      </DialogHeader>
 
-    <template #footer>
-      <Button variant="secondary" @click="$emit('close')"> Cancel </Button>
-      <Button :disabled="isDisabled" @click="onCreate"> Create </Button>
-    </template>
-  </ModalBase>
+      <form id="addWeekForm" @submit.prevent="onCreate">
+        <FieldGroup>
+          <FieldLabel for="weekName"> New week name: </FieldLabel>
+          <Input id="weekName" v-model="newName" type="text" placeholder="E.g. Week 1" />
+        </FieldGroup>
+      </form>
+
+      <DialogFooter>
+        <DialogClose as-child>
+          <Button variant="outline" @click="$emit('close')"> Cancel </Button>
+        </DialogClose>
+        <Button type="submit" form="addWeekForm" :disabled="isDisabled">
+          <template v-if="props.processing">
+            <Spinner />
+          </template>
+          {{ props.processing ? 'Creating...' : 'Create' }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import type { WeekPayload } from '@/features/week/types/week';
 import { ref, computed } from 'vue';
-import ModalBase from '@/components/shared/ModalBase.vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { FieldGroup, FieldLabel } from '@/components/ui/field';
 
 interface Props {
   modelValue: boolean;
