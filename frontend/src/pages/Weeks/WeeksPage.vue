@@ -9,7 +9,7 @@
   </template>
 
   <template v-else-if="weekStore.isFetchingWeeks">
-    <TheLoadingSpinner loading-name="weeks" />
+    <TheLoadingPageState loading-name="weeks" />
   </template>
 
   <template v-else>
@@ -34,7 +34,7 @@ import { useWeekStore } from '@/features/week/store/weeks';
 import WeekDetails from '@/features/week/components/WeekDetails.vue';
 import WeekCreateForm from '@/features/week/components/WeekCreateForm.vue';
 import { Button } from '@/components/ui/button';
-import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { Card } from '@/components/ui/card';
 

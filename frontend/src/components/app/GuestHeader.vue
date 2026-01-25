@@ -1,6 +1,6 @@
 <template>
   <header class="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-    <div class="flex h-16 items-center gap-4 px-4">
+    <div class="flex h-16 items-center gap-3 px-3">
       <router-link to="/" class="flex items-center gap-2 text-foreground hover:text-foreground/80">
         <img class="h-10 w-auto" src="@/assets//logo.png" alt="Week Eat Planner logo" />
         <span class="text-lg font-semibold tracking-tight text-brand-primary md:text-xl"
@@ -8,7 +8,7 @@
         >
       </router-link>
 
-      <nav class="ml-6 hidden items-center gap-6 text-sm font-medium md:flex" aria-label="header">
+      <nav class="hidden items-center gap-6 text-sm font-medium md:flex" aria-label="header">
         <router-link
           v-for="link in navLinks"
           :key="link.hash"
@@ -19,7 +19,7 @@
         </router-link>
       </nav>
 
-      <div class="ml-auto flex items-center gap-2">
+      <div class="ml-auto flex items-center gap-3">
         <ModeToggle />
         <Button v-if="!isLogin" variant="ghost" size="sm" as-child class="hidden md:inline-flex">
           <router-link to="/login">Login</router-link>
@@ -83,7 +83,7 @@ import ModeToggle from '@/components/shared/ModeToggle.vue';
 import { Button } from '@/components/ui/button';
 
 type NavLink = {
-  hash: string;
+  hash?: string;
   label: string;
   path?: string;
 };
@@ -92,7 +92,7 @@ const defaultNavLinks: NavLink[] = [
   { hash: '#hero', label: 'Home' },
   { hash: '#use-cases', label: 'Use Cases' },
   { hash: '#get-started', label: 'Get Started' },
-  { hash: '#weeks', label: 'Start Planning', path: '/weeks' },
+  { label: 'Start Planning', path: '/weeks' },
 ];
 
 const props = defineProps<{

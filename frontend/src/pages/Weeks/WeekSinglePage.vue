@@ -7,7 +7,7 @@
   </template>
 
   <template v-else-if="weekStore.isLoading">
-    <TheLoadingSpinner loading-name="weeks" />
+    <TheLoadingPageState loading-name="the week" />
   </template>
   <template v-else-if="week">
     <div class="space-y-8 mb-8">
@@ -36,7 +36,7 @@ import { useWeekStore } from '@/features/week/store/weeks';
 import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { Button } from '@/components/ui/button';
-import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const week: Ref<UserWeek | null> = ref(null);

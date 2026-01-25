@@ -1,6 +1,6 @@
 <template>
   <template v-if="loading">
-    <TheLoadingSpinner loading-name="profile" />
+    <TheLoadingPageState loading-name="the profile" />
   </template>
 
   <template v-else>
@@ -40,7 +40,7 @@
 import { ref } from 'vue';
 import { apiClient } from '@/api/client';
 
-import TheLoadingSpinner from '@/components/app/TheLoadingSpinner.vue';
+import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
