@@ -11,12 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Keep transitions when switching themes and scope the class to <html>
 const mode = useColorMode({
   selector: 'html',
   attribute: 'class',
   initialValue: 'auto',
-  storageKey: 'week-eat-theme',
+  storageKey: 'week-eat-planner.theme',
   disableTransition: false,
 });
 
@@ -25,6 +24,10 @@ const menuValue = computed({
   set: (v) => {
     mode.store.value = v;
   },
+});
+
+defineExpose({
+  menuValue,
 });
 </script>
 

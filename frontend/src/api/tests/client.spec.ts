@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { apiClient, AUTH_EXCLUDED_PATHS, authClient, getErrorMessage } from './client';
+import { apiClient, AUTH_EXCLUDED_PATHS, authClient, getErrorMessage } from '../client';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { createPinia, setActivePinia } from 'pinia';
 import axios from 'axios';
