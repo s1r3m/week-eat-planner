@@ -12,5 +12,3 @@
 import GuestHeader from '@/components/app/GuestHeader.vue';
 import GuestFooter from '@/components/app/GuestFooter.vue';
 </script>
-
-<style scoped></style>

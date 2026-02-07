@@ -4,21 +4,23 @@ import type { RouterScrollBehavior } from 'vue-router';
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
-import HomePage from '@/pages/HomePage.vue';
+import PromoPage from '@/pages/PromoPage.vue';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { useWeekStore } from '@/features/week/store/weeks';
-
-interface Breadcrumbs {
-  to?: string;
-  label: string;
-}
 
 const routes = [
   {
     path: '/',
+    redirect: () => {
+      const authStore = useAuthStore();
+      return authStore.isAuthenticated ? '/weeks' : '/promo';
+    },
+  },
+  {
+    path: '/',
     component: GuestLayout,
     children: [
-      { path: '', name: 'home', component: HomePage },
+      { path: 'promo', name: 'promo', component: PromoPage },
       {
         path: 'login',
         name: 'login',
@@ -75,7 +77,7 @@ const routes = [
   },
 
   // otherwise redirect to home
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  { path: '/:pathMatch(.*)*', redirect: '/promo' },
 ];
 
 type ScrollPositionResult = {

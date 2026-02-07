@@ -53,12 +53,12 @@ describe('Router', () => {
     expect(router.currentRoute.value.name).toBe('login');
   });
 
-  it('should redirect to home for unknown routes', async () => {
+  it('should redirect to promo for unknown routes', async () => {
     const authStore = { accessToken: null };
     (useAuthStore as any).mockReturnValue(authStore);
 
     await router.push('/non-existent-route');
-    expect(router.currentRoute.value.name).toBe('home');
+    expect(router.currentRoute.value.name).toBe('promo');
   });
 
   it('should load async components', async () => {
