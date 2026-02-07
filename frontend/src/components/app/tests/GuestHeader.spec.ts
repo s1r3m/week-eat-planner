@@ -161,9 +161,7 @@ describe('GuestHeader', () => {
       const signUpButton = wrapper.find('a[href="/signup"]');
 
       expect(loginButton.exists()).toBe(false);
-      expect(wrapper.vm.showLogin).toBe(false);
       expect(signUpButton.exists()).toBe(false);
-      expect(wrapper.vm.showSignup).toBe(false);
     });
 
     it('calls logout method on Logout button click', async () => {

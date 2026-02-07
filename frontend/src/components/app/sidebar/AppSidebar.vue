@@ -7,7 +7,7 @@
             as-child
             class="pl-0 group-data-[collapsible=icon]:pl-0! active:text-brand-primary hover:bg-transparent hover:text-brand-primary"
           >
-            <router-link to="/" class="flex items-center justify-start text-brand-primary">
+            <router-link to="/promo" class="flex items-center justify-start text-brand-primary">
               <div
                 class="flex size-10 shrink-0 bg-transparent group-data-[collapsible=icon]:size-10"
               >
