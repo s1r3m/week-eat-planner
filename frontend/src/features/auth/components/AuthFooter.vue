@@ -1,6 +1,6 @@
 <template>
-  <Button variant="outline" class="w-full"> Sign in with Google </Button>
-  <Button variant="outline" class="w-full"> Sign in with Facebook </Button>
+  <Button variant="outline" class="w-full"> Continue with Google </Button>
+  <Button variant="outline" class="w-full"> Continue with Facebook </Button>
 
   <slot />
 </template>

@@ -1,7 +1,7 @@
 <template>
-  <main class="flex flex-col gap-20 px-4 pb-20 pt-10">
+  <div class="flex flex-col gap-21 px-3 pb-21 pt-12">
     <section id="hero" class="grid items-center gap-10 md:grid-cols-2 scroll-mt-24">
-      <article class="space-y-4 text-center md:text-left">
+      <article class="space-y-3 text-center md:text-left">
         <Badge variant="default"> Smarter meal planning </Badge>
         <h1 class="text-4xl font-semibold leading-tight text-foreground md:text-5xl">
           Plan once. <span class="text-primary">Eat better</span> all week
@@ -136,7 +136,7 @@
         </div>
       </div>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

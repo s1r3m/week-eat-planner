@@ -7,7 +7,7 @@
         <AuthFooter>
           <CardDescription>
             Already have an account?
-            <router-link to="/signup" class="font-semibold text-brand-primary hover:underline">
+            <router-link to="/login" class="font-semibold text-brand-primary hover:underline">
               Log in!
             </router-link>
           </CardDescription>
@@ -31,6 +31,7 @@
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { AuthCard, AuthFooter, AuthForm } from '@/features/auth/components';
+import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
 
 const authStore = useAuthStore();

@@ -29,6 +29,11 @@ const routes = [
         name: 'signup',
         component: () => import('@/pages/Auth/SignupPage.vue'),
       },
+      {
+        path: 'forgot-password',
+        name: 'forgot-password',
+        component: () => import('@/pages/Auth/ForgotPasswordPage.vue'),
+      },
     ],
   },
   {

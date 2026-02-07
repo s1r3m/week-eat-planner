@@ -7,8 +7,8 @@ describe('AuthFooter', () => {
     const wrapper = mount(AuthFooter);
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.text()).toContain('Sign in with Google');
-    expect(wrapper.text()).toContain('Sign in with Facebook');
+    expect(wrapper.text()).toContain('Continue with Google');
+    expect(wrapper.text()).toContain('Continue with Facebook');
   });
 
   it('should render the slot correctly', () => {

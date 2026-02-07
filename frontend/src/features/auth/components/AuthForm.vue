@@ -23,7 +23,7 @@
         </template>
         <template v-else> {{ variant === 'login' ? 'Login' : 'Sign up' }} </template>
       </Button>
-      <FieldSeparator> or </FieldSeparator>
+      <FieldSeparator> Or </FieldSeparator>
     </FieldSet>
   </form>
 </template>

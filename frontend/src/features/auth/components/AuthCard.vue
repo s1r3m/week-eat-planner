@@ -1,5 +1,5 @@
 <template>
-  <Card class="w-full max-w-lg lg:max-w-xl mx-auto my-12">
+  <Card class="mx-6 max-w-lg lg:max-w-xl sm:mx-auto my-12">
     <CardHeader>
       <CardTitle class="text-brand-primary text-center text-2xl">{{ title }}</CardTitle>
       <CardDescription class="text-center"> {{ description }} </CardDescription>

@@ -4,8 +4,8 @@
   </template>
 
   <template v-else>
-    <PageTitle header="User settings" />
-    <Card v-if="userInfo" class="mt-4 mx-4">
+    <PageTitle header="User settings" description="Update your info" />
+    <Card v-if="userInfo" class="mt-9 mx-6">
       <CardHeader class="text-lg font-semibold"> Profile Information </CardHeader>
       <CardContent>
         <FieldSet>

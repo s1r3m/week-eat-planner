@@ -13,9 +13,9 @@
   </template>
 
   <template v-else>
-    <div class="space-y-8 mb-8">
+    <div class="space-y-9 mb-9">
       <PageTitle header="My Weeks" description="Manage your weekly meal plans here" />
-      <div class="grid gap-8 lg:grid-cols-2 lg:gap-12 2xl:grid-cols-3 2xl:gap-24 px-8">
+      <div class="grid gap-9 lg:grid-cols-2 lg:gap-12 2xl:grid-cols-3 2xl:gap-24 px-6">
         <Card v-for="week in weekStore.weeks" :key="week.id" variant="week">
           <WeekDetails :week="week" />
         </Card>

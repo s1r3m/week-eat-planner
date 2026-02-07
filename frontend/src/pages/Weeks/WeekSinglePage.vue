@@ -10,14 +10,14 @@
     <TheLoadingPageState loading-name="the week" />
   </template>
   <template v-else-if="week">
-    <div class="space-y-8 mb-8">
+    <div class="space-y-9 mb-9">
       <PageTitle :header="week.name" description="Plan your meal to each day" />
 
-      <Card v-for="(day, idx) in groupedMealSlots" :key="days[idx]" class="mx-4">
+      <Card v-for="(day, idx) in groupedMealSlots" :key="days[idx]" class="mx-6">
         <CardHeader>
           <CardTitle> {{ days[idx] }}</CardTitle>
         </CardHeader>
-        <CardContent class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <CardContent class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <Card v-for="mealSlot in day" :key="mealSlot.id" variant="slot">
             <MealSlotContent :meal-slot="mealSlot" />
           </Card>
