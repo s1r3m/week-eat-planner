@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex gap-3">
     <Button v-if="showLogin" variant="outline" size="sm" as-child>
       <router-link to="/login">Login</router-link>
     </Button>

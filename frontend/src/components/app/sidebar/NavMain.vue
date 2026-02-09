@@ -13,7 +13,7 @@
           <template v-if="item.items">
             <CollapsibleTrigger as-child>
               <SidebarMenuAction class="data-[state=open]:rotate-90">
-                <ChevronRight />
+                <ChevronRight v-if="item.items.length > 0" />
                 <span class="sr-only"> Toggle </span>
               </SidebarMenuAction>
             </CollapsibleTrigger>

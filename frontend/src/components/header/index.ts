@@ -1,3 +1,2 @@
-export { default as AppAuthActions } from './AppAuthActions.vue';
-export { default as AppBrand } from './AppBrand.vue';
-export { default as AppNavigation, type NavLink } from './AppNavigation.vue';
+export { default as GuestAppHeader } from './guest/GuestAppHeader.vue';
+export { default as AuthAppHeader } from './auth/AuthAppHeader.vue';

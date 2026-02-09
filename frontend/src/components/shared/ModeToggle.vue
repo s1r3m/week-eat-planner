@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useColorMode } from '@vueuse/core';
-import { MoonIcon, SunIcon } from 'lucide-vue-next';
+import { ContrastIcon, MoonIcon, SunIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -44,9 +44,9 @@ defineExpose({
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuRadioGroup v-model="menuValue">
-        <DropdownMenuRadioItem value="light"> Light </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="dark"> Dark </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="auto"> System </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="light"> <SunIcon /> Light </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="dark"> <MoonIcon /> Dark </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="auto"> <ContrastIcon /> System </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
     </DropdownMenuContent>
   </DropdownMenu>

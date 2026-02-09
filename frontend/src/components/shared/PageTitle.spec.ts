@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
-import PageTitle from '../PageTitle.vue';
+import PageTitle from './PageTitle.vue';
 
 describe('PageTitle', () => {
   it('renders header and description', () => {

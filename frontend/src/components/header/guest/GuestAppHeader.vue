@@ -1,0 +1,43 @@
+<template>
+  <AppHeader>
+    <template #left>
+      <AppBrand />
+    </template>
+
+    <template #center>
+      <GuestNavigation :links="navLinks" class="hidden md:flex" />
+    </template>
+
+    <template #right>
+      <div class="flex gap-3">
+        <ModeToggle />
+        <GuestAuthActions class="hidden md:flex" />
+        <GuestMobileMenu :links="navLinks" />
+      </div>
+    </template>
+  </AppHeader>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+
+import AppHeader from '@/components/header/AppHeader.vue';
+import AppBrand from '@/components/shared/AppBrand.vue';
+import ModeToggle from '@/components/shared/ModeToggle.vue';
+
+import GuestNavigation from './GuestNavigation.vue';
+import type { NavLink } from './GuestNavigation.vue';
+import GuestAuthActions from './GuestAuthActions.vue';
+import GuestMobileMenu from './GuestMobileMenu.vue';
+
+const defaultNavLinks: NavLink[] = [
+  { to: '/#use-cases', label: 'Use Cases' },
+  { to: '/#get-started', label: 'Get Started' },
+  { to: '/weeks', label: 'Start Planning' },
+];
+
+const props = defineProps<{
+  navLinks?: NavLink[];
+}>();
+const navLinks = computed(() => props.navLinks ?? defaultNavLinks);
+</script>

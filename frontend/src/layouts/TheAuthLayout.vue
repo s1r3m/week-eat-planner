@@ -2,7 +2,7 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
-      <AuthHeader />
+      <AuthAppHeader />
 
       <router-view v-slot="{ Component }">
         <template v-if="Component">
@@ -16,5 +16,5 @@
 <script setup lang="ts">
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/app/sidebar/AppSidebar.vue';
-import AuthHeader from '@/components/app/AuthHeader.vue';
+import { AuthAppHeader } from '@/components/header';
 </script>

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import * as vueuse from '@vueuse/core';
 import type { UseColorModeReturn, BasicColorSchema } from '@vueuse/core';
-import ModeToggle from '../ModeToggle.vue';
+import ModeToggle from './ModeToggle.vue';
 import { MoonIcon, SunIcon } from 'lucide-vue-next';
 
 vi.mock('@vueuse/core', async () => {
