@@ -40,7 +40,9 @@
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/auth';
 
-import { AuthCard, AuthFooter, AuthForm } from '@/features/auth/components';
+import AuthCard from '@/features/auth/components/AuthCard.vue';
+import AuthFooter from '@/features/auth/components/AuthFooter.vue';
+import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
 

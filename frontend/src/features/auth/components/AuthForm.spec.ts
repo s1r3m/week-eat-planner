@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import AuthForm from '@/features/auth/components/AuthForm.vue';
+import AuthForm from './AuthForm.vue';
 
 describe('AuthForm', () => {
   beforeEach(() => {
