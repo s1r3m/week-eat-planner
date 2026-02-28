@@ -9,6 +9,6 @@
 </template>
 
 <script setup lang="ts">
-import { GuestAppHeader } from '@/components/header';
+import GuestAppHeader from '@/components/header/guest/GuestAppHeader.vue';
 import GuestFooter from '@/components/app/GuestFooter.vue';
 </script>

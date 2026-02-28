@@ -66,6 +66,7 @@
     </SidebarMenuItem>
   </SidebarMenu>
 </template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next';
