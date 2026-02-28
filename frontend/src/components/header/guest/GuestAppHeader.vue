@@ -30,14 +30,9 @@ import type { NavLink } from './GuestNavigation.vue';
 import GuestAuthActions from './GuestAuthActions.vue';
 import GuestMobileMenu from './GuestMobileMenu.vue';
 
-const defaultNavLinks: NavLink[] = [
-  { to: '/#use-cases', label: 'Use Cases' },
-  { to: '/#get-started', label: 'Get Started' },
+const navLinks: NavLink[] = [
+  { to: '#use-cases', label: 'Use Cases' },
+  { to: '#get-started', label: 'Get Started' },
   { to: '/weeks', label: 'Start Planning' },
 ];
-
-const props = defineProps<{
-  navLinks?: NavLink[];
-}>();
-const navLinks = computed(() => props.navLinks ?? defaultNavLinks);
 </script>

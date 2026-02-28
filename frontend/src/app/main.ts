@@ -7,6 +7,7 @@ import router from '@/router';
 import '@/assets/style.css';
 
 const app = createApp(App);
+
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedState);
 app.use(pinia);
