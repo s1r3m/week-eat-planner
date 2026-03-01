@@ -22,7 +22,6 @@ import {
 export interface NavLink {
   label: string;
   to: string;
-  children?: { to: string; label: string };
 }
 
 defineProps<{

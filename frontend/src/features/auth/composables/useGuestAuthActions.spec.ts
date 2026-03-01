@@ -1,19 +1,18 @@
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import { setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
+import { useRoute } from 'vue-router';
 
 vi.mock('vue-router', async () => {
   const actual = await vi.importActual<typeof import('vue-router')>('vue-router');
   return {
     ...actual,
     useRoute: vi.fn(),
-    useRouter: vi.fn(),
   };
 });
-
-import { useRoute, useRouter } from 'vue-router';
 
 describe('useGuestAuthActions', () => {
   beforeEach(() => {
@@ -25,7 +24,6 @@ describe('useGuestAuthActions', () => {
     authStore.accessToken = isAuthenticated ? 'token' : null;
     authStore.logout = vi.fn();
     (useRoute as Mock).mockReturnValue({ name });
-    (useRouter as Mock).mockReturnValue({ go: vi.fn() });
 
     return {
       ...useGuestAuthActions(),
@@ -69,6 +67,5 @@ describe('useGuestAuthActions', () => {
 
     logoutHandler();
     expect(authStore.logout).toHaveBeenCalled();
-    expect(useRouter().go).toHaveBeenCalled();
   });
 });

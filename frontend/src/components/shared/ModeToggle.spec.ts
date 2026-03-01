@@ -42,7 +42,7 @@ describe('ModeToggle', () => {
   it.each([
     { mode: 'light', component: SunIcon },
     { mode: 'dark', component: MoonIcon },
-  ])('renders icons correctly for mode: %mode', ({ mode, component }) => {
+  ])('renders icons correctly for mode: $mode', ({ mode, component }) => {
     vi.mocked(vueuse.useColorMode).mockReturnValue({
       store: ref<BasicColorSchema>(mode as BasicColorSchema),
     } as UseColorModeReturn<BasicColorSchema>);
