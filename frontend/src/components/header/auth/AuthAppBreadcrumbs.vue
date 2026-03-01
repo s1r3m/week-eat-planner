@@ -7,13 +7,12 @@
             <BreadcrumbLink as-child>
               <router-link :to="item.to"> {{ item.label }}</router-link>
             </BreadcrumbLink>
+            <BreadcrumbSeparator v-if="idx < items.length - 1" />
           </template>
           <template v-else>
             <BreadcrumbPage> {{ item.label }} </BreadcrumbPage>
           </template>
         </BreadcrumbItem>
-
-        <BreadcrumbSeparator v-if="idx < items.length - 1" />
       </template>
     </BreadcrumbList>
   </Breadcrumb>

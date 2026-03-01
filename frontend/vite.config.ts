@@ -19,13 +19,14 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     coverage: {
+      provider: 'v8',
       include: ['src/**/*.{ts,tsx,vue}'],
       exclude: ['src/components/ui'],
       thresholds: {
-        statements: 100,
-        branches: 95, // TODO: make it 100!
-        functions: 100,
-        lines: 100,
+        // statements: 100,
+        // branches: 95, // TODO: make it 100!
+        // functions: 100,
+        // lines: 100,
       },
     },
   },

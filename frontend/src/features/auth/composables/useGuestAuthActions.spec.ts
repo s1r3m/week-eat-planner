@@ -31,7 +31,7 @@ describe('useGuestAuthActions', () => {
     };
   };
 
-  it('shows Login when not authenticated and not on /login', () => {
+  it('shows Login when not on /login', () => {
     const { showLogin } = setup(false, 'promo');
 
     expect(showLogin.value).toBe(true);
@@ -43,7 +43,7 @@ describe('useGuestAuthActions', () => {
     expect(showLogin.value).toBe(false);
   });
 
-  it('shows Sign Up when not authenticated and not on /signup', () => {
+  it('shows Sign Up when not on /signup', () => {
     const { showSignup } = setup(false, 'promo');
 
     expect(showSignup.value).toBe(true);
@@ -55,11 +55,10 @@ describe('useGuestAuthActions', () => {
     expect(showSignup.value).toBe(false);
   });
 
-  it('shows neither Login nor Sign Up when authenticated', () => {
-    const { showLogin, showSignup } = setup(true, 'promo');
+  it.each([true, false])('shows isLogged when needed -- has token %0', (hasToken) => {
+    const { isLogged } = setup(hasToken, 'promo');
 
-    expect(showLogin.value).toBe(false);
-    expect(showSignup.value).toBe(false);
+    expect(isLogged.value).toBe(hasToken);
   });
 
   it('calls logout', () => {

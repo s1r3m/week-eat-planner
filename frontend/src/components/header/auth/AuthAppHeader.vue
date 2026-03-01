@@ -19,10 +19,10 @@
 
 <script setup lang="ts">
 import { SidebarTrigger } from '@/components/ui/sidebar';
+
 import AppHeader from '@/components/header/AppHeader.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
+import Separator from '@/components/ui/separator/Separator.vue';
 
 import AuthAppBreadcrumbs from './AuthAppBreadcrumbs.vue';
-
-import Separator from '@/components/ui/separator/Separator.vue';
 </script>

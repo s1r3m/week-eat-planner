@@ -6,14 +6,14 @@ export const useGuestAuthActions = () => {
   const { accessToken, logout } = useAuthStore();
   const route = useRoute();
 
-  const showLogin = computed(() => !accessToken && route.name !== 'login');
-  const showSignup = computed(() => !accessToken && route.name !== 'signup');
-  const showLogout = computed(() => !!accessToken);
+  const showLogin = computed(() => route.name !== 'login');
+  const showSignup = computed(() => route.name !== 'signup');
+  const isLogged = computed(() => !!accessToken);
   const logoutHandler = () => logout();
 
   return {
     showLogin,
-    showLogout,
+    isLogged,
     showSignup,
     logoutHandler,
   };

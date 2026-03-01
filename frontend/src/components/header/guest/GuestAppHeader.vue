@@ -19,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
 import AppHeader from '@/components/header/AppHeader.vue';
 import AppBrand from '@/components/shared/AppBrand.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
