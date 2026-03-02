@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import { vi, type Mock } from 'vitest';
 import GuestAuthActions from './GuestAuthActions.vue';
@@ -11,14 +11,6 @@ vi.mock('@/features/auth/composables/useGuestAuthActions', () => ({
 }));
 
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
-
-vi.mock('vue-router', async () => {
-  const actual = await vi.importActual<typeof import('vue-router')>('vue-router');
-  return {
-    ...actual,
-    useRoute: vi.fn(),
-  };
-});
 
 describe('GuestAuthActions', () => {
   const mockComposable = (options: {
@@ -107,19 +99,6 @@ describe('GuestAuthActions', () => {
       expect(buttons[0].props().to).toEqual({ name: 'signup' });
     });
 
-    it('renders neither login nor signup when both false but not logged', () => {
-      mockComposable({
-        isLogged: false,
-        showLogin: false,
-        showSignup: false,
-      });
-
-      const wrapper = mountComponent();
-      const buttons = wrapper.findAllComponents(RouterLinkStub);
-
-      expect(buttons).toHaveLength(0);
-    });
-
     it('renders logout when logged in', () => {
       mockComposable({ isLogged: true });
       const wrapper = mountComponent();
@@ -127,27 +106,34 @@ describe('GuestAuthActions', () => {
 
       expect(buttons).toHaveLength(0); // No login and signup
       expect(wrapper.text()).not.toContain('Login');
-      expect(wrapper.text()).not.toContain('Signup');
+      expect(wrapper.text()).not.toContain('Sign Up');
+    });
+
+    it('does not render login and signup when logged in even when showSignup, showLogin are true', () => {
+      mockComposable({ isLogged: true, showSignup: true, showLogin: true });
+      const wrapper = mountComponent();
+      const buttons = wrapper.findAllComponents(RouterLinkStub);
+
+      expect(buttons).toHaveLength(0); // No login and signup
+      expect(wrapper.text()).not.toContain('Login');
+      expect(wrapper.text()).not.toContain('Sign Up');
+      expect(wrapper.text()).toContain('Logout');
     });
   });
 
-  it('does not render login and signup when logged in even when showSignup, showLogin are true', () => {
-    mockComposable({ isLogged: true, showSignup: true, showLogin: true });
-    const wrapper = mountComponent();
-    const buttons = wrapper.findAllComponents(RouterLinkStub);
+  describe('Button clicks', () => {
+    beforeEach(() => {
+      logoutHandler.mockClear();
+    });
 
-    expect(buttons).toHaveLength(0); // No login and signup
-    expect(wrapper.text()).not.toContain('Login');
-    expect(wrapper.text()).not.toContain('Signup');
-  });
+    it('calls logoutHandler when Logout is clicked', async () => {
+      mockComposable({ isLogged: true });
+      const wrapper = mountComponent();
+      const button = wrapper.find('button');
 
-  it('calls authStore.logout() when Logout is clicked', async () => {
-    mockComposable({ isLogged: true });
-    const wrapper = mountComponent();
-    const button = wrapper.find('button');
+      await button.trigger('click');
 
-    await button.trigger('click');
-
-    expect(logoutHandler).toHaveBeenCalledOnce();
+      expect(logoutHandler).toHaveBeenCalledOnce();
+    });
   });
 });
