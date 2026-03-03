@@ -1,9 +1,9 @@
 import { computed } from 'vue';
-import type { AccessToken } from '@/api/types';
+import type { AccessToken } from '@/app/api/types';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
 
-import { apiClient, authClient, getErrorMessage } from '@/api/client';
+import { apiClient, authClient, getErrorMessage } from '@/app/api/client';
 import { useAlertStore } from '@/stores/error';
 
 export const useAuthStore = defineStore('auth-store', () => {

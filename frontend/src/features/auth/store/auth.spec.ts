@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useAuthStore } from './auth';
-import { apiClient, authClient } from '@/api/client';
+import { apiClient, authClient } from '@/app/api/client';
 import { useAlertStore } from '@/stores/error';
 import MockAdapter from 'axios-mock-adapter';
 

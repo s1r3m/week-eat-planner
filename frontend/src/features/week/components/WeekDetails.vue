@@ -58,7 +58,7 @@ import WeekEditDialog from '@/features/week/components/WeekEditDialog.vue';
 import WeekDeleteDialog from '@/features/week/components/WeekDeleteDialog.vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
-import type { UserWeekMinimal } from '@/api/types';
+import type { UserWeekMinimal } from '@/app/api/types';
 import { useWeekStore } from '@/features/week/store/weeks';
 
 const props = defineProps<{ week: UserWeekMinimal }>();

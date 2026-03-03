@@ -1,7 +1,7 @@
 import { ref } from 'vue';
-import type { UserWeek, UserWeekMinimal } from '@/api/types';
+import type { UserWeek, UserWeekMinimal } from '@/app/api/types';
 import { defineStore } from 'pinia';
-import { apiClient, getErrorMessage } from '@/api/client';
+import { apiClient, getErrorMessage } from '@/app/api/client';
 
 export const useWeekStore = defineStore('weeks-store', () => {
   const weeks = ref<UserWeekMinimal[]>([]);

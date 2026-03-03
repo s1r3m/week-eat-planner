@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { apiClient } from '@/api/client';
+import { apiClient } from '@/app/api/client';
 
 import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -47,7 +47,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import PageTitle from '@/components/shared/PageTitle.vue';
 
-import type { UserInfo } from '@/api/types';
+import type { UserInfo } from '@/app/api/types';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 
 const userInfo = ref<UserInfo>();

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useWeekStore } from './weeks';
-import { apiClient } from '@/api/client';
+import { apiClient } from '@/app/api/client';
 import MockAdapter from 'axios-mock-adapter';
-import type { UserWeek, UserWeekMinimal } from '@/api/types';
+import type { UserWeek, UserWeekMinimal } from '@/app/api/types';
 
 describe('weeks store', () => {
   let mockApiClient: MockAdapter;

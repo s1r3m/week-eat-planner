@@ -31,7 +31,7 @@
 import { Button } from '@/components/ui/button';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 
-import type { MealSlot } from '@/api/types';
+import type { MealSlot } from '@/app/api/types';
 import { CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 
 const props = defineProps<{
