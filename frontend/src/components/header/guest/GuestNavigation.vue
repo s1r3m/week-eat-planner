@@ -18,11 +18,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-
-export interface NavLink {
-  label: string;
-  to: string;
-}
+import type { NavLink } from '@/components/header/types/navigation';
 
 defineProps<{
   links: NavLink[];

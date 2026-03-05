@@ -2,9 +2,9 @@
   <SidebarMenu>
     <SidebarMenuItem>
       <DropdownMenu>
-        <DropdownMenuTrigger as-child>
+        <DropdownMenuTrigger v-if="authStore.user" as-child>
           <SidebarMenuButton size="lg">
-            <UserIdentity :user="user" />
+            <UserIdentity :user="authStore.user" />
             <ChevronsUpDown class="ml-auto size-3" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -15,8 +15,8 @@
           align="end"
           :side-offset="4"
         >
-          <DropdownMenuLabel class="font-normal">
-            <UserIdentity :user="user" />
+          <DropdownMenuLabel v-if="authStore.user" class="font-normal">
+            <UserIdentity :user="authStore.user" />
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -36,9 +36,11 @@
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem @select="handleLogout">
-            <LogOut />
-            Log Out
+          <DropdownMenuItem>
+            <router-link to="/promo" class="flex w-full items-center gap-3" @click="logout">
+              <LogOut />
+              Log Out
+            </router-link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -64,24 +66,13 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuthStore } from '@/features/auth/store/auth';
-import { useRouter } from 'vue-router';
 import UserIdentity from '@/features/auth/components/UserIdentity.vue';
-import type { UserInfo } from '@/app/api/types';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const { isMobile, setOpenMobile } = useSidebar();
 const authStore = useAuthStore();
-const router = useRouter();
-
-defineProps<{
-  user: UserInfo;
-}>();
 
 const { call: logout } = useAsyncCall(authStore.logout);
-const handleLogout = async () => {
-  await logout();
-  router.push('/');
-};
 
 const handleNavigation = () => {
   if (isMobile.value) {
