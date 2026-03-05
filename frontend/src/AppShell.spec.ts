@@ -36,7 +36,17 @@ describe('AppShell', () => {
     const wrapper = mount(TestAppShell, {
       global: {
         stubs: {
-          RouterView: { template: '<div class="router-view">Router View</div>' },
+          RouterView: defineComponent({
+            setup(_, { slots }) {
+              return () =>
+                slots.default
+                  ? slots.default({
+                      Component: h('div', { class: 'child-component' }),
+                      route: { meta: { requiresAuth: true } },
+                    })
+                  : null;
+            },
+          }),
         },
       },
     });
@@ -44,7 +54,31 @@ describe('AppShell', () => {
     await flushPromises();
 
     expect(mockAuthStore.init).toHaveBeenCalled();
-    expect(wrapper.find('.router-view').exists()).toBe(true);
+    expect(wrapper.find('.child-component').exists()).toBe(true);
+  });
+
+  it('renders guest layout when requiresAuth is false', async () => {
+    const wrapper = mount(TestAppShell, {
+      global: {
+        stubs: {
+          RouterView: defineComponent({
+            setup(_, { slots }) {
+              return () =>
+                slots.default
+                  ? slots.default({
+                      Component: h('div', { class: 'guest-component' }),
+                      route: { meta: { requiresAuth: false } },
+                    })
+                  : null;
+            },
+          }),
+        },
+      },
+    });
+
+    await flushPromises();
+
+    expect(wrapper.find('.guest-component').exists()).toBe(true);
   });
 
   it('does not render RouterView before init', () => {
@@ -57,6 +91,7 @@ describe('AppShell', () => {
     });
 
     expect(wrapper.find('.router-view').exists()).toBe(false);
+    expect(wrapper.find('.child-component').exists()).toBe(false);
     expect(wrapper.find('.loading').exists()).toBe(true);
   });
 
@@ -65,13 +100,23 @@ describe('AppShell', () => {
     const wrapper = mount(TestAppShell, {
       global: {
         stubs: {
-          RouterView: { template: '<div class="router-view">Router View</div>' },
+          RouterView: defineComponent({
+            setup(_, { slots }) {
+              return () =>
+                slots.default
+                  ? slots.default({
+                      Component: h('div', { class: 'child-component' }),
+                      route: { meta: { requiresAuth: true } },
+                    })
+                  : null;
+            },
+          }),
         },
       },
     });
 
     await flushPromises();
 
-    expect(wrapper.find('.router-view').exists()).toBe(true);
+    expect(wrapper.find('.child-component').exists()).toBe(true);
   });
 });

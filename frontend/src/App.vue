@@ -1,10 +1,6 @@
 <template>
   <Suspense timeout="0">
-    <template #default>
-      <Transition name="fade" mode="out-in">
-        <AppShell />
-      </Transition>
-    </template>
+    <AppShell />
 
     <template #fallback>
       <TheLoadingPageState loading-name="the application" />

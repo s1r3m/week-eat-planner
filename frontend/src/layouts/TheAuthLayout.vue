@@ -1,25 +1,27 @@
 <template>
-  <SidebarProvider>
-    <AppSidebar />
-    <SidebarInset>
-      <AuthAppHeader />
+  <div class="auth-layout-container h-full">
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <AuthAppHeader />
 
-      <router-view v-slot="{ Component, route }">
-        <template v-if="Component">
-          <Suspense timeout="0">
-            <template #default>
-              <Transition name="fade" mode="out-in">
-                <component :is="Component" :key="route.fullPath" />
-              </Transition>
-            </template>
-            <template #fallback>
-              <TheLoadingPageState loading-name="the page" />
-            </template>
-          </Suspense>
-        </template>
-      </router-view>
-    </SidebarInset>
-  </SidebarProvider>
+        <router-view v-slot="{ Component, route }">
+          <template v-if="Component">
+            <Suspense timeout="0">
+              <template #default>
+                <Transition name="fade" mode="out-in">
+                  <component :is="Component" :key="route.fullPath" />
+                </Transition>
+              </template>
+              <template #fallback>
+                <TheLoadingPageState loading-name="the page" />
+              </template>
+            </Suspense>
+          </template>
+        </router-view>
+      </SidebarInset>
+    </SidebarProvider>
+  </div>
 </template>
 
 <script setup lang="ts">
