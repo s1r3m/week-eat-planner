@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import type { AccessToken } from '@/app/api/types';
+import type { AccessToken, UserInfo } from '@/app/api/types';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
 
@@ -9,6 +9,7 @@ import { useAlertStore } from '@/stores/error';
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
   const isLoading: Ref<boolean> = ref(false);
+  const userInfo: Ref<UserInfo | null> = ref(null);
 
   const isAuthenticated = computed(() => !!accessToken.value);
 
@@ -84,6 +85,7 @@ export const useAuthStore = defineStore('auth-store', () => {
 
   return {
     accessToken,
+    userInfo,
     setAccessToken,
     init,
     login,
