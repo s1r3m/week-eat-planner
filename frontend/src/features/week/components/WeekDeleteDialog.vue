@@ -8,7 +8,7 @@
 
       <p class="text-base text-popover-foreground">
         Are you sure you want to delete
-        <span class="font-semibold text-primary">{{ props.weekName }}</span
+        <span class="font-semibold text-destructive">{{ props.weekName }}</span
         >?
       </p>
 

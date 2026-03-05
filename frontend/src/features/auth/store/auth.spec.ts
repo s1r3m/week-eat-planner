@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { useAuthStore } from './auth';
 import { apiClient, authClient } from '@/app/api/client';
 import MockAdapter from 'axios-mock-adapter';
 import type { UserInfo } from '@/app/api/types';
+import { useAuthStore } from './auth';
 
 describe('auth store', () => {
   let mockApiClient: MockAdapter;
@@ -37,22 +37,6 @@ describe('auth store', () => {
     const store = useAuthStore();
     store.setAccessToken('test-token');
     expect(store.accessToken).toBe('test-token');
-  });
-
-  describe('isAuthenticated', () => {
-    it('should be true if accessToken is present', () => {
-      const store = useAuthStore();
-      store.setAccessToken('test-token');
-
-      expect(store.isAuthenticated).toBe(true);
-    });
-
-    it('should be false if accessToken is null', () => {
-      const store = useAuthStore();
-      store.setAccessToken(null);
-
-      expect(store.isAuthenticated).toBe(false);
-    });
   });
 
   describe('login', () => {

@@ -1,4 +1,3 @@
-import { computed } from 'vue';
 import type { AccessToken, LoginInfo, UserInfo } from '@/app/api/types';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
@@ -7,10 +6,7 @@ import { apiClient, authClient, getErrorMessage } from '@/app/api/client';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
-  const isLoading: Ref<boolean> = ref(false);
   const user: Ref<UserInfo | null> = ref(null);
-
-  const isAuthenticated = computed(() => !!accessToken.value);
 
   const setAccessToken = (newToken: string | null) => {
     accessToken.value = newToken;
@@ -28,7 +24,7 @@ export const useAuthStore = defineStore('auth-store', () => {
       },
     });
     accessToken.value = data.access_token;
-    await setUser();
+    await _setUser();
   };
 
   const signup = async (email: string, password: string) => {
@@ -49,16 +45,14 @@ export const useAuthStore = defineStore('auth-store', () => {
     try {
       const { data } = await authClient.post<AccessToken>('/auth/refresh');
       setAccessToken(data.access_token);
-      await setUser();
+      await _setUser();
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {
       console.log('No valid refresh token found: ', getErrorMessage(err));
     }
   };
 
-  const setUser = async () => {
-    if (user.value) console.error('wtf, user exists');
-
+  const _setUser = async () => {
     const { data } = await apiClient.get<UserInfo>('/user');
     user.value = data;
   };
@@ -71,7 +65,5 @@ export const useAuthStore = defineStore('auth-store', () => {
     login,
     signup,
     logout,
-    isAuthenticated,
-    isLoading,
   };
 });
