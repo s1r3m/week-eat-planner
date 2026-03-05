@@ -1,30 +1,32 @@
 <template>
-  <template v-if="!authStore.user">
-    <AuthCard title="Join us" description="Create your account">
-      <AuthForm variant="signup" :submitting="isLoading" @submit="handleSignup" />
+  <div class="signup-page-container">
+    <template v-if="!authStore.user">
+      <AuthCard title="Join us" description="Create your account">
+        <AuthForm variant="signup" :submitting="isLoading" @submit="handleSignup" />
 
-      <template #footer>
-        <AuthFooter>
-          <CardDescription>
-            Already have an account?
-            <router-link to="/login" class="font-semibold text-brand-primary hover:underline">
-              Log in!
-            </router-link>
-          </CardDescription>
-        </AuthFooter>
-      </template>
-    </AuthCard>
-  </template>
+        <template #footer>
+          <AuthFooter>
+            <CardDescription>
+              Already have an account?
+              <router-link to="/login" class="font-semibold text-brand-primary hover:underline">
+                Log in!
+              </router-link>
+            </CardDescription>
+          </AuthFooter>
+        </template>
+      </AuthCard>
+    </template>
 
-  <template v-else>
-    <div class="space-y-4 mt-4 text-center text-base text-base-color">
-      <p>You are already logged in.</p>
-      <p class="text-sm text-muted">You can continue planning your meals!</p>
-      <Button>
-        <router-link to="/weeks">Go to planning</router-link>
-      </Button>
-    </div>
-  </template>
+    <template v-else>
+      <div class="space-y-4 mt-4 text-center text-base text-base-color">
+        <p>You are already logged in.</p>
+        <p class="text-sm text-muted">You can continue planning your meals!</p>
+        <Button>
+          <router-link to="/weeks">Go to planning</router-link>
+        </Button>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">

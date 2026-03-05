@@ -1,22 +1,18 @@
 <template>
-  <router-view v-if="isReady" />
+  <div class="app-shell">
+    <router-view />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref, onMounted } from 'vue';
 import { useAuthStore } from '@/features/auth';
 
-const isReady: Ref<boolean> = ref(false);
 const authStore = useAuthStore();
 
-onMounted(async () => {
-  try {
-    await authStore.init();
-  } catch (err: unknown) {
-    // Skip the init then.
-    console.error(err);
-  } finally {
-    isReady.value = true;
-  }
-});
+try {
+  await authStore.init();
+} catch (err: unknown) {
+  // Skip the init then.
+  console.error(err);
+}
 </script>

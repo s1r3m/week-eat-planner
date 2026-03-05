@@ -1,9 +1,5 @@
 <template>
-  <template v-if="loading">
-    <TheLoadingPageState loading-name="the profile" />
-  </template>
-
-  <template v-else>
+  <div class="profile-page-container">
     <PageTitle header="User settings" description="Update your info" />
     <Card v-if="userInfo" class="mt-9 mx-6">
       <CardHeader class="text-lg font-semibold"> Profile Information </CardHeader>
@@ -33,14 +29,13 @@
         </FieldSet>
       </CardContent>
     </Card>
-  </template>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { apiClient } from '@/api/client';
 
-import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -51,20 +46,11 @@ import type { UserInfo } from '@/domain/auth/models';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 
 const userInfo = ref<UserInfo>();
-const loading = ref(false);
 
-const fetchUser = async () => {
-  loading.value = true;
-  try {
-    const res = await apiClient.get('/user');
-    if (res.status === 200) {
-      userInfo.value = res.data as UserInfo;
-    }
-  } finally {
-    loading.value = false;
-  }
-};
-fetchUser();
+const res = await apiClient.get('/user');
+if (res.status === 200) {
+  userInfo.value = res.data as UserInfo;
+}
 </script>
 
 <style scoped></style>

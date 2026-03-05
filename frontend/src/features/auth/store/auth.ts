@@ -29,9 +29,13 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (err: unknown) {
+      console.error(`An error during logout: ${err}`);
+    }
     setAccessToken(null);
     user.value = null;
-    await authService.logout();
     console.log('Cleared access_token');
   };
 

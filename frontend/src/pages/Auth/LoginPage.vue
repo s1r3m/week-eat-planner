@@ -1,39 +1,41 @@
 <template>
-  <template v-if="!authStore.user">
-    <AuthCard title="Welcome back" description="Login to your account">
-      <AuthForm variant="login" :submitting="isLoading" @submit="handleLogin" />
+  <div class="login-page-container">
+    <template v-if="!authStore.user">
+      <AuthCard title="Welcome back" description="Login to your account">
+        <AuthForm variant="login" :submitting="isLoading" @submit="handleLogin" />
 
-      <template #footer>
-        <AuthFooter>
-          <CardDescription>
-            Forgot your password?
-            <router-link
-              to="/forgot-password"
-              class="font-semibold text-brand-primary hover:underline"
-            >
-              Reset it
-            </router-link>
-          </CardDescription>
-          <CardDescription>
-            Don't have an account?
-            <router-link to="/signup" class="font-semibold text-brand-primary hover:underline">
-              Register!
-            </router-link>
-          </CardDescription>
-        </AuthFooter>
-      </template>
-    </AuthCard>
-  </template>
+        <template #footer>
+          <AuthFooter>
+            <CardDescription>
+              Forgot your password?
+              <router-link
+                to="/forgot-password"
+                class="font-semibold text-brand-primary hover:underline"
+              >
+                Reset it
+              </router-link>
+            </CardDescription>
+            <CardDescription>
+              Don't have an account?
+              <router-link to="/signup" class="font-semibold text-brand-primary hover:underline">
+                Register!
+              </router-link>
+            </CardDescription>
+          </AuthFooter>
+        </template>
+      </AuthCard>
+    </template>
 
-  <template v-else>
-    <div class="space-y-6 mt-6 text-center text-base text-base-color">
-      <p>You are already logged in.</p>
-      <p class="text-sm text-muted">You can continue planning your meals!</p>
-      <Button>
-        <router-link to="/weeks">Go to planning</router-link>
-      </Button>
-    </div>
-  </template>
+    <template v-else>
+      <div class="space-y-6 mt-6 text-center text-base text-base-color">
+        <p>You are already logged in.</p>
+        <p class="text-sm text-muted">You can continue planning your meals!</p>
+        <Button>
+          <router-link to="/weeks">Go to planning</router-link>
+        </Button>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { mount, flushPromises, VueWrapper } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+import { defineComponent, h, Suspense } from 'vue';
 import AppShell from './AppShell.vue';
 import { useAuthStore } from '@/features/auth/store/auth';
 
@@ -13,6 +14,15 @@ describe('AppShell', () => {
     init: ReturnType<typeof vi.fn>;
   };
 
+  const TestAppShell = defineComponent({
+    render() {
+      return h(Suspense, null, {
+        default: () => h(AppShell),
+        fallback: () => h('div', { class: 'loading' }, 'Loading...'),
+      });
+    },
+  });
+
   beforeEach(() => {
     setActivePinia(createPinia());
     mockAuthStore = {
@@ -22,59 +32,46 @@ describe('AppShell', () => {
     vi.clearAllMocks();
   });
 
-  it('has isReady false at the start', () => {
-    const wrapper = mount(AppShell, {
-      global: {
-        stubs: {
-          RouterView: { template: '<div>Router View</div>' },
-        },
-      },
-    }) as VueWrapper<{ isReady: boolean }>;
-
-    expect(wrapper.vm.isReady).toBe(false);
-  });
-
   it('renders RouterView after init', async () => {
-    const wrapper = mount(AppShell, {
+    const wrapper = mount(TestAppShell, {
       global: {
         stubs: {
           RouterView: { template: '<div class="router-view">Router View</div>' },
         },
       },
-    }) as VueWrapper<{ isReady: boolean }>;
+    });
 
     await flushPromises();
 
     expect(mockAuthStore.init).toHaveBeenCalled();
-    expect(wrapper.vm.isReady).toBe(true);
     expect(wrapper.find('.router-view').exists()).toBe(true);
   });
 
   it('does not render RouterView before init', () => {
-    const wrapper = mount(AppShell, {
+    const wrapper = mount(TestAppShell, {
       global: {
         stubs: {
           RouterView: { template: '<div class="router-view">Router View</div>' },
         },
       },
-    }) as VueWrapper<{ isReady: boolean }>;
+    });
 
     expect(wrapper.find('.router-view').exists()).toBe(false);
+    expect(wrapper.find('.loading').exists()).toBe(true);
   });
 
   it('renders RouterView even if authStore.init throws an error', async () => {
     mockAuthStore.init.mockRejectedValueOnce(new Error('Init failed'));
-    const wrapper = mount(AppShell, {
+    const wrapper = mount(TestAppShell, {
       global: {
         stubs: {
           RouterView: { template: '<div class="router-view">Router View</div>' },
         },
       },
-    }) as VueWrapper<{ isReady: boolean }>;
+    });
 
     await flushPromises();
 
-    expect(wrapper.vm.isReady).toBe(true);
     expect(wrapper.find('.router-view').exists()).toBe(true);
   });
 });

@@ -102,11 +102,7 @@ describe('auth store', () => {
       store.setAccessToken('some-token');
       mockApiClient.onPost('/auth/logout').reply(500);
 
-      try {
-        await store.logout();
-      } catch (err) {
-        // Do nothing
-      }
+      await store.logout();
 
       expect(store.accessToken).toBe(null);
     });
