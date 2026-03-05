@@ -53,7 +53,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Calendar, ChevronRight, ForkKnife } from 'lucide-vue-next';
-import { useWeekStore } from '@/features/week/store/weeks';
+import { useWeekStore } from '@/features/week';
 
 const weekStore = useWeekStore();
 const { weeks } = storeToRefs(weekStore);

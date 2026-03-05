@@ -38,16 +38,16 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { apiClient } from '@/app/api/client';
+import { apiClient } from '@/api/client';
 
-import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import PageTitle from '@/components/shared/PageTitle.vue';
 
-import type { UserInfo } from '@/app/api/types';
+import type { UserInfo } from '@/domain/auth/models';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 
 const userInfo = ref<UserInfo>();

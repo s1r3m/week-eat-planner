@@ -32,9 +32,9 @@ import {
   SidebarMenuItem,
   type SidebarProps,
 } from '@/components/ui/sidebar';
-import NavUser from '@/components/app/sidebar/NavUser.vue';
-import NavMain from '@/components/app/sidebar/NavMain.vue';
-import { useAuthStore } from '@/features/auth/store/auth';
+import NavUser from './NavUser.vue';
+import NavMain from './NavMain.vue';
+import { useAuthStore } from '@/features/auth';
 import AppBrand from '@/components/shared/AppBrand.vue';
 
 const { user } = useAuthStore();

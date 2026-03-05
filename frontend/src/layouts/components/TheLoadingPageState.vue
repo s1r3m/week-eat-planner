@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import Spinner from '../ui/spinner/Spinner.vue';
+import Spinner from '@/components/ui/spinner/Spinner.vue';
 const { loadingName = 'data' } = defineProps<{
   loadingName?: string;
 }>();

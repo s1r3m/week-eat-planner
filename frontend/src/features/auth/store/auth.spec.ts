@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { apiClient, authClient } from '@/app/api/client';
+import { apiClient, authClient } from '@/api/client';
 import MockAdapter from 'axios-mock-adapter';
-import type { UserInfo } from '@/app/api/types';
+import type { UserInfo } from '@/domain/auth/models';
 import { useAuthStore } from './auth';
 
 describe('auth store', () => {

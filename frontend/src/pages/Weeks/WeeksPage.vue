@@ -29,12 +29,10 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useWeekStore } from '@/features/week/store/weeks';
+import { useWeekStore, WeekDetails, WeekCreateForm } from '@/features/week';
 
-import WeekDetails from '@/features/week/components/WeekDetails.vue';
-import WeekCreateForm from '@/features/week/components/WeekCreateForm.vue';
 import { Button } from '@/components/ui/button';
-import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { Card } from '@/components/ui/card';
 

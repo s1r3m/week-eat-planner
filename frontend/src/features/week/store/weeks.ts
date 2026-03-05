@@ -1,7 +1,8 @@
 import { ref } from 'vue';
-import type { UserWeek, UserWeekMinimal } from '@/app/api/types';
+import type { UserWeek, UserWeekMinimal } from '@/domain/week/models';
 import { defineStore } from 'pinia';
-import { apiClient, getErrorMessage } from '@/app/api/client';
+import { getErrorMessage } from '@/api/client';
+import { weekService } from '../api/week.service';
 
 export const useWeekStore = defineStore('weeks-store', () => {
   const weeks = ref<UserWeekMinimal[]>([]);
@@ -13,8 +14,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
     isFetchingWeeks.value = true;
     error.value = null;
     try {
-      const response = await apiClient.get<UserWeekMinimal[]>('/weeks');
-      weeks.value = response.data;
+      weeks.value = await weekService.fetchWeeks();
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err);
       console.log('Error fetching weeks:', errorMessage);
@@ -26,7 +26,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
 
   const removeWeek = async (weekId: string) => {
     try {
-      await apiClient.delete(`/weeks/${weekId}`);
+      await weekService.removeWeek(weekId);
       weeks.value = weeks.value.filter((week) => week.id !== weekId);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
@@ -36,8 +36,8 @@ export const useWeekStore = defineStore('weeks-store', () => {
   const addWeek = async (name: string) => {
     isLoading.value = true;
     try {
-      const response = await apiClient.post<UserWeekMinimal>('/weeks', { name });
-      weeks.value.push(response.data);
+      const data = await weekService.addWeek({ name });
+      weeks.value.push(data);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
     } finally {
@@ -47,10 +47,9 @@ export const useWeekStore = defineStore('weeks-store', () => {
 
   const updateWeek = async (weekId: string, name: string) => {
     try {
-      const response = await apiClient.patch<UserWeekMinimal>(`/weeks/${weekId}`, { name });
-      const updatedWeek = response.data;
-      weeks.value = weeks.value.map((week) => (week.id === weekId ? updatedWeek : week));
-      return updatedWeek;
+      const data = await weekService.updateWeek(weekId, { name });
+      weeks.value = weeks.value.map((week) => (week.id === weekId ? data : week));
+      return data;
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
     }
@@ -59,8 +58,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
   const getWeek = async (weekId: string) => {
     isLoading.value = true;
     try {
-      const response = await apiClient.get<UserWeek>(`/weeks/${weekId}`);
-      return response.data;
+      return await weekService.getWeek(weekId);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
     } finally {

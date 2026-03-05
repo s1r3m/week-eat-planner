@@ -65,8 +65,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuthStore } from '@/features/auth/store/auth';
-import UserIdentity from '@/features/auth/components/UserIdentity.vue';
+import { useAuthStore, UserIdentity } from '@/features/auth';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const { isMobile, setOpenMobile } = useSidebar();

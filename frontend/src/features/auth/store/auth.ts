@@ -1,8 +1,9 @@
-import type { AccessToken, LoginInfo, UserInfo } from '@/app/api/types';
+import type { UserInfo } from '@/domain/auth/models';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
 
-import { apiClient, authClient, getErrorMessage } from '@/app/api/client';
+import { getErrorMessage } from '@/api/client';
+import { authService } from '../api/auth.service';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
@@ -18,32 +19,25 @@ export const useAuthStore = defineStore('auth-store', () => {
       password,
     });
 
-    const { data } = await apiClient.post<LoginInfo>('/auth/login', params, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    const data = await authService.login(params);
     accessToken.value = data.access_token;
     await _setUser();
   };
 
   const signup = async (email: string, password: string) => {
-    await apiClient.post<UserInfo>('/auth/signup', {
-      email,
-      password,
-    });
+    await authService.signup(email, password);
   };
 
   const logout = async () => {
     setAccessToken(null);
     user.value = null;
-    await apiClient.post('/auth/logout');
+    await authService.logout();
     console.log('Cleared access_token');
   };
 
   const init = async () => {
     try {
-      const { data } = await authClient.post<AccessToken>('/auth/refresh');
+      const data = await authService.refresh();
       setAccessToken(data.access_token);
       await _setUser();
       console.log('Initialized access_token from refresh');
@@ -53,7 +47,7 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   const _setUser = async () => {
-    const { data } = await apiClient.get<UserInfo>('/user');
+    const data = await authService.getCurrentUser();
     user.value = data;
   };
 

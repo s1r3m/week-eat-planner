@@ -15,6 +15,6 @@
 
 <script setup lang="ts">
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/app/sidebar/AppSidebar.vue';
+import AppSidebar from '@/layouts/components/Sidebar/AppSidebar.vue';
 import AuthAppHeader from '@/components/header/auth/AuthAppHeader.vue';
 </script>

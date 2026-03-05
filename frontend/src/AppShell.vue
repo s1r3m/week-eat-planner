@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { ref, type Ref, onMounted } from 'vue';
-import { useAuthStore } from '@/features/auth/store/auth';
+import { useAuthStore } from '@/features/auth';
 
 const isReady: Ref<boolean> = ref(false);
 const authStore = useAuthStore();

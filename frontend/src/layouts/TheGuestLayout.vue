@@ -10,5 +10,5 @@
 
 <script setup lang="ts">
 import GuestAppHeader from '@/components/header/guest/GuestAppHeader.vue';
-import GuestFooter from '@/components/app/GuestFooter.vue';
+import GuestFooter from '@/layouts/components/GuestFooter.vue';
 </script>

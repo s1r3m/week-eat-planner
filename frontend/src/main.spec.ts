@@ -19,7 +19,7 @@ vi.mock('pinia-plugin-persistedstate', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@/app/router', () => ({
+vi.mock('@/router', () => ({
   default: { install: vi.fn() },
 }));
 
@@ -34,7 +34,7 @@ describe('main.ts', () => {
   it('initializes the application correctly', async () => {
     const { createApp } = await import('vue');
     const { createPinia } = await import('pinia');
-    const router = (await import('@/app/router')).default;
+    const router = (await import('@/router')).default;
 
     // Import the main module which should call createApp
     await import('./main');

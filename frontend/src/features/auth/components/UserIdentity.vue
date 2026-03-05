@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { UserInfo } from '@/app/api/types';
+import type { UserInfo } from '@/domain/auth/models';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const props = defineProps<{

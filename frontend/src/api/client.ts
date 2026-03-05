@@ -4,7 +4,8 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth';
-import type { AccessToken, ErrorResponse } from '@/app/api/types';
+import type { AccessToken } from '@/domain/auth/models';
+import type { ErrorResponse } from '@/api/types';
 
 const DEFAULT_TIMEOUT = 5000;
 

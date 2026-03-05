@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import UserIdentity from './UserIdentity.vue';
-import type { UserInfo } from '@/app/api/types';
+import type { UserInfo } from '@/domain/auth/models';
 
 describe('UserIdentity', () => {
   const user: UserInfo = {

@@ -30,13 +30,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
-import type { UserWeek } from '@/app/api/types';
+import type { UserWeek } from '@/domain/week/models';
 import { useRoute } from 'vue-router';
-import { useWeekStore } from '@/features/week/store/weeks';
-import MealSlotContent from '@/features/mealSlot/components/MealSlotContent.vue';
+import { useWeekStore } from '@/features/week';
+import { MealSlotContent } from '@/features/mealSlot';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { Button } from '@/components/ui/button';
-import TheLoadingPageState from '@/components/app/TheLoadingPageState.vue';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const week: Ref<UserWeek | null> = ref(null);
