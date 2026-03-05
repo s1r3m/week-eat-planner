@@ -10,7 +10,8 @@
     </template>
     <template v-else>
       <Button variant="outline" size="sm" @click="logout">
-        {{ isLoading ? 'Logging out...' : 'Log out' }}
+        <Spinner v-if="isLoading" />
+        {{ isLoading ? 'Logging Out...' : 'Log Out' }}
       </Button>
     </template>
   </div>
@@ -18,6 +19,7 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import Spinner from '@/components/ui/spinner/Spinner.vue';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
 

@@ -36,15 +36,7 @@
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            :disabled="isLoggingOut"
-            :variant="isLoggingOut ? 'destructive' : 'default'"
-            @select="handleLogout"
-          >
-            <Spinner v-if="isLoggingOut" class="text-destructive" />
-            <LogOut v-else />
-            {{ isLoggingOut ? 'Loggin out' : 'Log out' }}
-          </DropdownMenuItem>
+          <DropdownMenuItem @select="handleLogout"> <LogOut /> Log Out </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -52,7 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next';
 import {
   DropdownMenu,
@@ -74,9 +65,9 @@ import { useAuthStore } from '@/features/auth/store/auth';
 import { useRouter } from 'vue-router';
 import UserIdentity from '@/features/auth/components/UserIdentity.vue';
 import type { UserInfo } from '@/app/api/types';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const { isMobile, setOpenMobile } = useSidebar();
-const isLoggingOut = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 
@@ -84,15 +75,10 @@ defineProps<{
   user: UserInfo;
 }>();
 
+const { call: logout, isLoading } = useAsyncCall(authStore.logout);
 const handleLogout = async () => {
-  if (isLoggingOut.value) return;
-  isLoggingOut.value = true;
-  try {
-    await authStore.logout();
-  } finally {
-    isLoggingOut.value = false;
-    router.push('/');
-  }
+  await logout();
+  router.push('/');
 };
 
 const handleNavigation = () => {

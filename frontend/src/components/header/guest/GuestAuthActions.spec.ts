@@ -79,7 +79,7 @@ describe('GuestAuthActions', () => {
       expect(buttons).toHaveLength(2);
       expect(buttons[0].props().to).toEqual({ name: 'login' });
       expect(buttons[1].props().to).toEqual({ name: 'signup' });
-      expect(wrapper.text()).not.toContain('Log out');
+      expect(wrapper.text()).not.toContain('Log Out');
     });
 
     it('renders only login (signup false branch)', () => {
@@ -128,19 +128,19 @@ describe('GuestAuthActions', () => {
       expect(buttons).toHaveLength(0); // No login and signup
       expect(wrapper.text()).not.toContain('Login');
       expect(wrapper.text()).not.toContain('Sign Up');
-      expect(wrapper.text()).toContain('Log out');
+      expect(wrapper.text()).toContain('Log Out');
     });
 
     it('renders logout even when only showLogin is true', () => {
       mockComposable({ isLogged: true, showLogin: true, showSignup: false });
       const wrapper = mountComponent();
-      expect(wrapper.text()).toContain('Log out');
+      expect(wrapper.text()).toContain('Log Out');
     });
 
     it('renders logout even when only showSignup is true', () => {
       mockComposable({ isLogged: true, showLogin: false, showSignup: true });
       const wrapper = mountComponent();
-      expect(wrapper.text()).toContain('Log out');
+      expect(wrapper.text()).toContain('Log Out');
     });
 
     it('reacts to isLoading changes dynamically', async () => {
@@ -157,15 +157,15 @@ describe('GuestAuthActions', () => {
       });
 
       const wrapper = mountComponent();
-      expect(wrapper.text()).toContain('Log out');
+      expect(wrapper.text()).toContain('Log Out');
 
       isLoading.value = true;
       await nextTick();
-      expect(wrapper.text()).toContain('Logging out...');
+      expect(wrapper.text()).toContain('Logging Out...');
 
       isLoading.value = false;
       await nextTick();
-      expect(wrapper.text()).toContain('Log out');
+      expect(wrapper.text()).toContain('Log Out');
     });
   });
 
