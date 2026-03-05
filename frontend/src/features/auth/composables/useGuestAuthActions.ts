@@ -9,7 +9,7 @@ export const useGuestAuthActions = () => {
   const showLogin = computed(() => route.name !== 'login');
   const showSignup = computed(() => route.name !== 'signup');
   const isLogged = computed(() => !!accessToken);
-  const logoutHandler = () => logout();
+  const logoutHandler = async () => await logout();
 
   return {
     showLogin,

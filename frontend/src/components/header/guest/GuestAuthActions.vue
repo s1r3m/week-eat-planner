@@ -9,14 +9,18 @@
       </Button>
     </template>
     <template v-else>
-      <Button variant="outline" size="sm" @click="logoutHandler"> Logout </Button>
+      <Button variant="outline" size="sm" @click="logout">
+        {{ isLoading ? 'Logging out...' : 'Log out' }}
+      </Button>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
 
 const { showLogin, isLogged, showSignup, logoutHandler } = useGuestAuthActions();
+const { call: logout, isLoading } = useAsyncCall(logoutHandler);
 </script>

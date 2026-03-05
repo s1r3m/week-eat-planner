@@ -1,7 +1,6 @@
-import { ref } from 'vue';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { ref, nextTick } from 'vue';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
-import { vi, type Mock } from 'vitest';
 import GuestAuthActions from './GuestAuthActions.vue';
 
 const logoutHandler = vi.fn();
@@ -10,19 +9,32 @@ vi.mock('@/features/auth/composables/useGuestAuthActions', () => ({
   useGuestAuthActions: vi.fn(),
 }));
 
+vi.mock('@/features/auth/composables/useAsyncCall', () => ({
+  useAsyncCall: vi.fn((task) => ({
+    call: task,
+    isLoading: ref(false),
+  })),
+}));
+
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 describe('GuestAuthActions', () => {
   const mockComposable = (options: {
     showLogin?: boolean;
     showSignup?: boolean;
     isLogged?: boolean;
+    isLoading?: boolean;
   }) => {
     (useGuestAuthActions as unknown as Mock).mockReturnValue({
       showLogin: ref(options.showLogin ?? false),
       showSignup: ref(options.showSignup ?? false),
       isLogged: ref(options.isLogged ?? false),
       logoutHandler,
+    });
+    (useAsyncCall as unknown as Mock).mockReturnValue({
+      call: logoutHandler,
+      isLoading: ref(options.isLoading ?? false),
     });
   };
 
@@ -32,7 +44,6 @@ describe('GuestAuthActions', () => {
         stubs: {
           RouterLink: RouterLinkStub,
           Button: {
-            props: ['variant', 'size', 'asChild'],
             emits: ['click'],
             template: `
             <button @click="$emit('click')">
@@ -68,7 +79,7 @@ describe('GuestAuthActions', () => {
       expect(buttons).toHaveLength(2);
       expect(buttons[0].props().to).toEqual({ name: 'login' });
       expect(buttons[1].props().to).toEqual({ name: 'signup' });
-      expect(wrapper.text()).not.toContain('Logout');
+      expect(wrapper.text()).not.toContain('Log out');
     });
 
     it('renders only login (signup false branch)', () => {
@@ -117,7 +128,44 @@ describe('GuestAuthActions', () => {
       expect(buttons).toHaveLength(0); // No login and signup
       expect(wrapper.text()).not.toContain('Login');
       expect(wrapper.text()).not.toContain('Sign Up');
-      expect(wrapper.text()).toContain('Logout');
+      expect(wrapper.text()).toContain('Log out');
+    });
+
+    it('renders logout even when only showLogin is true', () => {
+      mockComposable({ isLogged: true, showLogin: true, showSignup: false });
+      const wrapper = mountComponent();
+      expect(wrapper.text()).toContain('Log out');
+    });
+
+    it('renders logout even when only showSignup is true', () => {
+      mockComposable({ isLogged: true, showLogin: false, showSignup: true });
+      const wrapper = mountComponent();
+      expect(wrapper.text()).toContain('Log out');
+    });
+
+    it('reacts to isLoading changes dynamically', async () => {
+      const isLoading = ref(false);
+      (useGuestAuthActions as unknown as Mock).mockReturnValue({
+        showLogin: ref(false),
+        showSignup: ref(false),
+        isLogged: ref(true),
+        logoutHandler,
+      });
+      (useAsyncCall as unknown as Mock).mockReturnValue({
+        call: logoutHandler,
+        isLoading,
+      });
+
+      const wrapper = mountComponent();
+      expect(wrapper.text()).toContain('Log out');
+
+      isLoading.value = true;
+      await nextTick();
+      expect(wrapper.text()).toContain('Logging out...');
+
+      isLoading.value = false;
+      await nextTick();
+      expect(wrapper.text()).toContain('Log out');
     });
   });
 

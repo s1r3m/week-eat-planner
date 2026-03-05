@@ -4,7 +4,6 @@ import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
 
 import { apiClient, authClient, getErrorMessage } from '@/app/api/client';
-import { useAlertStore } from '@/stores/error';
 
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
@@ -40,25 +39,16 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   const logout = async () => {
-    const errorStore = useAlertStore();
-    isLoading.value = true;
-    try {
-      await apiClient.post('/auth/logout');
-    } catch (err: unknown) {
-      errorStore.addError(getErrorMessage(err));
-    } finally {
-      setAccessToken(null);
-      user.value = null;
-      console.log('Cleared access_token');
-      isLoading.value = false;
-    }
+    setAccessToken(null);
+    user.value = null;
+    await apiClient.post('/auth/logout');
+    console.log('Cleared access_token');
   };
 
   const init = async () => {
     try {
-      const res = await authClient.post<AccessToken>('/auth/refresh');
-      const newToken = res.data.access_token;
-      setAccessToken(newToken);
+      const { data } = await authClient.post<AccessToken>('/auth/refresh');
+      setAccessToken(data.access_token);
       await setUser();
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {
