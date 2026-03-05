@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import type { AccessToken, UserInfo } from '@/app/api/types';
+import type { AccessToken, LoginInfo, UserInfo } from '@/app/api/types';
 import { defineStore } from 'pinia';
 import { ref, type Ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { useAlertStore } from '@/stores/error';
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
   const isLoading: Ref<boolean> = ref(false);
-  const userInfo: Ref<UserInfo | null> = ref(null);
+  const user: Ref<UserInfo | null> = ref(null);
 
   const isAuthenticated = computed(() => !!accessToken.value);
 
@@ -17,45 +17,26 @@ export const useAuthStore = defineStore('auth-store', () => {
     accessToken.value = newToken;
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const errorStore = useAlertStore();
+  const login = async (email: string, password: string) => {
     const params = new URLSearchParams({
       username: email,
-      password: password,
+      password,
     });
 
-    isLoading.value = true;
-    try {
-      const res = await apiClient.post('/auth/login', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
-      accessToken.value = (res.data as AccessToken).access_token;
-      return true;
-    } catch (err: unknown) {
-      errorStore.addError(getErrorMessage(err));
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
+    const { data } = await apiClient.post<LoginInfo>('/auth/login', params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    accessToken.value = data.access_token;
+    await setUser();
   };
 
-  const signup = async (email: string, password: string): Promise<boolean> => {
-    const errorStore = useAlertStore();
-    isLoading.value = true;
-    try {
-      const res = await apiClient.post('/auth/signup', {
-        email: email,
-        password: password,
-      });
-      return res.status === 201;
-    } catch (err: unknown) {
-      errorStore.addError(getErrorMessage(err));
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
+  const signup = async (email: string, password: string) => {
+    await apiClient.post<UserInfo>('/auth/signup', {
+      email,
+      password,
+    });
   };
 
   const logout = async () => {
@@ -67,6 +48,7 @@ export const useAuthStore = defineStore('auth-store', () => {
       errorStore.addError(getErrorMessage(err));
     } finally {
       setAccessToken(null);
+      user.value = null;
       console.log('Cleared access_token');
       isLoading.value = false;
     }
@@ -74,18 +56,26 @@ export const useAuthStore = defineStore('auth-store', () => {
 
   const init = async () => {
     try {
-      const res = await authClient.post<AccessToken>('auth/refresh');
+      const res = await authClient.post<AccessToken>('/auth/refresh');
       const newToken = res.data.access_token;
       setAccessToken(newToken);
+      await setUser();
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {
       console.log('No valid refresh token found: ', getErrorMessage(err));
     }
   };
 
+  const setUser = async () => {
+    if (user.value) console.error('wtf, user exists');
+
+    const { data } = await apiClient.get<UserInfo>('/user');
+    user.value = data;
+  };
+
   return {
     accessToken,
-    userInfo,
+    user,
     setAccessToken,
     init,
     login,

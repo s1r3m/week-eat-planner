@@ -1,7 +1,7 @@
 <template>
-  <template v-if="!authStore.isAuthenticated">
+  <template v-if="!authStore.user">
     <AuthCard title="Join us" description="Create your account">
-      <AuthForm variant="signup" :submitting="authStore.isLoading" @submit="handleSignup" />
+      <AuthForm variant="signup" :submitting="isLoading" @submit="handleSignup" />
 
       <template #footer>
         <AuthFooter>
@@ -36,17 +36,20 @@ import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const authStore = useAuthStore();
 const router = useRouter();
 
-async function handleSignup(email: string, password: string) {
-  const success = await authStore.signup(email, password);
-  if (success) {
+const { call: signup, isLoading, error } = useAsyncCall(authStore.signup);
+
+const handleSignup = async (email: string, password: string) => {
+  await signup(email, password);
+  if (!error.value) {
     // TODO: think about logging in immediately.
     await router.push('/login');
   }
-}
+};
 </script>
 
 <style scoped></style>

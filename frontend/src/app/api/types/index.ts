@@ -48,3 +48,8 @@ export interface UserInfo {
   email: string;
   is_active: boolean;
 }
+
+export interface LoginInfo {
+  access_token: string;
+  token_type: string;
+}

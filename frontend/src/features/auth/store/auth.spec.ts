@@ -2,12 +2,18 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useAuthStore } from './auth';
 import { apiClient, authClient } from '@/app/api/client';
-import { useAlertStore } from '@/stores/error';
 import MockAdapter from 'axios-mock-adapter';
+import type { UserInfo } from '@/app/api/types';
 
 describe('auth store', () => {
   let mockApiClient: MockAdapter;
   let mockAuthClient: MockAdapter;
+
+  const mockUser: UserInfo = {
+    user_id: 'test-user-id',
+    email: 'test@example.com',
+    is_active: true,
+  };
 
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -24,6 +30,7 @@ describe('auth store', () => {
   it('should have initial state', () => {
     const store = useAuthStore();
     expect(store.accessToken).toBe(null);
+    expect(store.user).toBe(null);
   });
 
   it('should set access token', () => {
@@ -56,53 +63,42 @@ describe('auth store', () => {
         access_token: mockToken,
         token_type: 'bearer',
       });
+      mockApiClient.onGet('/user').reply(200, mockUser);
 
-      const result = await store.login('test@example.com', 'password');
+      await store.login('test@example.com', 'password');
 
-      expect(result).toBe(true);
       expect(store.accessToken).toBe(mockToken);
+      expect(store.user).toEqual(mockUser);
     });
 
-    it('should add error to alert store when login failed', async () => {
+    it('should throw error when login failed', async () => {
       const store = useAuthStore();
-      const alertStore = useAlertStore();
       mockApiClient.onPost('/auth/login').reply(401, {
         detail: 'Invalid credentials',
       });
 
-      const result = await store.login('test@example.com', 'wrong-password');
+      await expect(store.login('test@example.com', 'wrong-password')).rejects.toThrow();
 
-      expect(result).toBe(false);
       expect(store.accessToken).toBe(null);
-      expect(alertStore.getAllErrors()).toContain('Invalid credentials');
+      expect(store.user).toBe(null);
     });
   });
 
   describe('signup', () => {
     it('should signup successfully', async () => {
       const store = useAuthStore();
-      mockApiClient.onPost('/auth/signup').reply(201, {
-        email: 'test@example.com',
-        id: '123e4567-e89b-12d3-a456-42661',
-        is_active: true,
-      });
+      mockApiClient.onPost('/auth/signup').reply(201, mockUser);
 
-      const result = await store.signup('test@example.com', 'password');
-
-      expect(result).toBe(true);
+      await store.signup('test@example.com', 'password');
     });
 
-    it('should add error to alert store when fail to signup', async () => {
+    it('should throw error when fail to signup', async () => {
       const store = useAuthStore();
-      const alertStore = useAlertStore();
       mockApiClient.onPost('/auth/signup').reply(400, {
         detail: 'Email already exists',
       });
 
-      const result = await store.signup('test@example.com', 'password');
-
-      expect(result).toBe(false);
-      expect(alertStore.getAllErrors()).toContain('Email already exists');
+      await expect(store.signup('test@example.com', 'password')).rejects.toThrow();
     });
   });
 
@@ -132,23 +128,26 @@ describe('auth store', () => {
     it('should initialize token from refresh', async () => {
       const store = useAuthStore();
       const mockToken = 'refreshed-token';
-      mockAuthClient.onPost('auth/refresh').reply(200, {
+      mockAuthClient.onPost('/auth/refresh').reply(200, {
         access_token: mockToken,
         token_type: 'bearer',
       });
+      mockApiClient.onGet('/user').reply(200, mockUser);
 
       await store.init();
 
       expect(store.accessToken).toBe(mockToken);
+      expect(store.user).toEqual(mockUser);
     });
 
     it('should not set token if refresh fails', async () => {
       const store = useAuthStore();
-      mockAuthClient.onPost('auth/refresh').reply(401);
+      mockAuthClient.onPost('/auth/refresh').reply(401);
 
       await store.init();
 
       expect(store.accessToken).toBe(null);
+      expect(store.user).toBe(null);
     });
   });
 });

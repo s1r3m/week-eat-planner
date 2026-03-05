@@ -15,7 +15,7 @@ describe('UserIdentity', () => {
     });
 
     expect(wrapper.text()).toContain(user.email);
-    expect(wrapper.text()).toContain('User Temporary');
-    expect(wrapper.text()).toContain('UT');
+    expect(wrapper.text()).toContain('test');
+    expect(wrapper.text()).toContain('TE');
   });
 });

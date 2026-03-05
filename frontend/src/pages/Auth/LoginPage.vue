@@ -1,7 +1,7 @@
 <template>
-  <template v-if="!authStore.isAuthenticated">
+  <template v-if="!authStore.user">
     <AuthCard title="Welcome back" description="Login to your account">
-      <AuthForm variant="login" :submitting="authStore.isLoading" @submit="handleLogin" />
+      <AuthForm variant="login" :submitting="isLoading" @submit="handleLogin" />
 
       <template #footer>
         <AuthFooter>
@@ -45,15 +45,18 @@ import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-async function handleLogin(email: string, password: string) {
-  const success = await authStore.login(email, password);
-  if (success) {
+const { call: login, isLoading, error } = useAsyncCall(authStore.login);
+
+const handleLogin = async (email: string, password: string) => {
+  await login(email, password);
+  if (!error.value) {
     await router.push((route.query.redirect as string) || '/weeks');
   }
-}
+};
 </script>

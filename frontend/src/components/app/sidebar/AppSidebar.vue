@@ -30,7 +30,7 @@
     <SidebarContent>
       <NavMain />
     </SidebarContent>
-    <SidebarFooter>
+    <SidebarFooter v-if="user">
       <NavUser :user="user" />
     </SidebarFooter>
   </Sidebar>
@@ -49,15 +49,11 @@ import {
 } from '@/components/ui/sidebar';
 import NavUser from '@/components/app/sidebar/NavUser.vue';
 import NavMain from '@/components/app/sidebar/NavMain.vue';
-import type { UserInfo } from '@/app/api/types';
+import { useAuthStore } from '@/features/auth/store/auth';
+
+const { user } = useAuthStore();
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 });
-
-const user: UserInfo = {
-  email: 'test@example.com',
-  user_id: 'test',
-  is_active: true,
-};
 </script>
