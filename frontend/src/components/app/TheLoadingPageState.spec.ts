@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import TheLoadingPageState from '../TheLoadingPageState.vue';
+import TheLoadingPageState from './TheLoadingPageState.vue';
 
 describe('TheLoadingPageState', () => {
   it('renders default component', () => {

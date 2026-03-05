@@ -4,14 +4,7 @@
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <SidebarMenuButton size="lg">
-            <Avatar class="h-8 w-8 rounded-lg">
-              <AvatarImage :src="user.avatar" :alt="user.name" />
-              <AvatarFallback class="rounded-lg"> FA </AvatarFallback>
-            </Avatar>
-            <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-medium">{{ user.name }}</span>
-              <span class="truncate text-xs">{{ user.email }}</span>
-            </div>
+            <UserIdentity :user="user" />
             <ChevronsUpDown class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -23,16 +16,7 @@
           :side-offset="4"
         >
           <DropdownMenuLabel class="p-0 font-normal">
-            <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              <Avatar class="h-8 w-8 rounded-lg">
-                <AvatarImage :src="user.avatar" :alt="user.name" />
-                <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
-              </Avatar>
-              <div class="grid flex-1 text-left text-sm leading-tight">
-                <span class="truncate font-semibold">{{ user.name }}</span>
-                <span class="truncate text-xs">{{ user.email }}</span>
-              </div>
-            </div>
+            <UserIdentity :user="user" />
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -70,7 +54,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,6 +72,8 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { useRouter } from 'vue-router';
+import UserIdentity from '@/features/auth/components/UserIdentity.vue';
+import type { UserInfo } from '@/app/api/types';
 
 const { isMobile, setOpenMobile } = useSidebar();
 const isLoggingOut = ref(false);
@@ -96,11 +81,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 defineProps<{
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
+  user: UserInfo;
 }>();
 
 const handleLogout = async () => {

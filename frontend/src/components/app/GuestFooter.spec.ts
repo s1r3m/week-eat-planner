@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import GuestFooter from '../GuestFooter.vue';
+import GuestFooter from './GuestFooter.vue';
 
 describe('GuestFooter', () => {
   it('renders component', () => {

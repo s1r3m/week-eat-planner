@@ -49,14 +49,15 @@ import {
 } from '@/components/ui/sidebar';
 import NavUser from '@/components/app/sidebar/NavUser.vue';
 import NavMain from '@/components/app/sidebar/NavMain.vue';
+import type { UserInfo } from '@/app/api/types';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
 });
 
-const user = {
-  name: 'user',
+const user: UserInfo = {
   email: 'test@example.com',
-  avatar: '',
+  user_id: 'test',
+  is_active: true,
 };
 </script>
