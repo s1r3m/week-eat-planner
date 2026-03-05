@@ -5,7 +5,7 @@
         <DropdownMenuTrigger as-child>
           <SidebarMenuButton size="lg">
             <UserIdentity :user="user" />
-            <ChevronsUpDown class="ml-auto size-4" />
+            <ChevronsUpDown class="ml-auto size-3" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
 
@@ -15,7 +15,7 @@
           align="end"
           :side-offset="4"
         >
-          <DropdownMenuLabel class="p-0 font-normal">
+          <DropdownMenuLabel class="font-normal">
             <UserIdentity :user="user" />
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -23,7 +23,7 @@
             <DropdownMenuItem as-child>
               <router-link
                 to="/profile"
-                class="flex w-full items-center gap-2"
+                class="flex w-full items-center gap-3"
                 @click="handleNavigation"
               >
                 <BadgeCheck />
@@ -36,7 +36,10 @@
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem @select="handleLogout"> <LogOut /> Log Out </DropdownMenuItem>
+          <DropdownMenuItem @select="handleLogout">
+            <LogOut />
+            Log Out
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -60,7 +63,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { useAuthStore } from '@/features/auth/store/auth';
 import { useRouter } from 'vue-router';
 import UserIdentity from '@/features/auth/components/UserIdentity.vue';
@@ -75,7 +77,7 @@ defineProps<{
   user: UserInfo;
 }>();
 
-const { call: logout, isLoading } = useAsyncCall(authStore.logout);
+const { call: logout } = useAsyncCall(authStore.logout);
 const handleLogout = async () => {
   await logout();
   router.push('/');

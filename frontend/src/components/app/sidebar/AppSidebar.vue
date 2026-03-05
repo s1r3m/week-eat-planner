@@ -5,24 +5,9 @@
         <SidebarMenuItem>
           <SidebarMenuButton
             as-child
-            class="pl-0 group-data-[collapsible=icon]:pl-0! active:text-brand-primary hover:bg-transparent hover:text-brand-primary"
+            class="p-0 group-data-[collapsible=icon]:pl-0! hover:bg-transparent active:bg-transparent"
           >
-            <router-link to="/promo" class="flex items-center justify-start text-brand-primary">
-              <div
-                class="flex size-10 shrink-0 bg-transparent group-data-[collapsible=icon]:size-10"
-              >
-                <img
-                  class="h-full w-full object-contain"
-                  src="@/assets/logo.png"
-                  alt="Week Eat Planner logo"
-                />
-              </div>
-              <span
-                class="text-lg font-semibold tracking-tight md:text-xl group-data-[collapsible=icon]:hidden"
-              >
-                Week Eat Planner
-              </span>
-            </router-link>
+            <AppBrand />
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -37,7 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import type { SidebarProps } from '@/components/ui/sidebar';
 import {
   Sidebar,
   SidebarContent,
@@ -46,10 +30,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  type SidebarProps,
 } from '@/components/ui/sidebar';
 import NavUser from '@/components/app/sidebar/NavUser.vue';
 import NavMain from '@/components/app/sidebar/NavMain.vue';
 import { useAuthStore } from '@/features/auth/store/auth';
+import AppBrand from '@/components/shared/AppBrand.vue';
 
 const { user } = useAuthStore();
 
