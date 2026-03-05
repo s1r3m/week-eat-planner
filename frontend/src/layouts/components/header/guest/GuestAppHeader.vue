@@ -19,14 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/components/header/AppHeader.vue';
 import AppBrand from '@/components/shared/AppBrand.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
 
 import GuestNavigation from './GuestNavigation.vue';
-import type { NavLink } from './GuestNavigation.vue';
 import GuestAuthActions from './GuestAuthActions.vue';
 import GuestMobileMenu from './GuestMobileMenu.vue';
+import AppHeader from '../AppHeader.vue';
+import type { NavLink } from '../types/navigation';
 
 const navLinks: NavLink[] = [
   { to: '#use-cases', label: 'Use Cases' },

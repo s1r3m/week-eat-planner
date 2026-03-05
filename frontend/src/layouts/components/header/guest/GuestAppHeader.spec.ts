@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 
-import GuestAppHeader from '@/components/header/guest/GuestAppHeader.vue';
 import AppBrand from '@/components/shared/AppBrand.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
-import GuestNavigation from '@/components/header/guest/GuestNavigation.vue';
-import GuestAuthActions from '@/components/header/guest/GuestAuthActions.vue';
-import GuestMobileMenu from '@/components/header/guest/GuestMobileMenu.vue';
+import GuestAppHeader from './GuestAppHeader.vue';
+import GuestNavigation from './GuestNavigation.vue';
+import GuestMobileMenu from './GuestMobileMenu.vue';
+import GuestAuthActions from './GuestAuthActions.vue';
 
 describe('GuestHeader', () => {
   const mountComponent = () =>

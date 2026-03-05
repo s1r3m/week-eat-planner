@@ -18,7 +18,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import type { NavLink } from '@/components/header/types/navigation';
+import type { NavLink } from '../types/navigation';
 
 defineProps<{
   links: NavLink[];

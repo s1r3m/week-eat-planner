@@ -27,6 +27,6 @@
 <script setup lang="ts">
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/layouts/components/Sidebar/AppSidebar.vue';
-import AuthAppHeader from '@/components/header/auth/AuthAppHeader.vue';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
+import AuthAppHeader from './components/header/auth/AuthAppHeader.vue';
 </script>

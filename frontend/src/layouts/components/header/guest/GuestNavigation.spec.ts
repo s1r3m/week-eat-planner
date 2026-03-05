@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import GuestNavigation from './GuestNavigation.vue';
-import type { NavLink } from './GuestNavigation.vue';
+import type { NavLink } from '../types/navigation';
 import * as navigationMenuModule from '@/components/ui/navigation-menu';
 
 vi.mock('@/components/ui/navigation-menu', async () => {

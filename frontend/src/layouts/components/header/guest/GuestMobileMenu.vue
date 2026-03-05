@@ -26,9 +26,9 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetFooter, SheetHeader } from '@/components/ui/sheet';
 
 import GuestNavigation from './GuestNavigation.vue';
-import type { NavLink } from './GuestNavigation.vue';
 import GuestAuthActions from './GuestAuthActions.vue';
 import AppBrand from '@/components/shared/AppBrand.vue';
+import type { NavLink } from '../types/navigation';
 
 const props = defineProps<{
   links: NavLink[];
