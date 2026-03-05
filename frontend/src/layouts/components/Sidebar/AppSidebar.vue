@@ -1,5 +1,5 @@
 <template>
-  <Sidebar v-bind="props">
+  <Sidebar variant="inset">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
@@ -13,10 +13,10 @@
       </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
-      <NavMain />
+      <AppSidebarNavigation />
     </SidebarContent>
-    <SidebarFooter v-if="user">
-      <NavUser :user="user" />
+    <SidebarFooter>
+      <AppSidebarFooter />
     </SidebarFooter>
   </Sidebar>
 </template>
@@ -30,16 +30,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  type SidebarProps,
 } from '@/components/ui/sidebar';
-import NavUser from './NavUser.vue';
-import NavMain from './NavMain.vue';
-import { useAuthStore } from '@/features/auth';
 import AppBrand from '@/components/shared/AppBrand.vue';
-
-const { user } = useAuthStore();
-
-const props = withDefaults(defineProps<SidebarProps>(), {
-  variant: 'inset',
-});
+import AppSidebarNavigation from './AppSidebarNavigation.vue';
+import AppSidebarFooter from './AppSidebarFooter.vue';
 </script>

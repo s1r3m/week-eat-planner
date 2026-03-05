@@ -4,12 +4,8 @@
     <SidebarMenu>
       <Collapsible v-for="item in navLinks" :key="item.label" :default-open="true">
         <SidebarMenuItem>
-          <SidebarMenuButton as-child :is-active="isActiveLink(item.to)">
-            <router-link :to="item.to" @click="handleNavigation">
-              <component :is="item.icon" />
-              <span> {{ item.label }} </span>
-            </router-link>
-          </SidebarMenuButton>
+          <AppSidebarNavigationItem :item="item" />
+
           <template v-if="item.items">
             <CollapsibleTrigger as-child>
               <SidebarMenuAction class="data-[state=open]:rotate-90">
@@ -19,12 +15,8 @@
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenuSub>
-                <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.id">
-                  <SidebarMenuSubButton as-child :is-active="isActiveLink(`/weeks/${subItem.id}`)">
-                    <router-link :to="`/weeks/${subItem.id}`" @click="handleNavigation">
-                      <span> {{ subItem.name }} </span>
-                    </router-link>
-                  </SidebarMenuSubButton>
+                <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.to">
+                  <AppSidebarNavigationItem :item="subItem" variant="child" />
                 </SidebarMenuSubItem>
               </SidebarMenuSub>
             </CollapsibleContent>
@@ -38,43 +30,41 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Calendar, ChevronRight, ForkKnife } from 'lucide-vue-next';
 import { useWeekStore } from '@/features/week';
+import AppSidebarNavigationItem from './AppSidebarNavigationItem.vue';
 
 const weekStore = useWeekStore();
 const { weeks } = storeToRefs(weekStore);
-const route = useRoute();
-
-const isActiveLink = (path: string) => route.path === path;
-
 const navLinks = computed(() => [
   {
     label: 'My weeks',
     to: '/weeks',
     icon: Calendar,
-    items: weeks.value,
+    items: weeks.value.map((week) => ({
+      to: `/weeks/${week.id}`,
+      label: week.name,
+    })),
   },
-  { label: 'Recipes', to: '/recipes', icon: ForkKnife },
+  {
+    label: 'Recipes',
+    to: '/recipes',
+    icon: ForkKnife,
+    items: [
+      { to: '#', label: 'My recipes' },
+      { to: '#', label: 'Favorites' },
+      { to: '#', label: 'Ready weeks' },
+    ],
+  },
 ]);
-
-const { isMobile, setOpenMobile } = useSidebar();
-const handleNavigation = () => {
-  if (isMobile.value) {
-    setOpenMobile(false);
-  }
-};
 </script>

@@ -15,33 +15,22 @@
           align="end"
           :side-offset="4"
         >
-          <DropdownMenuLabel v-if="authStore.user" class="font-normal">
+          <DropdownMenuLabel v-if="authStore.user">
             <UserIdentity :user="authStore.user" />
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem as-child>
+            <DropdownMenuItem v-for="link in menuItems" :key="link.to" as-child>
               <router-link
-                to="/profile"
+                :to="link.to"
                 class="flex w-full items-center gap-3"
-                @click="handleNavigation"
+                @click="link.action"
               >
-                <BadgeCheck />
-                Profile
+                <component :is="link.icon" />
+                {{ link.label }}
               </router-link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell />
-              Notifications
-            </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <router-link to="/promo" class="flex w-full items-center gap-3" @click="logout">
-              <LogOut />
-              Log Out
-            </router-link>
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -49,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-vue-next';
+import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,10 +56,10 @@ import {
 } from '@/components/ui/sidebar';
 import { useAuthStore, UserIdentity } from '@/features/auth';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import type { NavLink } from '@/layouts/components/header/types/navigation';
 
-const { isMobile, setOpenMobile } = useSidebar();
 const authStore = useAuthStore();
-
+const { isMobile, setOpenMobile } = useSidebar();
 const { call: logout } = useAsyncCall(authStore.logout);
 
 const handleNavigation = () => {
@@ -78,4 +67,9 @@ const handleNavigation = () => {
     setOpenMobile(false);
   }
 };
+
+const menuItems: NavLink[] = [
+  { to: '/profile', label: 'Profile', icon: BadgeCheck, action: handleNavigation },
+  { to: '/promo', label: 'Log Out', icon: LogOut, action: logout },
+];
 </script>
