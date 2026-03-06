@@ -3,15 +3,13 @@
     <GuestAppHeader />
     <main class="flex-1">
       <router-view v-slot="{ Component, route }">
-        <template v-if="Component">
-          <Suspense timeout="0">
-            <template #default>
-              <Transition name="fade" mode="out-in">
-                <component :is="Component" :key="route.fullPath" />
-              </Transition>
-            </template>
-          </Suspense>
-        </template>
+        <Suspense v-if="Component" timeout="0">
+          <template #default>
+            <Transition name="fade" mode="out-in">
+              <component :is="Component" :key="route.fullPath" />
+            </Transition>
+          </template>
+        </Suspense>
       </router-view>
     </main>
     <GuestFooter />
