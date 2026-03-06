@@ -15,11 +15,11 @@
     :to="{ name: 'week', params: { id: week.id } }"
     class="absolute inset-0 z-20"
   ></router-link>
+
   <div class="absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto">
     <Button
       variant="outline"
       class="rounded-full bg-primary/30 backdrop-blur-lg"
-      :disabled="isProcessing"
       @click.stop="isEditModalOpen = true"
     >
       <Pencil />
@@ -27,28 +27,14 @@
     <Button
       variant="outline"
       class="rounded-full bg-primary/30 backdrop-blur-lg"
-      :disabled="isProcessing"
       @click.stop="isDeleteModalOpen = true"
     >
       <Trash2 />
     </Button>
   </div>
 
-  <WeekEditDialog
-    v-model="isEditModalOpen"
-    :week-name="week.name"
-    :saving="isProcessing"
-    @save="handleEdit"
-    @close="isEditModalOpen = false"
-  />
-
-  <WeekDeleteDialog
-    v-model="isDeleteModalOpen"
-    :week-name="week.name"
-    :processing="isProcessing"
-    @confirm="handleDelete"
-    @close="isDeleteModalOpen = false"
-  />
+  <WeekEditDialog v-model="isEditModalOpen" :week="week" />
+  <WeekDeleteDialog v-model="isDeleteModalOpen" :week="week" />
 </template>
 
 <script setup lang="ts">
@@ -57,36 +43,12 @@ import { Button } from '@/components/ui/button';
 import WeekEditDialog from '@/features/week/components/WeekEditDialog.vue';
 import WeekDeleteDialog from '@/features/week/components/WeekDeleteDialog.vue';
 import { Pencil, Trash2 } from 'lucide-vue-next';
-
 import type { UserWeekMinimal } from '@/domain/week/models';
-import { useWeekStore } from '@/features/week/store/weeks';
 
-const props = defineProps<{ week: UserWeekMinimal }>();
+defineProps<{ week: UserWeekMinimal }>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 
-const isEditModalOpen = ref(false);
-const isDeleteModalOpen = ref(false);
-const isProcessing = ref(false);
-const weekStore = useWeekStore();
-
-const handleEdit = async (newName: string) => {
-  isProcessing.value = true;
-  isEditModalOpen.value = false;
-  try {
-    await weekStore.updateWeek(props.week.id, newName);
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const handleDelete = async () => {
-  isDeleteModalOpen.value = false;
-  isProcessing.value = true;
-  try {
-    await weekStore.removeWeek(props.week.id);
-  } finally {
-    isProcessing.value = false;
-  }
-};
+const isEditModalOpen = ref<boolean>(false);
+const isDeleteModalOpen = ref<boolean>(false);
 </script>

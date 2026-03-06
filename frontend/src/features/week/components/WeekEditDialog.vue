@@ -1,29 +1,29 @@
 <template>
-  <Dialog :open="props.modelValue" @update:open="$emit('close')">
+  <Dialog v-model:open="isOpen" @update:open="isOpen = false">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle> Edit {{ props.weekName }} </DialogTitle>
+        <DialogTitle> Edit {{ week.name }} </DialogTitle>
         <DialogDescription> Update the name so the plan stays organized. </DialogDescription>
       </DialogHeader>
 
-      <form id="weekEditForm" @submit.prevent="handleSave">
+      <form id="weekEditForm" @submit.prevent="onEdit">
         <FieldGroup>
           <FieldLabel for="weekName"> New week name </FieldLabel>
-          <Input id="weekName" v-model="localWeekName" type="text" , placeholder="E.g. Week 1" />
+          <Input id="weekName" v-model="newName" type="text" , placeholder="E.g. Week 1" />
         </FieldGroup>
       </form>
 
       <DialogFooter>
         <DialogClose as-child>
-          <Button variant="outline" :disabled="props.saving" @click="$emit('close')">
-            Cancel
-          </Button>
+          <Button variant="outline" @click="isOpen = false"> Cancel </Button>
         </DialogClose>
-        <Button form="weekEditForm" type="submit" :disabled="isSaveDisabled">
-          <template v-if="props.saving">
-            <Spinner />
-          </template>
-          {{ props.saving ? 'Saving...' : 'Save' }}
+        <Button
+          form="weekEditForm"
+          type="submit"
+          :disabled="!newName.trim() || newName.trim() === week.name || isLoading"
+        >
+          <Spinner v-if="isLoading" />
+          {{ isLoading ? 'Saving...' : 'Save' }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { ref } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -45,39 +45,22 @@ import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useWeekStore } from '../store/weeks';
+import type { UserWeekMinimal } from '@/domain/week/models';
 
-interface Props {
-  modelValue: boolean;
-  weekName: string;
-  saving?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  saving: false,
-});
-
-const emit = defineEmits<{
-  save: [string];
-  close: [];
-}>();
-
-const localWeekName = ref(props.weekName);
-
-watchEffect(() => {
-  if (props.modelValue) {
-    localWeekName.value = props.weekName;
-  }
-});
-
-const isSaveDisabled = computed(
-  () =>
-    props.saving || !localWeekName.value.trim() || localWeekName.value.trim() === props.weekName,
+const isOpen = defineModel<boolean>();
+const props = defineProps<{ week: UserWeekMinimal }>();
+const weekStore = useWeekStore();
+const { call: edit, isLoading } = useAsyncCall(
+  async () => await weekStore.updateWeek(props.week.id, newName.value.trim()),
 );
 
-const handleSave = () => {
-  if (isSaveDisabled.value) {
-    return;
-  }
-  emit('save', localWeekName.value.trim());
+// TODO: make the value be equal to week.name on the start
+const newName = ref<string>('');
+
+const onEdit = async () => {
+  await edit();
+  isOpen.value = false;
 };
 </script>

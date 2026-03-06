@@ -1,26 +1,24 @@
 <template>
-  <Dialog :open="modelValue" @update:open="$emit('close')">
+  <Dialog v-model:open="isOpen" @update:open="isOpen = false">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle> Delete {{ props.weekName }}? </DialogTitle>
+        <DialogTitle> Delete {{ week.name }}? </DialogTitle>
         <DialogDescription> This action cannot be undone. </DialogDescription>
       </DialogHeader>
 
       <p class="text-base text-popover-foreground">
         Are you sure you want to delete
-        <span class="font-semibold text-destructive">{{ props.weekName }}</span
+        <span class="font-semibold text-destructive">{{ week.name }}</span
         >?
       </p>
 
       <DialogFooter>
         <DialogClose as-child>
-          <Button variant="outline" @click="$emit('close')"> No </Button>
+          <Button variant="outline" @click="isOpen = false"> No </Button>
         </DialogClose>
-        <Button variant="destructive" :disabled="props.processing" @click="handleYes">
-          <template v-if="props.processing">
-            <Spinner />
-          </template>
-          {{ props.processing ? 'Deleting...' : 'Yes' }}
+        <Button variant="destructive" :disabled="isLoading" @click="onDelete">
+          <Spinner v-if="isLoading" />
+          {{ isLoading ? 'Deleting...' : 'Yes' }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -39,26 +37,19 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { useWeekStore } from '../store/weeks';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import type { UserWeekMinimal } from '@/domain/week/models';
 
-interface Props {
-  modelValue: boolean;
-  weekName?: string;
-  processing?: boolean;
-}
+const isOpen = defineModel<boolean>();
+const props = defineProps<{ week: UserWeekMinimal }>();
+const weekStore = useWeekStore();
+const { call: remove, isLoading } = useAsyncCall(
+  async () => await weekStore.removeWeek(props.week.id),
+);
 
-const props = withDefaults(defineProps<Props>(), {
-  processing: false,
-});
-
-const emit = defineEmits<{
-  confirm: [];
-  close: [];
-}>();
-
-const handleYes = () => {
-  if (props.processing) {
-    return;
-  }
-  emit('confirm');
+const onDelete = async () => {
+  await remove();
+  isOpen.value = false;
 };
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="props.modelValue" @update:open="$emit('close')">
+  <Dialog v-model:open="isOpen" @update:open="isOpen = false">
     <DialogContent>
       <DialogHeader>
         <DialogTitle> Add new Week </DialogTitle>
@@ -15,13 +15,11 @@
 
       <DialogFooter>
         <DialogClose as-child>
-          <Button variant="outline" @click="$emit('close')"> Cancel </Button>
+          <Button variant="outline" @click="isOpen = false"> Cancel </Button>
         </DialogClose>
-        <Button type="submit" form="addWeekForm" :disabled="isDisabled">
-          <template v-if="props.processing">
-            <Spinner />
-          </template>
-          {{ props.processing ? 'Creating...' : 'Create' }}
+        <Button type="submit" form="addWeekForm" :disabled="!newName.trim() || isLoading">
+          <Spinner v-if="isLoading" />
+          {{ isLoading ? 'Creating...' : 'Create' }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -29,8 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import type { WeekPayload } from '@/features/week/types/week';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -44,28 +41,20 @@ import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FieldGroup, FieldLabel } from '@/components/ui/field';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useWeekStore } from '@/features/week/store/weeks';
 
-interface Props {
-  modelValue: boolean;
-  processing?: boolean;
-}
-const props = withDefaults(defineProps<Props>(), {
-  processing: false,
-});
-
+const isOpen = defineModel<boolean>();
 const newName = ref('');
-const isDisabled = computed(() => !newName.value || props.processing);
 
-const emit = defineEmits<{
-  create: [data: WeekPayload];
-  close: [];
-}>();
+const weekStore = useWeekStore();
+const { call: create, isLoading } = useAsyncCall(
+  async () => await weekStore.addWeek(newName.value.trim()),
+);
 
-const onCreate = () => {
-  if (!newName.value.trim() || props.processing) {
-    return;
-  }
-  emit('create', { name: newName.value.trim() } as WeekPayload);
+const onCreate = async () => {
+  await create();
+  isOpen.value = false;
   newName.value = '';
 };
 </script>
