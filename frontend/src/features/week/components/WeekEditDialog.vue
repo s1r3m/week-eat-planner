@@ -1,6 +1,6 @@
 <template>
   <WeekFormDialog
-    v-model:open="isOpen"
+    v-model="isOpen"
     :title="`Edit ${week.name}`"
     description="Update the name so the plan stays organized."
     :initial-name="week.name"

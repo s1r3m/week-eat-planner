@@ -1,6 +1,6 @@
 <template>
   <WeekFormDialog
-    v-model:open="isOpen"
+    v-model="isOpen"
     title="Add new Week"
     description="Fill the following form:"
     initial-name=""

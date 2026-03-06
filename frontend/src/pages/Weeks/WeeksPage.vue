@@ -10,10 +10,9 @@
       />
     </div>
 
-    <!-- Dialogs -->
-    <WeekCreateDialog v-model:open="isCreateOpen" />
-    <WeekEditDialog v-if="selectedWeek" v-model:open="isEditOpen" :week="selectedWeek" />
-    <WeekDeleteDialog v-if="selectedWeek" v-model:open="isDeleteOpen" :week="selectedWeek" />
+    <WeekCreateDialog v-model="isCreateOpen" />
+    <WeekEditDialog v-if="selectedWeek" v-model="isEditOpen" :week="selectedWeek" />
+    <WeekDeleteDialog v-if="selectedWeek" v-model="isDeleteOpen" :week="selectedWeek" />
   </div>
 </template>
 

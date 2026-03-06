@@ -7,9 +7,9 @@
   />
 
   <div class="flex absolute bottom-0 z-10 bg-primary/50 h-16 w-full items-center">
-    <h3 class="pl-8 text-lg font-semibold text-white drop-shadow-md">
+    <h1 class="pl-8 text-lg font-semibold text-white drop-shadow-md">
       {{ week.name }}
-    </h3>
+    </h1>
   </div>
   <router-link
     :to="{ name: 'week', params: { id: week.id } }"
