@@ -11,8 +11,8 @@
     </div>
 
     <WeekCreateDialog v-model="isCreateOpen" />
-    <WeekEditDialog v-if="selectedWeek" v-model="isEditOpen" :week="selectedWeek" />
-    <WeekDeleteDialog v-if="selectedWeek" v-model="isDeleteOpen" :week="selectedWeek" />
+    <WeekEditDialog v-model="editingWeek" />
+    <WeekDeleteDialog v-model="deletingWeek" />
   </div>
 </template>
 
@@ -32,19 +32,11 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 const weekStore = useWeekStore();
 
 const isCreateOpen = ref(false);
-const isEditOpen = ref(false);
-const isDeleteOpen = ref(false);
-const selectedWeek = ref<UserWeekMinimal | null>(null);
+const editingWeek = ref<UserWeekMinimal | null>(null);
+const deletingWeek = ref<UserWeekMinimal | null>(null);
 
-const openEdit = (week: UserWeekMinimal) => {
-  selectedWeek.value = week;
-  isEditOpen.value = true;
-};
-
-const openDelete = (week: UserWeekMinimal) => {
-  selectedWeek.value = week;
-  isDeleteOpen.value = true;
-};
+const openEdit = (week: UserWeekMinimal) => (editingWeek.value = week);
+const openDelete = (week: UserWeekMinimal) => (deletingWeek.value = week);
 
 await weekStore.fetchWeeks();
 </script>

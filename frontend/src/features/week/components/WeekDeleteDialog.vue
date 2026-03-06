@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:open="isOpen">
+  <Dialog v-if="week" v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
         <DialogTitle> Delete {{ week.name }}? </DialogTitle>
@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   Dialog,
   DialogContent,
@@ -41,15 +42,22 @@ import { useWeekStore } from '../store/weeks';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
-const isOpen = defineModel<boolean>();
-const props = defineProps<{ week: UserWeekMinimal }>();
+const week = defineModel<UserWeekMinimal | null>();
+const isOpen = computed({
+  get: () => !!week.value,
+  set: (value) => {
+    if (!value) week.value = null;
+  },
+});
+
 const weekStore = useWeekStore();
-const { call: remove, isLoading } = useAsyncCall(async () => {
-  await weekStore.removeWeek(props.week.id);
+const { call: remove, isLoading } = useAsyncCall(async (week: UserWeekMinimal) => {
+  await weekStore.removeWeek(week.id);
 });
 
 const onDelete = async () => {
-  await remove();
-  isOpen.value = false;
+  if (!week.value) return;
+  await remove(week.value);
+  week.value = null;
 };
 </script>

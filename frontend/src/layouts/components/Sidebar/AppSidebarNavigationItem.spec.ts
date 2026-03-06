@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useSidebar } from '@/components/ui/sidebar';
 import AppSidebarNavigationItem from './AppSidebarNavigationItem.vue';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
+import { markRaw } from 'vue';
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
@@ -30,7 +31,7 @@ vi.mock('@/components/ui/sidebar/SidebarMenuSubButton.vue', () => ({
 }));
 
 describe('AppSidebarNavigationItem', () => {
-  const MockIcon = { template: '<svg data-testid="mock-icon" />' };
+  const MockIcon = markRaw({ template: '<svg data-testid="mock-icon" />' });
   const mockItem: NavLink = {
     to: '/test',
     label: 'Test Item',

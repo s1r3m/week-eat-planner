@@ -50,8 +50,7 @@ describe('WeekDeleteDialog', () => {
         stubs,
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -66,8 +65,7 @@ describe('WeekDeleteDialog', () => {
         stubs,
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -75,7 +73,7 @@ describe('WeekDeleteDialog', () => {
     await dialog.vm.$emit('update:open', false);
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([false]);
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 
   it('closes dialog when No button is clicked', async () => {
@@ -85,8 +83,7 @@ describe('WeekDeleteDialog', () => {
         stubs,
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -94,7 +91,7 @@ describe('WeekDeleteDialog', () => {
     await noButton?.trigger('click');
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([false]);
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 
   it('calls removeWeek and closes dialog when Yes button is clicked', async () => {
@@ -104,8 +101,7 @@ describe('WeekDeleteDialog', () => {
         stubs,
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -116,7 +112,7 @@ describe('WeekDeleteDialog', () => {
 
     expect(weekStore.removeWeek).toHaveBeenCalledWith(mockWeek.id);
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === false)).toBe(true);
+    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
   });
 
   it('shows loading state and disables button during deletion', async () => {
@@ -139,8 +135,7 @@ describe('WeekDeleteDialog', () => {
         },
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -163,6 +158,6 @@ describe('WeekDeleteDialog', () => {
     resolveDelete!();
     await flushPromises();
 
-    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === false)).toBe(true);
+    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
   });
 });

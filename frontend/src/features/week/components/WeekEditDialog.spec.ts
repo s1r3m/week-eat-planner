@@ -38,8 +38,7 @@ describe('WeekEditDialog', () => {
         },
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -60,8 +59,7 @@ describe('WeekEditDialog', () => {
         },
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -73,7 +71,7 @@ describe('WeekEditDialog', () => {
 
     expect(weekStore.updateWeek).toHaveBeenCalledWith(mockWeek.id, 'Updated Week Name');
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === false)).toBe(true);
+    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
   });
 
   it('passes isLoading state to WeekFormDialog', async () => {
@@ -95,8 +93,7 @@ describe('WeekEditDialog', () => {
         },
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -123,8 +120,7 @@ describe('WeekEditDialog', () => {
         },
       },
       props: {
-        week: mockWeek,
-        modelValue: true,
+        modelValue: mockWeek,
       },
     });
 
@@ -132,6 +128,6 @@ describe('WeekEditDialog', () => {
     await formDialog.vm.$emit('update:modelValue', false);
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([false]);
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 });

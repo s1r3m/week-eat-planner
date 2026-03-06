@@ -10,7 +10,7 @@ describe('WeekAddCard', () => {
 
   it('emits create event when clicked', async () => {
     const wrapper = mount(WeekAddCard);
-    await wrapper.find('div').trigger('click');
+    await wrapper.find('span').trigger('click');
     expect(wrapper.emitted()).toHaveProperty('create');
     expect(wrapper.emitted('create')).toHaveLength(1);
   });
