@@ -30,17 +30,12 @@ describe('WeeksGrid', () => {
     vi.clearAllMocks();
   });
 
-  it('renders all weeks from store', () => {
+  it('renders all weeks from props', () => {
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: mockWeeks,
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: mockWeeks },
-            },
-          }),
-        ],
         stubs,
       },
     });
@@ -53,15 +48,10 @@ describe('WeeksGrid', () => {
 
   it('renders WeekAddCard if there are fewer than 6 weeks', () => {
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: mockWeeks,
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: mockWeeks },
-            },
-          }),
-        ],
         stubs,
       },
     });
@@ -77,15 +67,10 @@ describe('WeeksGrid', () => {
     }));
 
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: sixWeeks,
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: sixWeeks },
-            },
-          }),
-        ],
         stubs,
       },
     });
@@ -95,8 +80,10 @@ describe('WeeksGrid', () => {
 
   it('bubbles up create event', async () => {
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: [],
+      },
       global: {
-        plugins: [createTestingPinia({ createSpy: vi.fn })],
         stubs,
       },
     });
@@ -107,15 +94,10 @@ describe('WeeksGrid', () => {
 
   it('bubbles up edit and delete events from WeekDetails', async () => {
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: [mockWeeks[0]],
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: [mockWeeks[0]] },
-            },
-          }),
-        ],
         stubs,
       },
     });
@@ -139,15 +121,10 @@ describe('WeeksGrid', () => {
     }));
 
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: sixWeeks,
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: sixWeeks },
-            },
-          }),
-        ],
         stubs,
       },
     });
@@ -158,15 +135,10 @@ describe('WeeksGrid', () => {
 
   it('renders correctly with 0 weeks', () => {
     const wrapper = mount(WeeksGrid, {
+      props: {
+        weeks: [],
+      },
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            initialState: {
-              'weeks-store': { weeks: [] },
-            },
-          }),
-        ],
         stubs,
       },
     });
