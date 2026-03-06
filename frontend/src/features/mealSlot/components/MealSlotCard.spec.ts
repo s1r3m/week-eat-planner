@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MealSlotContent from './MealSlotContent.vue';
+import MealSlotCard from './MealSlotCard.vue';
 import type { MealSlot, MealType } from '@/domain/week/models';
 
-describe('MealSlotContent', () => {
+describe('MealSlotCard', () => {
   const mountComponent = (mealSlot: MealSlot) => {
-    return mount(MealSlotContent, {
+    return mount(MealSlotCard, {
       props: {
         mealSlot,
       },
@@ -39,8 +39,16 @@ describe('MealSlotContent', () => {
     },
   );
 
-  it('renders the Plus icon', () => {
+  it('renders the recipe name when a recipe is assigned', () => {
+    const recipe = { id: 'recipe-1', name: 'Pasta' };
+    const wrapper = mountComponent({ ...defaultSlot, recipe });
+
+    expect(wrapper.text()).toContain('Pasta');
+    expect(wrapper.text()).not.toContain('Assign a recipe');
+  });
+
+  it('renders with slot variant', () => {
     const wrapper = mountComponent(defaultSlot);
-    expect(wrapper.find('svg').exists()).toBe(true);
+    expect(wrapper.attributes('class')).toContain('min-h-20');
   });
 });

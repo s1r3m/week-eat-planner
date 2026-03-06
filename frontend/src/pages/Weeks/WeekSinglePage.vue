@@ -7,9 +7,7 @@
         <CardTitle> {{ days[idx] }}</CardTitle>
       </CardHeader>
       <CardContent class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <Card v-for="mealSlot in day" :key="mealSlot.id" variant="slot">
-          <MealSlotContent :meal-slot="mealSlot" />
-        </Card>
+        <MealSlotCard v-for="mealSlot in day" :key="mealSlot.id" :meal-slot="mealSlot" />
       </CardContent>
     </Card>
   </div>
@@ -20,7 +18,7 @@ import { ref, computed } from 'vue';
 import type { UserWeek } from '@/domain/week/models';
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week';
-import { MealSlotContent } from '@/features/mealSlot';
+import { MealSlotCard } from '@/features/mealSlot';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
