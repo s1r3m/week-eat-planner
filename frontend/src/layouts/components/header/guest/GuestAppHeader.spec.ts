@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import AppBrand from '@/components/shared/AppBrand.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
@@ -10,7 +10,7 @@ import GuestAuthActions from './GuestAuthActions.vue';
 
 describe('GuestHeader', () => {
   const mountComponent = () =>
-    shallowMount(GuestAppHeader, {
+    mount(GuestAppHeader, {
       global: {
         stubs: {
           AppHeader: {
