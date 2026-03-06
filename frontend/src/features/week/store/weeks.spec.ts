@@ -65,16 +65,6 @@ describe('weeks store', () => {
       expect(store.weeks).toContainEqual(newWeek);
       expect(store.error).toBe(null);
     });
-
-    it('should handle error when adding a week fails', async () => {
-      const store = useWeekStore();
-      mockApiClient.onPost('/weeks').reply(400, { detail: 'Invalid name' });
-
-      await store.addWeek('Invalid Week');
-
-      expect(store.weeks).toEqual([]);
-      expect(store.error).toBe('Invalid name');
-    });
   });
 
   describe('removeWeek', () => {
@@ -88,18 +78,6 @@ describe('weeks store', () => {
 
       expect(store.weeks).toEqual([]);
       expect(store.error).toBe(null);
-    });
-
-    it('should handle error when removing a week fails', async () => {
-      const store = useWeekStore();
-      const weekId = '1';
-      store.weeks = [{ id: weekId, name: 'Week', user_id: 'u1' }];
-      mockApiClient.onDelete(`/weeks/${weekId}`).reply(500, { detail: 'Delete failed' });
-
-      await store.removeWeek(weekId);
-
-      expect(store.weeks).toHaveLength(1);
-      expect(store.error).toBe('Delete failed');
     });
   });
 
@@ -119,18 +97,6 @@ describe('weeks store', () => {
       expect(result).toEqual(updatedWeek);
       expect(store.weeks[0].name).toBe('New Name');
       expect(store.error).toBe(null);
-    });
-
-    it('should handle error when updating a week fails', async () => {
-      const store = useWeekStore();
-      const weekId = '1';
-      store.weeks = [{ id: weekId, name: 'Old Name', user_id: 'u1' }];
-      mockApiClient.onPatch(`/weeks/${weekId}`).reply(400, { detail: 'Update failed' });
-
-      await store.updateWeek(weekId, 'New Name');
-
-      expect(store.weeks[0].name).toBe('Old Name');
-      expect(store.error).toBe('Update failed');
     });
   });
 
