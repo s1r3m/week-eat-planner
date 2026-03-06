@@ -8,6 +8,7 @@ import { authService } from '../api/auth.service';
 export const useAuthStore = defineStore('auth-store', () => {
   const accessToken: Ref<string | null> = ref(null);
   const user: Ref<UserInfo | null> = ref(null);
+  const isInitialized = ref(false);
 
   const setAccessToken = (newToken: string | null) => {
     accessToken.value = newToken;
@@ -40,6 +41,8 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   const init = async () => {
+    if (isInitialized.value) return;
+
     try {
       const data = await authService.refresh();
       setAccessToken(data.access_token);
@@ -47,6 +50,8 @@ export const useAuthStore = defineStore('auth-store', () => {
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {
       console.log('No valid refresh token found: ', getErrorMessage(err));
+    } finally {
+      isInitialized.value = true;
     }
   };
 
@@ -58,6 +63,7 @@ export const useAuthStore = defineStore('auth-store', () => {
   return {
     accessToken,
     user,
+    isInitialized,
     setAccessToken,
     init,
     login,

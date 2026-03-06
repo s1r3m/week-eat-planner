@@ -13,7 +13,7 @@ const routes = [
     path: '/',
     redirect: () => {
       const authStore = useAuthStore();
-      return authStore.isAuthenticated ? '/weeks' : '/promo';
+      return authStore.accessToken ? '/weeks' : '/promo';
     },
   },
   {
@@ -132,8 +132,10 @@ const router = createRouter({
 
 export default router;
 
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
+  await authStore.init();
+
   if (!authStore.accessToken && to.meta.requiresAuth) {
     return { name: 'login', query: { redirect: to.fullPath } };
   }

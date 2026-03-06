@@ -29,7 +29,7 @@ describe('Router', () => {
   });
 
   it('should redirect to login when accessing a protected route and not authenticated', async () => {
-    const authStore = { accessToken: null };
+    const authStore = { accessToken: null, init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
     await router.push('/recipes');
@@ -37,8 +37,23 @@ describe('Router', () => {
     expect(router.currentRoute.value.query.redirect).toBe('/recipes');
   });
 
+  it('should wait for auth init before checking authentication', async () => {
+    const authStore = {
+      accessToken: null,
+      init: vi.fn().mockImplementation(async function (this: any) {
+        this.accessToken = 'refreshed-token';
+      }),
+    };
+    (useAuthStore as any).mockReturnValue(authStore);
+
+    await router.push('/recipes');
+
+    expect(authStore.init).toHaveBeenCalled();
+    expect(router.currentRoute.value.name).toBe('recipes');
+  });
+
   it('should allow access to protected route when authenticated', async () => {
-    const authStore = { accessToken: 'valid-token' };
+    const authStore = { accessToken: 'valid-token', init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
     await router.push('/recipes');
@@ -46,7 +61,7 @@ describe('Router', () => {
   });
 
   it('should allow access to guest routes when not authenticated', async () => {
-    const authStore = { accessToken: null };
+    const authStore = { accessToken: null, init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
     await router.push('/login');
@@ -54,7 +69,7 @@ describe('Router', () => {
   });
 
   it('should redirect to promo for unknown routes', async () => {
-    const authStore = { accessToken: null };
+    const authStore = { accessToken: null, init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
     await router.push('/non-existent-route');
@@ -62,7 +77,7 @@ describe('Router', () => {
   });
 
   it('should load async components', async () => {
-    const authStore = { accessToken: 'token' };
+    const authStore = { accessToken: 'token', init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
     // Trigger dynamic imports
@@ -76,7 +91,7 @@ describe('Router', () => {
 
   describe('Breadcrumbs meta', () => {
     it('should return correct breadcrumbs for static meta', async () => {
-      const authStore = { accessToken: 'token' };
+      const authStore = { accessToken: 'token', init: vi.fn() };
       (useAuthStore as any).mockReturnValue(authStore);
 
       await router.push('/recipes');
@@ -85,7 +100,7 @@ describe('Router', () => {
     });
 
     it('should return dynamic breadcrumbs for week single page', async () => {
-      const authStore = { accessToken: 'token' };
+      const authStore = { accessToken: 'token', init: vi.fn() };
       (useAuthStore as any).mockReturnValue(authStore);
 
       const weekStore = { getWeekNameById: vi.fn().mockReturnValue('Week 1') };
