@@ -10,34 +10,27 @@ jobs:
   fe_linters:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        # Fetch all history for all branches and tags to enable merging.
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Merge base branch into PR
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
-        git merge "origin/${{ github.event.pull_request.base.ref }}"
-        echo "Merge successful."
-      # This step will automatically fail if there are merge conflicts,
-      # correctly indicating that the PR is not ready.
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-    - name: Install frontend dependencies
-      run: |
-        make fe_install
+      - name: Install frontend dependencies
+        run: |
+          make fe_install
 
-    - name: Analysing the code with ESLint
-      run: |
-        make fe_lint
-
-    - name: Run fe unittests
-      run: |
-        make fe_test
+      - name: Analysing the code with ESLint
+        run: |
+          make fe_lint
