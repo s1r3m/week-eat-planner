@@ -31,6 +31,7 @@ describe('auth store', () => {
     const store = useAuthStore();
     expect(store.accessToken).toBe(null);
     expect(store.user).toBe(null);
+    expect(store.isInitialized).toBe(false);
   });
 
   it('should set access token', () => {
@@ -74,6 +75,12 @@ describe('auth store', () => {
       mockApiClient.onPost('/auth/signup').reply(201, mockUser);
 
       await store.signup('test@example.com', 'password');
+
+      expect(mockApiClient.history.post.length).toBe(1);
+      expect(JSON.parse(mockApiClient.history.post[0].data)).toEqual({
+        email: 'test@example.com',
+        password: 'password',
+      });
     });
 
     it('should throw error when fail to signup', async () => {
@@ -90,21 +97,25 @@ describe('auth store', () => {
     it('should logout and clear token on success', async () => {
       const store = useAuthStore();
       store.setAccessToken('some-token');
+      store.user = mockUser;
       mockApiClient.onPost('/auth/logout').reply(200);
 
       await store.logout();
 
       expect(store.accessToken).toBe(null);
+      expect(store.user).toBe(null);
     });
 
     it('should logout and clear token even if request fails', async () => {
       const store = useAuthStore();
       store.setAccessToken('some-token');
+      store.user = mockUser;
       mockApiClient.onPost('/auth/logout').reply(500);
 
       await store.logout();
 
       expect(store.accessToken).toBe(null);
+      expect(store.user).toBe(null);
     });
   });
 
@@ -122,6 +133,7 @@ describe('auth store', () => {
 
       expect(store.accessToken).toBe(mockToken);
       expect(store.user).toEqual(mockUser);
+      expect(store.isInitialized).toBe(true);
     });
 
     it('should not set token if refresh fails', async () => {
@@ -132,6 +144,27 @@ describe('auth store', () => {
 
       expect(store.accessToken).toBe(null);
       expect(store.user).toBe(null);
+      expect(store.isInitialized).toBe(true);
+    });
+
+    it('should not initialize twice', async () => {
+      const store = useAuthStore();
+      const mockToken = 'refreshed-token';
+      mockAuthClient.onPost('/auth/refresh').reply(200, {
+        access_token: mockToken,
+        token_type: 'bearer',
+      });
+      mockApiClient.onGet('/user').reply(200, mockUser);
+
+      await store.init();
+      const firstToken = store.accessToken;
+
+      // Call init again - should return immediately due to guard
+      await store.init();
+
+      expect(store.accessToken).toBe(firstToken);
+      // Verify that the refresh endpoint was only called once
+      expect(mockAuthClient.history.post.length).toBe(1);
     });
   });
 });
