@@ -30,6 +30,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
       weeks.value = weeks.value.filter((week) => week.id !== weekId);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
+      throw err;
     }
   };
 
@@ -40,6 +41,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
       weeks.value.push(data);
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
+      throw err;
     } finally {
       isLoading.value = false;
     }
@@ -52,6 +54,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
       return data;
     } catch (err: unknown) {
       error.value = getErrorMessage(err);
+      throw err;
     }
   };
 

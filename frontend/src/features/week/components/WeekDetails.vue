@@ -16,39 +16,18 @@
     class="absolute inset-0 z-20"
   ></router-link>
 
-  <div class="absolute top-2 right-2 flex gap-2 z-40 pointer-events-auto">
-    <Button
-      variant="outline"
-      class="rounded-full bg-primary/30 backdrop-blur-lg"
-      @click.stop="isEditModalOpen = true"
-    >
-      <Pencil />
-    </Button>
-    <Button
-      variant="outline"
-      class="rounded-full bg-primary/30 backdrop-blur-lg"
-      @click.stop="isDeleteModalOpen = true"
-    >
-      <Trash2 />
-    </Button>
-  </div>
-
-  <WeekEditDialog v-model="isEditModalOpen" :week="week" />
-  <WeekDeleteDialog v-model="isDeleteModalOpen" :week="week" />
+  <EditDeleteActions @edit="$emit('edit', week)" @delete="$emit('delete', week)" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Button } from '@/components/ui/button';
-import WeekEditDialog from '@/features/week/components/WeekEditDialog.vue';
-import WeekDeleteDialog from '@/features/week/components/WeekDeleteDialog.vue';
-import { Pencil, Trash2 } from 'lucide-vue-next';
 import type { UserWeekMinimal } from '@/domain/week/models';
+import EditDeleteActions from '@/components/shared/EditDeleteActions.vue';
 
 defineProps<{ week: UserWeekMinimal }>();
+defineEmits<{
+  edit: [week: UserWeekMinimal];
+  delete: [week: UserWeekMinimal];
+}>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
-
-const isEditModalOpen = ref<boolean>(false);
-const isDeleteModalOpen = ref<boolean>(false);
 </script>

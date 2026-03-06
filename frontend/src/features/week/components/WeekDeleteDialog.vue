@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:open="isOpen" @update:open="isOpen = false">
+  <Dialog v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
         <DialogTitle> Delete {{ week.name }}? </DialogTitle>
@@ -44,9 +44,9 @@ import type { UserWeekMinimal } from '@/domain/week/models';
 const isOpen = defineModel<boolean>();
 const props = defineProps<{ week: UserWeekMinimal }>();
 const weekStore = useWeekStore();
-const { call: remove, isLoading } = useAsyncCall(
-  async () => await weekStore.removeWeek(props.week.id),
-);
+const { call: remove, isLoading } = useAsyncCall(async () => {
+  await weekStore.removeWeek(props.week.id);
+});
 
 const onDelete = async () => {
   await remove();
