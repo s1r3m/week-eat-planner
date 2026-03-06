@@ -95,6 +95,46 @@ describe('WeeksPage', () => {
     expect(deleteDialog.props('modelValue')).toEqual(targetWeek);
   });
 
+  it('closes create dialog when v-model changes', async () => {
+    const wrapper = await mountWithSuspense();
+    const createDialog = wrapper.findComponent(WeekCreateDialog);
+
+    // Open it first
+    const weeksGrid = wrapper.findComponent(WeeksGrid);
+    await weeksGrid.vm.$emit('create');
+    expect(createDialog.props('modelValue')).toBe(true);
+
+    // Close it via v-model update
+    await createDialog.vm.$emit('update:modelValue', false);
+    expect(createDialog.props('modelValue')).toBe(false);
+  });
+
+  it('resets editingWeek when WeekEditDialog emits update:modelValue null', async () => {
+    const wrapper = await mountWithSuspense();
+    const weeksGrid = wrapper.findComponent(WeeksGrid);
+    const targetWeek = mockWeeks[0];
+
+    await weeksGrid.vm.$emit('edit', targetWeek);
+    const editDialog = wrapper.findComponent(WeekEditDialog);
+    expect(editDialog.props('modelValue')).toEqual(targetWeek);
+
+    await editDialog.vm.$emit('update:modelValue', null);
+    expect(editDialog.props('modelValue')).toBeNull();
+  });
+
+  it('resets deletingWeek when WeekDeleteDialog emits update:modelValue null', async () => {
+    const wrapper = await mountWithSuspense();
+    const weeksGrid = wrapper.findComponent(WeeksGrid);
+    const targetWeek = mockWeeks[0];
+
+    await weeksGrid.vm.$emit('delete', targetWeek);
+    const deleteDialog = wrapper.findComponent(WeekDeleteDialog);
+    expect(deleteDialog.props('modelValue')).toEqual(targetWeek);
+
+    await deleteDialog.vm.$emit('update:modelValue', null);
+    expect(deleteDialog.props('modelValue')).toBeNull();
+  });
+
   it('renders empty grid when no weeks are returned', async () => {
     vi.mocked(weekService.fetchWeeks).mockResolvedValue([]);
     const wrapper = await mountWithSuspense();
