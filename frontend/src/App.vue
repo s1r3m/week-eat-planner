@@ -1,7 +1,5 @@
 <template>
   <Suspense timeout="0">
-    <AppShell />
-
     <template #fallback>
       <TheLoadingPageState loading-name="the application" />
     </template>
