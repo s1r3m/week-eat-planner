@@ -2,12 +2,12 @@ const js = require('@eslint/js');
 const globals = require('globals');
 const tsParser = require('@typescript-eslint/parser');
 const vuePlugin = require('eslint-plugin-vue');
-const vueRecommended = require('eslint-plugin-vue/lib/configs/vue3-recommended');
 const prettierPlugin = require('eslint-plugin-prettier');
 const prettierConfig = require('eslint-config-prettier');
 
 module.exports = [
   js.configs.recommended,
+  ...vuePlugin.configs['flat/recommended'],
   {
     files: ['**/*.ts'],
     languageOptions: {
@@ -44,12 +44,23 @@ module.exports = [
       prettier: prettierPlugin,
     },
     rules: {
-      ...vueRecommended.rules,
       ...prettierConfig.rules,
       'vue/multi-word-component-names': 'off',
       'vue/html-self-closing': 'off',
       'no-unused-vars': 'warn',
       'prettier/prettier': 'error',
+    },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    rules: {
+      'vue/one-component-per-file': 'off',
+    },
+  },
+  {
+    files: ['src/components/ui/**/*.vue'],
+    rules: {
+      'vue/require-default-prop': 'off',
     },
   },
 ];

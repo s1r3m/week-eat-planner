@@ -4,21 +4,23 @@ import type { RouterScrollBehavior } from 'vue-router';
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
-import HomePage from '@/pages/HomePage.vue';
-import { useAuthStore } from '@/features/auth/store/auth';
-import { useWeekStore } from '@/features/week/store/weeks';
-
-interface Breadcrumbs {
-  to?: string;
-  label: string;
-}
+import PromoPage from '@/pages/PromoPage.vue';
+import { useAuthStore } from '@/features/auth';
+import { useWeekStore } from '@/features/week';
 
 const routes = [
   {
     path: '/',
+    redirect: () => {
+      const authStore = useAuthStore();
+      return authStore.accessToken ? '/weeks' : '/promo';
+    },
+  },
+  {
+    path: '/',
     component: GuestLayout,
     children: [
-      { path: '', name: 'home', component: HomePage },
+      { path: 'promo', name: 'promo', component: PromoPage },
       {
         path: 'login',
         name: 'login',
@@ -28,6 +30,11 @@ const routes = [
         path: 'signup',
         name: 'signup',
         component: () => import('@/pages/Auth/SignupPage.vue'),
+      },
+      {
+        path: 'forgot-password',
+        name: 'forgot-password',
+        component: () => import('@/pages/Auth/ForgotPasswordPage.vue'),
       },
     ],
   },
@@ -70,7 +77,7 @@ const routes = [
   },
 
   // otherwise redirect to home
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  { path: '/:pathMatch(.*)*', redirect: '/promo' },
 ];
 
 type ScrollPositionResult = {
@@ -125,9 +132,11 @@ const router = createRouter({
 
 export default router;
 
-router.beforeEach((to, from) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
-  if (!authStore.isAuthenticated && to.meta.requiresAuth) {
+  await authStore.init();
+
+  if (!authStore.accessToken && to.meta.requiresAuth) {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 });

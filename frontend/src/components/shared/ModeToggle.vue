@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useColorMode } from '@vueuse/core';
-import { MoonIcon, SunIcon } from 'lucide-vue-next';
+import { ContrastIcon, MoonIcon, SunIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,12 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Keep transitions when switching themes and scope the class to <html>
 const mode = useColorMode({
   selector: 'html',
   attribute: 'class',
   initialValue: 'auto',
-  storageKey: 'week-eat-theme',
+  storageKey: 'week-eat-planner.theme',
   disableTransition: false,
 });
 
@@ -26,24 +25,28 @@ const menuValue = computed({
     mode.store.value = v;
   },
 });
+
+defineExpose({
+  menuValue,
+});
 </script>
 
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost">
-        <MoonIcon class="size-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Button id="color-mode-toggle" variant="ghost">
+        <MoonIcon class="size-6 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         <SunIcon
-          class="absolute size-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+          class="absolute size-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
         />
         <span class="sr-only">Toggle theme</span>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
       <DropdownMenuRadioGroup v-model="menuValue">
-        <DropdownMenuRadioItem value="light"> Light </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="dark"> Dark </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="auto"> System </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="light"> <SunIcon /> Light </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="dark"> <MoonIcon /> Dark </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="auto"> <ContrastIcon /> System </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
     </DropdownMenuContent>
   </DropdownMenu>

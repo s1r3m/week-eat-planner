@@ -1,19 +1,32 @@
 <template>
-  <div class="auth-card space-y-2 w-sm md:w-md lg:w-lg">
-    <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand-primary text-center">
-      {{ eyebrow }}
-    </p>
-    <h2 class="text-3xl text-center font-semibold text-base-color">{{ title }}</h2>
-    <slot />
-  </div>
+  <Card class="mx-6 max-w-lg lg:max-w-xl sm:mx-auto my-12">
+    <CardHeader>
+      <CardTitle class="text-brand-primary text-center text-2xl">{{ title }}</CardTitle>
+      <CardDescription class="text-center"> {{ description }} </CardDescription>
+    </CardHeader>
+
+    <CardContent>
+      <slot name="default" />
+    </CardContent>
+
+    <CardFooter class="flex flex-col gap-3">
+      <slot name="footer" />
+    </CardFooter>
+  </Card>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  eyebrow: string;
-  title: string;
-}
-defineProps<Props>();
-</script>
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
-<style scoped></style>
+defineProps<{
+  title: string;
+  description: string;
+}>();
+</script>

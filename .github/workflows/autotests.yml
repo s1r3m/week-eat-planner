@@ -1,6 +1,13 @@
 name: autotests.yml
 
 on:
+  workflow_dispatch:
+    inputs:
+      clean_workspace:
+        description: "Clean workspace before checkout"
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -10,31 +17,37 @@ jobs:
   autotests:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        # Fetch all history for all branches and tags to enable merging.
-        fetch-depth: 0
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
 
-    - name: Merge base branch into PR
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
-        git merge "origin/${{ github.event.pull_request.base.ref }}"
-        echo "Merge successful."
-      # This step will automatically fail if there are merge conflicts,
-      # correctly indicating that the PR is not ready.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all branches and tags to enable merging.
+          fetch-depth: 0
 
-    - name: Install dependencies
-      run: make -C qa install
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
+        # This step will automatically fail if there are merge conflicts,
+        # correctly indicating that the PR is not ready.
 
-    - name: Run the app
-      run: make -C qa start
+      - name: Install dependencies
+        run: make -C qa install
 
-    - name: Run tests
-      run: make -C qa test
+      - name: Run the app
+        run: make -C qa start
 
-    - name: Stop the app and clean up
-      # This step will run even if the tests fail, ensuring Docker containers are stopped.
-      if: always()
-      run: make -C qa stop
+      - name: Run tests
+        run: make -C qa test
+
+      - name: Stop the app and clean up
+        # This step will run even if the tests fail, ensuring Docker containers are stopped.
+        if: always()
+        run: make -C qa stop

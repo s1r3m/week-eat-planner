@@ -30,7 +30,6 @@
   }
 }
 
-/* Привязка tailwind-токенов к CSS-переменным shadcn-стиля */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -79,19 +78,16 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* брендовый цвет для логотипа/акцентных линий */
   --color-brand-primary: #3bb8a9;
 }
 
-/* LIGHT THEME — Fresh Mint (CTA зелёный, обычные/ghost нейтральные) */
 :root {
   color-scheme: light;
 
   --radius: 0.625rem;
 
-  /* базовые поверхности и текст */
-  --background: #fafaf9; /* общий фон */
-  --foreground: #1a1a1a; /* основной текст */
+  --background: #fafaf9;
+  --foreground: #1a1a1a;
 
   --card: #ffffff;
   --card-foreground: #1a1a1a;
@@ -99,54 +95,30 @@
   --popover: #ffffff;
   --popover-foreground: #1a1a1a;
 
-  /*
-    PRIMARY CTA:
-    default:  bg #3BB8A9, text #FFFFFF
-    hover:    shadcn делает bg-primary/90 → примерно #2FA190
-  */
   --primary: #3bb8a9;
   --primary-foreground: #ffffff;
 
-  /*
-    Обычная кнопка (secondary):
-    default:  bg #F2F4F5, text #1A1A1A
-    hover:    bg-secondary/80 → около #E3E7E8, всё ещё нейтрально-серое
-  */
   --secondary: #f2f4f5;
   --secondary-foreground: #1a1a1a;
 
-  /*
-    muted — для таблиц, пустых состояний, второстепенных блоков
-  */
   --muted: #f4f6f6;
   --muted-foreground: #51605f;
 
-  /*
-    GHOST / OUTLINE hover:
-    shadcn по умолчанию использует accent для hover у outline/ghost,
-    так что делаем accent лёгким мятно-зелёным фоном, не primary.
-    default ghost: bg transparent, text foreground
-    hover ghost/outline: bg-accent (#EAF5F3), text-accent-foreground (#0F3E38)
-  */
   --accent: #d9f5f2;
   --accent-foreground: #0c3d3a;
 
-  /* destructive — удаление недели/слота и т.п. */
   --destructive: #e5484d;
 
-  /* бордеры / инпуты / ring */
   --border: #d4dedd;
   --input: #d4dedd;
   --ring: #3bb8a9;
 
-  /* графики, статусы, метрики */
-  --chart-1: #2f7cf7; /* info */
-  --chart-2: #1f9e6f; /* success */
-  --chart-3: #dfaf00; /* warning */
-  --chart-4: #e5484d; /* danger */
-  --chart-5: #3bb8a9; /* дополнительный мятный акцент */
+  --chart-1: #2f7cf7;
+  --chart-2: #1f9e6f;
+  --chart-3: #dfaf00;
+  --chart-4: #e5484d;
+  --chart-5: #3bb8a9;
 
-  /* sidebar: Weeks / Recipes / Grocery list */
   --sidebar: #fafaf9;
   --sidebar-foreground: #1a1a1a;
 
@@ -160,11 +132,9 @@
   --sidebar-ring: #3bb8a9;
 }
 
-/* DARK THEME — Fresh Mint (CTA светится, обычные/ghost читаются) */
 .dark {
   color-scheme: dark;
 
-  /* тёплый тёмно-хвойный фон, чтобы тёмная тема не была «чисто чёрной» */
   --background: #111b19;
   --foreground: #e7f2f1;
 
@@ -174,53 +144,30 @@
   --popover: #182421;
   --popover-foreground: #e7f2f1;
 
-  /*
-    PRIMARY CTA в тёмной теме:
-    default: bg #4ED3C5, text #041514
-    hover:   bg-primary/90 → примерно #3ABDAF
-  */
   --primary: #48cfc0;
   --primary-foreground: #041514;
 
-  /*
-    Обычная кнопка (secondary) в тёмной теме:
-    default: bg #1A1F1F, text #E6EDED
-    hover:   bg-secondary/80 → около #232A2A
-  */
   --secondary: #1c2725;
   --secondary-foreground: #e7f2f1;
 
-  /*
-    muted — тёмные нейтральные области (tablе backgrounds и т.п.)
-  */
   --muted: #1a2523;
   --muted-foreground: #a9beba;
 
-  /*
-    GHOST / OUTLINE в тёмной теме:
-    default: bg transparent, text foreground (#E6EDED)
-    hover:   bg-accent (#1F342F), text-accent-foreground (#DFF7F2)
-    чтобы иконки и текст не терялись.
-  */
   --accent: #1f342f;
   --accent-foreground: #dff7f2;
 
-  /* destructive — красные элементы в dark */
   --destructive: #ff6f73;
 
-  /* бордеры / инпуты / ring */
   --border: rgba(231, 242, 241, 0.16);
   --input: rgba(231, 242, 241, 0.2);
   --ring: #48cfc0;
 
-  /* графики / статусы */
   --chart-1: #4c8dff;
   --chart-2: #37c598;
   --chart-3: #edc94f;
   --chart-4: #ff6f73;
   --chart-5: #3fc2b2;
 
-  /* sidebar: навигация в тёмной теме */
   --sidebar: #121d1b;
   --sidebar-foreground: #e7f2f1;
 
@@ -234,7 +181,6 @@
   --sidebar-ring: #48cfc0;
 }
 
-/* базовые tailwind-привязки */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -243,4 +189,15 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Vue Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }

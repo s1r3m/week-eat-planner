@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.schemas import Token, TokenRefresh, UserCreate, UserRead
+from week_eat_planner.api.schemas import Token, UserCreate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
@@ -79,14 +79,7 @@ async def login(
         logger.warning('Authorization header should not be set for login requests.')
         raise LoginWithAuthException()
 
-    if user_data.client_id is None:
-        logger.error('Client ID is missing in login request.')
-        raise LoginWithAuthException(detail='Client ID is required for login.')
-
-    user_agent = request.headers.get('User-Agent', '')
-    access_token, refresh_token = await AuthService(session).login(
-        user_data.username, user_data.password, user_data.client_id, user_agent
-    )
+    access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     response.set_cookie(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
@@ -102,7 +95,6 @@ async def login(
 
 @router.post(AppUrl.AUTH_REFRESH, response_model=Token)
 async def refresh_tokens(
-    client_data: TokenRefresh,
     request: Request,
     response: Response,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
@@ -125,10 +117,7 @@ async def refresh_tokens(
         logger.error('No refresh token in request cookies.')
         raise RefreshTokenMissing()
 
-    user_agent = request.headers.get('User-Agent', '')
-    access_token, refresh_token = await AuthService(session).refresh_tokens(
-        cookie_token, client_data.client_id, user_agent
-    )
+    access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
     if cookie_token != refresh_token:
         response.set_cookie(
             key=REFRESH_TOKEN_COOKIE_NAME,

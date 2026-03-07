@@ -90,7 +90,7 @@ stop:
 
 ## @App Connect to database.
 db_shell:
-	PGPASSWORD=wep psql -h 127.0.0.1 -p 5432 -U wep -d wep
+	PGPASSWORD=wep uvx pgcli -h localhost -p 5432 -U wep -d wep
 
 ## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 
@@ -148,7 +148,7 @@ fe_style:
 
 ## @Tests Run fe unittests.
 fe_test:
-	# TODO: add tests
+	cd $(FE_PATH) && yarn test:coverage
 
 
 ## ------------------------------------------------ Build --------------------------------------------------------------

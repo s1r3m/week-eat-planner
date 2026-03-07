@@ -1,93 +1,55 @@
 <template>
-  <Card class="w-full max-w-lg lg:max-w-xl mx-auto mt-16">
-    <CardHeader>
-      <CardTitle class="text-brand-primary text-center text-2xl">Join us</CardTitle>
-      <CardDescription class="text-center"> Create your account </CardDescription>
-    </CardHeader>
+  <div class="signup-page-container">
+    <template v-if="!authStore.user">
+      <AuthCard title="Join us" description="Create your account">
+        <AuthForm variant="signup" :submitting="isLoading" @submit="handleSignup" />
 
-    <CardContent>
-      <form @submit.prevent="submitSignup">
-        <FieldSet>
-          <FieldGroup>
-            <Field>
-              <FieldLabel for="email">Email</FieldLabel>
-              <Input
-                id="email"
-                v-model="email"
-                type="email"
-                placeholder="your@email.com"
-                autocomplete="email"
-              />
-            </Field>
-            <Field>
-              <FieldLabel for="password">Password</FieldLabel>
-              <Input
-                id="password"
-                v-model="password"
-                type="password"
-                placeholder="Minimum 6 characters"
-                autocomplete="new-password"
-              />
-            </Field>
-          </FieldGroup>
-          <Button type="submit" class="w-full">
-            <template v-if="isSubmitting">
-              <Spinner />
-              Creating the account
-            </template>
-            <template v-else> Login </template>
-          </Button>
-        </FieldSet>
-      </form>
-    </CardContent>
-    <FieldSeparator> or </FieldSeparator>
-    <CardFooter class="flex flex-col gap-2">
-      <Button variant="outline" class="w-full">Signup with Google</Button>
-      <CardDescription>
-        Already have an account?
-        <router-link to="/login" class="font-semibold text-brand-primary hover:underline"
-          >Login</router-link
-        >
-      </CardDescription>
-    </CardFooter>
-  </Card>
+        <template #footer>
+          <AuthFooter>
+            <CardDescription>
+              Already have an account?
+              <router-link to="/login" class="font-semibold text-brand-primary hover:underline">
+                Log in!
+              </router-link>
+            </CardDescription>
+          </AuthFooter>
+        </template>
+      </AuthCard>
+    </template>
+
+    <template v-else>
+      <div class="space-y-4 mt-4 text-center text-base text-base-color">
+        <p>You are already logged in.</p>
+        <p class="text-sm text-muted">You can continue planning your meals!</p>
+        <Button>
+          <router-link to="/weeks">Go to planning</router-link>
+        </Button>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/auth';
-import { Input } from '@/components/ui/input';
+
+import AuthCard from '@/features/auth/components/AuthCard.vue';
+import AuthFooter from '@/features/auth/components/AuthFooter.vue';
+import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
+import { CardDescription } from '@/components/ui/card';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const authStore = useAuthStore();
 const router = useRouter();
 
-const email = ref('');
-const password = ref('');
-const isSubmitting = ref(false);
+const { call: signup, isLoading, error } = useAsyncCall(authStore.signup);
 
-const submitSignup = async () => {
-  if (isSubmitting.value) return;
-  isSubmitting.value = true;
-  setTimeout('', 2000);
-  try {
-    const success = await authStore.signup(email.value, password.value);
-    if (success) {
-      router.push('/login');
-    }
-  } finally {
-    isSubmitting.value = false;
+const handleSignup = async (email: string, password: string) => {
+  await signup(email, password);
+  if (!error.value) {
+    // TODO: think about logging in immediately.
+    await router.push('/login');
   }
 };
 </script>

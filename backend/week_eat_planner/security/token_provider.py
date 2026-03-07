@@ -54,19 +54,6 @@ class TokenProvider:
         digest = hashlib.sha256(token.encode('utf-8')).hexdigest()
         return digest
 
-    @classmethod
-    def generate_full_fingerprint(cls, client_id: str, user_agent: str) -> str:
-        """Generates a full device fingerprint by combining client ID and user agent.
-
-        Args:
-            client_id: The client identifier (e.g., device fingerprint from FE).
-            user_agent: The user agent string from the request headers.
-        Returns:
-            A combined fingerprint string.
-        """
-        full_fingerprint = f'{client_id}:{user_agent}'
-        return hashlib.sha256(full_fingerprint.encode('utf-8')).hexdigest()
-
 
 def get_email_from_token(token: str) -> str:
     """Decodes a JWT token to extract the user's email address.

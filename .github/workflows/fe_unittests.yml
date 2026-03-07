@@ -1,0 +1,54 @@
+name: Frontend unittests
+
+on:
+  workflow_dispatch:
+    inputs:
+      clean_workspace:
+        description: "Clean workspace before checkout"
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  fe_unittests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug file system
+        run: |
+          echo "Listing layouts components to check for casing issues:"
+          ls -R frontend/src/layouts/components || true
+
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install frontend dependencies
+        run: |
+          make fe_install
+
+      - name: Run fe unittests
+        run: |
+          make fe_test

@@ -1,50 +1,63 @@
 <template>
-  <ModalBase
-    :model-value="modelValue"
-    eyebrow="Week planner"
-    :title="`Delete ${props.weekName}?`"
-    subtitle="This action cannot be undone."
-    @close="$emit('close')"
-  >
-    <p class="text-base text-base-color">
-      Are you sure you want to delete
-      <span class="font-semibold text-danger">{{ props.weekName }}</span
-      >?
-    </p>
+  <Dialog v-if="week" v-model:open="isOpen">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle> Delete {{ week.name }}? </DialogTitle>
+        <DialogDescription> This action cannot be undone. </DialogDescription>
+      </DialogHeader>
 
-    <template #footer>
-      <Button @click="$emit('close')">No</Button>
-      <Button :disabled="props.processing" @click="handleYes">
-        {{ props.processing ? 'Deleting...' : 'Yes' }}
-      </Button>
-    </template>
-  </ModalBase>
+      <p class="text-base text-popover-foreground">
+        Are you sure you want to delete
+        <span class="font-semibold text-destructive">{{ week.name }}</span
+        >?
+      </p>
+
+      <DialogFooter>
+        <DialogClose as-child>
+          <Button variant="outline" @click="isOpen = false"> No </Button>
+        </DialogClose>
+        <Button variant="destructive" :disabled="isLoading" @click="onDelete">
+          <Spinner v-if="isLoading" />
+          {{ isLoading ? 'Deleting...' : 'Yes' }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import ModalBase from '@/components/shared/ModalBase.vue';
-
+import { computed } from 'vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { useWeekStore } from '../store/weeks';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import type { UserWeekMinimal } from '@/domain/week/models';
 
-interface Props {
-  modelValue: boolean;
-  weekName?: string;
-  processing?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  processing: false,
+const week = defineModel<UserWeekMinimal | null>();
+const isOpen = computed({
+  get: () => !!week.value,
+  set: (value) => {
+    if (!value) week.value = null;
+  },
 });
 
-const emit = defineEmits<{
-  confirm: [];
-  close: [];
-}>();
+const weekStore = useWeekStore();
+const { call: remove, isLoading } = useAsyncCall(async (week: UserWeekMinimal) => {
+  await weekStore.removeWeek(week.id);
+});
 
-const handleYes = () => {
-  if (props.processing) {
-    return;
-  }
-  emit('confirm');
+const onDelete = async () => {
+  if (!week.value) return;
+  await remove(week.value);
+  week.value = null;
 };
 </script>

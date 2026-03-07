@@ -21,3 +21,6 @@ sandbox.py
 **/htmlcov/
 
 .DS_Store
+
+# Other tests
+**/.hypothesis

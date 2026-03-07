@@ -1,6 +1,6 @@
 from .meal_slot import MealSlotAssign, MealSlotRead
 from .recipe import OwnerId, RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
-from .token import RefreshTokenFromDB, Token, TokenRefresh, TokenUpdate
+from .token import RefreshTokenFromDB, Token, TokenUpdate
 from .user import Email, UserCreate, UserId, UserRead
 from .week import WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 
@@ -16,7 +16,6 @@ __all__ = [
     'RefreshTokenFromDB',
     'Token',
     'TokenUpdate',
-    'TokenRefresh',
     'UserCreate',
     'UserId',
     'UserRead',

@@ -1,23 +1,16 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
-import App from './App.vue';
-import router from '@/router/index';
+import App from '@/App.vue';
+import router from '@/router';
 
 import '@/assets/style.css';
-import { useAuthStore } from './features/auth/store/auth';
 
-startApp();
+const app = createApp(App);
 
-async function startApp() {
-  const app = createApp(App);
-  const pinia = createPinia();
-  pinia.use(piniaPluginPersistedState);
-  app.use(pinia);
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedState);
+app.use(pinia);
 
-  const authStore = useAuthStore();
-  await authStore.refreshToken();
-
-  app.use(router);
-  app.mount('#app');
-}
+app.use(router);
+app.mount('#app');
