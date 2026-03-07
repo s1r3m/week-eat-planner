@@ -28,7 +28,7 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 const weekStore = useWeekStore();
 const route = useRoute();
 
-const { call: getWeek, isLoading } = useAsyncCall(
+const { call: getWeek } = useAsyncCall(
   async () => await weekStore.getWeek(route.params.id as string),
 );
 const data = await getWeek();

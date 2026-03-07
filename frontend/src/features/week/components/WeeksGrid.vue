@@ -2,6 +2,7 @@
   <div class="grid gap-9 lg:grid-cols-2 lg:gap-12 2xl:grid-cols-3 2xl:gap-24 px-6">
     <WeekDetails
       v-for="week in weeks"
+      :key="week.id"
       :week="week"
       @edit="$emit('edit', week)"
       @delete="$emit('delete', week)"

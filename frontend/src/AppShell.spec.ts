@@ -1,9 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
-import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h, Suspense } from 'vue';
 import AppShell from './AppShell.vue';
-import { useAuthStore } from '@/features/auth/store/auth';
 
 describe('AppShell', () => {
   const TestAppShell = defineComponent({
