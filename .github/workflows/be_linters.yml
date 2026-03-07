@@ -1,6 +1,13 @@
 name: Python linters
 
 on:
+  workflow_dispatch:
+    inputs:
+      clean_workspace:
+        description: "Clean workspace before checkout"
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -10,25 +17,31 @@ jobs:
   linters:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        # Fetch all history for all branches and tags to enable merging.
-        fetch-depth: 0
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
 
-    - name: Merge base branch into PR
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
-        git merge "origin/${{ github.event.pull_request.base.ref }}"
-        echo "Merge successful."
-      # This step will automatically fail if there are merge conflicts,
-      # correctly indicating that the PR is not ready.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all branches and tags to enable merging.
+          fetch-depth: 0
 
-    - name: Install dependencies
-      run: |
-        make install
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
+        # This step will automatically fail if there are merge conflicts,
+        # correctly indicating that the PR is not ready.
 
-    - name: Analysing the code with linters
-      run: |
-        make lint
+      - name: Install dependencies
+        run: |
+          make install
+
+      - name: Analysing the code with linters
+        run: |
+          make lint
