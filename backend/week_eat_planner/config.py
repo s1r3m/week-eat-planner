@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    DEBUG: bool
+    DEBUG_MODE: bool
 
     DB_URL: str
     BE_HOST: str
