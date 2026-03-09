@@ -1,11 +1,12 @@
 from datetime import UTC, datetime, timedelta
 
+import pytest
 import pytest_asyncio
 from fastapi import HTTPException, status
 from freezegun import freeze_time
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from tests.constants import EMAIL, PASSWORD
+from tests.constants import EMAIL, PASSWORD, USERNAME
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserRead
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
@@ -31,14 +32,21 @@ async def revoked_refresh_token_user(db_session: AsyncSession, created_user: Use
     return created_user
 
 
-async def test_create_user__valid_data__user_created_and_logged_in(client):
-    login_data = {'email': EMAIL, 'password': PASSWORD}
-    response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
+@pytest.mark.parametrize(
+    'username',
+    [
+        pytest.param(USERNAME, id='with_username'),
+        pytest.param(None, id='without_username'),
+    ],
+)
+async def test_create_user__valid_data__user_created_and_logged_in(client, username):
+    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
 
     assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
     assert body.pop('id')
-    assert body == {'email': EMAIL, 'is_active': True}
+    assert body == {'email': EMAIL, 'is_active': True, 'username': username, 'avatar_url': None}
 
 
 async def test_create_user__duplicate_email__conflict_error(client, created_user):

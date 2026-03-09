@@ -50,7 +50,11 @@ class AuthService:
             logger.error(f'User with {user_data.email=} already exists.')
             raise UserAlreadyExists(user_data.email)
 
-        user = User(email=str(user_data.email), hashed_password=get_password_hash(user_data.password))
+        user = User(
+            email=str(user_data.email),
+            username=user_data.username,
+            hashed_password=get_password_hash(user_data.password),
+        )
         created_user = await self._user_dao.add(user)
         logger.info(f'User {user_data.email=} registered successfully.')
 

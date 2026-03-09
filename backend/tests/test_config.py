@@ -2,7 +2,7 @@ import pytest
 
 from week_eat_planner.config import settings
 
-DEBUG_MODE= 'true'
+DEBUG_MODE = 'true'
 DB_URL = 'dummy_db_url'
 BE_HOST = 'http://localhost.be'
 FE_HOST = 'http://localhost.fe'
