@@ -7,6 +7,7 @@ build-backend = "hatchling.build"
 name = "week_eat_planner"
 version = "0.1.0"
 description = "My Menu Planner app to get a shopping list for a week in a click."
+license = {text = "MIT"}
 requires-python = ">=3.11,<3.12"
 authors = [
     { name = "Filipp Aleksandrov", email = "s1r3m@yahoo.com" },
