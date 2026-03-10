@@ -11,6 +11,7 @@ class UserCreate(Email):
     """Schema for creating a new user."""
 
     password: str
+    username: str | None = None
 
 
 class UserId(BaseModel):
@@ -21,5 +22,7 @@ class UserRead(Email, UserId):
     """Schema for reading user data."""
 
     is_active: bool
+    username: str | None
+    avatar_url: str | None
 
     model_config = ConfigDict(from_attributes=True)

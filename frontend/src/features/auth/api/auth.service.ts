@@ -1,5 +1,5 @@
 import { apiClient, authClient } from '@/api/client';
-import type { AccessToken, LoginInfo, UserInfo } from '@/domain/auth/models';
+import type { LoginInfo, UserInfo } from '@/domain/auth/models';
 
 export const authService = {
   async login(params: URLSearchParams): Promise<LoginInfo> {
@@ -23,8 +23,8 @@ export const authService = {
     await apiClient.post('/auth/logout');
   },
 
-  async refresh(): Promise<AccessToken> {
-    const { data } = await authClient.post<AccessToken>('/auth/refresh');
+  async refresh(): Promise<LoginInfo> {
+    const { data } = await authClient.post<LoginInfo>('/auth/refresh');
     return data;
   },
 

@@ -2,6 +2,7 @@ import pytest
 
 from week_eat_planner.config import settings
 
+DEBUG_MODE = 'true'
 DB_URL = 'dummy_db_url'
 BE_HOST = 'http://localhost.be'
 FE_HOST = 'http://localhost.fe'
@@ -18,6 +19,7 @@ TG_API_SITE = 'http://api.telegram.org'
 
 @pytest.fixture
 def mocked_settings(mocker):
+    mocker.patch.object(settings, 'DEBUG_MODE', DEBUG_MODE)
     mocker.patch.object(settings, 'DB_URL', DB_URL)
     mocker.patch.object(settings, 'BE_HOST', BE_HOST)
     mocker.patch.object(settings, 'FE_HOST', FE_HOST)

@@ -4,7 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth';
-import type { AccessToken } from '@/domain/auth/models';
+import type { LoginInfo } from '@/domain/auth/models';
 import type { ErrorResponse } from '@/api/types';
 
 const DEFAULT_TIMEOUT = 5000;
@@ -106,8 +106,8 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
     const authStore = useAuthStore();
     try {
-      const { data } = await authClient.post<AccessToken>('auth/refresh');
-      const newToken = data.access_token;
+      const { data } = await authClient.post<LoginInfo>('auth/refresh');
+      const newToken = data.accessToken;
       authStore.setAccessToken(newToken);
       originalConfig.headers = originalConfig.headers || {};
       originalConfig.headers.Authorization = `Bearer ${newToken}`;

@@ -22,7 +22,7 @@
           <FieldSeparator />
           <FieldGroup>
             <Field orientation="horizontal">
-              <Checkbox id="active" v-model="userInfo.is_active" disabled />
+              <Checkbox id="active" v-model="userInfo.isActive" disabled />
               <Label for="active">Active user</Label>
             </Field>
           </FieldGroup>
@@ -44,6 +44,7 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 
 import type { UserInfo } from '@/domain/auth/models';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
+import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 const userInfo = ref<UserInfo>();
 

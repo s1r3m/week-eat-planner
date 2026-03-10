@@ -112,16 +112,16 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
 
 
 @pytest.mark.parametrize(
-    'name, is_public, ingredients',
+    ('name', 'is_public', 'ingredients'),
     [
         pytest.param('new_name', None, None, id='name'),
         pytest.param(None, False, None, id='is_public'),
-        pytest.param(None, None, {'ingredient1': 'value1'}, id='ingredients'),
+        pytest.param(None, None, {'ingredient1': 2}, id='ingredients'),
         pytest.param('new_name', False, None, id='several'),
     ],
 )
 async def test_update_recipe__valid_new_data__recipe_updated(
-    mocked_session, mocked_recipe_dao, db_recipe, user_read, name, is_public, ingredients
+    mocked_session, mocked_recipe_dao, db_recipe, name, is_public, ingredients
 ):
     recipe_out = RecipeRead.model_validate(db_recipe)
     updated_db_recipe = copy(db_recipe)

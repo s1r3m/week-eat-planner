@@ -18,6 +18,8 @@ class User(Base):
     __tablename__ = 'users'
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(unique=False, nullable=True)
+    avatar_url: Mapped[str] = mapped_column(unique=False, nullable=True)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
 

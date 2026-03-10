@@ -6,6 +6,7 @@ EMAIL = 'ya@ya.eu'
 PASSWORD = '123456'
 HASHED_PASSWORD = '$2b$12$LWMbERKL6XH7CzFNXR4tOO8wsxOCYzQBLpqH4qoTlZvy1s4riAVNu'
 USER_ID = generate_uuid7()
+USERNAME = 'yaya'
 
 WEEK_1_ID = generate_uuid7()
 WEEK_1_NAME = 'first'

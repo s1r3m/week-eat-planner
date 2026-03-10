@@ -13,6 +13,7 @@ from tests.constants import (
     RECIPE_INGREDIENTS,
     RECIPE_IS_PUBLIC,
     RECIPE_NAME,
+    USERNAME,
     WEEK_1_NAME,
     WEEK_2_NAME,
 )
@@ -124,12 +125,12 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
 
 @pytest_asyncio.fixture
 async def created_user(user_factory: Callable) -> UserRead:
-    return await user_factory(UserCreate(email=EMAIL, password=PASSWORD))
+    return await user_factory(UserCreate(email=EMAIL, password=PASSWORD, username=USERNAME))
 
 
 @pytest_asyncio.fixture
 async def created_user_2(user_factory: Callable) -> UserRead:
-    return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD))
+    return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD, username=None))
 
 
 @pytest_asyncio.fixture

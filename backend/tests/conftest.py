@@ -9,6 +9,7 @@ from tests.constants import (
     RECIPE_INGREDIENTS,
     RECIPE_IS_PUBLIC,
     RECIPE_NAME,
+    USERNAME,
     USER_ID,
     WEEK_1_ID,
     WEEK_1_NAME,
@@ -34,7 +35,7 @@ def encoded_token() -> str:
 
 @pytest.fixture
 def db_user() -> User:
-    return User(id=USER_ID, email=EMAIL, is_active=True, hashed_password=HASHED_PASSWORD)
+    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=True, hashed_password=HASHED_PASSWORD)
 
 
 @pytest.fixture
@@ -55,7 +56,7 @@ def user_read(db_user: User) -> UserRead:
 
 @pytest.fixture
 def user_read_2() -> UserRead:
-    return UserRead(id=generate_uuid7(), email='user2@tests.com', is_active=True)
+    return UserRead(id=generate_uuid7(), email='user2@tests.com', is_active=True, username='user2', avatar_url=None)
 
 
 @pytest.fixture

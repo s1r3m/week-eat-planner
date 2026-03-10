@@ -12,7 +12,7 @@ class RecipeBase(BaseModel):
 
     name: str
     is_public: bool = False
-    ingredients: dict[str, int | float | str]
+    ingredients: dict[str, int]
 
 
 class RecipeCreate(RecipeBase):

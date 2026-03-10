@@ -17,7 +17,7 @@ services:
       context: ../../
       dockerfile: qa/docker/app/Dockerfile
     environment:
-      - DEBUG=true
+      - DEBUG_MODE=true
       - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
       - BE_HOST=http://app.dev.local
       - FE_HOST=http://app.dev.local
@@ -36,7 +36,7 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: [ "CMD-SHELL", "httpx  http://localhost:8000/ping | grep 200" ]
+      test: ["CMD-SHELL", "httpx  http://localhost:8000/ping | grep 200"]
       interval: 15s
       timeout: 5s
       retries: 5

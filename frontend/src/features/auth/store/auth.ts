@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     });
 
     const data = await authService.login(params);
-    accessToken.value = data.access_token;
+    accessToken.value = data.accessToken;
     await _setUser();
   };
 
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth-store', () => {
 
     try {
       const data = await authService.refresh();
-      setAccessToken(data.access_token);
+      setAccessToken(data.accessToken);
       await _setUser();
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {
