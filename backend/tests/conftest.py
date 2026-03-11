@@ -16,7 +16,6 @@ from tests.constants import (
 )
 from week_eat_planner.api.schemas import UserRead, WeekRead
 from week_eat_planner.db.models import Recipe, User
-from week_eat_planner.db.models.meal_slot import DayOfWeek
 from week_eat_planner.db.models.week import Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
@@ -68,5 +67,4 @@ def user_read_2() -> UserRead:
 
 @pytest.fixture
 def week_out(db_week: Week) -> WeekRead:
-    default_week_days = [{'name': day, 'slots': []} for day in DayOfWeek]
-    return WeekRead(id=db_week.id, user_id=db_week.user_id, name=db_week.name, week_days=default_week_days)
+    return WeekRead.model_validate(db_week)

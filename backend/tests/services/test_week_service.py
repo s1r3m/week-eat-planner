@@ -7,7 +7,6 @@ from tests.constants import FOR_UPDATE_PARAMETRIZE, WEEK_1_ID
 
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
-    MealSlotRead,
     UserRead,
     WeekCreate,
     WeekRead,
@@ -123,7 +122,7 @@ def other_user_recipe() -> Recipe:
 async def test_create_week__name__week_created(mocked_week_dao, mocked_session, user_read, db_week):
     mocked_week_dao.add.return_value = db_week
     week = await WeekService(mocked_session).create_week_with_slots(user_read, WeekCreate(name=WEEK_1_NAME))
-    assert week == WeekReadMinimal.model_validate(db_week)
+    assert week == db_week
 
 
 @pytest.mark.parametrize('for_update', FOR_UPDATE_PARAMETRIZE)
@@ -135,7 +134,7 @@ async def test_get_week_for_user__week_exists__week_returned(
 
     week = await WeekService(mocked_session).get_week_for_user(str_week_id, user_read, for_update=for_update)
 
-    assert week == WeekRead.model_validate(db_week)
+    assert week == db_week
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
 
 
@@ -189,7 +188,7 @@ async def test_get_weeks__user_no_weeks__empty_list_returned(mocked_week_dao, mo
 async def test_get_weeks__user_with_weeks__weeks_returned(mocked_week_dao, mocked_session, user_read, db_week):
     mocked_week_dao.find_all.return_value = [db_week]
     weeks = await WeekService(mocked_session).get_weeks(user_read)
-    assert weeks == [WeekReadMinimal.model_validate(db_week)]
+    assert weeks == [db_week]
 
 
 async def test_update_week__valid_data__week_updated(mocked_week_dao, mocked_session, user_read, db_week):
@@ -200,7 +199,7 @@ async def test_update_week__valid_data__week_updated(mocked_week_dao, mocked_ses
 
     week = await WeekService(mocked_session).update_week(week_preview, WeekUpdate(name=new_name))
 
-    assert week == WeekReadMinimal.model_validate(updated_db_week)
+    assert week == updated_db_week
 
 
 async def test_delete_week__always__week_deleted(mocked_week_dao, mocked_session, user_read, db_week):
@@ -228,7 +227,7 @@ async def test_assign_recipes_to_meal_slots__valid_slot_and_recipe__recipe_assig
 
     updated_slots = await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, slot_data)
 
-    assert updated_slots == [MealSlotRead.model_validate(updated_db_meal_slot)]
+    assert updated_slots == [updated_db_meal_slot]
 
 
 async def test_assign_recipes_to_meal_slots__valid_slot_and_none_recipe__recipe_unassigned(
@@ -248,7 +247,7 @@ async def test_assign_recipes_to_meal_slots__valid_slot_and_none_recipe__recipe_
 
     updated_slots = await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, slot_data)
 
-    assert updated_slots == [MealSlotRead.model_validate(updated_db_meal_slot)]
+    assert updated_slots == [updated_db_meal_slot]
 
 
 async def test_assign_recipes_to_meal_slots__mixed_recipe_and_none_multiple_slots__slots_updated(
@@ -272,18 +271,11 @@ async def test_assign_recipes_to_meal_slots__mixed_recipe_and_none_multiple_slot
 
     updated_slots = await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, *slots_data)
 
-    assert updated_slots == [
-        MealSlotRead.model_validate(updated_db_meal_slot),
-        MealSlotRead.model_validate(updated_db_meal_slot_2),
-    ]
+    assert updated_slots == [updated_db_meal_slot, updated_db_meal_slot_2]
 
 
-async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(
-    mocked_session,
-    week_read,
-    db_meal_slot_for_update,
-    db_recipe,
-):
+@pytest.mark.usefixtures('db_meal_slot_for_update')
+async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(mocked_session, week_read, db_recipe):
     slot_data = MealSlotAssign(slot_id='bad_slot_id', recipe_id=str(db_recipe.id))
 
     with pytest.raises(MealSlotAssignException) as exc:
@@ -298,10 +290,7 @@ async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(
 
 
 async def test_assign_recipes_to_meal_slots__bad_recipe_id__errors_raised(
-    mocked_session,
-    week_read,
-    db_meal_slot_for_update,
-    db_recipe,
+    mocked_session, week_read, db_meal_slot_for_update
 ):
     slot_data = MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id='bad_recipe_id')
 

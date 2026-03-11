@@ -31,7 +31,6 @@ async def get_week_by_id(
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
     week = await WeekService(read_session).get_week_for_user(week_id, user, for_update=False)
     logger.info(f'Successfully loaded week {week.id} read-only')
-
     return WeekRead.model_validate(week)
 
 

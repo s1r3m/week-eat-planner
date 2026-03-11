@@ -29,7 +29,7 @@ class AuthService:
         self._user_dao = UserDAO(session)
         self._refresh_token_dao = RefreshTokenDAO(session)
 
-    async def register_user(self, user_data: UserCreate) -> UserRead:
+    async def register_user(self, user_data: UserCreate) -> User:
         """Registers a new user.
 
         Checks if a user with the given email already exists. If not, it hashes the
@@ -58,7 +58,7 @@ class AuthService:
         created_user = await self._user_dao.add(user)
         logger.info(f'User {user_data.email=} registered successfully.')
 
-        return UserRead.model_validate(created_user)
+        return created_user
 
     async def login(self, username: str, password: str) -> tuple[str, str]:
         """Logs a user in.

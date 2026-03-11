@@ -141,7 +141,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
     created_recipe,
     auth_client_for_created_user,
 ):
-    slot_to_assign = created_week.meal_slots[0]
+    slot_to_assign = created_week.week_days[0]['slots'][0]
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[{'slot_id': str(slot_to_assign.id), 'recipe_id': str(created_recipe.id)}],
@@ -170,7 +170,7 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[
-            {'slot_id': str(created_week.meal_slots[0].id), 'recipe_id': str(created_recipe.id)},
+            {'slot_id': str(created_week.week_days[0]['slots'][0].id), 'recipe_id': str(created_recipe.id)},
             {'slot_id': bad_uuid, 'recipe_id': str(created_recipe.id)},
         ],
     )
