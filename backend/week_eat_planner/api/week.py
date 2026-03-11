@@ -68,7 +68,7 @@ async def get_weeks(
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
 async def get_week(
-    week: Annotated[Week, Depends(get_week_by_id)],
+    week: Annotated[WeekRead, Depends(get_week_by_id)],
 ) -> WeekRead:
     """Retrieves a specific week by its ID.
 
@@ -81,15 +81,7 @@ async def get_week(
         The requested week object.
     """
     logger.info(f'Request GET {AppUrl.WEEKS_TPL.format(week_id=week.id)}.')
-    structured_slots = [
-        {
-            'name': day,
-            'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
-        }
-        for day in DayOfWeek
-    ]
-
-    return WeekRead(id=week.id, user_id=week.user_id, name=week.name, week_days=structured_slots)
+    return week
 
 
 @router.patch(AppUrl.WEEKS_TPL, response_model=WeekReadMinimal)

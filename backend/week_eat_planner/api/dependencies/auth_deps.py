@@ -25,4 +25,4 @@ async def get_current_active_user(
         The authenticated User object.
     """
     user = await UserService(session).get_user_by_token(token)
-    return user
+    return UserRead.model_validate(user)
