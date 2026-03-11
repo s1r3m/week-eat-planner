@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import UserRead
 from week_eat_planner.api.schemas.week import WeekRead, WeekReadMinimal
-from week_eat_planner.db.models.meal_slot import DayOfWeek
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.week_service import WeekService
 
@@ -33,19 +32,7 @@ async def get_week_by_id(
     week = await WeekService(read_session).get_week_for_user(week_id, user, for_update=False)
     logger.info(f'Successfully loaded week {week.id} read-only')
 
-    structured_slots = [
-        {
-            'name': day,
-            'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
-        }
-        for day in DayOfWeek
-    ]
-    return WeekRead(
-        id=week.id,
-        user_id=week.user_id,
-        name=week.name,
-        week_days=structured_slots,
-    )
+    return WeekRead.model_validate(week)
 
 
 async def get_week_for_update(

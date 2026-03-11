@@ -1,9 +1,11 @@
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
 from week_eat_planner.db.models.meal_slot import DayOfWeek
+from week_eat_planner.db.models.week import Week
 
 
 class WeekBase(BaseModel):
@@ -42,3 +44,22 @@ class WeekRead(WeekReadMinimal):
     week_days: list[dict[str, DayOfWeek | list[MealSlotRead]]]
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def structure_week_days(cls, data: Week) -> dict[str, Any]:
+        """Transforms flat meal_slots into structured week_days."""
+        structured_slots = [
+            {
+                'name': day,
+                'slots': [slot for slot in data.meal_slots if slot.day_of_week == day],
+            }
+            for day in DayOfWeek
+        ]
+
+        return {
+            'id': data.id,
+            'user_id': data.user_id,
+            'name': data.name,
+            'week_days': structured_slots,
+        }
