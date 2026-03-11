@@ -16,8 +16,6 @@ from week_eat_planner.api.schemas import (
     WeekUpdate,
 )
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.models.meal_slot import DayOfWeek
-from week_eat_planner.db.models.week import Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.week_service import WeekService
 
@@ -44,7 +42,7 @@ async def create_week(
     """
     logger.info(f'Request POST /weeks for {user}.')
     week = await WeekService(session).create_week_with_slots(user, week_data)
-    return week
+    return WeekReadMinimal.model_validate(week)
 
 
 @router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
@@ -63,7 +61,7 @@ async def get_weeks(
     """
     logger.info(f'Request GET /weeks for {user}.')
     weeks = await WeekService(session).get_weeks(user)
-    return weeks
+    return [WeekReadMinimal.model_validate(week) for week in weeks]
 
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
@@ -103,8 +101,8 @@ async def update_week(
         The updated week object.
     """
     logger.info(f'Request PATCH {AppUrl.WEEKS_TPL.format(week_id=week.id)} with {new_data=}.')
-    new_week = await WeekService(session).update_week(week, new_data)
-    return new_week
+    updated_week = await WeekService(session).update_week(week, new_data)
+    return WeekReadMinimal.model_validate(updated_week)
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
@@ -133,4 +131,4 @@ async def assign_recipe_to_meal_slot(
     """Assign the given recipe to a slot or un-assign if recipe_id is None."""
     logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
     updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
-    return updated_slots
+    return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]

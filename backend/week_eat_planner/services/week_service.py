@@ -13,7 +13,7 @@ from week_eat_planner.api.schemas import (
     WeekReadMinimal,
     WeekUpdate,
 )
-from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotRead, MealSlotUpdate
+from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotUpdate
 from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
 from week_eat_planner.exceptions import MealSlotAssignException, WeekForbidden, WeekNotFound
@@ -32,7 +32,7 @@ class WeekService:
         self._recipe_dao = RecipeDAO(session)
         self._week_dao = WeekDAO(session)
 
-    async def create_week_with_slots(self, user: UserRead, week_data: WeekCreate) -> WeekReadMinimal:
+    async def create_week_with_slots(self, user: UserRead, week_data: WeekCreate) -> Week:
         """Creates a new week with its initial meal slots for a user.
 
         This now builds the object graph in memory and persists it in one go,
@@ -52,7 +52,7 @@ class WeekService:
         ]
         week = await self._week_dao.add(new_week)
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
-        return WeekReadMinimal.model_validate(week)
+        return week
 
     async def get_week_for_user(self, week_id: str, user: UserRead, for_update: bool) -> Week:
         """Retrieves a single week by its ID.
@@ -87,7 +87,7 @@ class WeekService:
 
         return week
 
-    async def get_weeks(self, user: UserRead) -> list[WeekReadMinimal]:
+    async def get_weeks(self, user: UserRead) -> list[Week]:
         """Retrieves all weeks for a specific user.
 
         Args:
@@ -100,9 +100,9 @@ class WeekService:
         weeks = await self._week_dao.find_all(OwnerId(user_id=user.id))
         logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}.')
 
-        return [WeekReadMinimal.model_validate(week) for week in weeks]
+        return weeks
 
-    async def update_week(self, week: WeekReadMinimal, new_data: WeekUpdate) -> WeekReadMinimal:
+    async def update_week(self, week: WeekReadMinimal, new_data: WeekUpdate) -> Week:
         """Updates the details of a specific week.
 
         Args:
@@ -114,7 +114,7 @@ class WeekService:
         """
         updated_week = await self._week_dao.update(week, new_data)
         logger.info(f'Successfully updated {updated_week.id}.')
-        return WeekReadMinimal.model_validate(updated_week)
+        return updated_week
 
     async def delete_week(self, week: WeekReadMinimal) -> None:
         """Deletes a specific week.
@@ -198,7 +198,7 @@ class WeekService:
 
         return valid_assignments
 
-    async def assign_recipes_to_meal_slots(self, week: WeekRead, *slots_data: MealSlotAssign) -> list[MealSlotRead]:
+    async def assign_recipes_to_meal_slots(self, week: WeekRead, *slots_data: MealSlotAssign) -> list[MealSlot]:
         """Assigns recipes to meal slots in a single transaction.
 
         This method processes multiple recipe-to-slot assignments at once. It ensures that all
@@ -212,7 +212,7 @@ class WeekService:
                 `slot_id` and the `recipe_id` to be assigned.
 
         Returns:
-            A list of `MealSlotRead` objects representing the newly updated meal slots.
+            A list of `MealSlot` objects representing the newly updated meal slots.
 
         Raises:
             MealSlotAssignException: If there are any validation errors, containing a list
@@ -226,4 +226,4 @@ class WeekService:
         ]
         logger.debug(f'Updated meal_slots {updated_slots}')
         logger.info(f'Successfully updated {len(slots_data)} slots for week {week.id}.')
-        return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]
+        return updated_slots

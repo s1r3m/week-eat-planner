@@ -19,7 +19,6 @@ from tests.constants import (
 )
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, UserCreate, UserRead, WeekCreate, WeekRead
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.dao import WeekDAO
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
 from week_eat_planner.services.auth_service import AuthService
@@ -97,8 +96,7 @@ def created_week_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user: UserRead, week_data: WeekCreate) -> WeekRead:
         created_week = await WeekService(db_session).create_week_with_slots(user, week_data)
         await db_session.flush()
-        week = await WeekDAO(db_session).find_one_or_none(created_week)
-        return WeekRead.model_validate(week)
+        return WeekRead.model_validate(created_week)
 
     return _factory
 
@@ -118,7 +116,7 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user: UserRead, recipe_data: RecipeCreate) -> RecipeRead:
         recipe = await RecipeService(db_session).create_recipe(recipe_data, user)
         await db_session.flush()
-        return recipe
+        return RecipeRead.model_validate(recipe)
 
     return _factory
 

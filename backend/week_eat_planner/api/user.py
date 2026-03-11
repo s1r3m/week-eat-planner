@@ -21,4 +21,4 @@ async def get_user(user: Annotated[UserRead, Depends(get_current_active_user)]) 
         The current user's profile.
     """
     logger.info(f'Got GET {AppUrl.USER} request for {user.email}.')
-    return UserRead.model_validate(user)
+    return user

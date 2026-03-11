@@ -34,7 +34,7 @@ async def create_recipe(
     recipe = await RecipeService(session).create_recipe(recipe_data, user)
     logger.info(f'Recipe "{recipe_data.name}" has been created!')
 
-    return recipe
+    return RecipeRead.model_validate(recipe)
 
 
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)
@@ -75,7 +75,7 @@ async def get_recipes(
     recipes = await RecipeService(session).get_all_user_recipes(user)
     logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
 
-    return recipes
+    return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
 
 
 @router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
@@ -98,7 +98,7 @@ async def update_recipe(
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
-    return updated_recipe
+    return RecipeRead.model_validate(updated_recipe)
 
 
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)

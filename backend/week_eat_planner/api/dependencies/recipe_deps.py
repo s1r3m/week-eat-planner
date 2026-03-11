@@ -28,7 +28,7 @@ async def get_recipe_by_id(
     logger.info(f'Requesting Read-Only Recipe {recipe_id} for {user}')
     recipe = await RecipeService(read_session).get_user_recipe(recipe_id, user, for_update=False)
     logger.info(f'Successfully loaded Read-Only Recipe {recipe.id}.')
-    return recipe
+    return RecipeRead.model_validate(recipe)
 
 
 async def get_recipe_for_update(
@@ -49,4 +49,4 @@ async def get_recipe_for_update(
     logger.info(f'Requesting Recipe {recipe_id} for {user} for update.')
     recipe = await RecipeService(write_session).get_user_recipe(recipe_id, user, for_update=True)
     logger.info(f'Successfully loaded Recipe {recipe.id} for update')
-    return recipe
+    return RecipeRead.model_validate(recipe)
