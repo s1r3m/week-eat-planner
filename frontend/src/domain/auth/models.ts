@@ -1,12 +1,12 @@
 export interface UserInfo {
-  userId: string;
+  user_id: string;
   email: string;
-  isActive: boolean;
+  is_active: boolean;
   username?: string;
-  avatarUrl?: string;
+  avatar_url?: string;
 }
 
 export interface LoginInfo {
-  accessToken: string;
-  tokenType: string;
+  access_token: string;
+  token_type: string;
 }

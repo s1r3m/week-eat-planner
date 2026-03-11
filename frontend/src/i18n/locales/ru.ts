@@ -18,7 +18,7 @@ const daysOfWeek = {
 } satisfies Record<DayOfWeek, string>;
 
 const mealSlotCard = {
-  assignRecipe: 'Назначить рецепт',
+  assignRecipe: 'Добавить блюдо',
 };
 
 export default {

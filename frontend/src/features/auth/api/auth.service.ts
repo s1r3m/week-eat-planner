@@ -25,11 +25,13 @@ export const authService = {
 
   async refresh(): Promise<LoginInfo> {
     const { data } = await authClient.post<LoginInfo>('/auth/refresh');
+    console.log('Refresh "data": ', data);
     return data;
   },
 
   async getCurrentUser(): Promise<UserInfo> {
     const { data } = await apiClient.get<UserInfo>('/user');
+    console.log('User "data": ', data);
     return data;
   },
 };

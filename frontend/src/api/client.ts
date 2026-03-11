@@ -106,7 +106,7 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
     const authStore = useAuthStore();
     try {
-      const { data } = await authClient.post<LoginInfo>('auth/refresh');
+      const { data } = await authClient.post<LoginInfo>('/auth/refresh');
       const newToken = data.accessToken;
       authStore.setAccessToken(newToken);
       originalConfig.headers = originalConfig.headers || {};

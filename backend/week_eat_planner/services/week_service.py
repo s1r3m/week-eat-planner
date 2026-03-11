@@ -54,7 +54,7 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
         return WeekReadMinimal.model_validate(week)
 
-    async def get_week_for_user(self, week_id: str, user: UserRead, for_update: bool) -> WeekRead:
+    async def get_week_for_user(self, week_id: str, user: UserRead, for_update: bool) -> Week:
         """Retrieves a single week by its ID.
 
         Args:
@@ -72,9 +72,9 @@ class WeekService:
         logger.info(f'Retrieving week {week_id} {for_update=}.')
         try:
             week_uuid = UUID(week_id)
-        except ValueError:
+        except ValueError as exc:
             logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
-            raise WeekNotFound(week_id)
+            raise WeekNotFound(week_id) from exc
 
         week = await self._week_dao.find_one_or_none_by_id(week_uuid, for_update=for_update)
         if not week:
@@ -85,7 +85,7 @@ class WeekService:
             logger.error(f'The week {week_uuid} is not owned by {user.id}.')
             raise WeekForbidden(week_uuid)
 
-        return WeekRead.model_validate(week)
+        return week
 
     async def get_weeks(self, user: UserRead) -> list[WeekReadMinimal]:
         """Retrieves all weeks for a specific user.

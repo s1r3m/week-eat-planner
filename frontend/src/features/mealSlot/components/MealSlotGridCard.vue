@@ -5,7 +5,7 @@
         {{ t(`mealTypes.${mealSlot.meal_type}`) }}
       </CardTitle>
       <CardDescription
-        class="flex items-center gap-1 text-sm font-light text-muted-foreground pt-2"
+        class="flex items-center gap-1 text-sm font-light text-muted-foreground pt-3"
       >
         {{ mealSlot.recipe ? mealSlot.recipe.name : t('mealSlotCard.assignRecipe') }}
       </CardDescription>

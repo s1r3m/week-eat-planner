@@ -61,4 +61,4 @@ def user_read_2() -> UserRead:
 
 @pytest.fixture
 def week_out(user_read: UserRead) -> WeekRead:
-    return WeekRead(id=WEEK_1_ID, user_id=user_read.id, name=WEEK_1_NAME, meal_slots=[])
+    return WeekRead(id=WEEK_1_ID, user_id=user_read.id, name=WEEK_1_NAME, week_days=[])

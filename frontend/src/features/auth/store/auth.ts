@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth-store', () => {
   const isInitialized = ref(false);
 
   const setAccessToken = (newToken: string | null) => {
+    console.log('Setting accessToken: ', newToken);
     accessToken.value = newToken;
   };
 
@@ -21,7 +22,7 @@ export const useAuthStore = defineStore('auth-store', () => {
     });
 
     const data = await authService.login(params);
-    accessToken.value = data.accessToken;
+    accessToken.value = data.access_token;
     await _setUser();
   };
 
@@ -45,7 +46,7 @@ export const useAuthStore = defineStore('auth-store', () => {
 
     try {
       const data = await authService.refresh();
-      setAccessToken(data.accessToken);
+      setAccessToken(data.access_token);
       await _setUser();
       console.log('Initialized access_token from refresh');
     } catch (err: unknown) {

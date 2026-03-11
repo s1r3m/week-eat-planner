@@ -58,16 +58,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
     }
   };
 
-  const getWeek = async (weekId: string) => {
-    isLoading.value = true;
-    try {
-      return await weekService.getWeek(weekId);
-    } catch (err: unknown) {
-      error.value = getErrorMessage(err);
-    } finally {
-      isLoading.value = false;
-    }
-  };
+  const getWeek = async (weekId: string) => await weekService.getWeek(weekId);
 
   const getWeekNameById = (weekId: string) => {
     const week = weeks.value.find((w) => w.id === weekId);

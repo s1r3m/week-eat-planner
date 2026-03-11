@@ -1,1 +1,1 @@
-export { default as MealSlotCard } from './components/MealSlotCard.vue';
+export { default as MealSlotCard } from './components/MealSlotGridCard.vue';

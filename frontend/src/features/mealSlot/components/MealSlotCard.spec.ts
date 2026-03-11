@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MealSlotCard from './MealSlotCard.vue';
+import MealSlotCard from './MealSlotGridCard.vue';
 import type { MealSlot, MealType } from '@/domain/week/models';
 import i18n from '@/i18n';
 import en from '@/i18n/locales/en';

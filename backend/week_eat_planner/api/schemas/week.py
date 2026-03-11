@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-if TYPE_CHECKING:
-    from .meal_slot import MealSlotRead
+from week_eat_planner.api.schemas.meal_slot import MealSlotRead
+from week_eat_planner.db.models.meal_slot import DayOfWeek
 
 
 class WeekBase(BaseModel):
@@ -40,6 +39,6 @@ class WeekReadMinimal(WeekBase, OwnerId):
 class WeekRead(WeekReadMinimal):
     """Schema for a detailed representation of a week, including meal slots."""
 
-    meal_slots: list['MealSlotRead']
+    week_days: list[dict[str, DayOfWeek | list[MealSlotRead]]]
 
     model_config = ConfigDict(from_attributes=True)
