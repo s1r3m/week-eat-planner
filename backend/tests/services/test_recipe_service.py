@@ -5,7 +5,7 @@ import pytest
 from fastapi import status
 from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
 
-from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
+from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeUpdate
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.services.recipe_service import RecipeService
 
@@ -31,7 +31,7 @@ async def test_create_recipe__valid_data__recipe_created(
 ):
     mocked_recipe_dao.add.return_value = db_recipe
     recipe = await RecipeService(mocked_session).create_recipe(recipe_create, user_read)
-    assert recipe == RecipeRead.model_validate(db_recipe)
+    assert recipe == db_recipe
 
 
 @pytest.mark.parametrize('for_update', FOR_UPDATE_PARAMETRIZE)
@@ -43,7 +43,7 @@ async def test_get_recipe__recipe_exists__recipe_returned(
 
     recipe = await RecipeService(mocked_session).get_user_recipe(str_recipe_id, user_read, for_update=for_update)
 
-    assert recipe == RecipeRead.model_validate(db_recipe)
+    assert recipe == db_recipe
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_recipe.id, for_update=for_update)
 
 
@@ -88,7 +88,7 @@ async def test_get_recipe__public_recipe_not_owned___recipe_in_response(
 
     recipe = await RecipeService(mocked_session).get_user_recipe(str_recipe_id, user_read_2, for_update=for_update)
 
-    assert recipe == RecipeRead.model_validate(db_recipe)
+    assert recipe == db_recipe
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_recipe.id, for_update=for_update)
 
 
@@ -108,7 +108,7 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
 ):
     mocked_recipe_dao.find_all.return_value = [db_recipe]
     recipe = await RecipeService(mocked_session).get_all_user_recipes(user_read)
-    assert recipe == [RecipeReadMinimal.model_validate(db_recipe)]
+    assert recipe == [db_recipe]
 
 
 @pytest.mark.parametrize(
@@ -135,7 +135,7 @@ async def test_update_recipe__valid_new_data__recipe_updated(
 
     updated_recipe = await RecipeService(mocked_session).update_recipe(recipe_out, update_params)
 
-    assert updated_recipe == RecipeRead.model_validate(updated_db_recipe)
+    assert updated_recipe == updated_db_recipe
 
 
 async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_recipe_dao, db_recipe):

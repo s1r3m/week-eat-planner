@@ -108,7 +108,7 @@ describe('weeks store', () => {
         id: weekId,
         name: 'Fetched Week',
         user_id: 'u1',
-        meal_slots: [],
+        week_days: [],
       };
       mockApiClient.onGet(`/weeks/${weekId}`).reply(200, mockWeek);
 

@@ -13,9 +13,11 @@ def mocked_week_service(mocker) -> AsyncMock:
     return week_service_mock
 
 
-async def test_get_week_by_id__week_exist__week_returned(mocked_week_service, mocked_session, week_out, user_read):
-    str_week_id = str(week_out.id)
-    mocked_week_service.get_week_for_user.return_value = week_out
+async def test_get_week_by_id__week_exist__week_returned(
+    mocked_week_service, mocked_session, db_week, week_out, user_read
+):
+    str_week_id = str(db_week.id)
+    mocked_week_service.get_week_for_user.return_value = db_week
 
     week = await get_week_by_id(str_week_id, user_read, mocked_session)
 
@@ -23,9 +25,11 @@ async def test_get_week_by_id__week_exist__week_returned(mocked_week_service, mo
     mocked_week_service.get_week_for_user.assert_awaited_once_with(str_week_id, user_read, for_update=False)
 
 
-async def test_get_week_for_update__week_exist__week_returned(mocked_week_service, mocked_session, week_out, user_read):
-    str_week_id = str(week_out.id)
-    mocked_week_service.get_week_for_user.return_value = week_out
+async def test_get_week_for_update__week_exist__week_returned(
+    mocked_week_service, mocked_session, db_week, week_out, user_read
+):
+    str_week_id = str(db_week.id)
+    mocked_week_service.get_week_for_user.return_value = db_week
 
     week = await get_week_for_update(str_week_id, user_read, mocked_session)
 

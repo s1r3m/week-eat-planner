@@ -14,6 +14,11 @@ export interface MealSlotRecipe {
   name: string;
 }
 
+export interface WeekDay {
+  name: DayOfWeek;
+  slots: MealSlot[];
+}
+
 export interface MealSlot {
   id: string;
   meal_type: MealType;
@@ -31,5 +36,5 @@ export interface UserWeek {
   id: string;
   name: string;
   user_id: string;
-  meal_slots: Array<MealSlot>;
+  week_days: WeekDay[];
 }

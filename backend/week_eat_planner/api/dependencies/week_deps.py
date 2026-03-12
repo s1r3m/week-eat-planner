@@ -5,7 +5,8 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.schemas import UserRead, WeekRead, WeekReadMinimal
+from week_eat_planner.api.schemas import UserRead
+from week_eat_planner.api.schemas.week import WeekRead, WeekReadMinimal
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.week_service import WeekService
 
@@ -30,7 +31,7 @@ async def get_week_by_id(
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
     week = await WeekService(read_session).get_week_for_user(week_id, user, for_update=False)
     logger.info(f'Successfully loaded week {week.id} read-only')
-    return week
+    return WeekRead.model_validate(week)
 
 
 async def get_week_for_update(
@@ -56,4 +57,4 @@ async def get_week_for_update(
     logger.info(f'Requesting Week with raw {week_id=} for {user}.')
     week = await WeekService(write_session).get_week_for_user(week_id, user, for_update=True)
     logger.info(f'Successfully loaded week {week.id} for update')
-    return WeekReadMinimal.model_validate(week.model_dump())
+    return WeekReadMinimal.model_validate(week)

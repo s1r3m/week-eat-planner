@@ -3,14 +3,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import (
-    OwnerId,
-    RecipeCreate,
-    RecipeRead,
-    RecipeReadMinimal,
-    RecipeUpdate,
-    UserRead,
-)
+from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeRead, RecipeUpdate, UserRead
 from week_eat_planner.db.dao import RecipeDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
@@ -22,7 +15,7 @@ class RecipeService:
     def __init__(self, session: AsyncSession) -> None:
         self._recipe_dao = RecipeDAO(session)
 
-    async def create_recipe(self, recipe: RecipeCreate, user: UserRead) -> RecipeRead:
+    async def create_recipe(self, recipe: RecipeCreate, user: UserRead) -> Recipe:
         """Creates a new recipe.
 
         Args:
@@ -37,9 +30,9 @@ class RecipeService:
         created_recipe = await self._recipe_dao.add(db_recipe)
         logger.info(f'Created {created_recipe} successfully.')
 
-        return RecipeRead.model_validate(created_recipe)
+        return created_recipe
 
-    async def get_user_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> RecipeRead:
+    async def get_user_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> Recipe:
         """Retrieves a single recipe by its ID.
 
         Args:
@@ -57,9 +50,9 @@ class RecipeService:
         logger.info(f'Getting recipe {recipe_id} for {user}.')
         try:
             recipe_uuid = UUID(recipe_id)
-        except ValueError:
+        except ValueError as exc:
             logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
-            raise RecipeNotFound(recipe_id)
+            raise RecipeNotFound(recipe_id) from exc
 
         recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
         if not recipe:
@@ -70,9 +63,9 @@ class RecipeService:
             logger.error(f'Recipe {recipe_uuid} does not belong to user {user.id}.')
             raise RecipeForbidden(recipe_uuid)
 
-        return RecipeRead.model_validate(recipe)
+        return recipe
 
-    async def get_all_user_recipes(self, user: UserRead) -> list[RecipeReadMinimal]:
+    async def get_all_user_recipes(self, user: UserRead) -> list[Recipe]:
         """Retrieves all recipes for a given user.
 
         Args:
@@ -84,9 +77,9 @@ class RecipeService:
         logger.info(f'Getting all recipes for User {user.email}')
         recipes = await self._recipe_dao.find_all(OwnerId(user_id=user.id))
 
-        return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
+        return recipes
 
-    async def update_recipe(self, recipe: RecipeRead, new_data: RecipeUpdate) -> RecipeRead:
+    async def update_recipe(self, recipe: RecipeRead, new_data: RecipeUpdate) -> Recipe:
         """Updates a recipe.
 
         Args:
@@ -100,7 +93,7 @@ class RecipeService:
         updated_recipe = await self._recipe_dao.update(recipe, new_data)
         logger.info(f'Successfully updated recipe {recipe.id}')
 
-        return RecipeRead.model_validate(updated_recipe)
+        return updated_recipe
 
     async def delete_recipe(self, recipe: RecipeRead) -> int:
         """Deletes a recipe.

@@ -10,10 +10,10 @@ describe('auth store', () => {
   let mockAuthClient: MockAdapter;
 
   const mockUser: UserInfo = {
-    userId: 'test-user-id',
+    user_id: 'test-user-id',
     email: 'test@example.com',
     username: 'username-test',
-    isActive: true,
+    is_active: true,
   };
 
   beforeEach(() => {
@@ -46,8 +46,8 @@ describe('auth store', () => {
       const store = useAuthStore();
       const mockToken = 'new-access-token';
       mockApiClient.onPost('/auth/login').reply(200, {
-        accessToken: mockToken,
-        tokenType: 'bearer',
+        access_token: mockToken,
+        token_type: 'bearer',
       });
       mockApiClient.onGet('/user').reply(200, mockUser);
 
@@ -125,8 +125,8 @@ describe('auth store', () => {
       const store = useAuthStore();
       const mockToken = 'refreshed-token';
       mockAuthClient.onPost('/auth/refresh').reply(200, {
-        accessToken: mockToken,
-        tokenType: 'bearer',
+        access_token: mockToken,
+        token_type: 'bearer',
       });
       mockApiClient.onGet('/user').reply(200, mockUser);
 
@@ -152,8 +152,8 @@ describe('auth store', () => {
       const store = useAuthStore();
       const mockToken = 'refreshed-token';
       mockAuthClient.onPost('/auth/refresh').reply(200, {
-        accessToken: mockToken,
-        tokenType: 'bearer',
+        access_token: mockToken,
+        token_type: 'bearer',
       });
       mockApiClient.onGet('/user').reply(200, mockUser);
       await store.init();

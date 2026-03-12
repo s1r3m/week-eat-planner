@@ -49,7 +49,7 @@ async def create_user(
 
     created_user = await AuthService(session).register_user(user_data)
 
-    return created_user
+    return UserRead.model_validate(created_user)
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)

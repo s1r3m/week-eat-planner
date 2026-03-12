@@ -16,6 +16,7 @@ from tests.constants import (
 )
 from week_eat_planner.api.schemas import UserRead, WeekRead
 from week_eat_planner.db.models import Recipe, User
+from week_eat_planner.db.models.week import Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
 
@@ -50,6 +51,11 @@ def db_recipe(user_read: UserRead) -> Recipe:
 
 
 @pytest.fixture
+def db_week(db_user: User) -> Week:
+    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=db_user.id, meal_slots=[])
+
+
+@pytest.fixture
 def user_read(db_user: User) -> UserRead:
     return UserRead.model_validate(db_user)
 
@@ -60,5 +66,5 @@ def user_read_2() -> UserRead:
 
 
 @pytest.fixture
-def week_out(user_read: UserRead) -> WeekRead:
-    return WeekRead(id=WEEK_1_ID, user_id=user_read.id, name=WEEK_1_NAME, meal_slots=[])
+def week_out(db_week: Week) -> WeekRead:
+    return WeekRead.model_validate(db_week)
