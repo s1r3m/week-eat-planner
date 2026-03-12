@@ -22,7 +22,7 @@
           <FieldSeparator />
           <FieldGroup>
             <Field orientation="horizontal">
-              <Checkbox id="active" v-model="userInfo.isActive" disabled />
+              <Checkbox id="active" v-model="userInfo.is_active" disabled />
               <Label for="active">Active user</Label>
             </Field>
           </FieldGroup>
@@ -52,5 +52,3 @@ if (res.status === 200) {
   userInfo.value = res.data as UserInfo;
 }
 </script>
-
-<style scoped></style>
