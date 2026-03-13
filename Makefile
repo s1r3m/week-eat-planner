@@ -138,12 +138,12 @@ fe_start:
 fe_lint:
 	@echo "Run ESlint"
 	cd $(FE_PATH) && yarn lint
-	cd $(FE_PATH) && yarn format
 	cd $(FE_PATH) && yarn format:check
 
 
 fe_style:
 	@echo "Run ESlint"
+	cd $(FE_PATH) && yarn format
 	cd $(FE_PATH) && yarn lint:fix
 
 ## @Tests Run fe unittests.

@@ -61,9 +61,8 @@ const navLinks = computed(() => [
     to: '/recipes',
     icon: ForkKnife,
     items: [
-      { to: '#', label: 'My recipes' },
-      { to: '#', label: 'Favorites' },
-      { to: '#', label: 'Ready weeks' },
+      { to: '/my-recipes', label: 'My recipes' },
+      { to: '/recipes/favorites', label: 'Favorites' },
     ],
   },
 ]);
