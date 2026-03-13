@@ -7,12 +7,13 @@
       @edit="$emit('edit', week)"
       @delete="$emit('delete', week)"
     />
-    <WeekAddCard v-if="weeks.length < maxCardCount" @create="$emit('create')" />
+    <AppAddCard v-if="weeks.length < maxCardCount" @create="$emit('create')" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { WeekDetails, WeekAddCard } from '@/features/week';
+import { WeekDetails } from '@/features/week';
+import AppAddCard from '@/components/shared/AppAddCard.vue';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
 withDefaults(

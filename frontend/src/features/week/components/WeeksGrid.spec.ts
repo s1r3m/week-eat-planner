@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { createTestingPinia } from '@pinia/testing';
 import WeeksGrid from './WeeksGrid.vue';
-import { useWeekStore } from '../store/weeks';
 import WeekDetails from './WeekDetails.vue';
-import WeekAddCard from './WeekAddCard.vue';
+import AppAddCard from '@/components/shared/AppAddCard.vue';
 
 describe('WeeksGrid', () => {
   const mockWeeks = [
@@ -20,7 +18,7 @@ describe('WeeksGrid', () => {
       props: ['week'],
       emits: ['edit', 'delete'],
     },
-    WeekAddCard: {
+    AppAddCard: {
       template: '<div class="add-card" @click="$emit(\'create\')">Add</div>',
       emits: ['create'],
     },
@@ -46,7 +44,7 @@ describe('WeeksGrid', () => {
     expect(weeks[1].props('week')).toEqual(mockWeeks[1]);
   });
 
-  it('renders WeekAddCard if there are fewer than 6 weeks', () => {
+  it('renders AppAddCard if there are fewer than 6 weeks', () => {
     const wrapper = mount(WeeksGrid, {
       props: {
         weeks: mockWeeks,
@@ -56,10 +54,10 @@ describe('WeeksGrid', () => {
       },
     });
 
-    expect(wrapper.findComponent(WeekAddCard).exists()).toBe(true);
+    expect(wrapper.findComponent(AppAddCard).exists()).toBe(true);
   });
 
-  it('does not render WeekAddCard if there are 6 or more weeks', () => {
+  it('does not render AppAddCard if there are 6 or more weeks', () => {
     const sixWeeks = Array.from({ length: 6 }, (_, i) => ({
       id: String(i + 1),
       name: `Week ${i + 1}`,
@@ -75,7 +73,7 @@ describe('WeeksGrid', () => {
       },
     });
 
-    expect(wrapper.findComponent(WeekAddCard).exists()).toBe(false);
+    expect(wrapper.findComponent(AppAddCard).exists()).toBe(false);
   });
 
   it('bubbles up create event', async () => {
@@ -88,7 +86,7 @@ describe('WeeksGrid', () => {
       },
     });
 
-    await wrapper.findComponent(WeekAddCard).trigger('click');
+    await wrapper.findComponent(AppAddCard).trigger('click');
     expect(wrapper.emitted('create')).toBeTruthy();
   });
 
@@ -130,7 +128,7 @@ describe('WeeksGrid', () => {
     });
 
     expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(6);
-    expect(wrapper.findComponent(WeekAddCard).exists()).toBe(false);
+    expect(wrapper.findComponent(AppAddCard).exists()).toBe(false);
   });
 
   it('renders correctly with 0 weeks', () => {
@@ -144,6 +142,6 @@ describe('WeeksGrid', () => {
     });
 
     expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(0);
-    expect(wrapper.findComponent(WeekAddCard).exists()).toBe(true);
+    expect(wrapper.findComponent(AppAddCard).exists()).toBe(true);
   });
 });
