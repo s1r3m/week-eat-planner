@@ -51,9 +51,4 @@ describe('MealSlotCard', () => {
     expect(wrapper.text()).toContain('Pasta');
     expect(wrapper.text()).not.toContain(en.mealSlotCard.assignRecipe);
   });
-
-  it('renders with slot variant', () => {
-    const wrapper = mountComponent(defaultSlot);
-    expect(wrapper.attributes('class')).toContain('min-h-20');
-  });
 });

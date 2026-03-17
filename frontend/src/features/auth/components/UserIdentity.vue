@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center gap-3 py-1.5 text-left text-sm">
     <Avatar class="size-9 rounded-lg">
-      <AvatarImage v-if="user.avatarUrl" :src="user.avatarUrl" :alt="displayName" />
+      <AvatarImage v-if="user.avatar_url" :src="user.avatar_url" :alt="displayName" />
       <AvatarFallback v-else class="rounded-lg"> {{ avatarFallback }} </AvatarFallback>
     </Avatar>
     <div class="grid flex-1 text-left text-sm leading-tight">

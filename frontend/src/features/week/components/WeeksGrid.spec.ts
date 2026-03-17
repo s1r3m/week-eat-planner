@@ -44,7 +44,7 @@ describe('WeeksGrid', () => {
     expect(weeks[1].props('week')).toEqual(mockWeeks[1]);
   });
 
-  it('renders AppAddCard if there are fewer than 6 weeks', () => {
+  it('renders AppAddCard if there are fewer than 8 weeks', () => {
     const wrapper = mount(WeeksGrid, {
       props: {
         weeks: mockWeeks,
@@ -57,8 +57,8 @@ describe('WeeksGrid', () => {
     expect(wrapper.findComponent(AppAddCard).exists()).toBe(true);
   });
 
-  it('does not render AppAddCard if there are 6 or more weeks', () => {
-    const sixWeeks = Array.from({ length: 6 }, (_, i) => ({
+  it('does not render AppAddCard if there are 8 or more weeks', () => {
+    const sixWeeks = Array.from({ length: 8 }, (_, i) => ({
       id: String(i + 1),
       name: `Week ${i + 1}`,
       user_id: 'u1',
@@ -111,8 +111,8 @@ describe('WeeksGrid', () => {
     expect(wrapper.emitted('delete')![0]).toEqual([mockWeeks[0]]);
   });
 
-  it('renders correctly with exactly 6 weeks', () => {
-    const sixWeeks = Array.from({ length: 6 }, (_, i) => ({
+  it('renders correctly with exactly 8 weeks', () => {
+    const sixWeeks = Array.from({ length: 8 }, (_, i) => ({
       id: String(i + 1),
       name: `Week ${i + 1}`,
       user_id: 'u1',
@@ -127,7 +127,7 @@ describe('WeeksGrid', () => {
       },
     });
 
-    expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(6);
+    expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(8);
     expect(wrapper.findComponent(AppAddCard).exists()).toBe(false);
   });
 

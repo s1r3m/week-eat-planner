@@ -8,7 +8,7 @@ export const useRecipeStore = defineStore('recipe-store', () => {
 
   const getMyRecipes = async () => {
     const { data } = await apiClient.get('/recipes');
-    return data;
+    myRecipes.value = data;
   };
 
   return {

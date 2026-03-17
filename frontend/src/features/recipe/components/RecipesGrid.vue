@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 px-6">
+  <div class="grid gap-6 grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 px-6">
     <RecipePreview
       v-for="recipe in recipes"
       :key="recipe.id"

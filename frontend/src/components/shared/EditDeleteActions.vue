@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-3 z-40 pointer-events-auto absolute top-2 right-2">
+  <div class="flex gap-3 z-20 pointer-events-auto absolute top-2 right-2">
     <Button
       variant="outline"
       class="rounded-full bg-primary/30 backdrop-blur-lg"

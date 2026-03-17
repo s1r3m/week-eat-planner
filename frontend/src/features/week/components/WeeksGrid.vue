@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-9 lg:grid-cols-2 lg:gap-12 2xl:grid-cols-3 2xl:gap-24 px-6">
+  <div class="grid gap-9 md:grid-cols-2 lg:grid-cols-3 lg:gap-12 2xl:grid-cols-4 2xl:gap-24 px-6">
     <WeekDetails
       v-for="week in weeks"
       :key="week.id"
@@ -22,7 +22,7 @@ withDefaults(
     maxCardCount?: number;
   }>(),
   {
-    maxCardCount: 6,
+    maxCardCount: 8,
   },
 );
 
