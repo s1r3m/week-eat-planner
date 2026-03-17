@@ -4,7 +4,7 @@
       v-for="recipe in recipes"
       :key="recipe.id"
       :recipe="recipe"
-      @delete="$emit('delete', recipe)"
+      @toggle-favorite="$emit('toggleFavorite', recipe)"
     />
     <AppAddCard @create="$emit('create')" />
   </div>
@@ -21,7 +21,6 @@ defineProps<{
 
 defineEmits<{
   create: [];
-  edit: [week: RecipeMinimal];
-  delete: [week: RecipeMinimal];
+  toggleFavorite: [recipe: RecipeMinimal];
 }>();
 </script>

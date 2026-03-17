@@ -1,8 +1,8 @@
 <template>
-  <Card id="recipe-preview-container" variant="week">
+  <Card id="recipe-preview-container" variant="week" class="group relative overflow-hidden">
     <img
-      :src="default_img"
-      alt="Week Image"
+      :src="recipe.cover_url || default_img"
+      :alt="recipe.name"
       loading="lazy"
       class="absolute bg-primary/10 inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
     />
@@ -15,7 +15,7 @@
       :to="{ name: 'recipe', params: { id: recipe.id } }"
       class="absolute inset-0 z-20"
     ></router-link> -->
-    <div class="flex gap-3 z-20 pointer-events-auto absolute top-2 right-2">
+    <div class="flex gap-3 z-30 pointer-events-auto absolute top-2 right-2">
       <Button
         variant="outline"
         class="rounded-full bg-primary/30 backdrop-blur-lg"
@@ -35,7 +35,7 @@ import { Star } from 'lucide-vue-next';
 import type { RecipeMinimal } from '@/domain/recipe/models';
 
 const props = defineProps<{ recipe: RecipeMinimal }>();
-defineEmits<{
+const emit = defineEmits<{
   toggleFavorite: [recipe: RecipeMinimal];
 }>();
 
@@ -53,6 +53,6 @@ const starProps = computed(() => {
 
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value;
-  // And do the PUT request afterwards.
+  emit('toggleFavorite', props.recipe);
 };
 </script>

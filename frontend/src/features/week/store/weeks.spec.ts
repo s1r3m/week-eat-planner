@@ -20,6 +20,7 @@ describe('weeks store', () => {
 
   it('should have initial state', () => {
     const store = useWeekStore();
+
     expect(store.weeks).toEqual([]);
     expect(store.error).toBe(null);
     expect(store.isLoading).toBe(false);

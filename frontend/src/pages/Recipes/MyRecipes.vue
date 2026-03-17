@@ -13,7 +13,7 @@
 import { ref } from 'vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import RecipesGrid from '@/features/recipe/components/RecipesGrid.vue';
-import { useRecipeStore } from '@/features/recipe/store/recipeStore';
+import { useRecipeStore } from '@/features/recipe/store/recipes';
 
 const isCreateOpen = ref(false);
 const recipeStore = useRecipeStore();
