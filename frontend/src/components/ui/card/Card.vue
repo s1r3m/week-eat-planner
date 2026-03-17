@@ -13,6 +13,7 @@ const props = defineProps<Props>();
 </script>
 
 <template>
+  <!-- TODO: move class min-w-24 to variants -->
   <div
     data-slot="card"
     class="min-w-24"

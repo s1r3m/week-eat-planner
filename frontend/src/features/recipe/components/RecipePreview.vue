@@ -1,7 +1,7 @@
 <template>
   <Card id="recipe-preview-container" variant="week" class="group relative overflow-hidden">
     <img
-      :src="recipe.cover_url || default_img"
+      :src="recipe.cover_url || defaultImg"
       :alt="recipe.name"
       loading="lazy"
       class="absolute bg-primary/10 inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -41,7 +41,7 @@ const emit = defineEmits<{
 
 const isFavorite = ref(props.recipe.isFavorite);
 
-const default_img = new URL('@/assets/recipe_bg.png', import.meta.url).href;
+const defaultImg = new URL('@/assets/recipe_bg.png', import.meta.url).href;
 const starProps = computed(() => {
   return isFavorite.value
     ? {
