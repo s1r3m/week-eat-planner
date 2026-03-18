@@ -13,7 +13,12 @@ const props = defineProps<Props>();
 </script>
 
 <template>
-  <div data-slot="card" :class="cn(cardVariants({ variant: props.variant }), props.class)">
+  <!-- TODO: move class min-w-24 to variants -->
+  <div
+    data-slot="card"
+    class="min-w-24"
+    :class="cn(cardVariants({ variant: props.variant }), props.class)"
+  >
     <slot />
   </div>
 </template>

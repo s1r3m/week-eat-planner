@@ -45,9 +45,9 @@ describe('AppSidebarNavigation', () => {
 
     // 2 main items (My weeks, Recipes)
     // + 2 dynamic week items
-    // + 3 static recipe sub-items
+    // + 2 static recipe sub-items
     // Total = 7
-    expect(items.length).toBe(7);
+    expect(items.length).toBe(6);
 
     const firstItem = items[0].props('item') as NavLink;
     expect(firstItem.label).toBe('My weeks');
@@ -89,8 +89,8 @@ describe('AppSidebarNavigation', () => {
     });
 
     const items = wrapper.findAllComponents(AppSidebarNavigationItem);
-    // 2 main items + 0 week sub-items + 3 recipe sub-items = 5
-    expect(items.length).toBe(5);
+    // 2 main items + 0 week sub-items + 2 recipe sub-items = 4
+    expect(items.length).toBe(4);
 
     const firstItem = items[0].props('item') as NavLink;
     expect(firstItem.label).toBe('My weeks');

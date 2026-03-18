@@ -1,7 +1,7 @@
 <template>
   <Card variant="empty">
-    <div @click.stop="$emit('create')">
-      <span class="text-9xl font-bold text-primary">+</span>
+    <div class="h-full w-full flex items-center justify-center" @click.stop="$emit('create')">
+      <span class="text-8xl font-bold text-primary">+</span>
     </div>
   </Card>
 </template>

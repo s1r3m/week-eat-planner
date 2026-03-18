@@ -44,12 +44,6 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'recipes',
-        name: 'recipes',
-        component: () => import('@/pages/Recipes/RecipesPage.vue'),
-        meta: { breadcrumbs: [{ label: 'All recipes' }] },
-      },
-      {
         path: 'weeks',
         name: 'weeks',
         component: () => import('@/pages/Weeks/WeeksPage.vue'),
@@ -72,6 +66,24 @@ const routes = [
         name: 'profile',
         component: () => import('@/pages/Profile/ProfilePage.vue'),
         meta: { breadcrumbs: [{ label: 'My profile' }] },
+      },
+      {
+        path: 'recipes',
+        name: 'recipes',
+        component: () => import('@/pages/Recipes/RecipesPage.vue'),
+        meta: { breadcrumbs: [{ label: 'All recipes' }] },
+      },
+      {
+        path: 'my-recipes',
+        name: 'my-recipes',
+        component: () => import('@/pages/Recipes/MyRecipes.vue'),
+        meta: { breadcrumbs: [{ to: '/recipes', label: 'Recipes' }, { label: 'My recipes' }] },
+      },
+      {
+        path: 'recipes/favorites',
+        name: 'favorites',
+        component: () => import('@/pages/Recipes/Favorites.vue'),
+        meta: { breadcrumbs: [{ to: '/recipes', label: 'Recipes' }, { label: 'Favorites' }] },
       },
     ],
   },

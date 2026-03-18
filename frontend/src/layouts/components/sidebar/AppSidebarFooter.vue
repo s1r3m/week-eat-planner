@@ -10,15 +10,11 @@
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          :side="isMobile ? 'bottom' : 'right'"
+          side="top"
           class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg"
           align="end"
           :side-offset="4"
         >
-          <DropdownMenuLabel v-if="authStore.user">
-            <UserIdentity :user="authStore.user" />
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem v-for="link in menuItems" :key="link.to" as-child>
               <router-link
@@ -31,6 +27,16 @@
               </router-link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <router-link
+              to="/promo"
+              class="flex w-full items-center gap-3 text-destructive"
+              @click="logout"
+            >
+              <LogOut /> Log Out
+            </router-link>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -44,7 +50,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -70,6 +75,5 @@ const handleNavigation = () => {
 
 const menuItems: NavLink[] = [
   { to: '/profile', label: 'Profile', icon: BadgeCheck, action: handleNavigation },
-  { to: '/promo', label: 'Log Out', icon: LogOut, action: logout },
 ];
 </script>

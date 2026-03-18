@@ -6,8 +6,8 @@ import type { UserInfo } from '@/domain/auth/models';
 describe('UserIdentity', () => {
   const user: UserInfo = {
     email: 'test@email.com',
-    userId: 'testId',
-    isActive: true,
+    user_id: 'testId',
+    is_active: true,
   };
 
   it('renders the component with user email and placeholder name fallbacks', () => {
@@ -33,7 +33,7 @@ describe('UserIdentity', () => {
   it('renders the component with user email and avatar', () => {
     const avatarUrl = 'http://test.com/url';
     const wrapper = mount(UserIdentity, {
-      props: { user: { ...user, avatarUrl } },
+      props: { user: { ...user, avatar_url: avatarUrl } },
     });
 
     expect(wrapper.text()).toContain(user.email);
