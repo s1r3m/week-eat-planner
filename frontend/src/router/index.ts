@@ -70,13 +70,13 @@ const routes = [
       {
         path: 'recipes',
         name: 'recipes',
-        component: () => import('@/pages/Recipes/RecipesPage.vue'),
+        component: () => import('@/pages/Recipes/AllRecipesPage.vue'),
         meta: { breadcrumbs: [{ label: 'All recipes' }] },
       },
       {
         path: 'recipes/create',
-        name: 'recipesCreate',
-        component: () => import('@/pages/Recipes/RecipesCreate.vue'),
+        name: 'recipes-create',
+        component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
         meta: {
           breadcrumbs: [
             { to: '/recipes', label: 'Recipes' },
@@ -86,9 +86,9 @@ const routes = [
         },
       },
       {
-        path: 'my-recipes',
+        path: 'recipes/myrecipes',
         name: 'my-recipes',
-        component: () => import('@/pages/Recipes/MyRecipes.vue'),
+        component: () => import('@/pages/Recipes/MyRecipesPage.vue'),
         meta: { breadcrumbs: [{ to: '/recipes', label: 'Recipes' }, { label: 'My recipes' }] },
       },
       {
