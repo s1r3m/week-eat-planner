@@ -2,10 +2,8 @@
   <div id="my-recipes-container">
     <div class="space-y-9 mb-9">
       <PageTitle header="My Recipes" description="Recipes you have created" />
-      <RecipesGrid :recipes="recipeStore.myRecipes" @create="isCreateOpen = true" />
+      <RecipesGrid :recipes="recipeStore.myRecipes" />
     </div>
-
-    <RecipeCreateDialog v-model="isCreateOpen" />
   </div>
 </template>
 
@@ -13,10 +11,8 @@
 import { ref } from 'vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import RecipesGrid from '@/features/recipe/components/RecipesGrid.vue';
-import { useRecipeStore } from '@/features/recipe/store/recipes';
-import RecipeCreateDialog from '@/features/recipe/components/RecipeCreateDialog.vue';
+import { useRecipeStore } from '@/features/recipe';
 
-const isCreateOpen = ref(false);
 const recipeStore = useRecipeStore();
 await recipeStore.getMyRecipes();
 </script>

@@ -11,10 +11,16 @@ export const useRecipeStore = defineStore('recipe-store', () => {
     myRecipes.value = data;
   };
 
-  const createRecipe = async (name: string) => {
-    // Stub for now. Real API call will go here
-    console.log('Creating recipe:', name);
-    return Promise.resolve();
+  const createRecipe = async (name: string, steps: string, ingredients: string) => {
+    const payload = {
+      name,
+      is_public: false,
+      ingredients: { [ingredients]: 1 },
+    };
+    console.log('Create recipe: ', payload);
+    const { data } = await apiClient.post<RecipeMinimal>('/recipes', payload);
+    console.log(data);
+    myRecipes.value.push(data);
   };
 
   const updateRecipe = async (id: string, recipe: Partial<RecipeFull>) => {

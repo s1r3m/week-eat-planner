@@ -1,12 +1,12 @@
 <template>
-  <div class="grid gap-6 grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 px-6">
+  <div class="grid gap-6 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 px-6">
     <RecipePreview
       v-for="recipe in recipes"
       :key="recipe.id"
       :recipe="recipe"
       @toggle-favorite="$emit('toggleFavorite', recipe)"
     />
-    <AppAddCard @create="$emit('create')" />
+    <AppAddCard @create="router.push('/recipes/create')" />
   </div>
 </template>
 
@@ -14,13 +14,15 @@
 import AppAddCard from '@/components/shared/AppAddCard.vue';
 import RecipePreview from './RecipePreview.vue';
 import type { RecipeMinimal } from '@/domain/recipe/models';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 defineProps<{
   recipes: RecipeMinimal[];
 }>();
 
 defineEmits<{
-  create: [];
   toggleFavorite: [recipe: RecipeMinimal];
 }>();
 </script>

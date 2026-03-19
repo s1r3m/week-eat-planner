@@ -12,6 +12,12 @@
         <FieldGroup>
           <FieldLabel for="recipeName"> Name </FieldLabel>
           <Input id="recipeName" v-model="name" type="text" />
+
+          <FieldLabel for="recipeSteps"> How to cook </FieldLabel>
+          <Input id="recipeSteps" v-model="steps" type="text" />
+
+          <FieldLabel for="ingredients"> Ingredients </FieldLabel>
+          <Input id="ingredients" v-model="ingredients" type="text" />
         </FieldGroup>
       </form>
 
@@ -40,7 +46,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
-import { useRecipeStore } from '../store/recipes';
+import { useRecipeStore } from '@/features/recipe';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -48,13 +54,17 @@ import { Input } from '@/components/ui/input';
 
 const isOpen = defineModel<boolean>();
 const name = ref('');
+const steps = ref('');
+const ingredients = ref('');
 
 const recipeStore = useRecipeStore();
 const { call: create, isLoading } = useAsyncCall(recipeStore.createRecipe);
 
 const onCreate = async () => {
-  await create(name.value); // Form passig here
+  await create(name.value, steps.value, ingredients.value); // Form passig here
   isOpen.value = false;
   name.value = ''; // Form reset here
+  steps.value = '';
+  ingredients.value = '';
 };
 </script>

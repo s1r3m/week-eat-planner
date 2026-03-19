@@ -74,6 +74,18 @@ const routes = [
         meta: { breadcrumbs: [{ label: 'All recipes' }] },
       },
       {
+        path: 'recipes/create',
+        name: 'recipesCreate',
+        component: () => import('@/pages/Recipes/RecipesCreate.vue'),
+        meta: {
+          breadcrumbs: [
+            { to: '/recipes', label: 'Recipes' },
+            { to: '/my-recipes', label: 'My recipes' },
+            { label: 'Create' },
+          ],
+        },
+      },
+      {
         path: 'my-recipes',
         name: 'my-recipes',
         component: () => import('@/pages/Recipes/MyRecipes.vue'),
