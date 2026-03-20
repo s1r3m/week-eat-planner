@@ -50,7 +50,7 @@ import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const authStore = useAuthStore();

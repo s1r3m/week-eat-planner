@@ -6,19 +6,87 @@
       <div class="mx-6">
         <form id="recipeForm" @submit.prevent="onCreate">
           <FieldGroup>
-            <FieldLabel for="recipeName"> Name </FieldLabel>
-            <Input id="recipeName" v-model="name" type="text" />
+            <FieldTitle class="text-lg"><h2>Recipe info</h2> </FieldTitle>
+            <FieldContent>
+              <FieldLabel for="recipeName"> Name </FieldLabel>
+              <Input
+                id="recipeName"
+                v-model="name"
+                type="text"
+                placeholder="e.g. Pasta Carbonara"
+              />
+            </FieldContent>
+          </FieldGroup>
 
-            <FieldLabel for="recipeSteps"> How to cook </FieldLabel>
-            <Input id="recipeSteps" v-model="steps" type="text" />
+          <FieldSeparator class="my-3" />
 
-            <FieldLabel for="ingredients"> Ingredients </FieldLabel>
-            <div class="grid-cols-2 space-y-3">
-              <div class="flex gap-3">
-                <Input id="ingredients" v-model="ingredients" type="text" class="flex-3" />
-                <Input id="ingredients" v-model="ingredients" type="text" class="flex-1" />
-              </div>
-            </div>
+          <FieldGroup>
+            <FieldTitle class="text-lg"><h2>Ingredients</h2> </FieldTitle>
+            <FieldContent>
+              <ol class="list-decimal">
+                <li v-for="(step, index) in ingredients" :key="index" class="mb-3 ml-6 -mr-3">
+                  <div class="flex">
+                    <Input id="ingredient-name" v-model="step.name" class="flex-5" type="text" />
+                    <Input
+                      id="ingredient-amount"
+                      v-model="step.amount"
+                      class="flex-1"
+                      type="text"
+                    />
+                    <Select default-value="g">
+                      <SelectTrigger class="w-18">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
+                            {{ unit }}
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      @click="ingredients.splice(index, 1)"
+                      ><X class="text-destructive"
+                    /></Button>
+                  </div>
+                </li>
+              </ol>
+              <Button
+                variant="outline"
+                type="button"
+                @click="ingredients.push({ name: '', amount: '', unit: 'g' })"
+                >Add a step</Button
+              >
+            </FieldContent>
+          </FieldGroup>
+
+          <FieldSeparator class="my-3" />
+
+          <FieldGroup>
+            <FieldTitle class="text-lg"><h2>Cooking steps</h2> </FieldTitle>
+            <FieldContent>
+              <ol class="list-decimal">
+                <li v-for="(step, index) in steps" :key="index" class="mb-3 ml-6 -mr-3">
+                  <div class="flex">
+                    <Input id="recipeSteps" v-model="step.action" type="text" />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      @click="steps.splice(index, 1)"
+                      ><X class="text-destructive"
+                    /></Button>
+                  </div>
+                </li>
+              </ol>
+              <Button variant="outline" type="button" @click="steps.push({ action: '' })"
+                >Add a step</Button
+              >
+            </FieldContent>
           </FieldGroup>
         </form>
       </div>
@@ -40,16 +108,32 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import { useRecipeStore } from '@/features/recipe';
 import { useRouter } from 'vue-router';
 import { Card } from '@/components/ui/card';
-import { FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+  FieldTitle,
+} from '@/components/ui/field';
+import { X } from 'lucide-vue-next';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
+import { UNITS, type CookingStep, type Ingredient } from '@/domain/recipe/models';
 
 const name = ref('');
-const steps = ref('');
-const ingredients = ref('');
+const steps = ref<CookingStep[]>([{ action: '' }]);
+const ingredients = ref<Ingredient[]>([{ name: '', amount: '', unit: 'g' }]);
 
 const recipeStore = useRecipeStore();
 const { call: create, isLoading } = useAsyncCall(recipeStore.createRecipe);
@@ -61,11 +145,7 @@ const onCancel = () => {
 };
 
 const onCreate = async () => {
-  console.log('create recipe', name, steps, ingredients);
-  await create(name.value, steps.value, ingredients.value); // Form passig here
-  name.value = ''; // Form reset here
-  steps.value = '';
-  ingredients.value = '';
+  await create({ name: name.value, steps: steps.value, ingredients: ingredients.value });
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 </script>

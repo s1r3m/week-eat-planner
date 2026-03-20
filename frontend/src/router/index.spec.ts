@@ -80,12 +80,32 @@ describe('Router', () => {
     const authStore = { accessToken: 'token', init: vi.fn() };
     (useAuthStore as any).mockReturnValue(authStore);
 
-    // Trigger dynamic imports
-    await router.push({ name: ROUTE_NAMES.LOGIN });
-    await router.push({ name: ROUTE_NAMES.SIGNUP });
-    await router.push({ name: ROUTE_NAMES.WEEKS });
-    await router.push({ name: ROUTE_NAMES.PROFILE });
+    const routesToTest = [
+      { name: ROUTE_NAMES.LOGIN },
+      { name: ROUTE_NAMES.SIGNUP },
+      { name: ROUTE_NAMES.FORGOT_PASSWORD },
+      { name: ROUTE_NAMES.WEEKS },
+      { name: ROUTE_NAMES.WEEK, params: { id: '1' } },
+      { name: ROUTE_NAMES.PROFILE },
+      { name: ROUTE_NAMES.RECIPES },
+      { name: ROUTE_NAMES.RECIPE, params: { id: '1' } },
+      { name: ROUTE_NAMES.RECIPES_CREATE },
+      { name: ROUTE_NAMES.RECIPES_MY },
+      { name: ROUTE_NAMES.RECIPES_FAVORITES },
+      { name: ROUTE_NAMES.NOT_FOUND, params: { pathMatch: ['not', 'found'] } },
+    ];
 
-    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PROFILE);
+    for (const route of routesToTest) {
+      await router.push(route);
+      expect(router.currentRoute.value.name).toBe(route.name);
+    }
+  });
+
+  it('should not call init if already initialized', async () => {
+    const authStore = { accessToken: 'token', init: vi.fn(), isInitialized: true };
+    (useAuthStore as any).mockReturnValue(authStore);
+
+    await router.push({ name: ROUTE_NAMES.RECIPES });
+    expect(authStore.init).not.toHaveBeenCalled();
   });
 });

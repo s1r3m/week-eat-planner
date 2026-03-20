@@ -1,5 +1,6 @@
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import type { RouteName } from '@/domain/router/routeNames';
+import { useRecipeStore } from '@/features/recipe';
 import { useWeekStore } from '@/features/week';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -14,6 +15,7 @@ type Generator = (route: ReturnType<typeof useRoute>) => Breadcrumb[];
 export const useBreadcrumbs = () => {
   const route = useRoute();
   const weekStore = useWeekStore();
+  const recipeStore = useRecipeStore();
 
   const breadcrumbsGenerators: Partial<Record<RouteName, Generator>> = {
     [ROUTE_NAMES.WEEKS]: () => [{ label: 'My weeks' }],
@@ -24,7 +26,7 @@ export const useBreadcrumbs = () => {
     [ROUTE_NAMES.RECIPES]: () => [{ label: 'Recipes' }],
     [ROUTE_NAMES.RECIPE]: () => [
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
-      { label: 'TBD Recipe name from recipeStore.getNameById' },
+      { label: recipeStore.getRecipeNameById(route.params.id as string) || 'error' },
     ],
     [ROUTE_NAMES.RECIPES_MY]: () => [
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },

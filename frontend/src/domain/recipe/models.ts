@@ -8,6 +8,26 @@ export interface RecipeMinimal {
 }
 
 export interface RecipeFull extends RecipeMinimal {
-  description?: string;
-  ingredients: Record<string, number>;
+  steps: CookingStep[];
+  ingredients: Ingredient[];
+}
+
+export const UNITS = ['g', 'ml', 'pcs', 'cans'] as const;
+type Unit = (typeof UNITS)[number];
+
+export interface CookingStep {
+  action: string;
+}
+
+export interface Ingredient {
+  name: string;
+  amount: string;
+  unit: Unit;
+}
+
+export interface RecipePayload {
+  name: string;
+  steps: CookingStep[];
+  ingredients: Ingredient[];
+  cover_file?: string;
 }

@@ -12,7 +12,7 @@ import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 
 const weekStore = useWeekStore();
 const route = useRoute();

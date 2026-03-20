@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import { ref } from 'vue';
 import AuthAppBreadcrumbs from './AuthAppBreadcrumbs.vue';
-import { useBreadcrumbs } from '@/layouts/composables/breadcrumbs';
+import { useBreadcrumbs } from '@/composables/breadcrumbs';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-vi.mock('@/layouts/composables/breadcrumbs', () => ({
+vi.mock('@/composables/breadcrumbs', () => ({
   useBreadcrumbs: vi.fn(),
 }));
 

@@ -2,6 +2,8 @@ import { ref, nextTick } from 'vue';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import GuestAuthActions from './GuestAuthActions.vue';
+import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 
 const logoutHandler = vi.fn();
 
@@ -9,15 +11,12 @@ vi.mock('@/features/auth/composables/useGuestAuthActions', () => ({
   useGuestAuthActions: vi.fn(),
 }));
 
-vi.mock('@/features/auth/composables/useAsyncCall', () => ({
+vi.mock('@/composables/useAsyncCall', () => ({
   useAsyncCall: vi.fn((task) => ({
     call: task,
     isLoading: ref(false),
   })),
 }));
-
-import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 
 describe('GuestAuthActions', () => {
   const mockComposable = (options: {

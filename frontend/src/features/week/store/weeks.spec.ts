@@ -66,6 +66,15 @@ describe('weeks store', () => {
       expect(store.weeks).toContainEqual(newWeek);
       expect(store.error).toBe(null);
     });
+
+    it('should handle error when adding a week fails', async () => {
+      const store = useWeekStore();
+      mockApiClient.onPost('/weeks').reply(400, { detail: 'Bad Request' });
+
+      await expect(store.addWeek('New Week')).rejects.toThrow();
+      expect(store.error).toBe('Bad Request');
+      expect(store.isLoading).toBe(false);
+    });
   });
 
   describe('removeWeek', () => {
@@ -79,6 +88,15 @@ describe('weeks store', () => {
 
       expect(store.weeks).toEqual([]);
       expect(store.error).toBe(null);
+    });
+
+    it('should handle error when removing a week fails', async () => {
+      const store = useWeekStore();
+      const weekId = '1';
+      mockApiClient.onDelete(`/weeks/${weekId}`).reply(500, { detail: 'Internal Error' });
+
+      await expect(store.removeWeek(weekId)).rejects.toThrow();
+      expect(store.error).toBe('Internal Error');
     });
   });
 
@@ -98,6 +116,15 @@ describe('weeks store', () => {
       expect(result).toEqual(updatedWeek);
       expect(store.weeks[0].name).toBe('New Name');
       expect(store.error).toBe(null);
+    });
+
+    it('should handle error when updating a week fails', async () => {
+      const store = useWeekStore();
+      const weekId = '1';
+      mockApiClient.onPatch(`/weeks/${weekId}`).reply(404, { detail: 'Not Found' });
+
+      await expect(store.updateWeek(weekId, 'New Name')).rejects.toThrow();
+      expect(store.error).toBe('Not Found');
     });
   });
 

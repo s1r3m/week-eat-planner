@@ -11,10 +11,10 @@
         {{ recipe.name }}
       </h1>
     </div>
-    <!-- <router-link
+    <router-link
       :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
       class="absolute inset-0 z-20"
-    ></router-link> -->
+    ></router-link>
     <div class="flex gap-3 z-30 pointer-events-auto absolute top-2 right-2">
       <Button
         variant="outline"
@@ -33,6 +33,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
 import type { RecipeMinimal } from '@/domain/recipe/models';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const props = defineProps<{ recipe: RecipeMinimal }>();
 const emit = defineEmits<{

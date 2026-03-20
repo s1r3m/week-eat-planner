@@ -60,7 +60,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuthStore, UserIdentity } from '@/features/auth';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
