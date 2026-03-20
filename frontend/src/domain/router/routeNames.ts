@@ -1,5 +1,5 @@
 export const ROUTE_NAMES = {
-  HOME: 'home',
+  HOME: 'home' as string,
   LOGIN: 'login',
   SIGNUP: 'signup',
   FORGOT_PASSWORD: 'forgot-password',
@@ -17,3 +17,5 @@ export const ROUTE_NAMES = {
 
   NOT_FOUND: 'not-found',
 } as const;
+
+export type RouteName = (typeof ROUTE_NAMES)[keyof typeof ROUTE_NAMES];
