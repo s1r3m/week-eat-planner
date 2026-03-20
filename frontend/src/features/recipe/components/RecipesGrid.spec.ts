@@ -1,7 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipesGrid from './RecipesGrid.vue';
 import type { RecipeMinimal } from '@/domain/recipe/models';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+
+const mockPush = vi.fn();
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
 
 describe('RecipesGrid', () => {
   const recipes: RecipeMinimal[] = [
@@ -42,11 +50,11 @@ describe('RecipesGrid', () => {
     expect(wrapper.find('.app-add-card').exists()).toBe(true);
   });
 
-  it('emits create when AppAddCard emits create', async () => {
+  it('navigates to create recipe page when AppAddCard emits create', async () => {
     const wrapper = mountComponent();
     const addCard = wrapper.find('.app-add-card');
     await addCard.trigger('create');
-    expect(wrapper.emitted('create')).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith({ name: ROUTE_NAMES.RECIPES_CREATE });
   });
 
   it('emits toggleFavorite when RecipePreview emits toggle-favorite', async () => {

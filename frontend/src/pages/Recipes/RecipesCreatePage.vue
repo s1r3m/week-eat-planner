@@ -45,6 +45,7 @@ import { useRecipeStore } from '@/features/recipe';
 import { useRouter } from 'vue-router';
 import { Card } from '@/components/ui/card';
 import { FieldGroup, FieldLabel } from '@/components/ui/field';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const name = ref('');
 const steps = ref('');
@@ -56,10 +57,7 @@ const { call: create, isLoading } = useAsyncCall(recipeStore.createRecipe);
 const router = useRouter();
 
 const onCancel = () => {
-  // name.value = ''; // Form reset here
-  // steps.value = '';
-  // ingredients.value = '';
-  router.push('/my-recipes');
+  router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 
 const onCreate = async () => {
@@ -68,6 +66,6 @@ const onCreate = async () => {
   name.value = ''; // Form reset here
   steps.value = '';
   ingredients.value = '';
-  router.push('/my-recipes');
+  router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 </script>

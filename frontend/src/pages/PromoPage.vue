@@ -11,7 +11,11 @@
           grocery lists.
         </p>
         <div class="flex flex-col items-center gap-3 md:flex-row md:items-center">
-          <Button size="lg" class="w-full md:w-auto" @click="$router.push('/signup')">
+          <Button
+            size="lg"
+            class="w-full md:w-auto"
+            @click="$router.push({ name: ROUTE_NAMES.SIGNUP })"
+          >
             Start planning
           </Button>
           <Button variant="secondary" size="lg" class="w-full md:w-auto" as-child>
@@ -126,11 +130,11 @@
             lists organized.
           </p>
           <div class="flex flex-col gap-2 sm:flex-row">
-            <Button class="w-full sm:w-auto" @click="$router.push('/signup')"
+            <Button class="w-full sm:w-auto" @click="$router.push({ name: ROUTE_NAMES.SIGNUP })"
               >Create account</Button
             >
             <Button variant="secondary" class="w-full sm:w-auto" as-child>
-              <router-link to="/login">Log in</router-link>
+              <router-link :to="{ name: ROUTE_NAMES.LOGIN }">Log in</router-link>
             </Button>
           </div>
         </div>
@@ -145,6 +149,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const photos = [
   { id: 1, src: new URL('@/assets/photo3.jpg', import.meta.url).href },
@@ -152,3 +157,9 @@ const photos = [
   { id: 3, src: new URL('@/assets/photo5.jpg', import.meta.url).href },
 ];
 </script>
+
+<style scoped>
+section {
+  scroll-margin-top: 96px;
+}
+</style>

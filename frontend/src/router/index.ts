@@ -1,166 +1,101 @@
-import { createRouter, createWebHistory, type RouteLocationNormalizedLoaded } from 'vue-router';
-import type { RouterScrollBehavior } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
 
 import PromoPage from '@/pages/PromoPage.vue';
 import { useAuthStore } from '@/features/auth';
-import { useWeekStore } from '@/features/week';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const routes = [
   {
     path: '/',
-    redirect: () => {
-      const authStore = useAuthStore();
-      return authStore.accessToken ? '/weeks' : '/promo';
-    },
-  },
-  {
-    path: '/',
     component: GuestLayout,
     children: [
-      { path: 'promo', name: 'promo', component: PromoPage },
+      { path: '', name: ROUTE_NAMES.HOME, component: PromoPage },
       {
         path: 'login',
-        name: 'login',
+        name: ROUTE_NAMES.LOGIN,
         component: () => import('@/pages/Auth/LoginPage.vue'),
       },
       {
         path: 'signup',
-        name: 'signup',
+        name: ROUTE_NAMES.SIGNUP,
         component: () => import('@/pages/Auth/SignupPage.vue'),
       },
       {
         path: 'forgot-password',
-        name: 'forgot-password',
+        name: ROUTE_NAMES.FORGOT_PASSWORD,
         component: () => import('@/pages/Auth/ForgotPasswordPage.vue'),
       },
     ],
   },
   {
-    path: '/',
+    path: '/app',
     component: AuthLayout,
     meta: { requiresAuth: true },
     children: [
       {
         path: 'weeks',
-        name: 'weeks',
+        name: ROUTE_NAMES.WEEKS,
         component: () => import('@/pages/Weeks/WeeksPage.vue'),
-        meta: { breadcrumbs: [{ label: 'My weeks' }] },
       },
       {
         path: 'weeks/:id',
-        name: 'week',
+        name: ROUTE_NAMES.WEEK,
         component: () => import('@/pages/Weeks/WeekSinglePage.vue'),
-        meta: {
-          breadcrumbs: (route: RouteLocationNormalizedLoaded) => {
-            const weekStore = useWeekStore();
-            const weekName = weekStore.getWeekNameById(route.params.id as string);
-            return [{ to: '/weeks', label: 'My weeks' }, { label: weekName }];
-          },
-        },
       },
       {
         path: 'profile',
-        name: 'profile',
+        name: ROUTE_NAMES.PROFILE,
         component: () => import('@/pages/Profile/ProfilePage.vue'),
-        meta: { breadcrumbs: [{ label: 'My profile' }] },
       },
       {
         path: 'recipes',
-        name: 'recipes',
+        name: ROUTE_NAMES.RECIPES,
         component: () => import('@/pages/Recipes/AllRecipesPage.vue'),
-        meta: { breadcrumbs: [{ label: 'All recipes' }] },
       },
       {
         path: 'recipes/create',
-        name: 'recipes-create',
+        name: ROUTE_NAMES.RECIPES_CREATE,
         component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
-        meta: {
-          breadcrumbs: [
-            { to: '/recipes', label: 'Recipes' },
-            { to: '/my-recipes', label: 'My recipes' },
-            { label: 'Create' },
-          ],
-        },
       },
       {
         path: 'recipes/myrecipes',
-        name: 'my-recipes',
+        name: ROUTE_NAMES.RECIPES_MY,
         component: () => import('@/pages/Recipes/MyRecipesPage.vue'),
-        meta: { breadcrumbs: [{ to: '/recipes', label: 'Recipes' }, { label: 'My recipes' }] },
       },
       {
         path: 'recipes/favorites',
-        name: 'favorites',
+        name: ROUTE_NAMES.RECIPES_FAVORITES,
         component: () => import('@/pages/Recipes/Favorites.vue'),
-        meta: { breadcrumbs: [{ to: '/recipes', label: 'Recipes' }, { label: 'Favorites' }] },
       },
     ],
   },
 
-  // otherwise redirect to home
-  { path: '/:pathMatch(.*)*', redirect: '/promo' },
+  // Not found
+  {
+    path: '/:pathMatch(.*)*',
+    name: ROUTE_NAMES.NOT_FOUND,
+    component: () => import('@/pages/NotFoundPage.vue'),
+  },
 ];
-
-type ScrollPositionResult = {
-  left: number;
-  top: number;
-  behavior?: 'auto' | 'smooth';
-};
-
-const scrollToHashWithOffset = (hash: string): Promise<ScrollPositionResult> => {
-  if (typeof window === 'undefined') {
-    return Promise.resolve({ left: 0, top: 0 });
-  }
-
-  return new Promise<ScrollPositionResult>((resolve) => {
-    requestAnimationFrame(() => {
-      const target = document.querySelector(hash);
-      if (!target) {
-        resolve({ left: 0, top: 0 });
-        return;
-      }
-
-      const header = document.querySelector('header.sticky');
-      const headerHeight = header?.getBoundingClientRect().height ?? 0;
-      const top = window.scrollY + target.getBoundingClientRect().top - headerHeight - 16;
-
-      resolve({
-        left: 0,
-        top: Math.max(top, 0),
-        behavior: 'smooth',
-      });
-    });
-  });
-};
-
-const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
-  if (savedPosition) {
-    return savedPosition;
-  }
-
-  if (to.hash) {
-    return scrollToHashWithOffset(to.hash);
-  }
-
-  return { left: 0, top: 0 };
-};
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior,
 });
 
 export default router;
 
 router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
-  await authStore.init();
+  if (!authStore.isInitialized) await authStore.init();
 
   if (!authStore.accessToken && to.meta.requiresAuth) {
-    return { name: 'login', query: { redirect: to.fullPath } };
+    return {
+      name: ROUTE_NAMES.LOGIN,
+      query: { redirect: to.fullPath },
+    };
   }
 });

@@ -7,6 +7,7 @@ import GuestAppHeader from './GuestAppHeader.vue';
 import GuestNavigation from './GuestNavigation.vue';
 import GuestMobileMenu from './GuestMobileMenu.vue';
 import GuestAuthActions from './GuestAuthActions.vue';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 describe('GuestHeader', () => {
   const mountComponent = () =>
@@ -65,9 +66,9 @@ describe('GuestHeader', () => {
       const navigation = wrapper.findComponent(GuestNavigation);
 
       expect(navigation.props('links')).toEqual([
-        { to: '#use-cases', label: 'Use Cases' },
-        { to: '#get-started', label: 'Get Started' },
-        { to: '/weeks', label: 'Start Planning' },
+        { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
+        { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
+        { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
       ]);
     });
 
@@ -77,9 +78,9 @@ describe('GuestHeader', () => {
       const mobileMenu = wrapper.findComponent(GuestMobileMenu);
 
       expect(mobileMenu.props('links')).toEqual([
-        { to: '#use-cases', label: 'Use Cases' },
-        { to: '#get-started', label: 'Get Started' },
-        { to: '/weeks', label: 'Start Planning' },
+        { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
+        { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
+        { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
       ]);
     });
   });

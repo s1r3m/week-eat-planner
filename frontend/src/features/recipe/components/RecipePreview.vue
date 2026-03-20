@@ -12,7 +12,7 @@
       </h1>
     </div>
     <!-- <router-link
-      :to="{ name: 'recipe', params: { id: recipe.id } }"
+      :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
       class="absolute inset-0 z-20"
     ></router-link> -->
     <div class="flex gap-3 z-30 pointer-events-auto absolute top-2 right-2">

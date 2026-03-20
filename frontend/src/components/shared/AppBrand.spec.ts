@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import AppBrand from './AppBrand.vue';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 describe('AppBrand', () => {
   const mountComponent = () =>
@@ -23,7 +24,7 @@ describe('AppBrand', () => {
     const wrapper = mountComponent();
     const routerLink = wrapper.findComponent(RouterLinkStub);
 
-    expect(routerLink.props().to).toEqual({ name: 'promo' });
+    expect(routerLink.props().to).toEqual({ name: ROUTE_NAMES.HOME });
   });
 
   it('renders the brand logo', () => {

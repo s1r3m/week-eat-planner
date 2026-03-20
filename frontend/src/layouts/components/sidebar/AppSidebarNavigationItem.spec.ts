@@ -33,7 +33,7 @@ vi.mock('@/components/ui/sidebar/SidebarMenuSubButton.vue', () => ({
 describe('AppSidebarNavigationItem', () => {
   const MockIcon = markRaw({ template: '<svg data-testid="mock-icon" />' });
   const mockItem: NavLink = {
-    to: '/test',
+    to: { name: 'test' },
     label: 'Test Item',
     icon: MockIcon as any,
   };
@@ -75,7 +75,7 @@ describe('AppSidebarNavigationItem', () => {
   });
 
   it('sets isActive to true when current route matches item.to', () => {
-    vi.mocked(useRoute).mockReturnValue({ path: '/test' } as any);
+    vi.mocked(useRoute).mockReturnValue({ name: 'test' } as any);
     vi.mocked(useSidebar).mockReturnValue({
       isMobile: { value: false },
       setOpenMobile: vi.fn(),
@@ -87,7 +87,7 @@ describe('AppSidebarNavigationItem', () => {
   });
 
   it('sets isActive to false when current route does not match item.to', () => {
-    vi.mocked(useRoute).mockReturnValue({ path: '/other' } as any);
+    vi.mocked(useRoute).mockReturnValue({ name: 'other' } as any);
     vi.mocked(useSidebar).mockReturnValue({
       isMobile: { value: false },
       setOpenMobile: vi.fn(),

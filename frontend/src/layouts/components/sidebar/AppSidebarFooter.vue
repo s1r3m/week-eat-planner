@@ -16,7 +16,7 @@
           :side-offset="4"
         >
           <DropdownMenuGroup>
-            <DropdownMenuItem v-for="link in menuItems" :key="link.to" as-child>
+            <DropdownMenuItem v-for="link in menuItems" :key="link.to.name" as-child>
               <router-link
                 :to="link.to"
                 class="flex w-full items-center gap-3"
@@ -30,7 +30,7 @@
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <router-link
-              to="/promo"
+              :to="{ name: ROUTE_NAMES.HOME }"
               class="flex w-full items-center gap-3 text-destructive"
               @click="logout"
             >
@@ -62,6 +62,7 @@ import {
 import { useAuthStore, UserIdentity } from '@/features/auth';
 import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const authStore = useAuthStore();
 const { isMobile, setOpenMobile } = useSidebar();
@@ -74,6 +75,11 @@ const handleNavigation = () => {
 };
 
 const menuItems: NavLink[] = [
-  { to: '/profile', label: 'Profile', icon: BadgeCheck, action: handleNavigation },
+  {
+    to: { name: ROUTE_NAMES.PROFILE },
+    label: 'Profile',
+    icon: BadgeCheck,
+    action: handleNavigation,
+  },
 ];
 </script>

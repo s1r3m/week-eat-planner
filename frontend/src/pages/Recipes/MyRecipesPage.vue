@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import RecipesGrid from '@/features/recipe/components/RecipesGrid.vue';
 import { useRecipeStore } from '@/features/recipe';
