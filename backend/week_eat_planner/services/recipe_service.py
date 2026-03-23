@@ -20,7 +20,7 @@ class RecipeService:
 
         Args:
             recipe: The data for the new recipe.
-            user: The user creating the recipe.
+            user: The user creating the recipe.s
 
         Returns:
             The created recipe.

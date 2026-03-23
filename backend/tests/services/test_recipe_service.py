@@ -3,9 +3,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
+from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeUpdate
+from week_eat_planner.api.schemas.recipe import Ingredient
+from week_eat_planner.constants import Unit
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.services.recipe_service import RecipeService
 
@@ -22,6 +24,7 @@ def recipe_create() -> RecipeCreate:
     return RecipeCreate(
         name=RECIPE_NAME,
         is_public=RECIPE_IS_PUBLIC,
+        steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
     )
 
@@ -116,7 +119,7 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
     [
         pytest.param('new_name', None, None, id='name'),
         pytest.param(None, False, None, id='is_public'),
-        pytest.param(None, None, {'ingredient1': 2}, id='ingredients'),
+        pytest.param(None, None, [Ingredient(name='new', amount=1, unit=Unit.PIECES)], id='ingredients'),
         pytest.param('new_name', False, None, id='several'),
     ],
 )

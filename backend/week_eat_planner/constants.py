@@ -1,8 +1,3 @@
-"""Application-wide constants.
-
-This module defines enumerations for application URLs and token types.
-"""
-
 from enum import StrEnum
 
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
@@ -32,3 +27,10 @@ class TokenType(StrEnum):
     """Enumeration of token types."""
 
     BEARER = 'bearer'
+
+
+class Unit(StrEnum):
+    CANS = 'cans'
+    GRAM = 'g'
+    MILILITERS = 'ml'
+    PIECES = 'pcs'

@@ -9,6 +9,7 @@ from tests.constants import (
     RECIPE_INGREDIENTS,
     RECIPE_IS_PUBLIC,
     RECIPE_NAME,
+    RECIPE_STEPS,
     USERNAME,
     USER_ID,
     WEEK_1_ID,
@@ -46,7 +47,8 @@ def db_recipe(user_read: UserRead) -> Recipe:
         name=RECIPE_NAME,
         user_id=user_read.id,
         is_public=RECIPE_IS_PUBLIC,
-        ingredients=RECIPE_INGREDIENTS,
+        steps=[step.model_dump() for step in RECIPE_STEPS],
+        ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
     )
 
 

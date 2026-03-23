@@ -2,12 +2,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from tests.constants import RECIPE_INGREDIENTS, RECIPE_STEPS
 from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.api.schemas import RecipeRead, UserRead
 from week_eat_planner.helpers import generate_uuid7
 
 RECIPE_ID = generate_uuid7()
-RECIPE_INGREDIENTS = {'eggs': 2}
 RECIPE_NAME = 'recipe'
 
 
@@ -21,7 +21,12 @@ def mocked_recipe_service(mocker) -> AsyncMock:
 @pytest.fixture
 def recipe_read(user_read: UserRead) -> RecipeRead:
     return RecipeRead(
-        id=RECIPE_ID, user_id=user_read.id, name=RECIPE_NAME, is_public=False, ingredients=RECIPE_INGREDIENTS
+        id=RECIPE_ID,
+        user_id=user_read.id,
+        name=RECIPE_NAME,
+        is_public=False,
+        steps=RECIPE_STEPS,
+        ingredients=RECIPE_INGREDIENTS,
     )
 
 

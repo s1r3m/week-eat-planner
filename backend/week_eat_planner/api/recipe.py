@@ -78,7 +78,7 @@ async def get_recipes(
     return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
 
 
-@router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
+@router.put(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def update_recipe(
     new_data: RecipeUpdate,
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
