@@ -15,6 +15,21 @@
                 type="text"
                 placeholder="e.g. Pasta Carbonara"
               />
+              <FieldLabel for="recipeName"> Recipe photo </FieldLabel>
+              <Input
+                type="file"
+                accept="image/*"
+                class="file:-ml-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground file:cursor-pointer"
+                @change="onFileChange"
+              />
+              <div class="h-36 md:h-48 w-full bg-primary/20 rounded-xl overflow-hidden">
+                <img
+                  :src="img || defaultImg"
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </FieldContent>
           </FieldGroup>
 
@@ -142,6 +157,8 @@ import SelectValue from '@/components/ui/select/SelectValue.vue';
 import { UNITS, type CookingStep, type Ingredient } from '@/domain/recipe/models';
 
 const name = ref('');
+const cover = ref<File | null>(null);
+const img = ref('');
 const steps = ref<CookingStep[]>([{ action: '' }]);
 const ingredients = ref<Ingredient[]>([{ name: '', amount: '', unit: 'g' }]);
 
@@ -158,4 +175,14 @@ const onCreate = async () => {
   await create({ name: name.value, steps: steps.value, ingredients: ingredients.value });
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
+
+const onFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (!target.files?.length) return;
+
+  cover.value = target.files[0];
+  if (img.value) URL.revokeObjectURL(img.value);
+  img.value = URL.createObjectURL(cover.value);
+};
+const defaultImg = new URL('@/assets/recipe_bg.png', import.meta.url).href;
 </script>
