@@ -17,7 +17,7 @@ WEEK_2_NAME = 'second'
 
 RECIPE_NAME = 'Eggs'
 RECIPE_IS_PUBLIC = False
-RECIPE_STEPS = [CookingStep(action='Boil eggs for 10 minutes')]
+RECIPE_STEPS = [CookingStep(order=0, step='Boil eggs for 10 minutes')]
 RECIPE_INGREDIENTS = [Ingredient(name='eggs', amount=2, unit=Unit.PIECES)]
 
 REFRESH_TOKEN = '9Q_3Rclneasa6LFcA2TOxFp1hzBnkVIE8jsbCMdyvhGg5FlylOJa-9zuVa4jYXdFvKWChXf2qMx_lsYv54OcKg'

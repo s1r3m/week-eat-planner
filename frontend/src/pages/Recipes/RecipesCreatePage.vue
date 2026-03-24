@@ -95,20 +95,19 @@
             <FieldTitle class="text-lg"><h2>Cooking steps</h2> </FieldTitle>
             <FieldContent>
               <ol class="list-decimal">
-                <li v-for="(step, index) in steps" :key="index" class="mb-3 ml-6 -mr-3">
+                <li v-for="step in steps" :key="step.order" class="mb-3 ml-6 -mr-3">
                   <div class="flex">
-                    <Input id="recipeSteps" v-model="step.action" type="text" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      @click="steps.splice(index, 1)"
+                    <Input id="recipeSteps" v-model="step.step" type="text" />
+                    <Button type="button" variant="ghost" size="icon" @click="onRemove(step.order)"
                       ><X class="text-destructive"
                     /></Button>
                   </div>
                 </li>
               </ol>
-              <Button variant="outline" type="button" @click="steps.push({ action: '' })"
+              <Button
+                variant="outline"
+                type="button"
+                @click="steps.push({ order: steps.length, step: '' })"
                 >Add a step</Button
               >
             </FieldContent>
@@ -159,7 +158,7 @@ import { UNITS, type CookingStep, type Ingredient } from '@/domain/recipe/models
 const name = ref('');
 const cover = ref<File | null>(null);
 const img = ref('');
-const steps = ref<CookingStep[]>([{ action: '' }]);
+const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);
 const ingredients = ref<Ingredient[]>([{ name: '', amount: '', unit: 'g' }]);
 
 const recipeStore = useRecipeStore();
@@ -174,6 +173,11 @@ const onCancel = () => {
 const onCreate = async () => {
   await create({ name: name.value, steps: steps.value, ingredients: ingredients.value });
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
+};
+
+const onRemove = (index: number) => {
+  steps.value.splice(index, 1);
+  steps.value.forEach((step, idx) => (step.order = idx));
 };
 
 const onFileChange = (e: Event) => {

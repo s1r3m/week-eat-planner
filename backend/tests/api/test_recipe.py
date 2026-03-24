@@ -74,11 +74,11 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
     update_data = RecipeUpdate(
         name='new_name',
         is_public=False,
-        steps=[CookingStep(action='new')],
+        steps=[CookingStep(order=0, step='new')],
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await auth_client_for_created_user.patch(
+    response = await auth_client_for_created_user.put(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
@@ -99,11 +99,11 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
     update_data = RecipeUpdate(
         name='new_name',
         is_public=False,
-        steps=[CookingStep(action='new')],
+        steps=[CookingStep(order=0, step='new')],
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await client.patch(
+    response = await client.put(
         f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
@@ -116,11 +116,11 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
     update_data = RecipeUpdate(
         name='new_name',
         is_public=False,
-        steps=[CookingStep(action='new')],
+        steps=[CookingStep(order=0, step='new')],
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await auth_client_for_created_user.patch(
+    response = await auth_client_for_created_user.put(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}',
         json=update_data.model_dump(mode='json'),
     )

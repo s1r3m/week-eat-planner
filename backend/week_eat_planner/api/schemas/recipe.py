@@ -10,7 +10,8 @@ class OwnerId(BaseModel):
 
 
 class CookingStep(BaseModel):
-    action: str
+    order: int
+    step: str
 
 
 class Ingredient(BaseModel):

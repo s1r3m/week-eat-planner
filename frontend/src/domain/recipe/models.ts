@@ -11,7 +11,8 @@ export interface RecipeMinimal {
 }
 
 export interface CookingStep {
-  action: string;
+  order: number;
+  step: string;
 }
 
 export interface Ingredient {
