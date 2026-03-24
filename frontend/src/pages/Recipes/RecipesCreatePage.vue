@@ -24,12 +24,17 @@
             <FieldTitle class="text-lg"><h2>Ingredients</h2> </FieldTitle>
             <FieldContent>
               <ol class="list-decimal">
-                <li v-for="(step, index) in ingredients" :key="index" class="mb-3 ml-6 -mr-3">
+                <li v-for="(ingredient, index) in ingredients" :key="index" class="mb-3 ml-6 -mr-3">
                   <div class="flex">
-                    <Input id="ingredient-name" v-model="step.name" class="flex-5" type="text" />
+                    <Input
+                      id="ingredient-name"
+                      v-model="ingredient.name"
+                      class="flex-5"
+                      type="text"
+                    />
                     <Input
                       id="ingredient-amount"
-                      v-model="step.amount"
+                      v-model="ingredient.amount"
                       class="flex-1"
                       type="text"
                     />
@@ -39,7 +44,12 @@
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
+                          <SelectItem
+                            v-for="unit in UNITS"
+                            :key="unit"
+                            v-model="ingredient.unit"
+                            :value="unit"
+                          >
                             {{ unit }}
                           </SelectItem>
                         </SelectGroup>

@@ -10,7 +10,7 @@
           Build a week of meals, keep your budget on track, and reduce waste with auto-generated
           grocery lists.
         </p>
-        <div class="flex flex-col items-center gap-3 md:flex-row md:items-center">
+        <div class="flex flex-col items-center gap-3 md:flex-row">
           <Button
             size="lg"
             class="w-full md:w-auto"

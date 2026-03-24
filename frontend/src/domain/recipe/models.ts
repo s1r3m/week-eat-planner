@@ -1,3 +1,6 @@
+export const UNITS = ['g', 'ml', 'pcs', 'cans'] as const;
+type Unit = (typeof UNITS)[number];
+
 export interface RecipeMinimal {
   id: string;
   name: string;
@@ -7,14 +10,6 @@ export interface RecipeMinimal {
   cover_url?: string;
 }
 
-export interface RecipeFull extends RecipeMinimal {
-  steps: CookingStep[];
-  ingredients: Ingredient[];
-}
-
-export const UNITS = ['g', 'ml', 'pcs', 'cans'] as const;
-type Unit = (typeof UNITS)[number];
-
 export interface CookingStep {
   action: string;
 }
@@ -23,6 +18,11 @@ export interface Ingredient {
   name: string;
   amount: string;
   unit: Unit;
+}
+
+export interface RecipeFull extends RecipeMinimal {
+  steps: CookingStep[];
+  ingredients: Ingredient[];
 }
 
 export interface RecipePayload {
