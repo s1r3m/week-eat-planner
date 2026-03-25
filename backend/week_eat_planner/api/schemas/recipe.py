@@ -9,6 +9,10 @@ class OwnerId(BaseModel):
     user_id: UUID
 
 
+class RecipeId(BaseModel):
+    id: UUID
+
+
 class CookingStep(BaseModel):
     order: int
     step: str
@@ -41,18 +45,18 @@ class RecipeUpdate(RecipeBase):
     pass
 
 
-class RecipeRead(RecipeBase, OwnerId):
+class RecipeRead(RecipeBase, RecipeId, OwnerId):
     """Schema for reading a recipe, including the database ID and user ID."""
 
-    id: UUID
+    author: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeReadMinimal(BaseModel):
+class RecipeReadMinimal(RecipeId):
     """A minimal schema for recipe previews, showing only the ID and name."""
 
-    id: UUID
     name: str
+    author: str
 
     model_config = ConfigDict(from_attributes=True)

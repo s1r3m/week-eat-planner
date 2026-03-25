@@ -39,7 +39,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -54,5 +53,5 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const ingredients = ref<Ingredient[]>([{ name: '', amount: 0, unit: 'g' }]);
+const ingredients = defineModel<Ingredient[]>('ingredients', { required: true });
 </script>

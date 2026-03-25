@@ -22,6 +22,7 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
     assert body.pop('id')
     expected = create_data.model_dump(mode='json')
     expected['user_id'] = str(created_user.id)
+    expected['author'] = created_user.username
     assert body == expected
 
 
@@ -90,6 +91,7 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
         {
             'id': str(created_recipe.id),
             'user_id': str(created_recipe.user_id),
+            'author': created_recipe.author,
         }
     )
     assert body == expected

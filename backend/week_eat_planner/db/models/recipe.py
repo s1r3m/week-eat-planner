@@ -33,8 +33,12 @@ class Recipe(Base):
     ingredients: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
-    user: Mapped['User'] = relationship(back_populates='recipes')
+    user: Mapped['User'] = relationship(back_populates='recipes', lazy='selectin')
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
 
     def __repr__(self) -> str:
         return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'
+
+    @property
+    def author(self) -> str:
+        return self.user.username or self.user.email

@@ -4,6 +4,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeRead, RecipeUpdate, UserRead
+from week_eat_planner.api.schemas.recipe import RecipeId
 from week_eat_planner.db.dao import RecipeDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
@@ -90,7 +91,7 @@ class RecipeService:
             The updated recipe.
         """
         logger.info(f'Updating recipe {recipe.id} with new data: {new_data}')
-        updated_recipe = await self._recipe_dao.update(recipe, new_data)
+        updated_recipe = await self._recipe_dao.update(RecipeId(id=recipe.id), new_data)
         logger.info(f'Successfully updated recipe {recipe.id}')
 
         return updated_recipe

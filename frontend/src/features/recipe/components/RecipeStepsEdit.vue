@@ -10,22 +10,19 @@
           </div>
         </li>
       </ol>
-      <Button variant="outline" @click="steps.push({ order: 0, step: '' })"
-        >Add an ingredient</Button
-      >
+      <Button variant="outline" @click="steps.push({ order: 0, step: '' })">Add a step</Button>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import type { CookingStep } from '@/domain/recipe/models';
 import { X } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);
+const steps = defineModel<CookingStep[]>('steps', { required: true });
 
 const onRemove = (index: number) => {
   steps.value.splice(index, 1);

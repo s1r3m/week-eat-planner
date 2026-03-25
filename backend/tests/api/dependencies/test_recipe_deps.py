@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from tests.constants import RECIPE_INGREDIENTS, RECIPE_STEPS
+from tests.constants import RECIPE_INGREDIENTS, RECIPE_STEPS, USERNAME
 from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
 from week_eat_planner.api.schemas import RecipeRead, UserRead
 from week_eat_planner.helpers import generate_uuid7
@@ -27,6 +27,7 @@ def recipe_read(user_read: UserRead) -> RecipeRead:
         is_public=False,
         steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
+        author=USERNAME,
     )
 
 

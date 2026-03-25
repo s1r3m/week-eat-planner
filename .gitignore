@@ -18,6 +18,7 @@
 .coverage
 
 sandbox.py
+wep_db.bck.sql
 **/htmlcov/
 
 .DS_Store

@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import RecipeCover from './RecipeCover.vue';
 
-const name = ref('');
+const name = defineModel<string>('name', { required: true });
 const cover = ref<File | null>(null);
 const img = ref('');
 
