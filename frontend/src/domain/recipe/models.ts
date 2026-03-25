@@ -17,7 +17,7 @@ export interface CookingStep {
 
 export interface Ingredient {
   name: string;
-  amount: string;
+  amount: number;
   unit: Unit;
 }
 

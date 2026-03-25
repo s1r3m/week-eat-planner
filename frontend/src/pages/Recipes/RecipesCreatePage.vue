@@ -53,18 +53,13 @@
                       class="flex-1"
                       type="text"
                     />
-                    <Select default-value="g">
+                    <Select v-model="ingredient.unit" default-value="g">
                       <SelectTrigger class="w-18">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem
-                            v-for="unit in UNITS"
-                            :key="unit"
-                            v-model="ingredient.unit"
-                            :value="unit"
-                          >
+                          <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
                             {{ unit }}
                           </SelectItem>
                         </SelectGroup>
@@ -83,8 +78,8 @@
               <Button
                 variant="outline"
                 type="button"
-                @click="ingredients.push({ name: '', amount: '', unit: 'g' })"
-                >Add a step</Button
+                @click="ingredients.push({ name: '', amount: 0, unit: 'g' })"
+                >Add an ingredient</Button
               >
             </FieldContent>
           </FieldGroup>
@@ -159,7 +154,7 @@ const name = ref('');
 const cover = ref<File | null>(null);
 const img = ref('');
 const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);
-const ingredients = ref<Ingredient[]>([{ name: '', amount: '', unit: 'g' }]);
+const ingredients = ref<Ingredient[]>([{ name: '', amount: 0, unit: 'g' }]);
 
 const recipeStore = useRecipeStore();
 const { call: create, isLoading } = useAsyncCall(recipeStore.createRecipe);
