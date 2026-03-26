@@ -9,7 +9,7 @@
             <CardDescription>
               Forgot your password?
               <router-link
-                to="/forgot-password"
+                :to="{ name: ROUTE_NAMES.FORGOT_PASSWORD }"
                 class="font-semibold text-brand-primary hover:underline"
               >
                 Reset it
@@ -17,7 +17,10 @@
             </CardDescription>
             <CardDescription>
               Don't have an account?
-              <router-link to="/signup" class="font-semibold text-brand-primary hover:underline">
+              <router-link
+                :to="{ name: ROUTE_NAMES.SIGNUP }"
+                class="font-semibold text-brand-primary hover:underline"
+              >
                 Register!
               </router-link>
             </CardDescription>
@@ -30,8 +33,8 @@
       <div class="space-y-6 mt-6 text-center text-base text-base-color">
         <p>You are already logged in.</p>
         <p class="text-sm text-muted">You can continue planning your meals!</p>
-        <Button>
-          <router-link to="/weeks">Go to planning</router-link>
+        <Button as-child>
+          <router-link :to="{ name: ROUTE_NAMES.WEEKS }">Go to planning</router-link>
         </Button>
       </div>
     </template>
@@ -47,7 +50,8 @@ import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -58,7 +62,7 @@ const { call: login, isLoading, error } = useAsyncCall(authStore.login);
 const handleLogin = async (email: string, password: string) => {
   await login(email, password);
   if (!error.value) {
-    await router.push((route.query.redirect as string) || '/weeks');
+    await router.push({ name: (route.query.redirect as string) || ROUTE_NAMES.WEEKS });
   }
 };
 </script>

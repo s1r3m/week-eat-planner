@@ -52,8 +52,8 @@ export const useAuthStore = defineStore('auth-store', () => {
     try {
       const { data } = await authClient.post<LoginInfo>('/auth/refresh');
       setAccessToken(data.access_token);
-      await _setUser();
       console.log('Initialized access_token from refresh');
+      await _setUser();
     } catch (err: unknown) {
       console.log('No valid refresh token found: ', getErrorMessage(err));
     } finally {

@@ -9,6 +9,7 @@ from tests.constants import (
     RECIPE_INGREDIENTS,
     RECIPE_IS_PUBLIC,
     RECIPE_NAME,
+    RECIPE_STEPS,
     USERNAME,
     USER_ID,
     WEEK_1_ID,
@@ -40,19 +41,21 @@ def db_user() -> User:
 
 
 @pytest.fixture
-def db_recipe(user_read: UserRead) -> Recipe:
+def db_recipe(db_user: User) -> Recipe:
     return Recipe(
         id=generate_uuid7(),
         name=RECIPE_NAME,
-        user_id=user_read.id,
+        user_id=db_user.id,
+        user=db_user,
         is_public=RECIPE_IS_PUBLIC,
-        ingredients=RECIPE_INGREDIENTS,
+        steps=[step.model_dump() for step in RECIPE_STEPS],
+        ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
     )
 
 
 @pytest.fixture
 def db_week(db_user: User) -> Week:
-    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=db_user.id, meal_slots=[])
+    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=db_user.id, meal_slots=[], user=db_user)
 
 
 @pytest.fixture

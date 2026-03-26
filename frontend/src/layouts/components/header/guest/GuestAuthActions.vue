@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/spinner/Spinner.vue';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
 
 const { showLogin, isLogged, showSignup, logoutHandler } = useGuestAuthActions();

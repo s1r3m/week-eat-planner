@@ -8,6 +8,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
   const error = ref<string | null>(null);
   const isLoading = ref<boolean>(false);
   const isFetchingWeeks = ref<boolean>(false);
+  const isWeeksInitialized = ref<boolean>(false);
 
   const fetchWeeks = async () => {
     isFetchingWeeks.value = true;
@@ -21,6 +22,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
       error.value = errorMessage;
     } finally {
       isFetchingWeeks.value = false;
+      isWeeksInitialized.value = true;
     }
   };
 
@@ -77,6 +79,7 @@ export const useWeekStore = defineStore('weeks-store', () => {
     error,
     isLoading,
     isFetchingWeeks,
+    isWeeksInitialized,
     addWeek,
     getWeek,
     getWeekNameById,

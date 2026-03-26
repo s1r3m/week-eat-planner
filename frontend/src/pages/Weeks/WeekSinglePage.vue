@@ -1,5 +1,5 @@
 <template>
-  <div v-if="week" class="space-y-6">
+  <div v-if="week" class="space-y-6 m-6">
     <PageTitle :header="week.name" description="Plan your meal to each day" />
     <MealSlotGrid :week-days="week.week_days" />
   </div>
@@ -12,7 +12,7 @@ import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 
 import { useRoute } from 'vue-router';
 import { useWeekStore } from '@/features/week';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 
 const weekStore = useWeekStore();
 const route = useRoute();

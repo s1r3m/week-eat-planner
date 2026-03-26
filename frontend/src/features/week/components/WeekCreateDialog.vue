@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import { useWeekStore } from '@/features/week/store/weeks';
 import WeekFormDialog from '@/features/week/components/WeekFormDialog.vue';
 

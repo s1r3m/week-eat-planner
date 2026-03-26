@@ -1,25 +1,29 @@
 from fastapi import status
 
-from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
+from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
+from week_eat_planner.constants import AppUrl, Unit
 from week_eat_planner.helpers import generate_uuid7
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
-    create_data = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
+    create_data = RecipeCreate(
+        name=RECIPE_NAME,
+        is_public=RECIPE_IS_PUBLIC,
+        steps=RECIPE_STEPS,
+        ingredients=RECIPE_INGREDIENTS,
+    )
 
     response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=create_data.model_dump(mode='json'))
 
     body = response.json()
     assert response.status_code == status.HTTP_201_CREATED
     assert body.pop('id')
-    assert body == {
-        'name': RECIPE_NAME,
-        'user_id': str(created_user.id),
-        'is_public': RECIPE_IS_PUBLIC,
-        'ingredients': RECIPE_INGREDIENTS,
-    }
+    expected = create_data.model_dump(mode='json')
+    expected['user_id'] = str(created_user.id)
+    expected['author'] = created_user.username
+    assert body == expected
 
 
 async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_created_user, created_recipe):
@@ -68,27 +72,40 @@ async def test_get_recipes__no_auth__error_in_response(client, created_recipe):
 
 
 async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_for_created_user, created_recipe):
-    update_data = RecipeUpdate(name='new_name', is_public=False, ingredients={'new': 2})
+    update_data = RecipeUpdate(
+        name='new_name',
+        is_public=False,
+        steps=[CookingStep(order=0, step='new')],
+        ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
+    )
 
-    response = await auth_client_for_created_user.patch(
+    response = await auth_client_for_created_user.put(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == {
-        'id': str(created_recipe.id),
-        'name': update_data.name,
-        'user_id': str(created_recipe.user_id),
-        'is_public': update_data.is_public,
-        'ingredients': update_data.ingredients,
-    }
+
+    expected = update_data.model_dump(mode='json')
+    expected.update(
+        {
+            'id': str(created_recipe.id),
+            'user_id': str(created_recipe.user_id),
+            'author': created_recipe.author,
+        }
+    )
+    assert body == expected
 
 
 async def test_update_recipe__no_auth__error_in_response(client, created_recipe):
-    update_data = RecipeUpdate(name='new_name', is_public=False, ingredients={'new': 2})
+    update_data = RecipeUpdate(
+        name='new_name',
+        is_public=False,
+        steps=[CookingStep(order=0, step='new')],
+        ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
+    )
 
-    response = await client.patch(
+    response = await client.put(
         f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
@@ -98,10 +115,16 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
 
 async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_for_created_user):
     bad_recipe_id = generate_uuid7()
+    update_data = RecipeUpdate(
+        name='new_name',
+        is_public=False,
+        steps=[CookingStep(order=0, step='new')],
+        ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
+    )
 
-    response = await auth_client_for_created_user.patch(
+    response = await auth_client_for_created_user.put(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}',
-        json=RecipeUpdate(name='anything', is_public=True, ingredients={'new': 2}).model_dump(mode='json'),
+        json=update_data.model_dump(mode='json'),
     )
 
     assert response.status_code == status.HTTP_409_CONFLICT

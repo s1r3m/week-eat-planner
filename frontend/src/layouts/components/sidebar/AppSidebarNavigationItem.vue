@@ -24,7 +24,7 @@ const { item, variant = 'default' } = defineProps<{
 }>();
 
 const route = useRoute();
-const isActiveLink = (path: string) => route.path === path;
+const isActiveLink = (to: { name: string }) => route.name === to.name;
 
 const { isMobile, setOpenMobile } = useSidebar();
 const handleNavigation = () => {

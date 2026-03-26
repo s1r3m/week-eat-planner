@@ -1,5 +1,7 @@
 import pytest
 
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
+from week_eat_planner.constants import Unit
 from week_eat_planner.helpers import generate_uuid7
 
 EMAIL = 'ya@ya.eu'
@@ -15,7 +17,8 @@ WEEK_2_NAME = 'second'
 
 RECIPE_NAME = 'Eggs'
 RECIPE_IS_PUBLIC = False
-RECIPE_INGREDIENTS = {'eggs': 2}
+RECIPE_STEPS = [CookingStep(order=0, step='Boil eggs for 10 minutes')]
+RECIPE_INGREDIENTS = [Ingredient(name='eggs', amount=2, unit=Unit.PIECES)]
 
 REFRESH_TOKEN = '9Q_3Rclneasa6LFcA2TOxFp1hzBnkVIE8jsbCMdyvhGg5FlylOJa-9zuVa4jYXdFvKWChXf2qMx_lsYv54OcKg'
 HASHED_REFRESH_TOKEN = '9626ebd9a1951b4e2ebb23c8e14f1a33ea54beb5daf0bb9309d79fe86c4677a3'

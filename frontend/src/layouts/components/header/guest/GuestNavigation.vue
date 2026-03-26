@@ -1,7 +1,7 @@
 <template>
   <NavigationMenu>
     <NavigationMenuList>
-      <NavigationMenuItem v-for="link in links" :key="link.to">
+      <NavigationMenuItem v-for="link in links" :key="link.to.name">
         <NavigationMenuLink as-child :class="navigationMenuTriggerStyle()">
           <router-link :to="link.to"> {{ link.label }} </router-link>
         </NavigationMenuLink>

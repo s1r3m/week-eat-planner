@@ -27,10 +27,11 @@ import GuestAuthActions from './GuestAuthActions.vue';
 import GuestMobileMenu from './GuestMobileMenu.vue';
 import AppHeader from '../AppHeader.vue';
 import type { NavLink } from '../types/navigation';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const navLinks: NavLink[] = [
-  { to: '#use-cases', label: 'Use Cases' },
-  { to: '#get-started', label: 'Get Started' },
-  { to: '/weeks', label: 'Start Planning' },
+  { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
+  { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
+  { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
 ];
 </script>

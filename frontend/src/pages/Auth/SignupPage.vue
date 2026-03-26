@@ -8,7 +8,10 @@
           <AuthFooter>
             <CardDescription>
               Already have an account?
-              <router-link to="/login" class="font-semibold text-brand-primary hover:underline">
+              <router-link
+                :to="{ name: ROUTE_NAMES.LOGIN }"
+                class="font-semibold text-brand-primary hover:underline"
+              >
                 Log in!
               </router-link>
             </CardDescription>
@@ -22,7 +25,7 @@
         <p>You are already logged in.</p>
         <p class="text-sm text-muted">You can continue planning your meals!</p>
         <Button>
-          <router-link to="/weeks">Go to planning</router-link>
+          <router-link :to="{ name: ROUTE_NAMES.WEEKS }">Go to planning</router-link>
         </Button>
       </div>
     </template>
@@ -38,7 +41,8 @@ import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -49,9 +53,7 @@ const handleSignup = async (email: string, password: string) => {
   await signup(email, password);
   if (!error.value) {
     // TODO: think about logging in immediately.
-    await router.push('/login');
+    await router.push({ name: ROUTE_NAMES.LOGIN });
   }
 };
 </script>
-
-<style scoped></style>

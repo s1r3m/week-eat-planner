@@ -92,6 +92,9 @@ stop:
 db_shell:
 	PGPASSWORD=wep uvx pgcli -h localhost -p 5432 -U wep -d wep
 
+db_dump:
+	PGPASSWORD=wep pg_dump -h localhost -p 5432 -U wep -d wep > wep_db.bck.sql
+
 ## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 
 ## @Checks Run linters.

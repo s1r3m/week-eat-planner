@@ -1,6 +1,6 @@
 <template>
   <div class="weeks-page-container">
-    <div class="space-y-9 mb-9">
+    <div class="space-y-6 m-6">
       <PageTitle header="My Weeks" description="Manage your weekly meal plans here" />
       <WeeksGrid
         :weeks="weekStore.weeks"

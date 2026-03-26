@@ -39,7 +39,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { useWeekStore } from '../store/weeks';
-import { useAsyncCall } from '@/features/auth/composables/useAsyncCall';
+import { useAsyncCall } from '@/composables/useAsyncCall';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
 const week = defineModel<UserWeekMinimal | null>();

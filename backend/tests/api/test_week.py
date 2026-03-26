@@ -156,6 +156,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
             'recipe': {
                 'id': str(created_recipe.id),
                 'name': created_recipe.name,
+                'author': created_recipe.author,
             },
         },
     ]

@@ -3,9 +3,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME
+from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeUpdate
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeId
+from week_eat_planner.constants import Unit
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.services.recipe_service import RecipeService
 
@@ -22,6 +24,7 @@ def recipe_create() -> RecipeCreate:
     return RecipeCreate(
         name=RECIPE_NAME,
         is_public=RECIPE_IS_PUBLIC,
+        steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
     )
 
@@ -112,22 +115,24 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
 
 
 @pytest.mark.parametrize(
-    ('name', 'is_public', 'ingredients'),
+    ('name', 'is_public', 'ingredients', 'steps'),
     [
-        pytest.param('new_name', None, None, id='name'),
-        pytest.param(None, False, None, id='is_public'),
-        pytest.param(None, None, {'ingredient1': 2}, id='ingredients'),
-        pytest.param('new_name', False, None, id='several'),
+        pytest.param('new_name', None, None, None, id='name'),
+        pytest.param(None, False, None, None, id='is_public'),
+        pytest.param(None, None, [Ingredient(name='new', amount=1, unit=Unit.PIECES)], None, id='ingredients'),
+        pytest.param(None, None, None, CookingStep(order=0, step='test'), id='steps'),
+        pytest.param('new_name', False, None, None, id='several'),
     ],
 )
 async def test_update_recipe__valid_new_data__recipe_updated(
-    mocked_session, mocked_recipe_dao, db_recipe, name, is_public, ingredients
+    mocked_session, mocked_recipe_dao, db_recipe, name, is_public, ingredients, steps
 ):
     recipe_out = RecipeRead.model_validate(db_recipe)
     updated_db_recipe = copy(db_recipe)
     updated_db_recipe.name = name or db_recipe.name
     updated_db_recipe.is_public = is_public or db_recipe.is_public
     updated_db_recipe.ingredients = ingredients or db_recipe.ingredients
+    updated_db_recipe.steps = steps or db_recipe.steps
     mocked_recipe_dao.update.return_value = updated_db_recipe
     update_params = RecipeUpdate(
         name=updated_db_recipe.name, is_public=updated_db_recipe.is_public, ingredients=updated_db_recipe.ingredients
@@ -144,4 +149,4 @@ async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_re
 
     await RecipeService(mocked_session).delete_recipe(recipe_out)
 
-    mocked_recipe_dao.delete.assert_awaited_once_with(recipe_out)
+    mocked_recipe_dao.delete.assert_awaited_once_with(RecipeId(id=recipe_out.id))

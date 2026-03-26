@@ -4,8 +4,15 @@
     <SidebarMenu>
       <Collapsible v-for="item in navLinks" :key="item.label" :default-open="true">
         <SidebarMenuItem>
-          <AppSidebarNavigationItem :item="item" />
+          <Suspense>
+            <AppSidebarNavigationItem :item="item" />
 
+            <template #fallback>
+              <div>
+                <p>Loading...</p>
+              </div>
+            </template>
+          </Suspense>
           <template v-if="item.items">
             <CollapsibleTrigger as-child>
               <SidebarMenuAction class="data-[state=open]:rotate-90">
@@ -15,7 +22,7 @@
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenuSub>
-                <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.to">
+                <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.to.name">
                   <AppSidebarNavigationItem :item="subItem" variant="child" />
                 </SidebarMenuSubItem>
               </SidebarMenuSub>
@@ -28,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type ComputedRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -43,26 +50,32 @@ import {
 import { Calendar, ChevronRight, ForkKnife } from 'lucide-vue-next';
 import { useWeekStore } from '@/features/week';
 import AppSidebarNavigationItem from './AppSidebarNavigationItem.vue';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import type { NavLink } from '../header/types/navigation';
 
 const weekStore = useWeekStore();
+// if (!weekStore.isWeeksInitialized) {
+//   await weekStore.fetchWeeks();
+// }
 const { weeks } = storeToRefs(weekStore);
-const navLinks = computed(() => [
+
+const navLinks: ComputedRef<NavLink[]> = computed(() => [
   {
     label: 'My weeks',
-    to: '/weeks',
+    to: { name: ROUTE_NAMES.WEEKS },
     icon: Calendar,
     items: weeks.value.map((week) => ({
-      to: `/weeks/${week.id}`,
+      to: { name: ROUTE_NAMES.WEEK, params: { id: week.id } },
       label: week.name,
     })),
   },
   {
     label: 'Recipes',
-    to: '/recipes',
+    to: { name: ROUTE_NAMES.RECIPES },
     icon: ForkKnife,
     items: [
-      { to: '/my-recipes', label: 'My recipes' },
-      { to: '/recipes/favorites', label: 'Favorites' },
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
+      { to: { name: ROUTE_NAMES.RECIPES_FAVORITES }, label: 'Favorites' },
     ],
   },
 ]);

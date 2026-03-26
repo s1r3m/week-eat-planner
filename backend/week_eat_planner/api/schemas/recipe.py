@@ -1,10 +1,27 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+from week_eat_planner.constants import Unit
 
 
 class OwnerId(BaseModel):
     user_id: UUID
+
+
+class RecipeId(BaseModel):
+    id: UUID
+
+
+class CookingStep(BaseModel):
+    order: int
+    step: str
+
+
+class Ingredient(BaseModel):
+    name: str
+    amount: int
+    unit: Unit
 
 
 class RecipeBase(BaseModel):
@@ -12,7 +29,8 @@ class RecipeBase(BaseModel):
 
     name: str
     is_public: bool = False
-    ingredients: dict[str, int]
+    steps: list[CookingStep] = Field(default_factory=list)
+    ingredients: list[Ingredient] = Field(default_factory=list)
 
 
 class RecipeCreate(RecipeBase):
@@ -22,27 +40,23 @@ class RecipeCreate(RecipeBase):
 
 
 class RecipeUpdate(RecipeBase):
-    """
-    Schema for updating an existing recipe. All fields are optional.
-    Note: In a real-world PATCH scenario, you might want all fields to be optional.
-    If so, inherit from a different base or manually define fields as Optional[...].
-    """
+    """Schema for updating an existing recipe."""
 
     pass
 
 
-class RecipeRead(RecipeBase, OwnerId):
+class RecipeRead(RecipeBase, RecipeId, OwnerId):
     """Schema for reading a recipe, including the database ID and user ID."""
 
-    id: UUID
+    author: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeReadMinimal(BaseModel):
+class RecipeReadMinimal(RecipeId):
     """A minimal schema for recipe previews, showing only the ID and name."""
 
-    id: UUID
     name: str
+    author: str
 
     model_config = ConfigDict(from_attributes=True)
