@@ -3,6 +3,7 @@
     <PageTitle :header="recipe.name" :description="description" />
     <div id="recipe-container" class="flex flex-col gap-6">
       <RecipeHero :recipe="recipe" />
+      <Separator />
       <RecipeSteps :steps="recipe.steps" />
     </div>
   </div>
@@ -17,6 +18,7 @@ import { useRecipeStore } from '@/features/recipe';
 import { useRoute } from 'vue-router';
 import RecipeHero from '@/features/recipe/components/RecipeHero.vue';
 import RecipeSteps from '@/features/recipe/components/RecipeSteps.vue';
+import { Separator } from '@/components/ui/separator';
 
 const recipeStore = useRecipeStore();
 const route = useRoute();
@@ -28,5 +30,3 @@ const { call: getRecipe } = useAsyncCall(
 const data = await getRecipe();
 const recipe = ref(data);
 </script>
-
-<style scoped></style>

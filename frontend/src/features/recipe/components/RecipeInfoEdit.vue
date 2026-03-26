@@ -17,7 +17,7 @@
       <RecipeCover
         :src="img"
         :alt="name"
-        class="p-0 h-36 md:h-48 w-full rounded-xl overflow-hidden"
+        class="p-0 h-48 md:h-108 w-full rounded-xl overflow-hidden"
       />
     </FieldContent>
   </FieldGroup>

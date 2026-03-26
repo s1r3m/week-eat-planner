@@ -1,10 +1,10 @@
 <template>
-  <Card class="flex-1 shadow-lg rounded-2xl p-0">
-    <CardContent class="px-0">
+  <Card class="flex-1 p-0">
+    <CardContent class="p-0">
       <img
         :src="src || defaultImg"
         :alt="alt"
-        class="object-cover w-full"
+        class="object-cover w-full bg-primary/20 rounded-xl"
         loading="lazy"
         decoding="async"
       />

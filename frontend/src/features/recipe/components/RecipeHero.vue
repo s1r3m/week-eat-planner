@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col-reverse md:flex-row md:items-start gap-6">
+  <div class="flex flex-col-reverse md:flex-row md:items-start gap-12">
     <RecipeIngredients :ingredients="recipe.ingredients" />
     <RecipeCover :src="recipe.cover_url" :alt="recipe.name" />
   </div>
