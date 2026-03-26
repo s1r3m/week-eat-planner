@@ -1,7 +1,7 @@
 <template>
-  <Card>
-    <CardTitle class="mx-6 font-semibold text-primary"> Cooking Steps: </CardTitle>
-    <CardContent class="flex flex-col">
+  <FieldGroup>
+    <FieldTitle class="font-semibold text-lg text-primary"> Cooking Steps: </FieldTitle>
+    <FieldContent class="flex flex-col">
       <ol class="list-decimal marker:text-primary marker:font-bold">
         <li v-for="(step, idx) in steps" :key="step.order" class="ml-4 mb-3">
           <div class="flex gap-1">
@@ -11,13 +11,13 @@
         </li>
       </ol>
       <Button variant="outline" @click="steps.push({ order: 0, step: '' })">Add a step</Button>
-    </CardContent>
-  </Card>
+    </FieldContent>
+  </FieldGroup>
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import type { CookingStep } from '@/domain/recipe/models';
+import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { X } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

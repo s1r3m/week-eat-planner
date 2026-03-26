@@ -1,8 +1,14 @@
 <template>
-  <div class="mx-6 flex flex-col gap-3">
-    <RecipeInfoEdit v-model:name="name" />
-    <RecipeIngredientsEdit v-model:ingredients="ingredients" />
-    <RecipeStepsEdit v-model:steps="steps" />
+  <div class="mx-auto max-w-7xl">
+    <Card class="flex flex-col gap-3">
+      <CardContent class="space-y-3">
+        <RecipeInfoEdit v-model:name="name" />
+        <FieldSeparator class="my-3" />
+        <RecipeIngredientsEdit v-model:ingredients="ingredients" />
+        <FieldSeparator class="my-3" />
+        <RecipeStepsEdit v-model:steps="steps" />
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -12,6 +18,8 @@ import type { Ingredient, CookingStep, RecipePayload } from '@/domain/recipe/mod
 import RecipeInfoEdit from './RecipeInfoEdit.vue';
 import RecipeIngredientsEdit from './RecipeIngredientsEdit.vue';
 import RecipeStepsEdit from './RecipeStepsEdit.vue';
+import { Card, CardContent } from '@/components/ui/card';
+import { FieldSeparator } from '@/components/ui/field';
 
 const name = ref('');
 const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);

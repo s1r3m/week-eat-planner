@@ -1,7 +1,7 @@
 <template>
-  <div class="profile-page-container">
+  <div class="profile-page-container space-y-6 m-6">
     <PageTitle header="User settings" description="Update your info" />
-    <Card v-if="authStore.user" class="mt-9 mx-6">
+    <Card v-if="authStore.user">
       <CardHeader class="text-lg font-semibold"> Profile Information </CardHeader>
       <CardContent>
         <FieldSet>

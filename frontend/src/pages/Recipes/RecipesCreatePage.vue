@@ -1,7 +1,6 @@
 <template>
-  <div id="createRecipePage" class="space-y-9 mb-9">
+  <div id="createRecipePage" class="space-y-6 m-6">
     <PageTitle header="Create a recipe" description="Fill the fields to create a recipe" />
-
     <RecipeCreateForm @create="create" />
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
-  <div v-if="recipe" id="recipe-container" class="space-y-6">
+  <div v-if="recipe" id="recipe-container" class="space-y-6 m-6">
     <PageTitle :header="recipe.name" :description="description" />
-    <div id="recipe-container" class="mx-6 flex flex-col gap-6">
+    <div id="recipe-container" class="flex flex-col gap-6">
       <RecipeHero :recipe="recipe" />
       <RecipeSteps :steps="recipe.steps" />
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <Card v-for="day in weekDays" :key="day.name" class="mx-6">
+  <Card v-for="day in weekDays" :key="day.name">
     <CardHeader>
       <CardTitle> {{ t(`daysOfWeek.${day.name}`) }}</CardTitle>
     </CardHeader>

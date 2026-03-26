@@ -1,5 +1,5 @@
 <template>
-  <div v-if="week" class="space-y-6">
+  <div v-if="week" class="space-y-6 m-6">
     <PageTitle :header="week.name" description="Plan your meal to each day" />
     <MealSlotGrid :week-days="week.week_days" />
   </div>

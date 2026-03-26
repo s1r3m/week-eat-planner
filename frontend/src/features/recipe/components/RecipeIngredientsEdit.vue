@@ -1,9 +1,9 @@
 <template>
-  <Card>
-    <CardTitle class="mx-6 font-semibold text-primary"> Ingredients: </CardTitle>
-    <CardContent class="flex flex-col">
+  <FieldGroup>
+    <FieldTitle class="font-semibold text-lg text-primary"> Ingredients: </FieldTitle>
+    <FieldContent class="flex flex-col">
       <ul class="list-disc marker:text-primary marker:text-xl">
-        <li v-for="(ingredient, idx) in ingredients" :key="ingredient.name" class="ml-4 mb-3">
+        <li v-for="(ingredient, idx) in ingredients" :key="idx" class="ml-4 mb-3">
           <div class="flex gap-1">
             <Input v-model="ingredient.name" class="flex-5" type="text" placeholder="Ingredient" />
             <Input
@@ -11,7 +11,7 @@
               class="flex-1"
               type="number"
               min="0"
-              placeholder="#"
+              placeholder="qty"
             />
             <Select v-model="ingredient.unit" default-value="g">
               <SelectTrigger class="w-18">
@@ -34,12 +34,12 @@
       <Button variant="outline" @click="ingredients.push({ name: '', amount: 0, unit: 'g' })"
         >Add an ingredient</Button
       >
-    </CardContent>
-  </Card>
+    </FieldContent>
+  </FieldGroup>
 </template>
 
 <script setup lang="ts">
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-vue-next';

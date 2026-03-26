@@ -1,9 +1,7 @@
 <template>
-  <div id="my-recipes-container">
-    <div class="space-y-9 mb-9">
-      <PageTitle header="My Recipes" description="Recipes you have created" />
-      <RecipesGrid :recipes="recipeStore.myRecipes" />
-    </div>
+  <div id="my-recipes-container" class="space-y-6 m-6">
+    <PageTitle header="My Recipes" description="Recipes you have created" />
+    <RecipesGrid :recipes="recipeStore.myRecipes" />
   </div>
 </template>
 

@@ -1,11 +1,11 @@
 <template>
-  <Card>
-    <CardTitle class="mx-6 font-semibold">Recipe Info</CardTitle>
-    <CardContent class="space-y-3">
-      <Label for="recipe-name"> Name </Label>
+  <FieldGroup>
+    <FieldTitle class="font-semibold text-lg text-primary">Recipe Info</FieldTitle>
+    <FieldContent class="space-y-3">
+      <FieldLabel for="recipe-name"> Name </FieldLabel>
       <Input id="recipe-name" v-model="name" type="text" placeholder="e.g Pasta Carbonara" />
 
-      <Label for="recipe-cover"> Recipe Cover </Label>
+      <FieldLabel for="recipe-cover"> Recipe Cover </FieldLabel>
       <Input
         id="recipe-cover"
         type="file"
@@ -19,16 +19,15 @@
         :alt="name"
         class="p-0 h-36 md:h-48 w-full rounded-xl overflow-hidden"
       />
-    </CardContent>
-  </Card>
+    </FieldContent>
+  </FieldGroup>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import RecipeCover from './RecipeCover.vue';
+import { FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 const name = defineModel<string>('name', { required: true });
 const cover = ref<File | null>(null);
