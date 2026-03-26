@@ -27,7 +27,7 @@
 import { ref } from 'vue';
 import { Input } from '@/components/ui/input';
 import RecipeCover from './RecipeCover.vue';
-import { FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { FieldContent, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 const name = defineModel<string>('name', { required: true });
 const cover = ref<File | null>(null);
