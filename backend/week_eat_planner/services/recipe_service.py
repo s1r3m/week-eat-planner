@@ -106,6 +106,6 @@ class RecipeService:
             The number of deleted recipes.
         """
         logger.info(f'Deleting recipe {recipe.id}')
-        count = await self._recipe_dao.delete(recipe)
+        count = await self._recipe_dao.delete(RecipeId(id=recipe.id))
         logger.info(f'Deleted {count} recipes.')
         return count

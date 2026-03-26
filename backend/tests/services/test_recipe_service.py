@@ -6,7 +6,7 @@ from fastapi import status
 from tests.constants import FOR_UPDATE_PARAMETRIZE, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeUpdate
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeId
 from week_eat_planner.constants import Unit
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 from week_eat_planner.services.recipe_service import RecipeService
@@ -149,4 +149,4 @@ async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_re
 
     await RecipeService(mocked_session).delete_recipe(recipe_out)
 
-    mocked_recipe_dao.delete.assert_awaited_once_with(recipe_out)
+    mocked_recipe_dao.delete.assert_awaited_once_with(RecipeId(id=recipe_out.id))
