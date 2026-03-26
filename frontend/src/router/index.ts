@@ -56,17 +56,12 @@ const routes = [
         component: () => import('@/pages/Recipes/RecipesPage.vue'),
       },
       {
-        path: 'recipes/:id',
-        name: ROUTE_NAMES.RECIPE,
-        component: () => import('@/pages/Recipes/RecipeSinglePage.vue'),
-      },
-      {
         path: 'recipes/create',
         name: ROUTE_NAMES.RECIPES_CREATE,
         component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
       },
       {
-        path: 'recipes/myrecipes',
+        path: 'recipes/my-recipes',
         name: ROUTE_NAMES.RECIPES_MY,
         component: () => import('@/pages/Recipes/MyRecipesPage.vue'),
       },
@@ -74,6 +69,11 @@ const routes = [
         path: 'recipes/favorites',
         name: ROUTE_NAMES.RECIPES_FAVORITES,
         component: () => import('@/pages/Recipes/RecipesFavorites.vue'),
+      },
+      {
+        path: 'recipes/:id',
+        name: ROUTE_NAMES.RECIPE,
+        component: () => import('@/pages/Recipes/RecipeSinglePage.vue'),
       },
     ],
   },
