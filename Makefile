@@ -81,8 +81,11 @@ migrations: $(VENV_ACTIVATE) $(ENV_FILE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
-start: stop migrations
+start: stop minio migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
+
+minio:
+	$(DOCKER_COMPOSE) up minio-init -d --wait minio
 
 ## @App Stop the environment.
 stop:

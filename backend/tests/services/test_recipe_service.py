@@ -127,6 +127,7 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
 async def test_update_recipe__valid_new_data__recipe_updated(
     mocked_session, mocked_recipe_dao, db_recipe, name, is_public, ingredients, steps
 ):
+    # TODO: rethink the method, so that it accepts only fields to update.
     recipe_out = RecipeRead.model_validate(db_recipe)
     updated_db_recipe = copy(db_recipe)
     updated_db_recipe.name = name or db_recipe.name

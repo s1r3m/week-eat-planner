@@ -7,7 +7,7 @@ export interface RecipeMinimal {
   author?: string;
   isFavorite?: boolean;
   isOfficial?: boolean;
-  cover_url?: string;
+  image_url?: string;
 }
 
 export interface CookingStep {
@@ -30,5 +30,6 @@ export interface RecipePayload {
   name: string;
   steps: CookingStep[];
   ingredients: Ingredient[];
+  is_public: boolean;
   cover_file?: string;
 }

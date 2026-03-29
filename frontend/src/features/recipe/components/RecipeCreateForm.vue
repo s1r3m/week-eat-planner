@@ -8,7 +8,9 @@
       <RecipeStepsEdit v-model:steps="steps" />
       <div class="flex gap-3 justify-end-safe">
         <Button variant="outline" @click="$emit('cancel')"> Cancel </Button>
-        <Button @click="$emit('create', { name, ingredients, steps })"> Create recipe </Button>
+        <Button @click="$emit('create', { name, ingredients, steps, is_public: true })">
+          Create recipe
+        </Button>
       </div>
     </div>
   </div>

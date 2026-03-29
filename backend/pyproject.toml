@@ -37,6 +37,8 @@ dependencies = [
     "bcrypt==3.2.0",
     "gevent==25.9.1",
     "uuid-utils==0.11.0",
+    "boto3==1.42.77",
+    "python-multipart==0.0.20",
 ]
 
 [project.urls] # Optional: Links for PyPI

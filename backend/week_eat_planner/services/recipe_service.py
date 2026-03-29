@@ -90,6 +90,7 @@ class RecipeService:
         Returns:
             The updated recipe.
         """
+        # TODO: rethink the method, so that it accepts only fields to update.
         logger.info(f'Updating recipe {recipe.id} with new data: {new_data}')
         updated_recipe = await self._recipe_dao.update(RecipeId(id=recipe.id), new_data)
         logger.info(f'Successfully updated recipe {recipe.id}')

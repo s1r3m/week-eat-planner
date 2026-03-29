@@ -32,6 +32,7 @@ class Recipe(Base):
     steps: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     ingredients: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    image_key: Mapped[str] = mapped_column(nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='recipes', lazy='selectin')
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')

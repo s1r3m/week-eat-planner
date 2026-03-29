@@ -1,13 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
+from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.clients.storage_client import StorageClient
+from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.recipe_service import RecipeService
 
@@ -19,6 +21,7 @@ async def create_recipe(
     recipe_data: RecipeCreate,
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    storage_client: Annotated[StorageClient, Depends(get_storage_client)],
 ) -> RecipeRead:
     """Creates a new recipe for the current user.
 
@@ -35,6 +38,35 @@ async def create_recipe(
     logger.info(f'Recipe "{recipe_data.name}" has been created!')
 
     return RecipeRead.model_validate(recipe)
+
+
+@router.put(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeRead)
+async def upload_image(
+    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    storage: Annotated[StorageClient, Depends(get_storage_client)],
+    image: UploadFile = File(...),  # noqa: B008
+) -> RecipeRead:
+    """The endpoint to upload an image to the recipe.
+
+    Args:
+        recipe: The recipe to update, injected by the `get_recipe_for_update` dependency.
+        session: The database session.
+        storage: The storage client, injected by dependency.
+        image: The image file to upload.
+
+    Returns:
+        The updated recipe containing the new image URL.
+    """
+    logger.info(f'Got PUT {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
+
+    image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
+
+    new_data = RecipeUpdate.model_validate(recipe, from_attributes=True)
+    new_data.image_key = image_key
+    updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+
+    return RecipeRead.model_validate(updated_recipe)
 
 
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)

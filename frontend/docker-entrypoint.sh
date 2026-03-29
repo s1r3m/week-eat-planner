@@ -1,6 +1,6 @@
 #!/bin/sh
 # Exit immediately if a command exits with a non-zero status.
-set -e
+set -ex
 
 # If node_modules exists and is up-to-date, yarn will do nothing and exit quickly.
 # If node_modules is missing or outdated, yarn will install/update dependencies.

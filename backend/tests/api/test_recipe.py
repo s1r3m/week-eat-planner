@@ -1,10 +1,13 @@
 from fastapi import status
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
+from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
-from week_eat_planner.constants import AppUrl, Unit
+from week_eat_planner.config import settings
+from week_eat_planner.constants import AppUrl, StorageBucket, Unit
 from week_eat_planner.helpers import generate_uuid7
+from week_eat_planner.main import app
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -23,6 +26,8 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
     expected = create_data.model_dump(mode='json')
     expected['user_id'] = str(created_user.id)
     expected['author'] = created_user.username
+    expected['image_url'] = None
+    expected.pop('image_key', None)
     assert body == expected
 
 
@@ -92,8 +97,10 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
             'id': str(created_recipe.id),
             'user_id': str(created_recipe.user_id),
             'author': created_recipe.author,
+            'image_url': None,
         }
     )
+    expected.pop('image_key', None)
     assert body == expected
 
 
@@ -158,7 +165,46 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
     created_recipe, auth_client_factory, created_user_2
 ):
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
+
     response = await user_client_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+
+
+async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_created_user, created_recipe):
+    pass
+    # async def override_get_storage_client():
+    #     class MockStorageClient:
+    #         async def upload_image(self, upload_file, bucket, obj_id):
+    #             return f'{bucket}/{obj_id}.jpg'
+
+    #     return MockStorageClient()
+
+    # app.dependency_overrides[get_storage_client] = override_get_storage_client
+
+    # try:
+    #     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
+    #     response = await auth_client_for_created_user.put(
+    #         AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id),
+    #         files=files,
+    #     )
+
+    #     body = response.json()
+    #     assert response.status_code == status.HTTP_200_OK
+    #     assert body['image_url'] == f'{settings.STORAGE_HOST}/{StorageBucket.RECIPES}/{created_recipe.id}.jpg'
+    # finally:
+    #     del app.dependency_overrides[get_storage_client]
+
+
+async def test_upload_image__recipe_not_exists__error_in_response(auth_client_for_created_user):
+    bad_recipe_id = generate_uuid7()
+    files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
+
+    response = await auth_client_for_created_user.put(
+        AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=bad_recipe_id),
+        files=files,
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}

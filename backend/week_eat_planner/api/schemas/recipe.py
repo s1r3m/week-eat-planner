@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from week_eat_planner.config import settings
 from week_eat_planner.constants import Unit
 
 
@@ -28,9 +29,10 @@ class RecipeBase(BaseModel):
     """Base schema for a recipe, containing common fields."""
 
     name: str
-    is_public: bool = False
+    is_public: bool
     steps: list[CookingStep] = Field(default_factory=list)
     ingredients: list[Ingredient] = Field(default_factory=list)
+    image_key: str | None = Field(default=None)
 
 
 class RecipeCreate(RecipeBase):
@@ -49,6 +51,14 @@ class RecipeRead(RecipeBase, RecipeId, OwnerId):
     """Schema for reading a recipe, including the database ID and user ID."""
 
     author: str
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def image_url(self) -> str | None:
+        if self.image_key:
+            return f'{settings.STORAGE_HOST}/{self.image_key}'
+        return None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,5 +68,14 @@ class RecipeReadMinimal(RecipeId):
 
     name: str
     author: str
+
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def image_url(self) -> str | None:
+        if self.image_key:
+            return f'{settings.STORAGE_HOST}/{self.image_key}'
+        return None
 
     model_config = ConfigDict(from_attributes=True)
