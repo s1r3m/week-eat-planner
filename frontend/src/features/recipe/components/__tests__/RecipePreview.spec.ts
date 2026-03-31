@@ -39,14 +39,14 @@ describe('RecipePreview', () => {
   });
 
   it('renders recipe image with correct src and alt', () => {
-    const recipeWithImg = { ...recipe, cover_url: 'http://example.com/img.jpg' };
+    const recipeWithImg = { ...recipe, image_url: 'http://example.com/img.jpg' };
     const wrapper = mountComponent({ recipe: recipeWithImg });
     const img = wrapper.find('img');
     expect(img.attributes('src')).toBe('http://example.com/img.jpg');
     expect(img.attributes('alt')).toBe('Pasta Carbonara');
   });
 
-  it('renders fallback image when cover_url is missing', () => {
+  it('renders fallback image when image_url is missing', () => {
     const wrapper = mountComponent();
     const img = wrapper.find('img');
     expect(img.attributes('src')).toContain('recipe_bg.png');

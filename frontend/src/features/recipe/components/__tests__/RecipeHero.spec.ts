@@ -9,7 +9,7 @@ describe('RecipeHero', () => {
     const recipe = {
       id: '1',
       name: 'Pasta',
-      cover_url: 'pasta.jpg',
+      image_url: 'pasta.jpg',
       ingredients: [{ name: 'Pasta', amount: 500, unit: 'g' }],
       steps: [],
     };
@@ -23,7 +23,7 @@ describe('RecipeHero', () => {
     expect(ingredientsComp.props('ingredients')).toEqual(recipe.ingredients);
 
     const coverComp = wrapper.getComponent(RecipeCover);
-    expect(coverComp.props('src')).toBe(recipe.cover_url);
+    expect(coverComp.props('src')).toBe(recipe.image_url);
     expect(coverComp.props('alt')).toBe(recipe.name);
   });
 });
