@@ -41,10 +41,14 @@ class RecipeCreate(RecipeBase):
     pass
 
 
-class RecipeUpdate(RecipeBase):
-    """Schema for updating an existing recipe."""
+class RecipeUpdate(BaseModel):
+    """Schema for updating an existing recipe"""
 
-    pass
+    name: str | None = None
+    is_public: bool | None = None
+    steps: list[CookingStep] | None = None
+    ingredients: list[Ingredient] | None = None
+    image_key: str | None = None
 
 
 class RecipeRead(RecipeBase, RecipeId, OwnerId):
@@ -54,7 +58,6 @@ class RecipeRead(RecipeBase, RecipeId, OwnerId):
     image_key: str | None = Field(default=None, exclude=True)
 
     @computed_field
-    @property
     def image_url(self) -> str | None:
         if self.image_key:
             return f'{settings.STORAGE_HOST}/{self.image_key}'
@@ -72,7 +75,6 @@ class RecipeReadMinimal(RecipeId):
     image_key: str | None = Field(default=None, exclude=True)
 
     @computed_field
-    @property
     def image_url(self) -> str | None:
         if self.image_key:
             return f'{settings.STORAGE_HOST}/{self.image_key}'

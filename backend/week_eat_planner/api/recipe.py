@@ -40,7 +40,7 @@ async def create_recipe(
     return RecipeRead.model_validate(recipe)
 
 
-@router.put(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeRead)
+@router.patch(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeRead)
 async def upload_image(
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
@@ -58,12 +58,11 @@ async def upload_image(
     Returns:
         The updated recipe containing the new image URL.
     """
-    logger.info(f'Got PUT {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
+    logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
     image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
 
-    new_data = RecipeUpdate.model_validate(recipe, from_attributes=True)
-    new_data.image_key = image_key
+    new_data = RecipeUpdate(image_key=image_key)
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
 
     return RecipeRead.model_validate(updated_recipe)
@@ -110,7 +109,7 @@ async def get_recipes(
     return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
 
 
-@router.put(AppUrl.RECIPES_TPL, response_model=RecipeRead)
+@router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def update_recipe(
     new_data: RecipeUpdate,
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],

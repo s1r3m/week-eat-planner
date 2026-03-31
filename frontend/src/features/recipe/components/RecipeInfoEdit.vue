@@ -24,21 +24,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { Input } from '@/components/ui/input';
 import RecipeCover from './RecipeCover.vue';
 import { FieldContent, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 const name = defineModel<string>('name', { required: true });
-const cover = ref<File | null>(null);
+const cover = defineModel<File | null>('cover', { default: null });
 const img = ref('');
+
+onUnmounted(() => {
+  if (img.value) URL.revokeObjectURL(img.value);
+});
 
 const onFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
-  if (!target.files?.length) return;
+  const file = target.files?.[0];
+  if (!file) return;
 
-  cover.value = target.files[0];
+  cover.value = file;
   if (img.value) URL.revokeObjectURL(img.value);
-  img.value = URL.createObjectURL(cover.value);
+  img.value = URL.createObjectURL(file);
 };
 </script>

@@ -115,33 +115,28 @@ async def test_get_recipes__user_with_recipes__recipes_returned(
 
 
 @pytest.mark.parametrize(
-    ('name', 'is_public', 'ingredients', 'steps'),
+    ('field_params'),
     [
-        pytest.param('new_name', None, None, None, id='name'),
-        pytest.param(None, False, None, None, id='is_public'),
-        pytest.param(None, None, [Ingredient(name='new', amount=1, unit=Unit.PIECES)], None, id='ingredients'),
-        pytest.param(None, None, None, CookingStep(order=0, step='test'), id='steps'),
-        pytest.param('new_name', False, None, None, id='several'),
+        pytest.param({'name': 'new_name'}, id='name'),
+        pytest.param({'is_public': False}, id='is_public'),
+        pytest.param({'ingredients': [Ingredient(name='new', amount=1, unit=Unit.PIECES)]}, id='ingredients'),
+        pytest.param({'steps': [CookingStep(order=0, step='test')]}, id='steps'),
+        pytest.param({'image_key': 'new_key'}, id='image_key'),
+        pytest.param({'name': 'new_name', 'is_public': False}, id='several'),
     ],
 )
 async def test_update_recipe__valid_new_data__recipe_updated(
-    mocked_session, mocked_recipe_dao, db_recipe, name, is_public, ingredients, steps
+    mocked_session, mocked_recipe_dao, db_recipe, field_params
 ):
-    # TODO: rethink the method, so that it accepts only fields to update.
     recipe_out = RecipeRead.model_validate(db_recipe)
-    updated_db_recipe = copy(db_recipe)
-    updated_db_recipe.name = name or db_recipe.name
-    updated_db_recipe.is_public = is_public or db_recipe.is_public
-    updated_db_recipe.ingredients = ingredients or db_recipe.ingredients
-    updated_db_recipe.steps = steps or db_recipe.steps
-    mocked_recipe_dao.update.return_value = updated_db_recipe
-    update_params = RecipeUpdate(
-        name=updated_db_recipe.name, is_public=updated_db_recipe.is_public, ingredients=updated_db_recipe.ingredients
-    )
+    for name, value in field_params.items():
+        setattr(db_recipe, name, value)
+    mocked_recipe_dao.update.return_value = db_recipe
+    update_params = RecipeUpdate(**field_params)
 
     updated_recipe = await RecipeService(mocked_session).update_recipe(recipe_out, update_params)
 
-    assert updated_recipe == updated_db_recipe
+    assert updated_recipe == db_recipe
 
 
 async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_recipe_dao, db_recipe):

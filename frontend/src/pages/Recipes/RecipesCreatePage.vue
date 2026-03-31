@@ -17,10 +17,12 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const recipeStore = useRecipeStore();
 const { call: create } = useAsyncCall(recipeStore.createRecipe);
+const { call: uploadImage } = useAsyncCall(recipeStore.uploadImage);
 
-const onCreate = async (payload: RecipePayload) => {
-  await create(payload);
-  router.push({ name: ROUTE_NAMES.RECIPES_MY });
+const onCreate = async (payload: RecipePayload, image: File | null) => {
+  const recipeId = (await create(payload)) as string;
+  if (image) await uploadImage(recipeId, image);
+  await router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 
 const onCancel = () => router.push({ name: ROUTE_NAMES.RECIPES_MY });

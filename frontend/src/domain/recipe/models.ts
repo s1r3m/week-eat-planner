@@ -31,5 +31,4 @@ export interface RecipePayload {
   steps: CookingStep[];
   ingredients: Ingredient[];
   is_public: boolean;
-  cover_file?: string;
 }

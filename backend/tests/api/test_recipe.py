@@ -1,13 +1,10 @@
 from fastapi import status
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
-from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
-from week_eat_planner.config import settings
-from week_eat_planner.constants import AppUrl, StorageBucket, Unit
+from week_eat_planner.constants import AppUrl, Unit
 from week_eat_planner.helpers import generate_uuid7
-from week_eat_planner.main import app
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -84,7 +81,7 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
@@ -112,7 +109,7 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await client.put(
+    response = await client.patch(
         f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
@@ -129,7 +126,7 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
         ingredients=[Ingredient(name='new', amount=1, unit=Unit.PIECES)],
     )
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         url=f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}',
         json=update_data.model_dump(mode='json'),
     )
@@ -201,7 +198,7 @@ async def test_upload_image__recipe_not_exists__error_in_response(auth_client_fo
     bad_recipe_id = generate_uuid7()
     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
 
-    response = await auth_client_for_created_user.put(
+    response = await auth_client_for_created_user.patch(
         AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=bad_recipe_id),
         files=files,
     )
