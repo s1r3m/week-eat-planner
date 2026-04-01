@@ -1,26 +1,25 @@
 <template>
-  <Card id="recipe-preview-container" variant="week" class="group relative overflow-hidden">
-    <img
-      :src="recipe.image_url || defaultImg"
-      :alt="recipe.name"
-      loading="lazy"
-      class="absolute bg-primary/10 inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-    />
-    <div class="flex absolute bottom-0 z-10 bg-primary/50 h-16 w-full items-center justify-center">
-      <h2 class="text-lg font-semibold text-white drop-shadow-md">
+  <Card id="recipe-preview-container" class="group p-0 gap-0 relative">
+    <div id="image-container" class="flex justify-center items-center aspect-3/2 overflow-hidden">
+      <img
+        :src="recipe.image_url || defaultImg"
+        :alt="recipe.name"
+        loading="lazy"
+        class="bg-primary/10 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+      />
+    </div>
+    <div class="flex flex-col bg-muted p-3">
+      <h2 class="text-lg font-semibold drop-shadow-md">
         {{ recipe.name }}
       </h2>
+      <p class="text-muted-foreground text-">{{ recipe.author }}</p>
     </div>
     <router-link
       :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
-      class="absolute inset-0 z-20"
+      class="absolute inset-0 z-10"
     ></router-link>
-    <div class="flex gap-3 z-30 pointer-events-auto absolute top-2 right-2">
-      <Button
-        variant="outline"
-        class="rounded-full bg-primary/30 backdrop-blur-lg"
-        @click.stop="toggleFavorite"
-      >
+    <div class="flex gap-3 absolute right-2 top-2 z-20 pointer-events-auto">
+      <Button variant="secondary" class="rounded-full" @click.stop="toggleFavorite">
         <Star v-bind="starProps" />
       </Button>
     </div>
@@ -47,7 +46,8 @@ const starProps = computed(() => {
   return isFavorite.value
     ? {
         fill: 'var(--primary)',
-        'stroke-width': '0',
+        stroke: 'currentColor',
+        'stroke-width': 1,
       }
     : {};
 });

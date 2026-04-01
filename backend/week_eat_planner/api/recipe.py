@@ -61,9 +61,13 @@ async def upload_image(
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
     image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
+    old_image_key = recipe.image_key
 
     new_data = RecipeUpdate(image_key=image_key)
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+
+    if old_image_key:
+        await storage.delete_file(old_image_key)
 
     return RecipeRead.model_validate(updated_recipe)
 
@@ -135,6 +139,7 @@ async def update_recipe(
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_recipe(
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
+    storage: Annotated[StorageClient, Depends(get_storage_client)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a recipe.
@@ -146,4 +151,7 @@ async def delete_recipe(
         session: The database session.
     """
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
-    await RecipeService(session).delete_recipe(recipe)
+    result = await RecipeService(session).delete_recipe(recipe)
+    if result and recipe.image_key:
+        await storage.delete_file(recipe.image_key)
+        logger.debug(f'Image {recipe.image_key} was deleted.')

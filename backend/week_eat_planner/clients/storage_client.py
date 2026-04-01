@@ -5,6 +5,7 @@ from uuid import UUID
 import boto3
 from botocore.client import BaseClient
 from fastapi import UploadFile
+from loguru import logger
 
 from week_eat_planner.config import settings
 from week_eat_planner.constants import StorageBucket
@@ -39,4 +40,11 @@ class StorageClient:
         return f'{bucket}/{file_key}'
 
     async def delete_file(self, file_key: str) -> None:
-        pass
+        _client = self._get_client()
+        bucket, key = file_key.split('/')
+        logger.debug(f'Deleting key={file_key}: {bucket=} {key=}')
+
+        def _delete() -> None:
+            _client.delete_object(Bucket=bucket, Key=key)
+
+        await asyncio.to_thread(_delete)

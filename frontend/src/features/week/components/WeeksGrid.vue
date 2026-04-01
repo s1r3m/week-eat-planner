@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-9 md:grid-cols-2 lg:grid-cols-3 lg:gap-12 xl:grid-cols-4 2xl:gap-24">
+  <div class="grid gap-9 lg:grid-cols-2 xl:grid-cols-3 xl:gap-12">
     <WeekDetails
       v-for="week in weeks"
       :key="week.id"
