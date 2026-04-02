@@ -1,4 +1,3 @@
-from copy import copy
 from unittest.mock import AsyncMock
 
 import pytest

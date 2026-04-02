@@ -141,7 +141,7 @@ no_implicit_optional = true
 [tool.coverage.run]
 source = ["week_eat_planner"]
 branch = true
-concurrency = ["gevent"]
+concurrency = ["gevent", "thread"]
 omit = [
     "tests/*",  # Exclude all test files and directories
     # Omit files that are primarily configuration or startup logic
