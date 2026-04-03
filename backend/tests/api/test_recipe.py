@@ -1,12 +1,36 @@
+from io import BytesIO
 from operator import itemgetter
 
-from fastapi import status
+import pytest
+import pytest_asyncio
+from fastapi import UploadFile, status
+from starlette.datastructures import Headers
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
-from week_eat_planner.constants import AppUrl, Unit
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
+from week_eat_planner.clients.storage_client import StorageClient
+from week_eat_planner.constants import AppUrl, StorageBucket, Unit
 from week_eat_planner.helpers import generate_uuid7
+
+
+@pytest_asyncio.fixture
+async def clean_storage(created_recipe):
+    yield
+
+    storage = StorageClient()
+    await storage.delete_file(f'recipes/{created_recipe.id}.jpg')
+
+
+@pytest_asyncio.fixture
+async def uploaded_image(created_recipe_with_image, clean_storage):
+    storage = StorageClient()
+    image = UploadFile(
+        file=BytesIO(b'fake image content'),
+        filename='test.jpg',
+        headers=Headers({'Content-Type': 'image/jpeg'}),
+    )
+    await storage.upload_image(image, StorageBucket.RECIPES, obj_id=created_recipe_with_image.id)
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -117,7 +141,6 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-
     expected = update_data.model_dump(mode='json')
     expected.update(
         {
@@ -188,6 +211,24 @@ async def test_delete_recipe__user_with_recipe__recipe_removed(auth_client_for_c
     assert not response.text
 
 
+@pytest.mark.usefixtures('uploaded_image')
+async def test_delete_recipe__recipe_with_image__image_removed(auth_client_for_created_user, created_recipe_with_image):
+    response = await auth_client_for_created_user.delete(
+        f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe_with_image.id)}'
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+    # TODO: check somehow that the image is removed from the storage
+
+
+async def test_delete_recipe__recipe_with_image__recipe_removed(auth_client_for_created_user, created_recipe):
+    response = await auth_client_for_created_user.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+
+
 async def test_delete_recipe__other_user_existing_recipe__error_in_response(
     created_recipe, auth_client_factory, created_user_2
 ):
@@ -199,8 +240,20 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
     assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
 
 
+@pytest.mark.usefixtures('clean_storage')
 async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_created_user, created_recipe):
-    pass
+    files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
+
+    response = await auth_client_for_created_user.patch(
+        f'{AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id)}',
+        files=files,
+    )
+    created_recipe.image_key = f'recipes/{created_recipe.id}.jpg'
+
+    body = response.json()
+    assert response.status_code == status.HTTP_200_OK
+    expected = RecipeRead.model_validate(created_recipe).model_dump(mode='json')
+    assert body == expected
 
 
 async def test_upload_image__recipe_not_exists__error_in_response(auth_client_for_created_user):

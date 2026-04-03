@@ -59,14 +59,9 @@ async def upload_image(
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
-    old_image_key = recipe.image_key
     image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
-
     new_data = RecipeUpdate(image_key=image_key)
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
-
-    if old_image_key:
-        await storage.delete_file(old_image_key)
 
     return RecipeRead.model_validate(updated_recipe)
 

@@ -26,7 +26,7 @@ from week_eat_planner.api.schemas import (
     WeekCreate,
     WeekRead,
 )
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
 from week_eat_planner.services.auth_service import AuthService
@@ -162,7 +162,7 @@ async def created_recipe_with_image(
 ) -> RecipeRead:
     recipe_create = RecipeCreate(name='another_name', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
     recipe = await created_recipe_factory(created_user, recipe_data=recipe_create)
-    update_data = RecipeUpdate(image_key='some_id.jpg')
+    update_data = RecipeUpdate(image_key=f'{StorageBucket.RECIPES}/{recipe.id}.jpg')
     updated_recipe = await RecipeService(db_session).update_recipe(recipe, update_data)
     return RecipeRead.model_validate(updated_recipe)
 
