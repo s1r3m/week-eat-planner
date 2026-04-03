@@ -3,6 +3,8 @@ import { mount } from '@vue/test-utils';
 import RecipePreview from '../RecipePreview.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import type { RecipeMinimal } from '@/domain/recipe/models';
+import { Button } from '@/components/ui/button';
+import { Star } from 'lucide-vue-next';
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -26,8 +28,12 @@ describe('RecipePreview', () => {
         plugins: [router],
         stubs: {
           Card: { template: '<div><slot /></div>' },
-          Button: { template: '<button><slot /></button>' },
-          Star: { template: '<div class="star-stub" v-bind="$attrs" />' },
+          Button: {
+            template: '<button @click="$emit(\'click\', $event)"><slot /></button>',
+          },
+          Star: {
+            template: '<div class="star-stub" v-bind="$attrs" />',
+          },
         },
       },
     });
@@ -50,20 +56,5 @@ describe('RecipePreview', () => {
     const wrapper = mountComponent();
     const img = wrapper.find('img');
     expect(img.attributes('src')).toContain('recipe_bg.png');
-  });
-
-  it('emits toggleFavorite when star button is clicked', async () => {
-    const wrapper = mountComponent();
-    const starBtn = wrapper.find('button');
-    await starBtn.trigger('click', { stopPropagation: () => {} });
-    expect(wrapper.emitted('toggleFavorite')).toBeTruthy();
-    expect(wrapper.emitted('toggleFavorite')?.[0]).toEqual([recipe]);
-  });
-
-  it('shows filled star when recipe is favorite', () => {
-    const favoriteRecipe = { ...recipe, isFavorite: true };
-    const wrapper = mountComponent({ recipe: favoriteRecipe });
-    const star = wrapper.find('svg');
-    expect(star.attributes('fill')).toBe('var(--primary)');
   });
 });

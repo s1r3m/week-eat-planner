@@ -41,11 +41,16 @@ describe('WeeksPage', () => {
         global: {
           plugins: [createPinia()],
           stubs: {
-            PageTitle: true,
+            PageTitle: {
+              template: '<div><slot name="controls" /><slot /></div>',
+            },
             WeeksGrid: true,
             WeekCreateDialog: true,
             WeekEditDialog: true,
             WeekDeleteDialog: true,
+            Button: {
+              template: '<button @click="$emit(\'click\')"><slot /></button>',
+            },
           },
         },
         ...options,
@@ -64,13 +69,14 @@ describe('WeeksPage', () => {
     expect(weeksGrid.props('weeks')).toEqual(mockWeeks);
   });
 
-  it('opens create dialog when WeeksGrid emits create', async () => {
+  it('opens create dialog when "Add a new week" button is clicked', async () => {
     const wrapper = await mountWithSuspense();
-    const weeksGrid = wrapper.findComponent(WeeksGrid);
-
-    await weeksGrid.vm.$emit('create');
-
     const createDialog = wrapper.findComponent(WeekCreateDialog);
+    expect(createDialog.props('modelValue')).toBe(false);
+
+    const addButton = wrapper.find('button');
+    await addButton.trigger('click');
+
     expect(createDialog.props('modelValue')).toBe(true);
   });
 
@@ -101,8 +107,8 @@ describe('WeeksPage', () => {
     const createDialog = wrapper.findComponent(WeekCreateDialog);
 
     // Open it first
-    const weeksGrid = wrapper.findComponent(WeeksGrid);
-    await weeksGrid.vm.$emit('create');
+    const addButton = wrapper.find('button');
+    await addButton.trigger('click');
     expect(createDialog.props('modelValue')).toBe(true);
 
     // Close it via v-model update
