@@ -33,10 +33,11 @@ async def test_get_db__db_inited__no_commit_call(mocked_session):
 
 @pytest.mark.usefixtures('inited_db')
 async def test_get_db__no_db_init__error_raised(mocked_session):
+    gen = db.get_db()
+    session = await gen.__anext__()
+    assert session is mocked_session
+
     with pytest.raises(ValueError):
-        gen = db.get_db()
-        session = await gen.__anext__()
-        assert session is mocked_session
         await gen.athrow(ValueError)
 
     mocked_session.rollback.assert_awaited_once()
@@ -74,8 +75,8 @@ async def test_get_db_commit__throws_exception__rollback_called(mocked_session):
 
 async def test_get_db_commit__no_db_init__error_raised(mocked_session):
     with pytest.raises(RuntimeError) as exc:
-        async for session in db.get_db_commit():
-            assert session is mocked_session
+        async for _ in db.get_db_commit():
+            pass
 
     assert str(exc.value) == 'Database not connected. Call init() first.'
 

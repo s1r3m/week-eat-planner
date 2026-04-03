@@ -102,14 +102,14 @@ db_dump:
 
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
-	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
+	ruff check $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
-	ruff check --fix --config $(BE_PATH)/pyproject.toml
-	ruff format --config $(BE_PATH)/pyproject.toml
+	ruff check $(BE_PATH) --fix --config $(BE_PATH)/pyproject.toml
+	ruff format $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 
 clean:
 	rm -f $(BE_PATH)/.coverage

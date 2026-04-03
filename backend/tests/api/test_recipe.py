@@ -35,7 +35,7 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == created_recipe.model_dump(mode='json') 
+    assert body == created_recipe.model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_with_image__recipe_in_response(
@@ -87,10 +87,14 @@ async def test_get_recipes__several_recipes__recipe_in_response(
 
     assert response.status_code == status.HTTP_200_OK
     actual_recipes = sorted(response.json(), key=itemgetter('id'))
-    assert actual_recipes == sorted([
-        RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json'),
-        RecipeReadMinimal.model_validate(created_recipe_with_image).model_dump(mode='json'),
-    ], key=itemgetter('id'))
+    assert actual_recipes == sorted(
+        [
+            RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json'),
+            RecipeReadMinimal.model_validate(created_recipe_with_image).model_dump(mode='json'),
+        ],
+        key=itemgetter('id'),
+    )
+
 
 async def test_get_recipes__no_auth__error_in_response(client):
     response = await client.get(f'{AppUrl.RECIPES}')
@@ -196,7 +200,7 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
 
 
 async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_created_user, created_recipe):
-    pass    
+    pass
 
 
 async def test_upload_image__recipe_not_exists__error_in_response(auth_client_for_created_user):

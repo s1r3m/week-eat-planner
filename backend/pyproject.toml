@@ -99,6 +99,11 @@ select = [
     'SIM', # flake8-simplify: simplify expressions & control flow
     'PL',  # pylint (subset): useful pylint-like checks
 ]
+ignore = [
+    'PT011',
+    'B017',
+    'PLR0913',
+]
 
 fixable = ['ALL']
 unfixable = []

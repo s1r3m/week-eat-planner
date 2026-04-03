@@ -3,7 +3,7 @@ from http import HTTPMethod, HTTPStatus
 from httpx import Client, HTTPStatusError, Response
 
 
-class UnexpectedStatusCode(HTTPStatusError):
+class UnexpectedStatusCodeError(HTTPStatusError):
     pass
 
 
@@ -24,7 +24,7 @@ class BaseApiClient:
         response = self.client.send(request)
         if response.status_code != expected_status_code:
             err_msg = f'Unexpected status code: {response.status_code}, expected: {expected_status_code}'
-            raise UnexpectedStatusCode(err_msg, request=request, response=response)
+            raise UnexpectedStatusCodeError(err_msg, request=request, response=response)
 
         # TODO: add json schema validation
 

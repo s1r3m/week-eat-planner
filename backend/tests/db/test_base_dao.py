@@ -11,7 +11,7 @@ ERROR_MESSAGE = 'Error in DB!'
 
 
 class NoModelDAO(BaseDAO):
-    model = None
+    model = None  # type: ignore
 
 
 class TestModel(Base):
@@ -54,7 +54,7 @@ async def test_base_dao_find_one_or_none_by_id__error__error_raised(mocked_sessi
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).find_one_or_none_by_id(obj_id=1)
+        await TestDAO(mocked_session).find_one_or_none_by_id(obj_id=generate_uuid7())
 
     assert str(exc.value) == ERROR_MESSAGE
 
