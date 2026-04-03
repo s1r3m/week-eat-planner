@@ -5,8 +5,8 @@
   "compilerOptions": {
     "composite": true,
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
+      "*": ["./"],
       "@/*": ["./src/*"]
     }
   },

@@ -21,7 +21,6 @@ async def create_recipe(
     recipe_data: RecipeCreate,
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-    storage_client: Annotated[StorageClient, Depends(get_storage_client)],
 ) -> RecipeRead:
     """Creates a new recipe for the current user.
 
@@ -60,8 +59,8 @@ async def upload_image(
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
-    image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
     old_image_key = recipe.image_key
+    image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
 
     new_data = RecipeUpdate(image_key=image_key)
     updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)

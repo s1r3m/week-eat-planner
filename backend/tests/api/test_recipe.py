@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from fastapi import status
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
@@ -33,7 +35,19 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == created_recipe.model_dump(mode='json')
+    assert body == created_recipe.model_dump(mode='json') 
+
+
+async def test_get_recipe__recipe_with_image__recipe_in_response(
+    auth_client_for_created_user, created_recipe_with_image
+):
+    response = await auth_client_for_created_user.get(
+        f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe_with_image.id)}'
+    )
+
+    body = response.json()
+    assert response.status_code == status.HTTP_200_OK
+    assert body == created_recipe_with_image.model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_created_user):
@@ -63,10 +77,22 @@ async def test_get_recipes__recipe_exists__recipe_in_response(auth_client_for_cr
     response = await auth_client_for_created_user.get(AppUrl.RECIPES)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe.model_dump()).model_dump(mode='json')]
+    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
 
 
-async def test_get_recipes__no_auth__error_in_response(client, created_recipe):
+async def test_get_recipes__several_recipes__recipe_in_response(
+    auth_client_for_created_user, created_recipe, created_recipe_with_image
+):
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES)
+
+    assert response.status_code == status.HTTP_200_OK
+    actual_recipes = sorted(response.json(), key=itemgetter('id'))
+    assert actual_recipes == sorted([
+        RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json'),
+        RecipeReadMinimal.model_validate(created_recipe_with_image).model_dump(mode='json'),
+    ], key=itemgetter('id'))
+
+async def test_get_recipes__no_auth__error_in_response(client):
     response = await client.get(f'{AppUrl.RECIPES}')
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -97,7 +123,7 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
             'image_url': None,
         }
     )
-    expected.pop('image_key', None)
+    expected.pop('image_key')
     assert body == expected
 
 
@@ -170,28 +196,7 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
 
 
 async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_created_user, created_recipe):
-    pass
-    # async def override_get_storage_client():
-    #     class MockStorageClient:
-    #         async def upload_image(self, upload_file, bucket, obj_id):
-    #             return f'{bucket}/{obj_id}.jpg'
-
-    #     return MockStorageClient()
-
-    # app.dependency_overrides[get_storage_client] = override_get_storage_client
-
-    # try:
-    #     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
-    #     response = await auth_client_for_created_user.put(
-    #         AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id),
-    #         files=files,
-    #     )
-
-    #     body = response.json()
-    #     assert response.status_code == status.HTTP_200_OK
-    #     assert body['image_url'] == f'{settings.STORAGE_HOST}/{StorageBucket.RECIPES}/{created_recipe.id}.jpg'
-    # finally:
-    #     del app.dependency_overrides[get_storage_client]
+    pass    
 
 
 async def test_upload_image__recipe_not_exists__error_in_response(auth_client_for_created_user):

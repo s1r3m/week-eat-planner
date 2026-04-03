@@ -17,7 +17,9 @@ from tests.constants import (
     WEEK_1_NAME,
     WEEK_2_NAME,
 )
-from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, UserCreate, UserRead, WeekCreate, WeekRead
+from week_eat_planner.api.schemas import (
+    RecipeCreate, RecipeRead, RecipeUpdate, UserCreate, UserRead, WeekCreate, WeekRead
+)
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
@@ -146,6 +148,16 @@ async def created_recipe(created_recipe_factory: Callable, created_user: UserRea
     recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
 
     return await created_recipe_factory(created_user, recipe_data=recipe_create)
+
+@pytest_asyncio.fixture
+async def created_recipe_with_image(
+    created_recipe_factory: Callable, created_user: UserRead, db_session: AsyncSession
+) -> RecipeRead:
+    recipe_create = RecipeCreate(name='another_name', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
+    recipe = await created_recipe_factory(created_user, recipe_data=recipe_create)
+    update_data = RecipeUpdate(image_key='some_id.jpg')
+    updated_recipe = await RecipeService(db_session).update_recipe(recipe, update_data)
+    return RecipeRead.model_validate(updated_recipe)
 
 
 @pytest_asyncio.fixture

@@ -9,7 +9,7 @@
       />
     </div>
     <div class="flex flex-col bg-muted p-3">
-      <h2 class="text-lg font-semibold drop-shadow-md">
+      <h2 class="text-lg">
         {{ recipe.name }}
       </h2>
       <p class="text-muted-foreground text-">{{ recipe.author }}</p>
