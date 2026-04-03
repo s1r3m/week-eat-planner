@@ -1,6 +1,6 @@
 <template>
-  <Card id="recipe-preview-container" class="group p-0 gap-0 relative">
-    <div id="image-container" class="flex justify-center items-center aspect-3/2 overflow-hidden">
+  <Card class="group p-0 gap-0 relative overflow-hidden">
+    <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="recipe.image_url || defaultImg"
         :alt="recipe.name"
@@ -35,9 +35,6 @@ import type { RecipeMinimal } from '@/domain/recipe/models';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const props = defineProps<{ recipe: RecipeMinimal }>();
-const emit = defineEmits<{
-  toggleFavorite: [recipe: RecipeMinimal];
-}>();
 
 const isFavorite = ref(props.recipe.isFavorite);
 
@@ -46,14 +43,12 @@ const starProps = computed(() => {
   return isFavorite.value
     ? {
         fill: 'var(--primary)',
-        stroke: 'currentColor',
-        'stroke-width': 1,
+        'stroke-width': 0,
       }
     : {};
 });
 
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value;
-  emit('toggleFavorite', props.recipe);
 };
 </script>

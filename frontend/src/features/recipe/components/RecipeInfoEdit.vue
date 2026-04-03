@@ -3,13 +3,20 @@
     <FieldTitle class="font-semibold text-lg text-primary">Recipe Info</FieldTitle>
     <FieldContent class="space-y-3">
       <FieldLabel for="recipe-name"> Name </FieldLabel>
-      <Input id="recipe-name" v-model="name" type="text" placeholder="e.g Pasta Carbonara" />
+      <Input
+        id="recipe-name"
+        v-model="name"
+        type="text"
+        placeholder="e.g Pasta Carbonara"
+        autocomplete="false"
+      />
 
       <FieldLabel for="recipe-cover"> Recipe Cover </FieldLabel>
       <Input
         id="recipe-cover"
         type="file"
         accept="image/*"
+        autocomplete="false"
         class="file:-ml-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground file:cursor-pointer"
         @change="onFileChange"
       />

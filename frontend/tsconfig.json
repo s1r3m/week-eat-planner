@@ -1,12 +1,12 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
-  "exclude": ["src/**/__tests__/*"],
+  "include": ["src/**/*", "src/**/*.vue", "src/**/__tests__/*"],
+  "exclude": [],
   "compilerOptions": {
     "composite": true,
     "moduleResolution": "bundler",
+    "types": ["vite/client", "vitest/globals"],
     "paths": {
-      "*": ["./"],
       "@/*": ["./src/*"]
     }
   },

@@ -1,13 +1,16 @@
 <template>
   <div class="weeks-page-container">
     <div class="space-y-6 m-6">
-      <PageTitle header="My Weeks" description="Manage your weekly meal plans here" />
-      <WeeksGrid
-        :weeks="weekStore.weeks"
-        @create="isCreateOpen = true"
-        @edit="openEdit"
-        @delete="openDelete"
-      />
+      <PageTitle header="My Weeks" description="Manage your weekly meal plans here">
+        <template #controls>
+          <Button size="lg" @click="isCreateOpen = true">
+            <Plus />
+            <span class="hidden md:inline">Add a new week</span>
+          </Button>
+        </template>
+      </PageTitle>
+
+      <WeeksGrid :weeks="weekStore.weeks" @edit="openEdit" @delete="openDelete" />
     </div>
 
     <WeekCreateDialog v-model="isCreateOpen" />
@@ -25,6 +28,8 @@ import {
   WeekEditDialog,
   WeekDeleteDialog,
 } from '@/features/week';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-vue-next';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
 import PageTitle from '@/components/shared/PageTitle.vue';

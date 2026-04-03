@@ -7,27 +7,18 @@
       @edit="$emit('edit', week)"
       @delete="$emit('delete', week)"
     />
-    <AppAddCard v-if="weeks.length < maxCardCount" @create="$emit('create')" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { WeekDetails } from '@/features/week';
-import AppAddCard from '@/components/shared/AppAddCard.vue';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
-withDefaults(
-  defineProps<{
-    weeks: UserWeekMinimal[];
-    maxCardCount?: number;
-  }>(),
-  {
-    maxCardCount: 8,
-  },
-);
+defineProps<{
+  weeks: UserWeekMinimal[];
+}>();
 
 defineEmits<{
-  create: [];
   edit: [week: UserWeekMinimal];
   delete: [week: UserWeekMinimal];
 }>();

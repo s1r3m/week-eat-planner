@@ -44,6 +44,10 @@ export const useRecipeStore = defineStore('recipe-store', () => {
     return data;
   };
 
+  const deleteRecipe = async (recipeId: string) => {
+    await apiClient.delete<null>(`/recipes/${recipeId}`);
+  };
+
   const getRecipeNameById = (recipeId: string) => {
     const recipe = myRecipes.value.find((r) => r.id === recipeId);
     return recipe?.name ?? 'error recipe name';
@@ -55,6 +59,7 @@ export const useRecipeStore = defineStore('recipe-store', () => {
     getRecipe,
     getRecipeNameById,
     createRecipe,
+    deleteRecipe,
     updateRecipe,
     uploadImage,
   };

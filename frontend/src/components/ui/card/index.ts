@@ -14,9 +14,9 @@ export const cardVariants = cva('', {
     variant: {
       default: 'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
       slot: 'flex flex-col text-center items-center justify-center border border-dashed border-primary rounded-xl hover:border-primary hover:bg-accent/30 transition-colors cursor-pointer min-h-20',
-      week: 'group relative min-h-54 overflow-hidden border-0 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02]',
+      week: 'group relative overflow-hidden border-0 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02]',
       empty:
-        'min-h-54 border-4 border-dashed rounded-xl border-primary rounded-xl flex items-center justify-center cursor-pointer hover:bg-accent/50 transition',
+        'border-4 border-dashed rounded-xl border-primary rounded-xl flex items-center justify-center cursor-pointer hover:bg-accent/50 transition',
     },
   },
   defaultVariants: {
