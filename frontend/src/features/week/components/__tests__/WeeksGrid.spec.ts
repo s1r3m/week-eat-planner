@@ -39,27 +39,6 @@ describe('WeeksGrid', () => {
     expect(weeks[1].props('week')).toEqual(mockWeeks[1]);
   });
 
-  it('bubbles up edit and delete events from WeekDetails', async () => {
-    const wrapper = mount(WeeksGrid, {
-      props: {
-        weeks: [mockWeeks[0]],
-      },
-      global: {
-        stubs,
-      },
-    });
-
-    const weekDetails = wrapper.findComponent(WeekDetails);
-
-    await weekDetails.find('button:nth-child(1)').trigger('click');
-    expect(wrapper.emitted('edit')).toBeTruthy();
-    expect(wrapper.emitted('edit')?.[0]).toEqual([mockWeeks[0]]);
-
-    await weekDetails.find('button:nth-child(2)').trigger('click');
-    expect(wrapper.emitted('delete')).toBeTruthy();
-    expect(wrapper.emitted('delete')?.[0]).toEqual([mockWeeks[0]]);
-  });
-
   it('renders correctly with exactly 8 weeks', () => {
     const eightWeeks = Array.from({ length: 8 }, (_, i) => ({
       id: String(i + 1),

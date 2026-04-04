@@ -5,6 +5,13 @@ import WeekDeleteDialog from '../WeekDeleteDialog.vue';
 import { useWeekStore } from '../../store/weeks';
 import { ref } from 'vue';
 
+const mockPush = vi.fn();
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 // Mock useAsyncCall
 vi.mock('@/features/auth/composables/useAsyncCall', () => ({
   useAsyncCall: vi.fn((task) => {

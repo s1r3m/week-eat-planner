@@ -3,12 +3,13 @@ import { mount } from '@vue/test-utils';
 import RecipePreview from '../RecipePreview.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import type { RecipeMinimal } from '@/domain/recipe/models';
-import { Button } from '@/components/ui/button';
-import { Star } from 'lucide-vue-next';
 
 const router = createRouter({
   history: createMemoryHistory(),
-  routes: [{ path: '/recipe/:id', name: 'recipe', component: { template: '<div></div>' } }],
+  routes: [
+    { path: '/', name: 'home', component: { template: '<div></div>' } },
+    { path: '/recipe/:id', name: 'recipe', component: { template: '<div></div>' } },
+  ],
 });
 
 describe('RecipePreview', () => {

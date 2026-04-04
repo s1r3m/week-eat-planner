@@ -25,10 +25,6 @@ import { Card } from '@/components/ui/card';
 import type { UserWeekMinimal } from '@/domain/week/models';
 
 defineProps<{ week: UserWeekMinimal }>();
-defineEmits<{
-  edit: [week: UserWeekMinimal];
-  delete: [week: UserWeekMinimal];
-}>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 </script>

@@ -41,6 +41,8 @@ import { Button } from '@/components/ui/button';
 import { useWeekStore } from '../store/weeks';
 import { useAsyncCall } from '@/composables/useAsyncCall';
 import type { UserWeekMinimal } from '@/domain/week/models';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useRouter } from 'vue-router';
 
 const week = defineModel<UserWeekMinimal | null>();
 const isOpen = computed({
@@ -55,9 +57,11 @@ const { call: remove, isLoading } = useAsyncCall(async (week: UserWeekMinimal) =
   await weekStore.removeWeek(week.id);
 });
 
+const router = useRouter();
 const onDelete = async () => {
   if (!week.value) return;
   await remove(week.value);
   week.value = null;
+  router.push({ name: ROUTE_NAMES.WEEKS });
 };
 </script>

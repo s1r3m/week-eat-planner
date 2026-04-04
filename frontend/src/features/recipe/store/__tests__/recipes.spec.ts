@@ -72,6 +72,51 @@ describe('recipes store', () => {
     });
   });
 
+  describe('deleteRecipe', () => {
+    it('should delete a recipe successfully', async () => {
+      const store = useRecipeStore();
+      mockApiClient.onDelete('/recipes/1').reply(204);
+
+      await store.deleteRecipe('1');
+      expect(mockApiClient.history.delete.length).toBe(1);
+    });
+  });
+
+  describe('uploadImage', () => {
+    it('should upload an image and update the recipe in the store if it exists', async () => {
+      const store = useRecipeStore();
+      const mockRecipe = { id: 'recipe-1', name: 'Pasta', author: 'me', isFavorite: false };
+      store.myRecipes = [mockRecipe];
+
+      const updatedRecipe = { ...mockRecipe, image_url: 'http://example.com/img.jpg' };
+      mockApiClient.onPatch('/recipes/recipe-1/image').reply(200, updatedRecipe);
+
+      const file = new File(['dummy content'], 'example.png', { type: 'image/png' });
+      await store.uploadImage('recipe-1', file);
+
+      expect(store.myRecipes[0]).toEqual(updatedRecipe);
+    });
+
+    it('should upload an image and do nothing to store if recipe does not exist', async () => {
+      const store = useRecipeStore();
+      store.myRecipes = [];
+
+      const updatedRecipe = {
+        id: 'recipe-1',
+        name: 'Pasta',
+        author: 'me',
+        isFavorite: false,
+        image_url: 'http://example.com/img.jpg',
+      };
+      mockApiClient.onPatch('/recipes/recipe-1/image').reply(200, updatedRecipe);
+
+      const file = new File(['dummy content'], 'example.png', { type: 'image/png' });
+      await store.uploadImage('recipe-1', file);
+
+      expect(store.myRecipes).toEqual([]);
+    });
+  });
+
   describe('getRecipeNameById', () => {
     it('should return the recipe name if it exists', () => {
       const store = useRecipeStore();

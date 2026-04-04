@@ -2,12 +2,18 @@
   <div v-if="week" class="space-y-6 m-6">
     <PageTitle :header="week.name" description="Plan your meal to each day">
       <template #controls>
-        <Button variant="destructiveOutline" size="lg" @click="onDelete">
+        <Button variant="outline" size="lg" @click="openEdit(week)"
+          ><Pen /> <span class="hidden md:inline"> Edit </span></Button
+        >
+        <Button variant="destructiveOutline" size="lg" @click="openDelete(week)">
           <Trash /><span class="hidden md:inline"> Delete </span>
         </Button>
       </template>
     </PageTitle>
     <MealSlotGrid :week-days="week.week_days" />
+
+    <WeekEditDialog v-model="editingWeek" />
+    <WeekDeleteDialog v-model="deletingWeek" />
   </div>
 </template>
 
@@ -16,25 +22,23 @@ import { ref } from 'vue';
 import PageTitle from '@/components/shared/PageTitle.vue';
 import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 
-import { useRoute, useRouter } from 'vue-router';
-import { useWeekStore } from '@/features/week';
+import { useRoute } from 'vue-router';
+import { useWeekStore, WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import { useAsyncCall } from '@/composables/useAsyncCall';
 import Button from '@/components/ui/button/Button.vue';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { Trash } from 'lucide-vue-next';
+import { Pen, Trash } from 'lucide-vue-next';
+import type { UserWeekMinimal } from '@/domain/week/models';
 
 const weekStore = useWeekStore();
 const route = useRoute();
-const router = useRouter();
 
 const { call: getWeek } = useAsyncCall(async (weekId: string) => weekStore.getWeek(weekId));
 const data = await getWeek(String(route.params.id));
 const week = ref(data);
 
-const { call: deleteWeek } = useAsyncCall((weekId: string) => weekStore.removeWeek(weekId));
-const onDelete = () => {
-  if (!week.value) return;
-  deleteWeek(week.value.id);
-  router.push({ name: ROUTE_NAMES.WEEKS });
-};
+const editingWeek = ref<UserWeekMinimal | null>(null);
+const deletingWeek = ref<UserWeekMinimal | null>(null);
+
+const openEdit = (week: UserWeekMinimal) => (editingWeek.value = week);
+const openDelete = (week: UserWeekMinimal) => (deletingWeek.value = week);
 </script>
