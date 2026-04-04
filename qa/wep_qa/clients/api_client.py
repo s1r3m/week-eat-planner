@@ -11,10 +11,11 @@ class UnexpectedStatusCodeError(HTTPStatusError):
 class BaseApiClient:
     """Base class for API clients."""
     def __init__(self, base_url: str) -> None:
-        """Initialize the API client.
-
-        Args:
-            base_url (str): The base URL for the API.
+        """
+        Create a BaseApiClient with an httpx Client configured for the provided API base URL.
+        
+        Parameters:
+            base_url (str): The base URL used to initialize the underlying HTTP client (e.g., "https://api.example.com").
         """
         self.client = Client(base_url=base_url)
         self._base_url = base_url
@@ -26,20 +27,23 @@ class BaseApiClient:
         expected_status_code: HTTPStatus,
         raise_for_status: bool = True,
     ) -> Response:
-        """Perform an HTTP request and validate the response status code.
-
-        Args:
-            method (str): The HTTP method (GET, POST, etc.).
-            url (str): The URL to request.
-            expected_status_code (HTTPStatus): The status code expected from the API.
-            raise_for_status (bool): Whether to call raise_for_status() on the response. Defaults to True.
-
+        """
+        Perform an HTTP request and validate that the response status code matches the expected value.
+        
+        If the response status code differs from expected_status_code, raises UnexpectedStatusCodeError containing the original request and response. If raise_for_status is True, calls response.raise_for_status() which may raise HTTPStatusError for error status codes.
+        
+        Parameters:
+            method (str): HTTP method to use (e.g., "GET", "POST").
+            url (str): Request URL or path relative to the client's base URL.
+            expected_status_code (HTTPStatus): Status code that the response must have.
+            raise_for_status (bool): If True, call response.raise_for_status() after status validation.
+        
         Returns:
             Response: The HTTP response object.
-
+        
         Raises:
-            UnexpectedStatusCodeError: If the response status code does not match expected_status_code.
-            HTTPStatusError: If raise_for_status is True and the response has an error status code.
+            UnexpectedStatusCodeError: When the response status code does not equal expected_status_code.
+            HTTPStatusError: When raise_for_status is True and the response has an HTTP error status.
         """
         request = self.client.build_request(method, url)
 
@@ -61,9 +65,10 @@ class WepApiClient(BaseApiClient):
     PING = '/api/ping'
 
     def get_ping(self) -> Response:
-        """Get the ping response from the API.
-
+        """
+        Request the API's ping endpoint.
+        
         Returns:
-            Response: The HTTP response object.
+            Response: The HTTP response from the ping endpoint; expected to have status code 200 (OK).
         """
         return self._call(HTTPMethod.GET, url=self.PING, expected_status_code=HTTPStatus.OK)

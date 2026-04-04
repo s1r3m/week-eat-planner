@@ -151,6 +151,16 @@ async def created_week_2(created_week_factory: Callable, created_user: UserRead)
 
 @pytest_asyncio.fixture
 async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> RecipeRead:
+    """
+    Create a recipe for the provided user using the module's standard test recipe data.
+    
+    Parameters:
+    	created_recipe_factory (Callable): Factory that creates a recipe for a given user; called with (user, recipe_data=RecipeCreate).
+    	created_user (UserRead): User to associate the created recipe with.
+    
+    Returns:
+    	RecipeRead: The created recipe.
+    """
     recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
 
     return await created_recipe_factory(created_user, recipe_data=recipe_create)
@@ -160,6 +170,16 @@ async def created_recipe(created_recipe_factory: Callable, created_user: UserRea
 async def created_recipe_with_image(
     created_recipe_factory: Callable, created_user: UserRead, db_session: AsyncSession
 ) -> RecipeRead:
+    """
+    Create a recipe for the given user, attach an image key based on the recipe's ID, and return the updated recipe.
+    
+    Parameters:
+        created_recipe_factory (Callable): Factory that creates a recipe for a user from a RecipeCreate object.
+        created_user (UserRead): User who will own the created recipe.
+    
+    Returns:
+        RecipeRead: The recipe after it has been updated with an image key.
+    """
     recipe_create = RecipeCreate(name='another_name', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
     recipe = await created_recipe_factory(created_user, recipe_data=recipe_create)
     update_data = RecipeUpdate(image_key=f'{StorageBucket.RECIPES}/{recipe.id}.jpg')
@@ -169,4 +189,13 @@ async def created_recipe_with_image(
 
 @pytest_asyncio.fixture
 async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
+    """
+    Create an HTTPX AsyncClient authenticated as the provided user.
+    
+    Parameters:
+        created_user (UserRead): The user to authenticate.
+    
+    Returns:
+        AsyncClient: An AsyncClient instance whose Authorization header contains a bearer token for the given user.
+    """
     return await auth_client_factory(created_user, PASSWORD)

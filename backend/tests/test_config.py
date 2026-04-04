@@ -23,6 +23,11 @@ TG_API_SITE = 'http://api.telegram.org'
 
 @pytest.fixture
 def mocked_settings(mocker):
+    """
+    Patch attributes on the imported `settings` module with predefined test constants for use in tests.
+    
+    This fixture overrides configuration values (including debug flag, database and host URLs, storage credentials/region, JWT parameters, token TTLs, admin IDs, bot token, and Telegram API base URL) so tests run with predictable settings.
+    """
     mocker.patch.object(settings, 'IS_DEBUG', IS_DEBUG)
     mocker.patch.object(settings, 'DB_URL', DB_URL)
     mocker.patch.object(settings, 'BE_HOST', BE_HOST)

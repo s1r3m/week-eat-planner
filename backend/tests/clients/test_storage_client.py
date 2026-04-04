@@ -15,6 +15,13 @@ EXPECTED_FILE_KEY = f'{BUCKET}/{OBJ_ID}{FILE_SUFFIX}'
 
 @pytest.fixture
 def mocked_s3_client(mocker):
+    """
+    Create and patch a mocked S3 client and return it for use in tests.
+    
+    Returns:
+        The mocked S3 client instance (mocker.Mock) that was patched into
+        week_eat_planner.clients.storage_client.client.
+    """
     s3_client = mocker.Mock()
     mocker.patch('week_eat_planner.clients.storage_client.client', return_value=s3_client)
     return s3_client
@@ -22,6 +29,15 @@ def mocked_s3_client(mocker):
 
 @pytest.fixture
 def mocked_upload_file():
+    """
+    Create a lightweight test upload file object that mimics an uploaded file.
+    
+    Returns:
+        TestUploadFile: An object with attributes:
+            - file: a BytesIO stream containing test file bytes.
+            - filename: a filename string composed from `FILE_SUFFIX` (e.g., 'test.jpg').
+            - content_type: the MIME type defined by `CONTENT_TYPE`.
+    """
     class TestUploadFile:
         file = BytesIO(b'test_file_content')
         filename = f'test{FILE_SUFFIX}'
@@ -32,6 +48,12 @@ def mocked_upload_file():
 
 @pytest.fixture
 def storage(mocked_s3_client) -> StorageClient:
+    """
+    Create and return a StorageClient instance configured to use the mocked S3 client.
+    
+    Returns:
+        StorageClient: A StorageClient instance wired to the patched/mocked S3 client provided by the test fixture.
+    """
     return StorageClient()
 
 

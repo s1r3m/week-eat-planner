@@ -129,17 +129,18 @@ class WeekService:
     async def _validate_slot_and_recipe_data(
         self, week: WeekRead, *slots_data: MealSlotAssign
     ) -> list[ValidatedAssignments]:
-        """Validate MealSlotAssigns and return valid assignments ready for update.
-
-        Args:
-            week: The week containing the meal slots.
-            slots_data: The slot assignments to validate.
-
+        """
+        Validate a batch of meal-slot assignment requests and produce validated assignments ready for persistence.
+        
+        Parameters:
+            week (WeekRead): The week that the provided meal slots must belong to.
+            slots_data (MealSlotAssign): One or more assignment requests mapping a meal slot ID to an optional recipe ID.
+        
         Returns:
-            A list of validated assignments ready to be applied.
-
+            list[ValidatedAssignments]: A list of validated assignments pairing meal-slot identifiers with the corresponding update data.
+        
         Raises:
-            MealSlotAssignException: If any of the assignments are invalid.
+            MealSlotAssignException: If any assignment is invalid (invalid UUIDs, missing records, ownership or week mismatches, or other validation failures).
         """
         slot_errors = []
         valid_assignments = []

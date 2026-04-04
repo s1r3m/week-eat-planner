@@ -5,9 +5,10 @@ from week_eat_planner.clients.storage_client import StorageClient
 
 @lru_cache
 def get_storage_client() -> StorageClient:
-    """Dependency that provides a singleton instance of the StorageClient.
-
+    """
+    Provide a singleton-like StorageClient instance cached across calls.
+    
     Returns:
-        A cached instance of the StorageClient.
+        StorageClient: The cached StorageClient instance.
     """
     return StorageClient()

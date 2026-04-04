@@ -16,6 +16,14 @@ from week_eat_planner.helpers import generate_uuid7
 
 @pytest_asyncio.fixture
 async def clean_storage(created_recipe):
+    """
+    Ensure a recipe image is removed from storage after the test finishes.
+    
+    This fixture yields control to the test and, after the test completes, deletes the storage object at `recipes/{created_recipe.id}.jpg` using StorageClient.
+    
+    Parameters:
+        created_recipe: The recipe instance whose associated image (if any) will be deleted from storage.
+    """
     yield
 
     storage = StorageClient()
@@ -24,6 +32,12 @@ async def clean_storage(created_recipe):
 
 @pytest_asyncio.fixture
 async def uploaded_image(created_recipe_with_image):
+    """
+    Uploads a fake JPEG image into the recipes storage for the provided recipe, yields control to run the test, and deletes the uploaded image after the test finishes.
+    
+    Parameters:
+    	created_recipe_with_image: Recipe model or fixture whose `id` is used as the object id for the stored image. The image is uploaded to StorageBucket.RECIPES at the key `recipes/{id}.jpg` and the same key is removed after the test completes.
+    """
     storage = StorageClient()
     image = UploadFile(
         file=BytesIO(b'fake image content'),
@@ -39,6 +53,11 @@ async def uploaded_image(created_recipe_with_image):
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
+    """
+    Creates a recipe using an authenticated client and asserts the response contains the created recipe data.
+    
+    Verifies the endpoint returns 201 Created, that an `id` is present, `user_id` equals the created user's id (as a string), `author` equals the created user's username, `image_url` is `None`, and `image_key` is not present in the response.
+    """
     create_data = RecipeCreate(
         name=RECIPE_NAME,
         is_public=RECIPE_IS_PUBLIC,
@@ -103,6 +122,13 @@ async def test_get_recipes__empty_list__empty_response(auth_client_for_created_u
 
 
 async def test_get_recipes__recipe_exists__recipe_in_response(auth_client_for_created_user, created_recipe):
+    """
+    Verify that fetching the recipes collection returns the minimal representation of a single existing recipe.
+    
+    Parameters:
+        auth_client_for_created_user: Authenticated test client bound to the created user.
+        created_recipe: Recipe fixture representing an existing recipe to be returned.
+    """
     response = await auth_client_for_created_user.get(AppUrl.RECIPES)
 
     assert response.status_code == status.HTTP_200_OK
@@ -133,6 +159,11 @@ async def test_get_recipes__no_auth__error_in_response(client):
 
 
 async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_for_created_user, created_recipe):
+    """
+    Verifies that patching a recipe with partial data updates the stored recipe and returns the updated representation.
+    
+    Sends a PATCH request with a RecipeUpdate payload and asserts the response status is 200 OK. The response body is expected to contain the submitted fields merged with the recipe's existing `id`, `user_id`, and `author`, have `image_url` set to None, and omit `image_key`.
+    """
     update_data = RecipeUpdate(
         name='new_name',
         is_public=False,
@@ -176,6 +207,11 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
 
 
 async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_for_created_user):
+    """
+    Verifies that attempting to update a non-existent recipe returns a 409 Conflict with the expected error message.
+    
+    Asserts the response status is 409 and the JSON body is {'detail': f'Recipe {bad_recipe_id} not found'}.
+    """
     bad_recipe_id = generate_uuid7()
     update_data = RecipeUpdate(
         name='new_name',
@@ -251,6 +287,11 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
 
 @pytest.mark.usefixtures('clean_storage')
 async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_created_user, created_recipe):
+    """
+    Uploads a valid JPEG for an owned recipe and verifies the response reflects the uploaded image.
+    
+    Sends a multipart PATCH to the recipe image endpoint with a JPEG file, expects HTTP 200, sets the recipe's `image_key` to `recipes/{recipe_id}.jpg`, and asserts the response body equals the `RecipeRead` representation of the updated recipe.
+    """
     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
 
     response = await auth_client_for_created_user.patch(
@@ -266,6 +307,11 @@ async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_creat
 
 
 async def test_upload_image__recipe_not_exists__error_in_response(auth_client_for_created_user):
+    """
+    Verifies that uploading an image for a nonexistent recipe returns a 409 Conflict error.
+    
+    Asserts the response status is 409 and the JSON body equals {'detail': f'Recipe {bad_recipe_id} not found'}.
+    """
     bad_recipe_id = generate_uuid7()
     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
 

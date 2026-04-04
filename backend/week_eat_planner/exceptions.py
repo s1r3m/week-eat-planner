@@ -95,16 +95,34 @@ class MealSlotForbidden(AccessForbiddenException):
 
 class TokenForbidden(AccessForbiddenException):
     def __init__(self, token: str) -> None:
+        """
+        Create an exception indicating the specified token is forbidden.
+        
+        Parameters:
+            token (str): Token value included in the exception `detail` as "Token {token} forbidden".
+        """
         super().__init__(detail=f'Token {token} forbidden')
 
 
 class ValidationException(HTTPException):
     def __init__(self, detail: str) -> None:
+        """
+        Initialize an exception representing a client-side validation error.
+        
+        Parameters:
+        	detail (str): Error message used as the HTTP response `detail` field; returned with HTTP 400 Bad Request.
+        """
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
 
 
 class RecipeForbidden(AccessForbiddenException):
     def __init__(self, recipe_id: UUID) -> None:
+        """
+        Create an exception indicating access to the specified recipe is forbidden.
+        
+        Parameters:
+            recipe_id (UUID): Identifier of the recipe that is not accessible.
+        """
         super().__init__(detail=f'Recipe {recipe_id} forbidden')
 
 

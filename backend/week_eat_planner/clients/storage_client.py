@@ -29,16 +29,17 @@ class StorageClient:
         )
 
     async def upload_image(self, upload_file: UploadFile, bucket: StorageBucket, obj_id: UUID) -> str:
-        """Uploads an image to the specified bucket.
-
-        Args:
-            upload_file: The file object to upload.
-            bucket: The storage bucket where the file should be uploaded.
-            obj_id: The ID of the object (e.g., recipe ID) the image belongs to.
-
+        """
+        Upload an image file to the given storage bucket and return its stored object path.
+        
+        Parameters:
+            upload_file (UploadFile): File to upload; its filename and content_type are used to build object metadata.
+            bucket (StorageBucket): Target storage bucket name.
+            obj_id (UUID): UUID used as the base name for the stored object key.
+        
         Returns:
-            The key to the uploaded file in the bucket.
-
+            str: The stored object path in the format "bucket/object_key".
+        
         Raises:
             ValueError: If the uploaded file has no filename.
         """
@@ -50,6 +51,11 @@ class StorageClient:
         _client = self._get_client()
 
         def _upload() -> None:
+            """
+            Upload the in-memory file stream to the S3 client using the computed bucket and key and set the object's Content-Type.
+            
+            This inner helper uses the surrounding scope's `_client`, `upload_file.file`, `bucket`, `file_key`, and `upload_file.content_type` to perform the upload.
+            """
             _client.upload_fileobj(
                 Fileobj=upload_file.file,
                 Bucket=bucket,
@@ -62,16 +68,20 @@ class StorageClient:
         return f'{bucket}/{file_key}'
 
     async def delete_file(self, file_key: str) -> None:
-        """Deletes a file from the storage bucket.
-
-        Args:
-            file_key: The key of the file to delete (expected format "bucket/key").
+        """
+        Delete the object identified by "bucket/key" from the configured storage backend.
+        
+        Parameters:
+            file_key (str): Object location in the form "bucket/key".
         """
         _client = self._get_client()
         bucket, key = file_key.split('/')
         logger.debug(f'Deleting key={file_key}: {bucket=} {key=}')
 
         def _delete() -> None:
+            """
+            Delete the object specified by the enclosing `bucket` and `key` from the S3-compatible storage.
+            """
             _client.delete_object(Bucket=bucket, Key=key)
 
         await asyncio.to_thread(_delete)

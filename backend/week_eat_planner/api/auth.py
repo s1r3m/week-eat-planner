@@ -99,17 +99,16 @@ async def refresh_tokens(
     response: Response,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Token:
-    """Generates a new access token using a refresh token.
-
-    This endpoint requires a valid refresh token to be present in an HTTP-only cookie.
-    If the refresh token is valid, a new access token is returned and a new
-    refresh token is set in the cookie.
-
+    """
+    Issue a new access token using the refresh token stored in the request's HTTP-only cookie.
+    
+    Reads the refresh token from the cookie named REFRESH_TOKEN_COOKIE_NAME, validates it via AuthService, and returns a Token containing a newly issued access token. If AuthService rotates the refresh token, the cookie is updated with the new refresh token and appropriate cookie security settings.
+    
     Returns:
-        A new access token.
-
+        Token: Contains `access_token` (the new access token) and `token_type` set to `TokenType.BEARER`.
+    
     Raises:
-        HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
+        RefreshTokenMissing: If no refresh token cookie is present in the request.
     """
     logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request.')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)

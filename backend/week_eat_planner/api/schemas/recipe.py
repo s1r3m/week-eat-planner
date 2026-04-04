@@ -57,6 +57,13 @@ class ImageMixin(BaseModel):
 
     @computed_field
     def image_url(self) -> str | None:
+        """
+        Return the full accessible URL for the model's image when an image key is present.
+        
+        The URL is constructed from the application's storage host and the instance's `image_key`.
+        Returns:
+            `str` containing the full image URL if `image_key` is set, `None` otherwise.
+        """
         if self.image_key:
             return f'{settings.STORAGE_HOST}/{self.image_key}'
         return None

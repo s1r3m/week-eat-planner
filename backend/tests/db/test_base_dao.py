@@ -69,6 +69,11 @@ async def test_base_dao_find_one_or_none__error__error_raised(mocked_session):
 
 
 async def test_base_dao_find_all__error__error_raised(mocked_session):
+    """
+    Verifies that calling find_all on the DAO propagates a SQLAlchemyError raised by the database session.
+    
+    Configures the mocked session to raise SQLAlchemyError with ERROR_MESSAGE when executed, calls MyTestDAO.find_all, and asserts that the same SQLAlchemyError is raised and carries the exact ERROR_MESSAGE.
+    """
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
@@ -87,6 +92,11 @@ async def test_base_dao_update__error__error_raised(mocked_session):
 
 
 async def test_base_dao_delete__error__error_raised(mocked_session):
+    """
+    Verifies that BaseDAO.delete propagates a SQLAlchemyError raised by the database session.
+    
+    Asserts that calling delete on MyTestDAO re-raises the SQLAlchemyError with the original message when the session's execute method raises that error.
+    """
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
