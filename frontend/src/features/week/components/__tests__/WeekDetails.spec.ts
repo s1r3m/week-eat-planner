@@ -10,11 +10,6 @@ describe('WeekDetails', () => {
       template: '<a :href="to.name + \'/\' + to.params.id"><slot /></a>',
       props: ['to'],
     },
-    EditDeleteActions: {
-      template:
-        '<div class="actions"><button @click="$emit(\'edit\')">Edit</button><button @click="$emit(\'delete\')">Delete</button></div>',
-      emits: ['edit', 'delete'],
-    },
   };
 
   it('renders week name correctly', () => {

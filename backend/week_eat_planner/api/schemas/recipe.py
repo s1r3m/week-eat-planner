@@ -50,10 +50,9 @@ class RecipeUpdate(BaseModel):
     image_key: str | None = None
 
 
-class RecipeRead(RecipeBase, RecipeId, OwnerId):
-    """Schema for reading a recipe, including the database ID and user ID."""
+class ImageMixin(BaseModel):
+    """Mixin for schemas with image support."""
 
-    author: str
     image_key: str | None = Field(default=None, exclude=True)
 
     @computed_field
@@ -61,22 +60,20 @@ class RecipeRead(RecipeBase, RecipeId, OwnerId):
         if self.image_key:
             return f'{settings.STORAGE_HOST}/{self.image_key}'
         return None
+
+
+class RecipeRead(RecipeBase, RecipeId, OwnerId, ImageMixin):
+    """Schema for reading a recipe, including the database ID and user ID."""
+
+    author: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeReadMinimal(RecipeId):
+class RecipeReadMinimal(RecipeId, ImageMixin):
     """A minimal schema for recipe previews, showing only the ID and name."""
 
     name: str
     author: str
-
-    image_key: str | None = Field(default=None, exclude=True)
-
-    @computed_field
-    def image_url(self) -> str | None:
-        if self.image_key:
-            return f'{settings.STORAGE_HOST}/{self.image_key}'
-        return None
 
     model_config = ConfigDict(from_attributes=True)

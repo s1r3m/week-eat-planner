@@ -23,7 +23,7 @@ async def clean_storage(created_recipe):
 
 
 @pytest_asyncio.fixture
-async def uploaded_image(created_recipe_with_image, clean_storage):
+async def uploaded_image(created_recipe_with_image):
     storage = StorageClient()
     image = UploadFile(
         file=BytesIO(b'fake image content'),
@@ -31,6 +31,11 @@ async def uploaded_image(created_recipe_with_image, clean_storage):
         headers=Headers({'Content-Type': 'image/jpeg'}),
     )
     await storage.upload_image(image, StorageBucket.RECIPES, obj_id=created_recipe_with_image.id)
+
+    yield
+
+    storage = StorageClient()
+    await storage.delete_file(f'recipes/{created_recipe_with_image.id}.jpg')
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -222,8 +227,12 @@ async def test_delete_recipe__recipe_with_image__image_removed(auth_client_for_c
     # TODO: check somehow that the image is removed from the storage
 
 
-async def test_delete_recipe__recipe_with_image__recipe_removed(auth_client_for_created_user, created_recipe):
-    response = await auth_client_for_created_user.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
+async def test_delete_recipe__recipe_with_image__recipe_removed(
+    auth_client_for_created_user, created_recipe_with_image
+):
+    response = await auth_client_for_created_user.delete(
+        f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe_with_image.id)}'
+    )
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
