@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:13
-    container_name: wep-db-dev
+    container_name: wep-db
     environment:
       - POSTGRES_DB=wep
       - POSTGRES_USER=wep
@@ -20,7 +20,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: week-eat-planner-fe
+    container_name: wep-fe
     ports:
       - "3000:3000"
     volumes:
@@ -30,5 +30,41 @@ services:
       - NODE_ENV=development
     command: yarn dev --port 3000 --host 0.0.0.0
 
+  minio:
+    image: quay.io/minio/minio
+    container_name: wep-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: wep_root
+      MINIO_ROOT_PASSWORD: weppassword
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 wep_root weppassword;
+      mc mb -p local/recipes;
+      mc mb -p local/weeks;
+      mc mb -p local/users;
+      mc anonymous set public local/recipes;
+      mc anonymous set public local/weeks;
+      mc anonymous set public local/users;
+      exit 0;
+      "
+
 volumes:
+  minio_data:
   postgres_data_dev:

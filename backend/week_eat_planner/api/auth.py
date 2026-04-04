@@ -84,8 +84,8 @@ async def login(
         key=REFRESH_TOKEN_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
-        secure=not settings.DEBUG_MODE,
-        samesite='lax' if settings.DEBUG_MODE else 'strict',
+        secure=not settings.IS_DEBUG,
+        samesite='lax' if settings.IS_DEBUG else 'strict',
         max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
         path='/',
     )
@@ -123,8 +123,8 @@ async def refresh_tokens(
             key=REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             httponly=True,
-            secure=not settings.DEBUG_MODE,
-            samesite='lax' if settings.DEBUG_MODE else 'strict',
+            secure=not settings.IS_DEBUG,
+            samesite='lax' if settings.IS_DEBUG else 'strict',
             max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
             path='/',
         )

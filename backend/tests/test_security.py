@@ -19,7 +19,7 @@ def test_decode__valid_token__decoded_str(encoded_token):
 
 
 @pytest.mark.parametrize(
-    'invalid_token, error_class',
+    ('invalid_token', 'error_class'),
     [
         pytest.param(BAD_TOKEN, InvalidJwtToken, id='not_hash_token'),
         pytest.param(TokenProvider.create_access_token(''), NoEmailInToken, id='no_email_token'),

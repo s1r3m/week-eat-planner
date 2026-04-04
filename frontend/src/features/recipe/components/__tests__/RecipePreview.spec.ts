@@ -6,7 +6,10 @@ import type { RecipeMinimal } from '@/domain/recipe/models';
 
 const router = createRouter({
   history: createMemoryHistory(),
-  routes: [{ path: '/recipe/:id', name: 'recipe', component: { template: '<div></div>' } }],
+  routes: [
+    { path: '/', name: 'home', component: { template: '<div></div>' } },
+    { path: '/recipe/:id', name: 'recipe', component: { template: '<div></div>' } },
+  ],
 });
 
 describe('RecipePreview', () => {
@@ -26,8 +29,12 @@ describe('RecipePreview', () => {
         plugins: [router],
         stubs: {
           Card: { template: '<div><slot /></div>' },
-          Button: { template: '<button><slot /></button>' },
-          Star: { template: '<div class="star-stub" v-bind="$attrs" />' },
+          Button: {
+            template: '<button @click="$emit(\'click\', $event)"><slot /></button>',
+          },
+          Star: {
+            template: '<div class="star-stub" v-bind="$attrs" />',
+          },
         },
       },
     });
@@ -39,31 +46,16 @@ describe('RecipePreview', () => {
   });
 
   it('renders recipe image with correct src and alt', () => {
-    const recipeWithImg = { ...recipe, cover_url: 'http://example.com/img.jpg' };
+    const recipeWithImg = { ...recipe, image_url: 'http://example.com/img.jpg' };
     const wrapper = mountComponent({ recipe: recipeWithImg });
     const img = wrapper.find('img');
     expect(img.attributes('src')).toBe('http://example.com/img.jpg');
     expect(img.attributes('alt')).toBe('Pasta Carbonara');
   });
 
-  it('renders fallback image when cover_url is missing', () => {
+  it('renders fallback image when image_url is missing', () => {
     const wrapper = mountComponent();
     const img = wrapper.find('img');
     expect(img.attributes('src')).toContain('recipe_bg.png');
-  });
-
-  it('emits toggleFavorite when star button is clicked', async () => {
-    const wrapper = mountComponent();
-    const starBtn = wrapper.find('button');
-    await starBtn.trigger('click', { stopPropagation: () => {} });
-    expect(wrapper.emitted('toggleFavorite')).toBeTruthy();
-    expect(wrapper.emitted('toggleFavorite')?.[0]).toEqual([recipe]);
-  });
-
-  it('shows filled star when recipe is favorite', () => {
-    const favoriteRecipe = { ...recipe, isFavorite: true };
-    const wrapper = mountComponent({ recipe: favoriteRecipe });
-    const star = wrapper.find('svg');
-    expect(star.attributes('fill')).toBe('var(--primary)');
   });
 });

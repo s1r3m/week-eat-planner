@@ -4,15 +4,31 @@ import { ref, type Ref } from 'vue';
 
 import { apiClient, authClient, getErrorMessage } from '@/api/client';
 
+/**
+ * Store for managing authentication and user session.
+ */
 export const useAuthStore = defineStore('auth-store', () => {
+  /** The current session access token. */
   const accessToken: Ref<string | null> = ref(null);
+  /** Information about the currently logged-in user. */
   const user: Ref<UserInfo | null> = ref(null);
+  /** Whether the authentication state has been initialized. */
   const isInitialized = ref(false);
 
+  /**
+   * Sets the access token.
+   * @param newToken - The new access token, or null to clear it.
+   */
   const setAccessToken = (newToken: string | null) => {
     accessToken.value = newToken;
   };
 
+  /**
+   * Performs user login.
+   * @param email - User email.
+   * @param password - User password.
+   * @returns A promise that resolves when the login is successful.
+   */
   const login = async (email: string, password: string) => {
     const params = new URLSearchParams({
       username: email,
@@ -28,6 +44,12 @@ export const useAuthStore = defineStore('auth-store', () => {
     await _setUser();
   };
 
+  /**
+   * Performs user signup.
+   * @param email - User email.
+   * @param password - User password.
+   * @returns A promise that resolves when the signup is successful.
+   */
   const signup = async (email: string, password: string) => {
     await apiClient.post<UserInfo>('/auth/signup', {
       email,
@@ -35,6 +57,10 @@ export const useAuthStore = defineStore('auth-store', () => {
     });
   };
 
+  /**
+   * Performs user logout.
+   * @returns A promise that resolves when the logout is complete.
+   */
   const logout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -46,6 +72,10 @@ export const useAuthStore = defineStore('auth-store', () => {
     console.log('Cleared access_token');
   };
 
+  /**
+   * Initializes the authentication state from refresh token.
+   * @returns A promise that resolves when initialization is complete.
+   */
   const init = async () => {
     if (isInitialized.value) return;
 
@@ -61,6 +91,9 @@ export const useAuthStore = defineStore('auth-store', () => {
     }
   };
 
+  /**
+   * Internal helper to fetch user info.
+   */
   const _setUser = async () => {
     const { data } = await apiClient.get<UserInfo>('/user');
     user.value = data;

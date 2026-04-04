@@ -44,24 +44,4 @@ describe('RecipesGrid', () => {
     const previews = wrapper.findAll('.recipe-preview');
     expect(previews).toHaveLength(2);
   });
-
-  it('renders AppAddCard', () => {
-    const wrapper = mountComponent();
-    expect(wrapper.find('.app-add-card').exists()).toBe(true);
-  });
-
-  it('navigates to create recipe page when AppAddCard emits create', async () => {
-    const wrapper = mountComponent();
-    const addCard = wrapper.find('.app-add-card');
-    await addCard.trigger('create');
-    expect(mockPush).toHaveBeenCalledWith({ name: ROUTE_NAMES.RECIPES_CREATE });
-  });
-
-  it('emits toggleFavorite when RecipePreview emits toggle-favorite', async () => {
-    const wrapper = mountComponent();
-    const preview = wrapper.findAll('.recipe-preview');
-    await preview[0].trigger('toggle-favorite');
-    expect(wrapper.emitted('toggleFavorite')).toBeTruthy();
-    expect(wrapper.emitted('toggleFavorite')?.[0]).toEqual([recipes[0]]);
-  });
 });

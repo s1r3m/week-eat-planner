@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from week_eat_planner.config import settings
 from week_eat_planner.constants import Unit
 
 
@@ -28,7 +29,7 @@ class RecipeBase(BaseModel):
     """Base schema for a recipe, containing common fields."""
 
     name: str
-    is_public: bool = False
+    is_public: bool
     steps: list[CookingStep] = Field(default_factory=list)
     ingredients: list[Ingredient] = Field(default_factory=list)
 
@@ -39,13 +40,29 @@ class RecipeCreate(RecipeBase):
     pass
 
 
-class RecipeUpdate(RecipeBase):
-    """Schema for updating an existing recipe."""
+class RecipeUpdate(BaseModel):
+    """Schema for updating an existing recipe"""
 
-    pass
+    name: str | None = None
+    is_public: bool | None = None
+    steps: list[CookingStep] | None = None
+    ingredients: list[Ingredient] | None = None
+    image_key: str | None = None
 
 
-class RecipeRead(RecipeBase, RecipeId, OwnerId):
+class ImageMixin(BaseModel):
+    """Mixin for schemas with image support."""
+
+    image_key: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    def image_url(self) -> str | None:
+        if self.image_key:
+            return f'{settings.STORAGE_HOST}/{self.image_key}'
+        return None
+
+
+class RecipeRead(RecipeBase, RecipeId, OwnerId, ImageMixin):
     """Schema for reading a recipe, including the database ID and user ID."""
 
     author: str
@@ -53,7 +70,7 @@ class RecipeRead(RecipeBase, RecipeId, OwnerId):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeReadMinimal(RecipeId):
+class RecipeReadMinimal(RecipeId, ImageMixin):
     """A minimal schema for recipe previews, showing only the ID and name."""
 
     name: str

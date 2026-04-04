@@ -12,7 +12,15 @@ if TYPE_CHECKING:
 
 
 class Week(Base):
-    """Represents a week-long meal plan for a user."""
+    """Represents a week-long meal plan for a user.
+
+    Attributes:
+        id: The unique identifier for the week.
+        name: The name or label given to the week.
+        user_id: The foreign key linking to the owner of this week.
+        user: The SQLAlchemy relationship to the User who owns this week.
+        meal_slots: The SQLAlchemy relationship to the MealSlots associated with this week.
+    """
 
     __tablename__ = 'weeks'
 

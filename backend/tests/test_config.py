@@ -2,10 +2,14 @@ import pytest
 
 from week_eat_planner.config import settings
 
-DEBUG_MODE = 'true'
+IS_DEBUG = 'true'
 DB_URL = 'dummy_db_url'
 BE_HOST = 'http://localhost.be'
 FE_HOST = 'http://localhost.fe'
+STORAGE_HOST = 'http://localhost.storage'
+STORAGE_ACCESS_KEY_ID = 'wep'
+STORAGE_SECRET_ACCESS_KEY = 'wep'
+STORAGE_REGION = 'test'
 JWT_SECRET = 'test'
 JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'wep-auth'
@@ -19,14 +23,18 @@ TG_API_SITE = 'http://api.telegram.org'
 
 @pytest.fixture
 def mocked_settings(mocker):
-    mocker.patch.object(settings, 'DEBUG_MODE', DEBUG_MODE)
+    mocker.patch.object(settings, 'IS_DEBUG', IS_DEBUG)
     mocker.patch.object(settings, 'DB_URL', DB_URL)
     mocker.patch.object(settings, 'BE_HOST', BE_HOST)
     mocker.patch.object(settings, 'FE_HOST', FE_HOST)
+    mocker.patch.object(settings, 'STORAGE_HOST', STORAGE_HOST)
+    mocker.patch.object(settings, 'STORAGE_ACCESS_KEY_ID', STORAGE_ACCESS_KEY_ID)
+    mocker.patch.object(settings, 'STORAGE_SECRET_ACCESS_KEY', STORAGE_SECRET_ACCESS_KEY)
+    mocker.patch.object(settings, 'STORAGE_REGION', STORAGE_REGION)
     mocker.patch.object(settings, 'JWT_SECRET', JWT_SECRET)
     mocker.patch.object(settings, 'JWT_ALGORITHM', JWT_ALGORITHM)
+    mocker.patch.object(settings, 'JWT_ISSUER', JWT_ISSUER)
     mocker.patch.object(settings, 'JWT_AUDIENCE', JWT_AUDIENCE)
-    mocker.patch.object(settings, 'JWT_ALGORITHM', JWT_ALGORITHM)
     mocker.patch.object(settings, 'ACCESS_TOKEN_TTL', ACCESS_TOKEN_TTL)
     mocker.patch.object(settings, 'REFRESH_TOKEN_TTL', REFRESH_TOKEN_TTL)
     mocker.patch.object(settings, 'ADMIN_IDS', ADMIN_IDS)

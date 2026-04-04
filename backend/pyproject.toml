@@ -37,6 +37,8 @@ dependencies = [
     "bcrypt==3.2.0",
     "gevent==25.9.1",
     "uuid-utils==0.11.0",
+    "boto3==1.42.77",
+    "python-multipart==0.0.20",
 ]
 
 [project.urls] # Optional: Links for PyPI
@@ -97,6 +99,11 @@ select = [
     'SIM', # flake8-simplify: simplify expressions & control flow
     'PL',  # pylint (subset): useful pylint-like checks
 ]
+ignore = [
+    'PT011',
+    'B017',
+    'PLR0913',
+]
 
 fixable = ['ALL']
 unfixable = []
@@ -139,7 +146,7 @@ no_implicit_optional = true
 [tool.coverage.run]
 source = ["week_eat_planner"]
 branch = true
-concurrency = ["gevent"]
+concurrency = ["gevent", "thread"]
 omit = [
     "tests/*",  # Exclude all test files and directories
     # Omit files that are primarily configuration or startup logic

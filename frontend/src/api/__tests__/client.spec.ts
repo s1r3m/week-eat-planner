@@ -23,6 +23,7 @@ describe('apiClient', () => {
       setAccessToken: vi.fn((token) => {
         authStore.accessToken = token;
       }),
+      logout: vi.fn().mockResolvedValue(undefined),
     };
     (useAuthStore as any).mockReturnValue(authStore);
   });

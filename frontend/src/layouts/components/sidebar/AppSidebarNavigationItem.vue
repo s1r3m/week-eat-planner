@@ -1,7 +1,7 @@
 <template>
   <component
     :is="variant === 'default' ? SidebarMenuButton : SidebarMenuSubButton"
-    :is-active="isActiveLink(item.to)"
+    :is-active="isActiveLink(item)"
     as-child
   >
     <router-link :to="item.to" @click="handleNavigation">
@@ -24,7 +24,10 @@ const { item, variant = 'default' } = defineProps<{
 }>();
 
 const route = useRoute();
-const isActiveLink = (to: { name: string }) => route.name === to.name;
+const isActiveLink = (navLink: NavLink) => {
+  if (navLink.to.params) return route.path.includes(navLink.to.params.id);
+  return route.name === navLink.to.name;
+};
 
 const { isMobile, setOpenMobile } = useSidebar();
 const handleNavigation = () => {

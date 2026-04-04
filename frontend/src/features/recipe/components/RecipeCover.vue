@@ -4,7 +4,7 @@
       <img
         :src="src || defaultImg"
         :alt="alt"
-        class="object-cover w-full bg-primary/20 rounded-xl"
+        class="object-cover h-72 w-full bg-primary/20 rounded-xl"
         loading="lazy"
         decoding="async"
       />

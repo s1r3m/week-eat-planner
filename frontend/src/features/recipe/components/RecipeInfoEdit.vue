@@ -3,13 +3,20 @@
     <FieldTitle class="font-semibold text-lg text-primary">Recipe Info</FieldTitle>
     <FieldContent class="space-y-3">
       <FieldLabel for="recipe-name"> Name </FieldLabel>
-      <Input id="recipe-name" v-model="name" type="text" placeholder="e.g Pasta Carbonara" />
+      <Input
+        id="recipe-name"
+        v-model="name"
+        type="text"
+        placeholder="e.g Pasta Carbonara"
+        autocomplete="off"
+      />
 
       <FieldLabel for="recipe-cover"> Recipe Cover </FieldLabel>
       <Input
         id="recipe-cover"
         type="file"
         accept="image/*"
+        autocomplete="off"
         class="file:-ml-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground file:cursor-pointer"
         @change="onFileChange"
       />
@@ -24,21 +31,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { Input } from '@/components/ui/input';
 import RecipeCover from './RecipeCover.vue';
 import { FieldContent, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 const name = defineModel<string>('name', { required: true });
-const cover = ref<File | null>(null);
+const cover = defineModel<File | null>('cover', { default: null });
 const img = ref('');
+
+onUnmounted(() => {
+  if (img.value) URL.revokeObjectURL(img.value);
+});
 
 const onFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
-  if (!target.files?.length) return;
+  const file = target.files?.[0];
+  if (!file) return;
 
-  cover.value = target.files[0];
+  cover.value = file;
   if (img.value) URL.revokeObjectURL(img.value);
-  img.value = URL.createObjectURL(cover.value);
+  img.value = URL.createObjectURL(file);
 };
 </script>

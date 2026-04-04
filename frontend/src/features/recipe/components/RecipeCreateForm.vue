@@ -1,14 +1,16 @@
 <template>
   <div class="mx-auto max-w-7xl">
     <div class="flex flex-col gap-6">
-      <RecipeInfoEdit v-model:name="name" />
+      <RecipeInfoEdit v-model:name="name" v-model:cover="image" />
       <FieldSeparator />
       <RecipeIngredientsEdit v-model:ingredients="ingredients" />
       <FieldSeparator />
       <RecipeStepsEdit v-model:steps="steps" />
       <div class="flex gap-3 justify-end-safe">
         <Button variant="outline" @click="$emit('cancel')"> Cancel </Button>
-        <Button @click="$emit('create', { name, ingredients, steps })"> Create recipe </Button>
+        <Button @click="$emit('create', { name, ingredients, steps, is_public: true }, image)">
+          Create recipe
+        </Button>
       </div>
     </div>
   </div>
@@ -26,9 +28,10 @@ import { Button } from '@/components/ui/button';
 const name = ref('');
 const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);
 const ingredients = ref<Ingredient[]>([{ name: '', amount: 0, unit: 'g' }]);
+const image = ref<File | null>(null);
 
 defineEmits<{
-  create: [RecipePayload];
+  create: [payload: RecipePayload, image: File | null];
   cancel: [];
 }>();
 </script>

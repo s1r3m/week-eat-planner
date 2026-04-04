@@ -34,7 +34,17 @@ class MealType(StrEnum):
 
 
 class MealSlot(Base):
-    """Represents a specific meal slot in a week's schedule."""
+    """Represents a specific meal slot in a week's schedule.
+
+    Attributes:
+        id: The unique identifier for the meal slot.
+        week_id: The ID of the week this slot belongs to.
+        day_of_week: The day of the week for this slot (e.g., MONDAY).
+        meal_type: The type of meal (e.g., BREAKFAST, LUNCH).
+        recipe_id: The ID of the recipe assigned to this slot, if any.
+        week: The SQLAlchemy relationship to the parent Week object.
+        recipe: The SQLAlchemy relationship to the assigned Recipe object.
+    """
 
     __tablename__ = 'meal_slots'
 

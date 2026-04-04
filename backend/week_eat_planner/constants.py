@@ -15,12 +15,19 @@ class AppUrl(StrEnum):
 
     RECIPES = '/recipes'
     RECIPES_TPL = '/recipes/{recipe_id}'
+    RECIPES_IMAGE_TPL = '/recipes/{recipe_id}/image'
 
     WEEKS = '/weeks'
     WEEKS_TPL = '/weeks/{week_id}'
     WEEK_SLOTS_TPL = '/weeks/{week_id}/slots'
 
     USER = '/user'
+
+
+class StorageBucket(StrEnum):
+    RECIPES = 'recipes'
+    USERS = 'users'
+    WEEKS = 'weeks'
 
 
 class TokenType(StrEnum):
@@ -34,3 +41,7 @@ class Unit(StrEnum):
     GRAM = 'g'
     MILILITERS = 'ml'
     PIECES = 'pcs'
+
+
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}

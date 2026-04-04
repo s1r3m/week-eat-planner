@@ -12,11 +12,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    DEBUG_MODE: bool
+    IS_DEBUG: bool
 
     DB_URL: str
+
     BE_HOST: str
     FE_HOST: str
+
+    # Storage settings.
+    STORAGE_HOST: str
+    STORAGE_ACCESS_KEY_ID: str
+    STORAGE_SECRET_ACCESS_KEY: str
+    STORAGE_REGION: str
 
     # Auth settings.
     JWT_SECRET: str

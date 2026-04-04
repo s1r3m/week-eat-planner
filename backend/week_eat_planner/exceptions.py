@@ -98,6 +98,11 @@ class TokenForbidden(AccessForbiddenException):
         super().__init__(detail=f'Token {token} forbidden')
 
 
+class ValidationException(HTTPException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
 class RecipeForbidden(AccessForbiddenException):
     def __init__(self, recipe_id: UUID) -> None:
         super().__init__(detail=f'Recipe {recipe_id} forbidden')

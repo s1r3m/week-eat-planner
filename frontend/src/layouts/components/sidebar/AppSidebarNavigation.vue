@@ -54,9 +54,6 @@ import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import type { NavLink } from '../header/types/navigation';
 
 const weekStore = useWeekStore();
-// if (!weekStore.isWeeksInitialized) {
-//   await weekStore.fetchWeeks();
-// }
 const { weeks } = storeToRefs(weekStore);
 
 const navLinks: ComputedRef<NavLink[]> = computed(() => [

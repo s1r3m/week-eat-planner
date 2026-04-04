@@ -36,6 +36,8 @@ describe('RecipeCreateForm', () => {
       name: 'New Recipe',
       ingredients: [{ name: 'Tomato', amount: 2, unit: 'pcs' }],
       steps: [{ order: 0, step: 'Wash tomato' }],
+      is_public: true,
     });
+    expect(emitted?.[0][1]).toBeNull();
   });
 });

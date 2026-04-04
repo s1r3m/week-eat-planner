@@ -22,7 +22,9 @@ class Recipe(Base):
         steps: A JSON object storing the cooking steps.
         ingredients: A JSON object storing the ingredients and their quantities.
         user_id: The foreign key linking to the user who created this recipe.
+        image_key: The key to the recipe image in storage.
         user: The SQLAlchemy relationship to the User object.
+        meal_slots: The SQLAlchemy relationship to the MealSlot objects.
     """
 
     __tablename__ = 'recipes'
@@ -32,6 +34,7 @@ class Recipe(Base):
     steps: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     ingredients: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    image_key: Mapped[str | None] = mapped_column(nullable=True)
 
     user: Mapped['User'] = relationship(back_populates='recipes', lazy='selectin')
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
@@ -41,4 +44,9 @@ class Recipe(Base):
 
     @property
     def author(self) -> str:
+        """The author of the recipe, prioritizing username over email.
+
+        Returns:
+            The username if set, otherwise the email of the recipe's author.
+        """
         return self.user.username or self.user.email

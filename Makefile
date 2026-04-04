@@ -81,8 +81,19 @@ migrations: $(VENV_ACTIVATE) $(ENV_FILE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
-start: stop migrations
+start: stop minio migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
+
+minio:
+	$(DOCKER_COMPOSE) up minio -d --wait
+	$(DOCKER_COMPOSE) run --rm minio-init
+
+## @App Show docker logs.
+logs:
+	$(DOCKER_COMPOSE) logs
+
+## @Tests Prepare test environment (DB + Minio).
+test_env: migrations minio
 
 ## @App Stop the environment.
 stop:
@@ -99,14 +110,14 @@ db_dump:
 
 ## @Checks Run linters.
 lint: $(VENV_ACTIVATE)
-	ruff check $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
+	ruff check $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
-	ruff check --fix --config $(BE_PATH)/pyproject.toml
-	ruff format --config $(BE_PATH)/pyproject.toml
+	ruff check $(BE_PATH) --fix --config $(BE_PATH)/pyproject.toml
+	ruff format $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 
 clean:
 	rm -f $(BE_PATH)/.coverage

@@ -13,7 +13,18 @@ if TYPE_CHECKING:
 
 
 class User(Base):
-    """Represents a user of the application."""
+    """Represents a user of the application.
+
+    Attributes:
+        id: The unique identifier for the user.
+        email: The user's unique email address.
+        username: The user's chosen display name.
+        avatar_url: The URL to the user's avatar image.
+        hashed_password: The hashed version of the user's password.
+        is_active: A flag indicating if the user account is active.
+        weeks: The SQLAlchemy relationship to the user's weeks.
+        recipes: The SQLAlchemy relationship to the user's recipes.
+    """
 
     __tablename__ = 'users'
 
@@ -31,6 +42,18 @@ class User(Base):
 
 
 class RefreshToken(Base):
+    """Represents a JWT refresh token stored in the database.
+
+    Attributes:
+        id: The unique identifier for the token.
+        token_hash: The hashed value of the refresh token.
+        user_id: The ID of the user who owns this token.
+        expires_at: The timestamp when the token expires.
+        revoked: A flag indicating if the token has been revoked.
+        replaced_by: The ID of the token that replaced this one during rotation.
+        user: The SQLAlchemy relationship to the owner of this token.
+    """
+
     __tablename__ = 'refresh_tokens'
 
     token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
