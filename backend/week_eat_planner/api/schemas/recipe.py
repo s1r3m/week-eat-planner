@@ -47,6 +47,7 @@ class RecipeUpdate(BaseModel):
     is_public: bool | None = None
     steps: list[CookingStep] | None = None
     ingredients: list[Ingredient] | None = None
+    image_key: str | None = None
 
 
 class RecipeRead(RecipeBase, RecipeId, OwnerId):
