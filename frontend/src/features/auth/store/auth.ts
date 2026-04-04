@@ -4,6 +4,9 @@ import { ref, type Ref } from 'vue';
 
 import { apiClient, authClient, getErrorMessage } from '@/api/client';
 
+/** Shared promise for token refresh to prevent multiple simultaneous calls. */
+let refreshPromise: Promise<string | null> | null = null;
+
 /**
  * Store for managing authentication and user session.
  */
@@ -73,6 +76,35 @@ export const useAuthStore = defineStore('auth-store', () => {
   };
 
   /**
+   * Refreshes the access token using the refresh token.
+   * Deduplicates multiple calls into a single promise.
+   * @returns A promise that resolves to the new access token or null on failure.
+   */
+  const refreshToken = async (): Promise<string | null> => {
+    if (refreshPromise) {
+      return refreshPromise;
+    }
+
+    refreshPromise = (async () => {
+      try {
+        const { data } = await authClient.post<LoginInfo>('/auth/refresh');
+        setAccessToken(data.access_token);
+        console.log('Token refreshed successfully');
+        return data.access_token;
+      } catch (err: unknown) {
+        console.error('Token refresh failed:', getErrorMessage(err));
+        setAccessToken(null);
+        user.value = null;
+        return null;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
+  };
+
+  /**
    * Initializes the authentication state from refresh token.
    * @returns A promise that resolves when initialization is complete.
    */
@@ -80,12 +112,12 @@ export const useAuthStore = defineStore('auth-store', () => {
     if (isInitialized.value) return;
 
     try {
-      const { data } = await authClient.post<LoginInfo>('/auth/refresh');
-      setAccessToken(data.access_token);
-      console.log('Initialized access_token from refresh');
-      await _setUser();
+      const token = await refreshToken();
+      if (token) {
+        await _setUser();
+      }
     } catch (err: unknown) {
-      console.log('No valid refresh token found: ', getErrorMessage(err));
+      console.log('Initialization failed: ', getErrorMessage(err));
     } finally {
       isInitialized.value = true;
     }
@@ -108,5 +140,6 @@ export const useAuthStore = defineStore('auth-store', () => {
     login,
     signup,
     logout,
+    refreshToken,
   };
 });

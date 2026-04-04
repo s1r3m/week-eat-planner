@@ -5,9 +5,12 @@ import axios, {
 } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth';
 import type { LoginInfo } from '@/domain/auth/models';
-import type { ErrorResponse } from '@/api/types';
 
 const DEFAULT_TIMEOUT = 5000;
+
+interface ErrorResponse {
+  detail: string;
+}
 
 export const apiClient = axios.create({
   baseURL: '/api',
@@ -30,7 +33,7 @@ export const authClient = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const authStore = useAuthStore();
-    if (authStore.accessToken) {
+    if (authStore.accessToken && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${authStore.accessToken}`;
     }
     return config;
@@ -45,15 +48,6 @@ export const getErrorMessage = (err: unknown): string => {
 
   const data = err.response?.data as ErrorResponse | undefined;
   return data?.detail || err.message || 'Request Failed';
-};
-
-// Refresh functionality
-let isRefreshing = false;
-let pendingRequests: ((newToken: string | null) => void)[] = [];
-
-const resolveRequests = (newToken: string | null) => {
-  pendingRequests.forEach((cb) => cb(newToken));
-  pendingRequests = [];
 };
 
 export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
@@ -77,54 +71,27 @@ apiClient.interceptors.response.use(
 
     const error = err as AxiosError;
     const originalConfig = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
-    if (!originalConfig || isAuthExcluded(originalConfig.url)) {
-      return Promise.reject(error);
-    }
 
-    const status = error.response?.status;
-    if (status !== 401 || originalConfig._retry) {
+    if (
+      !originalConfig ||
+      isAuthExcluded(originalConfig.url) ||
+      error.response?.status !== 401 ||
+      originalConfig._retry
+    ) {
       return Promise.reject(error);
-    }
-
-    if (isRefreshing) {
-      // Push the request to the queue and quit.
-      return new Promise((resolve, reject) =>
-        pendingRequests.push((newToken: string | null) => {
-          if (!newToken) {
-            reject(error);
-            return;
-          }
-          originalConfig.headers = originalConfig.headers || {};
-          originalConfig.headers.Authorization = `Bearer ${newToken}`;
-          originalConfig._retry = true;
-          resolve(apiClient.request(originalConfig));
-        }),
-      );
     }
 
     originalConfig._retry = true;
-    isRefreshing = true;
+
     const authStore = useAuthStore();
-    try {
-      const { data } = await authClient.post<LoginInfo>('/auth/refresh');
-      const newToken = data.accessToken;
-      authStore.setAccessToken(newToken);
+    const newToken = await authStore.refreshToken();
+
+    if (newToken) {
       originalConfig.headers = originalConfig.headers || {};
       originalConfig.headers.Authorization = `Bearer ${newToken}`;
       return apiClient.request(originalConfig);
-    } catch (refreshError: unknown) {
-      console.log('Refresh token failed: ', getErrorMessage(refreshError));
-      try {
-        await authClient.post('/auth/logout');
-      } catch (logoutError: unknown) {
-        console.error('Logout failed: ', getErrorMessage(logoutError));
-      } finally {
-        authStore.setAccessToken(null);
-      }
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
-      resolveRequests(authStore.accessToken);
     }
+
+    return Promise.reject(error);
   },
 );

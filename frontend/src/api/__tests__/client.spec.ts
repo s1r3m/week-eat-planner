@@ -23,6 +23,10 @@ describe('apiClient', () => {
       setAccessToken: vi.fn((token) => {
         authStore.accessToken = token;
       }),
+      refreshToken: vi.fn().mockImplementation(async () => {
+        authStore.accessToken = 'new-token';
+        return 'new-token';
+      }),
       logout: vi.fn().mockResolvedValue(undefined),
     };
     (useAuthStore as any).mockReturnValue(authStore);
@@ -93,12 +97,12 @@ describe('apiClient', () => {
 
     it('should refresh token on 401 and retry original request', async () => {
       mockApi.onGet('/test').replyOnce(401).onGet('/test').reply(200, { data: 'ok' });
-      mockAuth.onPost('/auth/refresh').reply(200, { accessToken: 'new-token' });
+      authStore.refreshToken.mockResolvedValue('new-token');
 
       const response = await apiClient.get('/test');
 
       expect(response.data).toEqual({ data: 'ok' });
-      expect(authStore.setAccessToken).toHaveBeenCalledWith('new-token');
+      expect(authStore.refreshToken).toHaveBeenCalled();
       expect(response.config.headers?.Authorization).toBe('Bearer new-token');
     });
 
@@ -106,43 +110,32 @@ describe('apiClient', () => {
       mockApi.onGet('/test1').replyOnce(401).onGet('/test1').reply(200, { data: 'ok1' });
       mockApi.onGet('/test2').replyOnce(401).onGet('/test2').reply(200, { data: 'ok2' });
 
-      // Delay refresh to ensure queueing
-      mockAuth.onPost('/auth/refresh').reply(async () => {
+      // Simulate first call taking time
+      authStore.refreshToken.mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
-        return [200, { accessToken: 'new-token' }];
+        return 'new-token';
       });
 
       const [res1, res2] = await Promise.all([apiClient.get('/test1'), apiClient.get('/test2')]);
 
       expect(res1.data).toEqual({ data: 'ok1' });
       expect(res2.data).toEqual({ data: 'ok2' });
-      expect(mockAuth.history.post.length).toBe(1);
+      expect(authStore.refreshToken).toHaveBeenCalledTimes(2);
     });
 
-    it('should reject if newToken is null in queued request', async () => {
+    it('should reject if newToken is null from refreshToken', async () => {
       mockApi.onGet('/test1').replyOnce(401);
 
-      mockAuth.onPost('/auth/refresh').reply(200, { accessToken: null });
+      authStore.refreshToken.mockResolvedValue(null);
 
       await expect(apiClient.get('/test1')).rejects.toThrow();
     });
 
-    it('should handle refresh failure, logout and clear token', async () => {
+    it('should handle refresh failure and reject original request', async () => {
       mockApi.onGet('/test').reply(401);
-      mockAuth.onPost('/auth/refresh').reply(401, { detail: 'Refresh failed' });
-      mockAuth.onPost('/auth/logout').reply(200);
+      authStore.refreshToken.mockRejectedValue(new Error('Refresh failed'));
 
-      await expect(apiClient.get('/test')).rejects.toThrow();
-      expect(authStore.setAccessToken).toHaveBeenCalledWith(null);
-    });
-
-    it('should handle logout failure gracefully during refresh failure', async () => {
-      mockApi.onGet('/test').reply(401);
-      mockAuth.onPost('/auth/refresh').reply(401, { detail: 'Refresh failed' });
-      mockAuth.onPost('/auth/logout').reply(500);
-
-      await expect(apiClient.get('/test')).rejects.toThrow();
-      expect(authStore.setAccessToken).toHaveBeenCalledWith(null);
+      await expect(apiClient.get('/test')).rejects.toThrow('Refresh failed');
     });
 
     it('should reject non-axios errors in response interceptor with custom check', async () => {
