@@ -5,16 +5,22 @@
         <Button
           :variant="recipe.isFavorite ? 'outline' : 'default'"
           size="lg"
+          :aria-label="!recipe.isFavorite ? 'Add to favorites' : 'Remove from favorites'"
           @click="recipe.isFavorite = !recipe.isFavorite"
           ><Star v-bind="starProps" :class="{ 'text-transparent': recipe.isFavorite }" />
           <span class="hidden md:inline"
             >{{ !recipe.isFavorite ? 'Add to' : 'Remove from' }} favorites
           </span></Button
         >
-        <Button variant="outline" size="lg"
+        <Button variant="outline" size="lg" aria-label="Edit recipe"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
-        <Button variant="destructiveOutline" size="lg" @click="onDelete(recipe.id)">
+        <Button
+          variant="destructiveOutline"
+          size="lg"
+          aria-label="Delete recipe"
+          @click="onDelete(recipe.id)"
+        >
           <Trash /><span class="hidden md:inline"> Delete </span>
         </Button>
       </template>
@@ -62,12 +68,12 @@ const starProps = computed(() =>
     : {},
 );
 
-const { call: deleteRecipe } = useAsyncCall(
-  async (recipeId: string) => await recipeStore.deleteRecipe(recipeId),
+const { call: deleteRecipe } = useAsyncCall((recipeId: string) =>
+  recipeStore.deleteRecipe(recipeId),
 );
 
-const onDelete = (recipeId: string) => {
-  deleteRecipe(recipeId);
+const onDelete = async (recipeId: string) => {
+  await deleteRecipe(recipeId);
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 </script>

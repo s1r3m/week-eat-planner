@@ -22,7 +22,9 @@ class StorageClient:
         )
 
     async def upload_image(self, upload_file: UploadFile, bucket: StorageBucket, obj_id: UUID) -> str:
-        assert upload_file.filename, 'Uploaded file has no name'
+        if not upload_file.filename:
+            raise ValueError('Uploaded file has no name')
+
         file_suffix = Path(upload_file.filename).suffix.lower()
         file_key = f'{obj_id}{file_suffix}'
         _client = self._get_client()

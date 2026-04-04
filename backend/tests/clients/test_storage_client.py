@@ -45,6 +45,15 @@ async def test_storage_client__upload__file_uploaded(storage, mocked_s3_client, 
     )
 
 
+async def test_storage_client__file_no_name__error_raised(storage, mocked_upload_file):
+    mocked_upload_file.filename = None
+
+    with pytest.raises(ValueError) as exc:
+        await storage.upload_image(mocked_upload_file, BUCKET, OBJ_ID)
+
+    assert str(exc.value) == 'Uploaded file has no name'
+
+
 async def test_storage_client__delete__file_deleted(storage, mocked_s3_client):
     await storage.delete_file(EXPECTED_FILE_KEY)
     mocked_s3_client.delete_object.assert_called_once_with(Bucket=BUCKET, Key=f'{OBJ_ID}{FILE_SUFFIX}')

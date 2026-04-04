@@ -2,10 +2,15 @@
   <div v-if="week" class="space-y-6 m-6">
     <PageTitle :header="week.name" description="Plan your meal to each day">
       <template #controls>
-        <Button variant="outline" size="lg" @click="openEdit(week)"
+        <Button variant="outline" size="lg" aria-label="Edit week" @click="openEdit(week)"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
-        <Button variant="destructiveOutline" size="lg" @click="openDelete(week)">
+        <Button
+          variant="destructiveOutline"
+          size="lg"
+          aria-label="Delete week"
+          @click="openDelete(week)"
+        >
           <Trash /><span class="hidden md:inline"> Delete </span>
         </Button>
       </template>
