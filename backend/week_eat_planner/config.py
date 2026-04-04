@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     FE_HOST: str
 
     # Storage settings.
-    STORAGE_HOST: str | None = Field(default=None)
+    STORAGE_HOST: str
     STORAGE_ACCESS_KEY_ID: str
     STORAGE_SECRET_ACCESS_KEY: str
     STORAGE_REGION: str
