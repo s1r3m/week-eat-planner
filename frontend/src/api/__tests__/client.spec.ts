@@ -108,7 +108,7 @@ describe('apiClient', () => {
     it('should handle URL without leading slash in isAuthExcluded', async () => {
       // auth/login (without leading slash) should be excluded after it's transformed to /auth/login
       const path = 'auth/login';
-      mockApi.onGet('/' + path).reply(401);
+      mockApi.onGet('/api/' + path).reply(401);
 
       await expect(apiClient.get(path)).rejects.toThrow();
       expect(authStore.refreshToken).not.toHaveBeenCalled();
