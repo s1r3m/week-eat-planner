@@ -22,7 +22,9 @@ class Recipe(Base):
         steps: A JSON object storing the cooking steps.
         ingredients: A JSON object storing the ingredients and their quantities.
         user_id: The foreign key linking to the user who created this recipe.
+        image_key: The key to the recipe image in storage.
         user: The SQLAlchemy relationship to the User object.
+        meal_slots: The SQLAlchemy relationship to the MealSlot objects.
     """
 
     __tablename__ = 'recipes'
@@ -42,4 +44,9 @@ class Recipe(Base):
 
     @property
     def author(self) -> str:
+        """The author of the recipe, prioritizing username over email.
+
+        Returns:
+            The username if set, otherwise the email of the recipe's author.
+        """
         return self.user.username or self.user.email

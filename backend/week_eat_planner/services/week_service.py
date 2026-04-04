@@ -129,7 +129,18 @@ class WeekService:
     async def _validate_slot_and_recipe_data(
         self, week: WeekRead, *slots_data: MealSlotAssign
     ) -> list[ValidatedAssignments]:
-        """Validate MealSlotAssigns and return valid assignments ready for update."""
+        """Validate MealSlotAssigns and return valid assignments ready for update.
+
+        Args:
+            week: The week containing the meal slots.
+            slots_data: The slot assignments to validate.
+
+        Returns:
+            A list of validated assignments ready to be applied.
+
+        Raises:
+            MealSlotAssignException: If any of the assignments are invalid.
+        """
         slot_errors = []
         valid_assignments = []
 

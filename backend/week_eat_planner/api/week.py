@@ -128,7 +128,16 @@ async def assign_recipe_to_meal_slot(
     week: Annotated[WeekRead, Depends(get_week_by_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> list[MealSlotRead]:
-    """Assign the given recipe to a slot or un-assign if recipe_id is None."""
+    """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
+
+    Args:
+        slots_data: A list of slot assignments, each containing a slot ID and an optional recipe ID.
+        week: The week containing the meal slots, injected by dependency.
+        session: The database session for committing the changes.
+
+    Returns:
+        A list of updated meal slot objects.
+    """
     logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
     updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
     return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]

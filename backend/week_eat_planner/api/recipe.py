@@ -153,13 +153,17 @@ async def delete_recipe(
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Deletes a recipe.
+    """Deletes a recipe and its associated image.
 
     The user must be the owner of the recipe to delete it.
 
     Args:
         recipe: The recipe to delete, injected by the `get_recipe_for_update` dependency.
+        storage: The storage client for deleting the recipe's image.
         session: The database session.
+
+    Returns:
+        None. A 204 No Content status code is returned on success.
     """
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
     result = await RecipeService(session).delete_recipe(recipe)
