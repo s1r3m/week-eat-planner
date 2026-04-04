@@ -21,6 +21,7 @@ services:
       - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
       - BE_HOST=http://app.dev.local
       - FE_HOST=http://app.dev.local
+      - STORAGE_HOST=http://127.0.0.1:9000
       - STORAGE_ACCESS_KEY_ID=wep_root
       - STORAGE_SECRET_ACCESS_KEY=weppassword
       - STORAGE_REGION=test
