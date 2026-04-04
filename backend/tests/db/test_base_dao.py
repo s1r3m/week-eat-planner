@@ -14,16 +14,16 @@ class NoModelDAO(BaseDAO):
     model = None  # type: ignore
 
 
-class TestModel(Base):
+class MyTestModel(Base):
     __tablename__ = 'tests'
     field: Mapped[int] = mapped_column()
 
 
-class TestDAO(BaseDAO):
-    model = TestModel
+class MyTestDAO(BaseDAO):
+    model = MyTestModel
 
 
-class TestModelOut(BaseModel):
+class MyTestModelOut(BaseModel):
     field: int
 
 
@@ -45,7 +45,7 @@ async def test_base_dao_add__error__error_raised(mocked_session):
     mocked_session.add.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).add(TestModel(field=1))
+        await MyTestDAO(mocked_session).add(MyTestModel(field=1))
 
     assert str(exc.value) == ERROR_MESSAGE
 
@@ -54,7 +54,7 @@ async def test_base_dao_find_one_or_none_by_id__error__error_raised(mocked_sessi
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).find_one_or_none_by_id(obj_id=generate_uuid7())
+        await MyTestDAO(mocked_session).find_one_or_none_by_id(obj_id=generate_uuid7())
 
     assert str(exc.value) == ERROR_MESSAGE
 
@@ -63,7 +63,7 @@ async def test_base_dao_find_one_or_none__error__error_raised(mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).find_one_or_none(TestModelOut(field=1))
+        await MyTestDAO(mocked_session).find_one_or_none(MyTestModelOut(field=1))
 
     assert str(exc.value) == ERROR_MESSAGE
 
@@ -72,7 +72,7 @@ async def test_base_dao_find_all__error__error_raised(mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).find_all()
+        await MyTestDAO(mocked_session).find_all()
 
     assert str(exc.value) == ERROR_MESSAGE
 
@@ -81,7 +81,7 @@ async def test_base_dao_update__error__error_raised(mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).update(TestModelOut(field=1), TestModelOut(field=2))
+        await MyTestDAO(mocked_session).update(MyTestModelOut(field=1), MyTestModelOut(field=2))
 
     assert str(exc.value) == ERROR_MESSAGE
 
@@ -90,13 +90,13 @@ async def test_base_dao_delete__error__error_raised(mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).delete(TestModelOut(field=1))
+        await MyTestDAO(mocked_session).delete(MyTestModelOut(field=1))
 
     assert str(exc.value) == ERROR_MESSAGE
 
 
 async def test_find_many_by_ids__no_ids__empty_list_returned(mocked_session):
-    result = await TestDAO(mocked_session).find_many_by_ids(obj_ids=[])
+    result = await MyTestDAO(mocked_session).find_many_by_ids(obj_ids=[])
     assert result == []
 
 
@@ -104,6 +104,6 @@ async def test_find_many_by_ids__error__error_raised(mocked_session):
     mocked_session.execute.side_effect = SQLAlchemyError(ERROR_MESSAGE)
 
     with pytest.raises(SQLAlchemyError) as exc:
-        await TestDAO(mocked_session).find_many_by_ids(obj_ids=[generate_uuid7()])
+        await MyTestDAO(mocked_session).find_many_by_ids(obj_ids=[generate_uuid7()])
 
     assert str(exc.value) == ERROR_MESSAGE
