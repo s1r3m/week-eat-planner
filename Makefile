@@ -85,7 +85,8 @@ start: stop minio migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 minio:
-	$(DOCKER_COMPOSE) up minio-init -d --wait
+	$(DOCKER_COMPOSE) up minio -d --wait
+	$(DOCKER_COMPOSE) run --rm minio-init
 
 ## @App Show docker logs.
 logs:
