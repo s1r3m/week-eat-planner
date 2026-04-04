@@ -32,7 +32,6 @@ class RecipeBase(BaseModel):
     is_public: bool
     steps: list[CookingStep] = Field(default_factory=list)
     ingredients: list[Ingredient] = Field(default_factory=list)
-    image_key: str | None = Field(default=None)
 
 
 class RecipeCreate(RecipeBase):
@@ -48,7 +47,6 @@ class RecipeUpdate(BaseModel):
     is_public: bool | None = None
     steps: list[CookingStep] | None = None
     ingredients: list[Ingredient] | None = None
-    image_key: str | None = None
 
 
 class RecipeRead(RecipeBase, RecipeId, OwnerId):

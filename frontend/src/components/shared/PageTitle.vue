@@ -13,7 +13,6 @@
     </div>
   </div>
 </template>
-s
 
 <script setup lang="ts">
 defineProps<{

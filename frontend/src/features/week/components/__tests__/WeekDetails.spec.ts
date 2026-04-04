@@ -35,7 +35,7 @@ describe('WeekDetails', () => {
     const img = wrapper.find('img');
 
     expect(img.exists()).toBe(true);
-    expect(img.attributes('alt')).toBe('Week Image');
+    expect(img.attributes('alt')).toBe('Delicious Week cover image');
     expect(img.attributes('loading')).toBe('lazy');
     expect(img.attributes('src')).toBeDefined();
   });
