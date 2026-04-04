@@ -9,7 +9,7 @@ Review the docstrings in the specified files to ensure they follow the project's
 
 ### Standards
 
-- **Backend (Python)**: Use **Google style** docstrings.
+- **Backend (Python)**: Use **Google-style** docstrings.
   - Include `Args:`, `Returns:`, and `Raises:` sections when applicable.
   - Use triple double-quotes (`"""`).
   - **Exclusion**: Ignore all files in the `qa/` folder.
