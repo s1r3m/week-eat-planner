@@ -8,7 +8,7 @@
         v-model="name"
         type="text"
         placeholder="e.g Pasta Carbonara"
-        autocomplete="false"
+        autocomplete="off"
       />
 
       <FieldLabel for="recipe-cover"> Recipe Cover </FieldLabel>
@@ -16,7 +16,7 @@
         id="recipe-cover"
         type="file"
         accept="image/*"
-        autocomplete="false"
+        autocomplete="off"
         class="file:-ml-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground file:cursor-pointer"
         @change="onFileChange"
       />

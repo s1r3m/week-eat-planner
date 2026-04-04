@@ -12,7 +12,7 @@
       <h2 class="text-lg">
         {{ recipe.name }}
       </h2>
-      <p class="text-muted-foreground text-">{{ recipe.author }}</p>
+      <p class="text-muted-foreground text-sm">{{ recipe.author }}</p>
     </div>
     <router-link
       :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"

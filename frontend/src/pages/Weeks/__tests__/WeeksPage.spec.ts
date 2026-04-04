@@ -3,7 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h, Suspense } from 'vue';
 import WeeksPage from '../WeeksPage.vue';
-import { WeeksGrid, WeekCreateDialog, WeekEditDialog, WeekDeleteDialog } from '@/features/week';
+import { WeeksGrid, WeekCreateDialog } from '@/features/week';
 import type { UserWeekMinimal } from '@/domain/week/models';
 import { apiClient } from '@/api/client';
 import MockAdapter from 'axios-mock-adapter';

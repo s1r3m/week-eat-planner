@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from week_eat_planner.clients.storage_client import StorageClient
@@ -21,7 +23,7 @@ def mocked_s3_client(mocker):
 @pytest.fixture
 def mocked_upload_file():
     class TestUploadFile:
-        file = b'test_file_content'
+        file = BytesIO(b'test_file_content')
         filename = f'test{FILE_SUFFIX}'
         content_type = CONTENT_TYPE
 

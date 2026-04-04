@@ -77,6 +77,7 @@ export const useRecipeStore = defineStore('recipe-store', () => {
    */
   const deleteRecipe = async (recipeId: string) => {
     await apiClient.delete<null>(`/recipes/${recipeId}`);
+    myRecipes.value = myRecipes.value.filter((r) => r.id !== recipeId);
   };
 
   /**

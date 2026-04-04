@@ -3,7 +3,7 @@
     <div class="space-y-6 m-6">
       <PageTitle header="My Weeks" description="Manage your weekly meal plans here">
         <template #controls>
-          <Button size="lg" @click="isCreateOpen = true">
+          <Button size="lg" aria-label="Add a new week" @click="isCreateOpen = true">
             <Plus />
             <span class="hidden md:inline">Add a new week</span>
           </Button>

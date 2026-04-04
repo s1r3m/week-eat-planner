@@ -278,6 +278,31 @@ async def test_upload_image__recipe_not_exists__error_in_response(auth_client_fo
     assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
 
 
+async def test_upload_image__unauthenticated__returns_401(client, created_recipe):
+    files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
+
+    response = await client.patch(
+        AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id),
+        files=files,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}
+
+
+async def test_upload_image__not_owner__returns_403(auth_client_factory, created_user_2, created_recipe):
+    auth_client_for_another_user = await auth_client_factory(created_user_2, PASSWORD)
+    files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
+
+    response = await auth_client_for_another_user.patch(
+        AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id),
+        files=files,
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+
+
 async def test_upload_image__invalid_content_type__returns_400(auth_client_for_created_user, created_recipe):
     files = {'image': ('test.txt', b'fake image content', 'text/plain')}
 
