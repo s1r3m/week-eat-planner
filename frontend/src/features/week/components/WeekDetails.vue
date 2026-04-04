@@ -3,7 +3,7 @@
     <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="default_img"
-        alt="Week Image"
+        :alt="`${week.name} cover image`"
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
       />
@@ -15,6 +15,7 @@
     </div>
     <router-link
       :to="{ name: 'week', params: { id: week.id } }"
+      :aria-label="`Open week ${week.name}`"
       class="absolute inset-0 z-10"
     ></router-link>
   </Card>

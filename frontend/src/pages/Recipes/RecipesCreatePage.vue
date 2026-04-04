@@ -20,7 +20,8 @@ const { call: create } = useAsyncCall(recipeStore.createRecipe);
 const { call: uploadImage } = useAsyncCall(recipeStore.uploadImage);
 
 const onCreate = async (payload: RecipePayload, image: File | null) => {
-  const recipeId = (await create(payload)) as string;
+  const recipeId = await create(payload);
+  if (!recipeId) return;
   if (image) await uploadImage(recipeId, image);
   await router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };

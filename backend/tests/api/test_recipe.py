@@ -10,7 +10,7 @@ from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECI
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
 from week_eat_planner.clients.storage_client import StorageClient
-from week_eat_planner.constants import AppUrl, StorageBucket, Unit
+from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -267,3 +267,28 @@ async def test_upload_image__recipe_not_exists__error_in_response(auth_client_fo
 
     assert response.status_code == status.HTTP_409_CONFLICT
     assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
+
+
+async def test_upload_image__invalid_content_type__returns_400(auth_client_for_created_user, created_recipe):
+    files = {'image': ('test.txt', b'fake image content', 'text/plain')}
+
+    response = await auth_client_for_created_user.patch(
+        f'{AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id)}',
+        files=files,
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'Unsupported image type' in response.json()['detail']
+
+
+async def test_upload_image__file_too_large__returns_400(auth_client_for_created_user, created_recipe):
+    large_content = b'a' * (MAX_IMAGE_SIZE_BYTES + 1)
+    files = {'image': ('test.jpg', large_content, 'image/jpeg')}
+
+    response = await auth_client_for_created_user.patch(
+        f'{AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id)}',
+        files=files,
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'Image too large' in response.json()['detail']

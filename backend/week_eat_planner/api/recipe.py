@@ -9,8 +9,9 @@ from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.clients.storage_client import StorageClient
-from week_eat_planner.constants import AppUrl, StorageBucket
+from week_eat_planner.constants import ALLOWED_IMAGE_TYPES, AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.exceptions import ValidationException
 from week_eat_planner.services.recipe_service import RecipeService
 
 router = APIRouter(tags=['Recipe'])
@@ -59,11 +60,27 @@ async def upload_image(
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
-    image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
-    new_data = RecipeUpdate(image_key=image_key)
-    updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+    try:
+        if image.content_type not in ALLOWED_IMAGE_TYPES:
+            raise ValidationException(f'Unsupported image type: {image.content_type}')
 
-    return RecipeRead.model_validate(updated_recipe)
+        # Read at most MAX_IMAGE_SIZE_BYTES + 1 to check size limit
+        content = await image.read(MAX_IMAGE_SIZE_BYTES + 1)
+        if len(content) > MAX_IMAGE_SIZE_BYTES:
+            raise ValidationException(
+                f'Image too large: maximum size is {MAX_IMAGE_SIZE_BYTES // (1024 * 1024)}MB',
+            )
+
+        # Reset file pointer for storage client
+        await image.seek(0)
+
+        image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
+        new_data = RecipeUpdate(image_key=image_key)
+        updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+
+        return RecipeRead.model_validate(updated_recipe)
+    finally:
+        await image.close()
 
 
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)

@@ -41,3 +41,7 @@ class Unit(StrEnum):
     GRAM = 'g'
     MILILITERS = 'ml'
     PIECES = 'pcs'
+
+
+MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}

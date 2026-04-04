@@ -27,11 +27,7 @@ export const useRecipeStore = defineStore('recipe-store', () => {
     const formData = new FormData();
     formData.append('image', image);
 
-    const { data } = await apiClient.patch<RecipeFull>(`/recipes/${recipeId}/image`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const { data } = await apiClient.patch<RecipeFull>(`/recipes/${recipeId}/image`, formData);
 
     const index = myRecipes.value.findIndex((r) => r.id === recipeId);
     if (index !== -1) {
