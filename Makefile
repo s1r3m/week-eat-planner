@@ -85,7 +85,14 @@ start: stop minio migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 minio:
-	$(DOCKER_COMPOSE) up minio-init -d --wait minio
+	$(DOCKER_COMPOSE) up minio-init -d --wait
+
+## @App Show docker logs.
+logs:
+	$(DOCKER_COMPOSE) logs
+
+## @Tests Prepare test environment (DB + Minio).
+test_env: migrations minio
 
 ## @App Stop the environment.
 stop:

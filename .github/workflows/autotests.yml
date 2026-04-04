@@ -47,6 +47,10 @@ jobs:
       - name: Run tests
         run: make -C qa test
 
+      - name: Show Docker logs on failure
+        if: failure()
+        run: cd qa/docker && docker compose logs
+
       - name: Stop the app and clean up
         # This step will run even if the tests fail, ensuring Docker containers are stopped.
         if: always()

@@ -44,11 +44,15 @@ jobs:
 
       - name: Run the env
         run: |
-          make migrations
+          make test_env
 
       - name: Run tests
         run: |
           make be_test
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: make logs
 
       - name: Stop the DB and clean up
         # This step will run even if the tests fail, ensuring Docker containers are stopped.
