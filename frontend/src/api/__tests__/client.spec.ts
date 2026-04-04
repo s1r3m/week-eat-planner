@@ -95,6 +95,25 @@ describe('apiClient', () => {
       await expect(apiClient.get(path)).rejects.toThrow();
     });
 
+    it('should proceed to refresh if URL is empty', async () => {
+      mockApi.onGet('').replyOnce(401).onGet('').reply(200, { data: 'ok' });
+      authStore.refreshToken.mockResolvedValue('new-token');
+
+      const response = await apiClient.get('');
+
+      expect(response.data).toEqual({ data: 'ok' });
+      expect(authStore.refreshToken).toHaveBeenCalled();
+    });
+
+    it('should handle URL without leading slash in isAuthExcluded', async () => {
+      // auth/login (without leading slash) should be excluded after it's transformed to /auth/login
+      const path = 'auth/login';
+      mockApi.onGet('/' + path).reply(401);
+
+      await expect(apiClient.get(path)).rejects.toThrow();
+      expect(authStore.refreshToken).not.toHaveBeenCalled();
+    });
+
     it('should refresh token on 401 and retry original request', async () => {
       mockApi.onGet('/test').replyOnce(401).onGet('/test').reply(200, { data: 'ok' });
       authStore.refreshToken.mockResolvedValue('new-token');
@@ -110,17 +129,28 @@ describe('apiClient', () => {
       mockApi.onGet('/test1').replyOnce(401).onGet('/test1').reply(200, { data: 'ok1' });
       mockApi.onGet('/test2').replyOnce(401).onGet('/test2').reply(200, { data: 'ok2' });
 
-      // Simulate first call taking time
-      authStore.refreshToken.mockImplementation(async () => {
+      // Create a single shared promise to simulate the store's coalescing logic
+      let sharedPromise: Promise<string> | null = null;
+      const underlyingRefresh = vi.fn().mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
         return 'new-token';
+      });
+
+      authStore.refreshToken.mockImplementation(() => {
+        if (!sharedPromise) {
+          sharedPromise = underlyingRefresh();
+        }
+        return sharedPromise;
       });
 
       const [res1, res2] = await Promise.all([apiClient.get('/test1'), apiClient.get('/test2')]);
 
       expect(res1.data).toEqual({ data: 'ok1' });
       expect(res2.data).toEqual({ data: 'ok2' });
+      // authStore.refreshToken is called for every 401 response
       expect(authStore.refreshToken).toHaveBeenCalledTimes(2);
+      // But the underlying operation (coalesced by the store logic) is only invoked once
+      expect(underlyingRefresh).toHaveBeenCalledTimes(1);
     });
 
     it('should reject if newToken is null from refreshToken', async () => {

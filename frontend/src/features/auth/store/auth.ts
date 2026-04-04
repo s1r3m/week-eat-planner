@@ -17,6 +17,8 @@ export const useAuthStore = defineStore('auth-store', () => {
   const user: Ref<UserInfo | null> = ref(null);
   /** Whether the authentication state has been initialized. */
   const isInitialized = ref(false);
+  /** Version of the current session to track changes. */
+  const sessionVersion = ref(0);
 
   /**
    * Sets the access token.
@@ -43,6 +45,7 @@ export const useAuthStore = defineStore('auth-store', () => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
+    sessionVersion.value++;
     accessToken.value = data.access_token;
     await _setUser();
   };
@@ -65,43 +68,54 @@ export const useAuthStore = defineStore('auth-store', () => {
    * @returns A promise that resolves when the logout is complete.
    */
   const logout = async () => {
+    sessionVersion.value++;
+    const currentToken = accessToken.value;
+    setAccessToken(null);
+    user.value = null;
     try {
-      await apiClient.post('/auth/logout');
+      // Include token manually if available to avoid apiClient's refresh recursion
+      const headers = currentToken ? { Authorization: `Bearer ${currentToken}` } : {};
+      await authClient.post('/auth/logout', null, { headers });
     } catch (err: unknown) {
       console.error(`An error during logout: ${err}`);
     }
-    setAccessToken(null);
-    user.value = null;
-    console.log('Cleared access_token');
+    console.log('Cleared access_token and session');
   };
 
   /**
    * Refreshes the access token using the refresh token.
    * Deduplicates multiple calls into a single promise.
-   * @returns A promise that resolves to the new access token or null on failure.
+   * @returns A promise that resolves to the new access token.
+   * @throws Error on refresh failure.
    */
-  const refreshToken = async (): Promise<string | null> => {
+  const refreshToken = async (): Promise<string> => {
+    const currentVersion = sessionVersion.value;
     if (refreshPromise) {
-      return refreshPromise;
+      return refreshPromise as Promise<string>;
     }
 
     refreshPromise = (async () => {
       try {
         const { data } = await authClient.post<LoginInfo>('/auth/refresh');
+
+        if (sessionVersion.value !== currentVersion) {
+          console.warn('Session changed during refresh, ignoring result');
+          throw new Error('Session changed during refresh');
+        }
+
         setAccessToken(data.access_token);
         console.log('Token refreshed successfully');
         return data.access_token;
       } catch (err: unknown) {
         console.error('Token refresh failed:', getErrorMessage(err));
-        setAccessToken(null);
-        user.value = null;
-        return null;
+        await logout();
+        throw err;
       } finally {
         refreshPromise = null;
       }
     })();
 
-    return refreshPromise;
+    return refreshPromise as Promise<string>;
   };
 
   /**

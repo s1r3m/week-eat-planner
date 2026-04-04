@@ -4,7 +4,6 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { useAuthStore } from '@/features/auth/store/auth';
-import type { LoginInfo } from '@/domain/auth/models';
 
 const DEFAULT_TIMEOUT = 5000;
 
