@@ -68,7 +68,10 @@ class StorageClient:
             file_key: The key of the file to delete (expected format "bucket/key").
         """
         _client = self._get_client()
-        bucket, key = file_key.split('/')
+        try:
+            bucket, key = file_key.split('/', maxsplit=1)
+        except ValueError as exc:
+            raise ValueError(f'Invalid storage key: {file_key}') from exc
         logger.debug(f'Deleting key={file_key}: {bucket=} {key=}')
 
         def _delete() -> None:

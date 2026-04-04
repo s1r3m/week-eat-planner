@@ -59,3 +59,12 @@ async def test_storage_client__file_no_name__error_raised(storage, mocked_upload
 async def test_storage_client__delete__file_deleted(storage, mocked_s3_client):
     await storage.delete_file(EXPECTED_FILE_KEY)
     mocked_s3_client.delete_object.assert_called_once_with(Bucket=BUCKET, Key=f'{OBJ_ID}{FILE_SUFFIX}')
+
+
+async def test_storage_client__delete_bad_fiile_key__error_raised(storage):
+    bad_file_key = 'key_without_bucket'
+
+    with pytest.raises(ValueError) as exc:
+        await storage.delete_file(bad_file_key)
+
+    assert str(exc.value) == f'Invalid storage key: {bad_file_key}'
