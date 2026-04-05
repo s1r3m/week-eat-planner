@@ -75,13 +75,7 @@ describe('AppSidebarNavigation', () => {
     mockWeeksData.value = [];
     const wrapper = mount(AppSidebarNavigation, {
       global: {
-        plugins: [
-          createTestingPinia({
-            initialState: {
-              'weeks-store': { weeks: [] },
-            },
-          }),
-        ],
+        plugins: [createTestingPinia()],
         stubs: {
           AppSidebarNavigationItem: true,
           Collapsible: { template: '<div><slot /></div>' },

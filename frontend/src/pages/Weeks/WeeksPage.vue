@@ -3,7 +3,7 @@
     <div class="space-y-6 m-6">
       <PageTitle header="My Weeks" description="Manage your weekly meal plans here">
         <template #controls>
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />
             <Button size="lg" aria-label="Add a new week" @click="isCreateOpen = true">
               <Plus />

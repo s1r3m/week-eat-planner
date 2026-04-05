@@ -20,7 +20,7 @@ describe('WeekCreateDialog', () => {
     vi.clearAllMocks();
     (useMutation as any).mockReturnValue({
       mutate: mockMutate,
-      isLoading: false,
+      isLoading: ref(false),
     });
   });
 
@@ -85,7 +85,7 @@ describe('WeekCreateDialog', () => {
     expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === false)).toBe(true);
   });
 
-  it('passes isLoading state to WeekFormDialog', async () => {
+  it('passes isLoading state to WeekFormDialog', () => {
     (useMutation as any).mockReturnValue({
       mutate: mockMutate,
       isLoading: ref(true),

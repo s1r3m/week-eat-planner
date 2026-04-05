@@ -29,10 +29,13 @@
         </template>
       </PageTitle>
       <MealSlotGrid :week-days="week.week_days" />
-
-      <WeekEditDialog v-model="editingWeek" />
-      <WeekDeleteDialog v-model="deletingWeek" />
     </div>
+    <div v-else-if="isLoading" class="flex justify-center-safe mt-6 text-muted-foreground">
+      <Loader2 class="animate-spin" :size="24" />
+    </div>
+
+    <WeekEditDialog v-model="editingWeek" />
+    <WeekDeleteDialog v-model="deletingWeek" />
   </div>
 </template>
 
@@ -50,7 +53,12 @@ import { Loader2, MessageCircleX, Pen, Trash } from 'lucide-vue-next';
 
 const route = useRoute();
 
-const { data: week, isLoading, error, refetch } = useQuery(getWeekQuery(String(route.params.id)));
+const {
+  data: week,
+  isLoading,
+  error,
+  refetch,
+} = useQuery(() => getWeekQuery(String(route.params.id)));
 
 const editingWeek = ref<WeekFull | null>(null);
 const deletingWeek = ref<WeekFull | null>(null);
