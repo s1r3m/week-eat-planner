@@ -97,6 +97,22 @@ describe('WeekDeleteDialog', () => {
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 
+  it('does nothing when Dialog emits update:open with true', async () => {
+    const wrapper = mount(WeekDeleteDialog, {
+      global: {
+        stubs,
+      },
+      props: {
+        modelValue: mockWeek,
+      },
+    });
+
+    const dialog = wrapper.findComponent(stubs.Dialog);
+    await dialog.vm.$emit('update:open', true);
+
+    expect(wrapper.emitted('update:modelValue')).toBeFalsy();
+  });
+
   it('calls removeWeek and closes dialog when Yes button is clicked', async () => {
     const wrapper = mount(WeekDeleteDialog, {
       global: {

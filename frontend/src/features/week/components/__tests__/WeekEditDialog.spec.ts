@@ -68,6 +68,24 @@ describe('WeekEditDialog', () => {
     expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
   });
 
+  it('does nothing when WeekFormDialog emits update:modelValue with true', async () => {
+    const wrapper = mount(WeekEditDialog, {
+      global: {
+        stubs: {
+          WeekFormDialog: true,
+        },
+      },
+      props: {
+        modelValue: mockWeek,
+      },
+    });
+
+    const formDialog = wrapper.findComponent(WeekFormDialog);
+    await formDialog.vm.$emit('update:modelValue', true);
+
+    expect(wrapper.emitted('update:modelValue')).toBeFalsy();
+  });
+
   it('passes isLoading state to WeekFormDialog', async () => {
     (useMutation as any).mockReturnValue({
       mutate: mockMutate,

@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import MealSlotGridCard from './MealSlotGridCard.vue';
-import type { WeekDay } from '@/domain/week/models';
+import type { WeekDay } from '@/api/weeks';
 import { useI18n } from 'vue-i18n';
 
 defineProps<{

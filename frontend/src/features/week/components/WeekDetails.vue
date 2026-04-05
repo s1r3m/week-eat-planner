@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
+import type { WeekPreview } from '@/api/weeks';
 import { Card } from '@/components/ui/card';
-import type { UserWeekMinimal } from '@/domain/week/models';
 
-defineProps<{ week: UserWeekMinimal }>();
+defineProps<{ week: WeekPreview }>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 </script>

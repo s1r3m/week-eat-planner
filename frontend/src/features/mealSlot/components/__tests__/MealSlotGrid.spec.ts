@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import MealSlotGrid from '../MealSlotGrid.vue';
 import i18n from '@/i18n';
 import en from '@/i18n/locales/en';
-import type { WeekDay } from '@/domain/week/models';
+import type { WeekDay } from '@/api/weeks';
 import MealSlotGridCard from '../MealSlotGridCard.vue';
 
 describe('MealSlotGrid', () => {
