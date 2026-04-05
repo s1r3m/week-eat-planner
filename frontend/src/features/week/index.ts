@@ -1,4 +1,3 @@
-export { useWeekStore } from './store/weeks';
 export { default as WeekDetails } from './components/WeekDetails.vue';
 export { default as WeekCreateDialog } from './components/WeekCreateDialog.vue';
 export { default as WeekEditDialog } from './components/WeekEditDialog.vue';
