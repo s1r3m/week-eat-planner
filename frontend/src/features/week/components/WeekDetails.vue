@@ -1,5 +1,8 @@
 <template>
-  <Card class="relative group gap-0 p-0 overflow-hidden">
+  <Card
+    class="relative group gap-0 p-0 overflow-hidden"
+    :class="{ 'opacity-50 pointer-events-none': week.id.startsWith('temp-id') }"
+  >
     <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="default_img"

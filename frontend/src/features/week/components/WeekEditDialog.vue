@@ -13,12 +13,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useAsyncCall } from '@/composables/useAsyncCall';
-import { useWeekStore } from '../store/weeks';
-import type { UserWeekMinimal } from '@/domain/week/models';
+import { useMutation } from '@pinia/colada';
+import { editWeekMutation } from '@/api/weeks';
+import type { WeekPreview } from '@/api/weeks';
+
 import WeekFormDialog from '@/features/week/components/WeekFormDialog.vue';
 
-const week = defineModel<UserWeekMinimal | null>();
+const week = defineModel<WeekPreview | null>();
 
 const isOpen = computed({
   get: () => !!week.value,
@@ -27,14 +28,11 @@ const isOpen = computed({
   },
 });
 
-const weekStore = useWeekStore();
-const { call: edit, isLoading } = useAsyncCall(async (week: UserWeekMinimal, newName: string) => {
-  await weekStore.updateWeek(week.id, newName);
-});
+const { mutate: edit, isLoading } = useMutation(editWeekMutation());
 
-const onEdit = async (name: string) => {
+const onEdit = (name: string) => {
   if (!week.value) return;
-  await edit(week.value, name);
+  edit({ id: week.value.id, payload: { name } });
   week.value = null;
 };
 </script>

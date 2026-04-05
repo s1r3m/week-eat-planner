@@ -7,4 +7,5 @@
 
 <script setup lang="ts">
 import PageTitle from '@/components/shared/PageTitle.vue';
+import RecipesGrid from '@/features/recipe/components/RecipesGrid.vue';
 </script>
