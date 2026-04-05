@@ -42,14 +42,10 @@ describe('WeekSinglePage', () => {
       template: '<div class="delete-dialog" v-if="modelValue" />',
       props: ['modelValue'],
     },
-    Loader2: { template: '<div class="loader" />' },
-    MessageCircleX: { template: '<div class="error-icon" />' },
     Button: {
       template: '<button @click="$emit(\'click\')"><slot /></button>',
       props: ['variant', 'size'],
     },
-    Pen: { template: '<div class="pen-icon" />' },
-    Trash: { template: '<div class="trash-icon" />' },
   };
 
   beforeEach(() => {
@@ -85,7 +81,7 @@ describe('WeekSinglePage', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('An error has occured during loading');
+    expect(wrapper.text()).toContain('An error has occurred during loading');
     expect(wrapper.text()).toContain('Failed to load');
     expect(wrapper.find('svg.lucide-message-circle-x').exists()).toBe(true);
   });
@@ -139,5 +135,45 @@ describe('WeekSinglePage', () => {
 
     const deleteDialog = wrapper.findComponent(stubs.WeekDeleteDialog);
     expect(deleteDialog.props('modelValue')).toEqual(mockWeek);
+  });
+
+  it('closes edit dialog when it emits update:modelValue with null', async () => {
+    (useQuery as any).mockReturnValue({
+      data: ref(mockWeek),
+      isLoading: ref(false),
+      error: ref(null),
+    });
+
+    const wrapper = mount(WeekSinglePage, {
+      global: { stubs },
+    });
+
+    const editButton = wrapper.findAll('button').find((b) => b.text().includes('Edit'));
+    await editButton?.trigger('click');
+
+    const editDialog = wrapper.findComponent(stubs.WeekEditDialog);
+    await editDialog.vm.$emit('update:modelValue', null);
+
+    expect(wrapper.find('.edit-dialog').exists()).toBe(false);
+  });
+
+  it('closes delete dialog when it emits update:modelValue with null', async () => {
+    (useQuery as any).mockReturnValue({
+      data: ref(mockWeek),
+      isLoading: ref(false),
+      error: ref(null),
+    });
+
+    const wrapper = mount(WeekSinglePage, {
+      global: { stubs },
+    });
+
+    const deleteButton = wrapper.findAll('button').find((b) => b.text().includes('Delete'));
+    await deleteButton?.trigger('click');
+
+    const deleteDialog = wrapper.findComponent(stubs.WeekDeleteDialog);
+    await deleteDialog.vm.$emit('update:modelValue', null);
+
+    expect(wrapper.find('.delete-dialog').exists()).toBe(false);
   });
 });

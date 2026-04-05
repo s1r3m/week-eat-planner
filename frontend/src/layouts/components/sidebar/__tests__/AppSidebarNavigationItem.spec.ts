@@ -98,6 +98,30 @@ describe('AppSidebarNavigationItem', () => {
     expect(button.props('isActive')).toBe(false);
   });
 
+  it('sets isActive to true when current route matches item.to with params', () => {
+    const itemWithParams: NavLink = {
+      to: { name: 'week', params: { id: '123' } },
+      label: 'Week 123',
+    };
+    vi.mocked(useRoute).mockReturnValue({ path: '/weeks/123' } as any);
+    vi.mocked(useSidebar).mockReturnValue({
+      isMobile: { value: false },
+      setOpenMobile: vi.fn(),
+    } as any);
+
+    const wrapper = mount(AppSidebarNavigationItem, {
+      props: { item: itemWithParams },
+      global: {
+        stubs: {
+          RouterLink: RouterLinkStub,
+        },
+      },
+    });
+
+    const button = wrapper.findComponent({ name: 'SidebarMenuButton' });
+    expect(button.props('isActive')).toBe(true);
+  });
+
   it('closes sidebar on mobile after clicking the link', async () => {
     const setOpenMobile = vi.fn();
     vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
 import { apiClient } from '../client';
@@ -38,9 +38,13 @@ describe('weeks api', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
-    vi.clearAllMocks();
     vi.spyOn(console, 'debug').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    mockApi.restore();
+    vi.clearAllMocks();
   });
 
   describe('getWeeksQuery', () => {
@@ -141,10 +145,7 @@ describe('weeks api', () => {
       mutation.onError(error, payload, {});
 
       expect(console.error).toHaveBeenCalled();
-      expect(mockQueryCache.setQueryData).not.toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        expect.anything(),
-      );
+      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
     });
 
     it('should handle empty old data in updater function for onMutate', async () => {
@@ -229,6 +230,7 @@ describe('weeks api', () => {
 
       mutation.onError(new Error('Fail'), vars, context);
 
+      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         WEEK_KEYS.detail(vars.id),
         context.previous,
@@ -261,7 +263,7 @@ describe('weeks api', () => {
 
     it('should invalidate queries in onSettled', () => {
       const mutation = editWeekMutation();
-      mutation.onSettled(vars);
+      mutation.onSettled(undefined as any, undefined, vars, {});
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
         key: WEEK_KEYS.detail(vars.id),
@@ -310,6 +312,7 @@ describe('weeks api', () => {
 
       mutation.onError(new Error('Fail'), id, context);
 
+      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         WEEK_KEYS.all(),
         context.previousWeeks,
@@ -334,8 +337,11 @@ describe('weeks api', () => {
 
     it('should invalidate queries in onSettled', () => {
       const mutation = deleteWeekMutation();
-      mutation.onSettled();
+
+      mutation.onSettled(null, undefined, id, {});
+
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.detail(id) });
     });
   });
 });

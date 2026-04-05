@@ -33,7 +33,6 @@ export interface WeekPreview {
   id: string;
   name: string;
   user_id: string;
-  isPending?: boolean;
 }
 
 export interface WeekFull extends WeekPreview {
@@ -88,7 +87,7 @@ export const addWeekMutation = defineMutation(() => {
       console.debug(`Week ${newWeek.id} has been created!`);
     },
     onError: (err: Error, _payload: WeekPayload, context: { previousWeeks?: WeekPreview[] }) => {
-      console.error('An error occured during creating a new week', err.message);
+      console.error('An error occurred during creating a new week', err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
     onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
@@ -119,11 +118,16 @@ export const editWeekMutation = defineMutation(() => {
       vars: EditWeek,
       context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {
-      console.error(`An error occured during editiing week ${vars.id}: `, err.message);
+      console.error(`An error occurred during editing week ${vars.id}: `, err.message);
       if (context?.previous) queryCache.setQueryData(WEEK_KEYS.detail(vars.id), context.previous);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
-    onSettled: (vars: EditWeek) => {
+    onSettled: (
+      _updatedWeek: WeekPreview,
+      _error: Error | undefined,
+      vars: EditWeek,
+      _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
+    ) => {
       queryCache.invalidateQueries({ key: WEEK_KEYS.all() });
       queryCache.invalidateQueries({ key: WEEK_KEYS.detail(vars.id) });
     },
@@ -147,9 +151,17 @@ export const deleteWeekMutation = defineMutation(() => {
     onSuccess: (_: null, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
       console.debug(`Week ${id} has been deleted`),
     onError: (err: Error, id: string, context: { previousWeeks?: WeekPreview[] }) => {
-      console.error(`An error occured during deleting week ${id}: `, err.message);
+      console.error(`An error occurred during deleting week ${id}: `, err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
-    onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
+    onSettled: (
+      _: null | undefined,
+      _error: Error | undefined,
+      id: string,
+      _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
+    ) => {
+      queryCache.invalidateQueries({ key: WEEK_KEYS.all() });
+      queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) });
+    },
   };
 });

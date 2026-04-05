@@ -1,3 +1,4 @@
+import { ref } from 'vue';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import WeekDeleteDialog from '../WeekDeleteDialog.vue';
@@ -45,7 +46,7 @@ describe('WeekDeleteDialog', () => {
     vi.clearAllMocks();
     (useMutation as any).mockReturnValue({
       mutate: mockMutate,
-      isLoading: false,
+      isLoading: ref(false),
     });
   });
 
@@ -151,6 +152,6 @@ describe('WeekDeleteDialog', () => {
 
     const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Deleting...'));
     expect(yesButton?.exists()).toBe(true);
-    expect(yesButton?.element.getAttribute('disabled')).toBeDefined();
+    expect((yesButton?.element as HTMLButtonElement).disabled).toBe(true);
   });
 });

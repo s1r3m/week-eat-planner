@@ -1,3 +1,4 @@
+import { ref } from 'vue';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import WeekCreateDialog from '../WeekCreateDialog.vue';
@@ -87,7 +88,7 @@ describe('WeekCreateDialog', () => {
   it('passes isLoading state to WeekFormDialog', async () => {
     (useMutation as any).mockReturnValue({
       mutate: mockMutate,
-      isLoading: true,
+      isLoading: ref(true),
     });
 
     const wrapper = mount(WeekCreateDialog, {

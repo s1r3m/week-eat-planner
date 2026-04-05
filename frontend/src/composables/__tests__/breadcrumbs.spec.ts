@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { useBreadcrumbs } from '../breadcrumbs';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useRoute } from 'vue-router';
@@ -41,11 +41,14 @@ describe('useBreadcrumbs', () => {
       return { data: ref(null) } as any;
     });
 
-    vi.clearAllMocks();
     mockRoute.name = '';
     mockRoute.params = {};
     weekData.value = null;
     recipeData.value = null;
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it('should return empty breadcrumbs for unknown route', () => {

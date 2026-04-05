@@ -35,9 +35,6 @@ describe('WeeksPage', () => {
     Button: {
       template: '<button @click="$emit(\'click\')"><slot /></button>',
     },
-    Loader2: { template: '<div class="loader" />' },
-    Plus: { template: '<div class="plus-icon" />' },
-    MessageCircleX: { template: '<div class="error-icon" />' },
   };
 
   beforeEach(() => {
@@ -70,7 +67,7 @@ describe('WeeksPage', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('An error has occured during loading');
+    expect(wrapper.text()).toContain('An error has occurred during loading');
     expect(wrapper.text()).toContain('Failed to fetch');
     expect(wrapper.find('svg.lucide-message-circle-x').exists()).toBe(true);
   });
@@ -108,6 +105,26 @@ describe('WeeksPage', () => {
 
     const createDialog = wrapper.findComponent(stubs.WeekCreateDialog);
     expect(createDialog.exists()).toBe(true);
+  });
+
+  it('closes create dialog when it emits update:modelValue with false', async () => {
+    (useQuery as any).mockReturnValue({
+      data: ref(mockWeeks),
+      isLoading: ref(false),
+      error: ref(null),
+    });
+
+    const wrapper = mount(WeeksPage, {
+      global: { stubs },
+    });
+
+    const addButton = wrapper.findAll('button').find((b) => b.text().includes('Add a new week'));
+    await addButton?.trigger('click');
+
+    const createDialog = wrapper.findComponent(stubs.WeekCreateDialog);
+    await createDialog.vm.$emit('update:modelValue', false);
+
+    expect(wrapper.find('.create-dialog').exists()).toBe(false);
   });
 
   it('calls refetch when Try Again is clicked', async () => {

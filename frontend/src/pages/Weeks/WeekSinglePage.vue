@@ -5,7 +5,7 @@
         class="flex flex-col gap-6 items-center-safe border-10 border-muted w-full p-6 mt-6 rounded-xl text-muted-foreground"
       >
         <MessageCircleX :size="42" />
-        <h2 class="text-lg">An error has occured during loading</h2>
+        <h2 class="text-lg">An error has occurred during loading</h2>
         <p>{{ error.message }}</p>
         <Button @click="refetch"> Try again</Button>
       </div>
