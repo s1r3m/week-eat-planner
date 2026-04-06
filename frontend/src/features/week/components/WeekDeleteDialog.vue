@@ -31,7 +31,7 @@ import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
 import { deleteWeekMutation } from '@/api/weeks';
-import type { WeekFull } from '@/api/weeks';
+import type { WeekPreview } from '@/api/weeks';
 
 import {
   Dialog,
@@ -45,7 +45,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 
-const week = defineModel<WeekFull | null>();
+const week = defineModel<WeekPreview | null>();
 const isOpen = computed({
   get: () => !!week.value,
   set: (value) => {

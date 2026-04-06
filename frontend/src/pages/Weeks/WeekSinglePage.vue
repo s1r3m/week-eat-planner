@@ -41,7 +41,8 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery } from '@pinia/colada';
-import { getWeekQuery, type WeekFull } from '@/api/weeks';
+import { getWeekQuery } from '@/api/weeks';
+import type { WeekPreview } from '@/api/weeks';
 
 import PageTitle from '@/components/shared/PageTitle.vue';
 import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
@@ -59,9 +60,9 @@ const {
   refetch,
 } = useQuery(() => getWeekQuery(String(route.params.id)));
 
-const editingWeek = ref<WeekFull | null>(null);
-const deletingWeek = ref<WeekFull | null>(null);
+const editingWeek = ref<WeekPreview | null>(null);
+const deletingWeek = ref<WeekPreview | null>(null);
 
-const openEdit = (selectedWeek: WeekFull) => (editingWeek.value = selectedWeek);
-const openDelete = (selectedWeek: WeekFull) => (deletingWeek.value = selectedWeek);
+const openEdit = (selectedWeek: WeekPreview) => (editingWeek.value = selectedWeek);
+const openDelete = (selectedWeek: WeekPreview) => (deletingWeek.value = selectedWeek);
 </script>
