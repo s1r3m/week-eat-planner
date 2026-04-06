@@ -30,9 +30,7 @@
       </PageTitle>
       <MealSlotGrid :week-days="week.week_days" />
     </div>
-    <div v-else-if="isLoading" class="flex justify-center-safe mt-6 text-muted-foreground">
-      <Loader2 class="animate-spin" :size="24" />
-    </div>
+    <TheLoadingPageState v-else-if="isLoading" />
 
     <WeekEditDialog v-model="editingWeek" />
     <WeekDeleteDialog v-model="deletingWeek" />
@@ -50,6 +48,7 @@ import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
 import { Loader2, MessageCircleX, Pen, Trash } from 'lucide-vue-next';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
 const route = useRoute();
 

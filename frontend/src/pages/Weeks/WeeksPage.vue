@@ -23,7 +23,10 @@
           <Button @click="refetch"> Try again</Button>
         </div>
       </div>
+
       <WeeksGrid v-else-if="weeks" :weeks="weeks" />
+
+      <TheLoadingPageState v-else-if="isLoading" />
     </div>
 
     <WeekCreateDialog v-model="isCreateOpen" />
@@ -39,6 +42,7 @@ import { MessageCircleX, Plus, Loader2 } from 'lucide-vue-next';
 
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { getWeeksQuery } from '@/api/weeks';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
 const { data: weeks, error, refetch, isLoading } = useQuery(getWeeksQuery());
 
