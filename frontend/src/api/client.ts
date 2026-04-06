@@ -14,17 +14,11 @@ interface ErrorResponse {
 export const apiClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 export const authClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 });
 

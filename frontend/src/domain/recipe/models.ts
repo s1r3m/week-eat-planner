@@ -4,7 +4,7 @@ type Unit = (typeof UNITS)[number];
 export interface RecipeMinimal {
   id: string;
   name: string;
-  author?: string;
+  author: string;
   isFavorite?: boolean;
   isOfficial?: boolean;
   image_url?: string;

@@ -1,35 +1,24 @@
 <template>
-  <div>
-    <div v-if="error" class="flex justify-center-safe">
-      <div
-        class="flex flex-col gap-6 items-center-safe border-10 border-muted w-full p-6 mt-6 rounded-xl text-muted-foreground"
-      >
-        <MessageCircleX :size="42" />
-        <h2 class="text-lg">An error has occurred during loading</h2>
-        <p>{{ error.message }}</p>
-        <Button @click="refetch"> Try again</Button>
-      </div>
-    </div>
+  <div id="week-container" class="space-y-6 m-6">
+    <PageTitle :header="week?.name" description="Plan your meal to each day">
+      <template v-if="!isLoading" #controls>
+        <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />
+        <Button variant="outline" size="lg" aria-label="Edit week" @click="openEdit(week)"
+          ><Pen /> <span class="hidden md:inline"> Edit </span></Button
+        >
+        <Button
+          variant="destructiveOutline"
+          size="lg"
+          aria-label="Delete week"
+          @click="openDelete(week)"
+        >
+          <Trash /><span class="hidden md:inline"> Delete </span>
+        </Button>
+      </template>
+    </PageTitle>
 
-    <div v-else-if="week" class="space-y-6 m-6">
-      <PageTitle :header="week.name" description="Plan your meal to each day">
-        <template #controls>
-          <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />
-          <Button variant="outline" size="lg" aria-label="Edit week" @click="openEdit(week)"
-            ><Pen /> <span class="hidden md:inline"> Edit </span></Button
-          >
-          <Button
-            variant="destructiveOutline"
-            size="lg"
-            aria-label="Delete week"
-            @click="openDelete(week)"
-          >
-            <Trash /><span class="hidden md:inline"> Delete </span>
-          </Button>
-        </template>
-      </PageTitle>
-      <MealSlotGrid :week-days="week.week_days" />
-    </div>
+    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+    <MealSlotGrid v-else-if="week" :week-days="week.week_days" />
     <TheLoadingPageState v-else-if="isLoading" />
 
     <WeekEditDialog v-model="editingWeek" />
@@ -48,8 +37,9 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
-import { Loader2, MessageCircleX, Pen, Trash } from 'lucide-vue-next';
+import { Loader2, Pen, Trash } from 'lucide-vue-next';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
+import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 
 const route = useRoute();
 
@@ -62,7 +52,10 @@ const {
 
 const editingWeek = ref<WeekPreview | null>(null);
 const deletingWeek = ref<WeekPreview | null>(null);
-
-const openEdit = (selectedWeek: WeekPreview) => (editingWeek.value = selectedWeek);
-const openDelete = (selectedWeek: WeekPreview) => (deletingWeek.value = selectedWeek);
+const openEdit = (selectedWeek?: WeekPreview) => {
+  if (selectedWeek) editingWeek.value = selectedWeek;
+};
+const openDelete = (selectedWeek?: WeekPreview) => {
+  if (selectedWeek) deletingWeek.value = selectedWeek;
+};
 </script>

@@ -150,7 +150,7 @@ export const deleteWeekMutation = defineMutation(() => {
     },
     onSuccess: (_: null, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
       console.debug(`Week ${id} has been deleted`),
-    onError: (err: Error, id: string, context: { previousWeeks?: WeekPreview[] }) => {
+    onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
       console.error(`An error occurred during deleting week ${id}: `, err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },

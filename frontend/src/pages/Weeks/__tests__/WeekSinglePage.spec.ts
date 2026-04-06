@@ -81,7 +81,7 @@ describe('WeekSinglePage', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('An error has occurred during loading');
+    expect(wrapper.text()).toContain('An error has occurred');
     expect(wrapper.text()).toContain('Failed to load');
     expect(wrapper.find('svg.lucide-message-circle-x').exists()).toBe(true);
   });

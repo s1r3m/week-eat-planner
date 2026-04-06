@@ -1,14 +1,32 @@
 <template>
+  <div v-if="!recipes.length">
+    <Card
+      class="flex flex-col gap-6 items-center-safe border-10 border-muted w-full p-6 mt-12 rounded-xl text-muted-foreground"
+    >
+      <Star :size="42" />
+      <h2 class="text-lg">Nothing here yet</h2>
+      <p>Browse our recipe collection to start planning!</p>
+      <Button @click="router.push({ name: ROUTE_NAMES.RECIPES })">To recipes</Button>
+    </Card>
+  </div>
   <div class="grid gap-6 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
     <RecipePreview v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
   </div>
 </template>
 
 <script setup lang="ts">
-import RecipePreview from './RecipePreview.vue';
+import { useRouter } from 'vue-router';
 import type { RecipeMinimal } from '@/domain/recipe/models';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+
+import RecipePreview from './RecipePreview.vue';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Star } from 'lucide-vue-next';
 
 defineProps<{
   recipes: RecipeMinimal[];
 }>();
+
+const router = useRouter();
 </script>

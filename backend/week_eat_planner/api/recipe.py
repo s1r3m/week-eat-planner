@@ -40,13 +40,13 @@ async def create_recipe(
     return RecipeRead.model_validate(recipe)
 
 
-@router.patch(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeRead)
+@router.patch(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeReadMinimal)
 async def upload_image(
     recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
-) -> RecipeRead:
+) -> RecipeReadMinimal:
     """The endpoint to upload an image to the recipe.
 
     Args:
@@ -78,7 +78,7 @@ async def upload_image(
         new_data = RecipeUpdate(image_key=image_key)
         updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
 
-        return RecipeRead.model_validate(updated_recipe)
+        return RecipeReadMinimal.model_validate(updated_recipe)
     finally:
         await image.close()
 
@@ -103,12 +103,12 @@ async def get_recipe(
     return recipe
 
 
-@router.get(AppUrl.RECIPES, response_model=list[RecipeReadMinimal])
-async def get_recipes(
+@router.get(AppUrl.RECIPES_MY, response_model=list[RecipeReadMinimal])
+async def get_my_recipes(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[RecipeReadMinimal]:
-    """Retrieves all recipes for the current user.
+    """Retrieves all recipes created by the current user.
 
     Args:
         user: The authenticated user, injected by dependency.

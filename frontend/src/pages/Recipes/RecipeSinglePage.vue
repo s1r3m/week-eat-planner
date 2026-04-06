@@ -1,15 +1,15 @@
 <template>
-  <div v-if="recipe" class="space-y-6 m-6">
-    <PageTitle :header="recipe.name" :description="description">
+  <div id="recipe-container" class="space-y-6 m-6">
+    <PageTitle :header="recipe?.name" :description="description">
       <template #controls>
         <Button
-          :variant="recipe.isFavorite ? 'outline' : 'default'"
+          :variant="isFavorite ? 'outline' : 'default'"
           size="lg"
-          :aria-label="!recipe.isFavorite ? 'Add to favorites' : 'Remove from favorites'"
-          @click="recipe.isFavorite = !recipe.isFavorite"
-          ><Star v-bind="starProps" :class="{ 'text-transparent': recipe.isFavorite }" />
+          :aria-label="!isFavorite ? 'Add to favorites' : 'Remove from favorites'"
+          @click="isFavorite = !isFavorite"
+          ><Star v-bind="starProps" :class="{ 'text-transparent': isFavorite }" />
           <span class="hidden md:inline"
-            >{{ !recipe.isFavorite ? 'Add to' : 'Remove from' }} favorites
+            >{{ !isFavorite ? 'Add to' : 'Remove from' }} favorites
           </span></Button
         >
         <Button variant="outline" size="lg" aria-label="Edit recipe"
@@ -19,48 +19,51 @@
           variant="destructiveOutline"
           size="lg"
           aria-label="Delete recipe"
-          @click="onDelete(recipe.id)"
+          :disabled="!recipe"
+          @click="openDelete(recipe)"
         >
           <Trash /><span class="hidden md:inline"> Delete </span>
         </Button>
       </template>
     </PageTitle>
 
-    <div class="flex flex-col gap-6">
+    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+
+    <div v-if="recipe" class="flex flex-col gap-6">
       <RecipeHero :recipe="recipe" />
       <Separator />
       <RecipeSteps :steps="recipe.steps" />
     </div>
+
+    <TheLoadingPageState v-else-if="isLoading" loading-name="the recipe" />
+
+    <RecipeDeleteDialog v-model="deletingRecipe" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import PageTitle from '@/components/shared/PageTitle.vue';
-import { useAsyncCall } from '@/composables/useAsyncCall';
+import { useRoute } from 'vue-router';
+import { useQuery } from '@pinia/colada';
+import { getRecipeQuery } from '@/api/recipes';
+import type { RecipePreview } from '@/api/recipes';
 
-import { useRecipeStore } from '@/features/recipe';
-import { useRoute, useRouter } from 'vue-router';
+import PageTitle from '@/components/shared/PageTitle.vue';
 import RecipeHero from '@/features/recipe/components/RecipeHero.vue';
 import RecipeSteps from '@/features/recipe/components/RecipeSteps.vue';
 import { Star, Trash, Pen } from 'lucide-vue-next';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
+import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
+import RecipeDeleteDialog from '@/features/recipe/components/RecipeDeleteDialog.vue';
 
-const recipeStore = useRecipeStore();
 const route = useRoute();
-const router = useRouter();
-
-const { call: getRecipe } = useAsyncCall(
-  async () => await recipeStore.getRecipe(route.params.id as string),
-);
-const data = await getRecipe();
-const recipe = ref(data);
 
 const description = computed(() => (recipe.value?.author ? `By ${recipe.value?.author}` : ''));
+const isFavorite = computed(() => recipe.value?.isFavorite);
 const starProps = computed(() =>
-  recipe.value?.isFavorite
+  isFavorite.value
     ? {
         fill: 'var(--primary)',
         'stroke-width': 0,
@@ -68,12 +71,15 @@ const starProps = computed(() =>
     : {},
 );
 
-const { call: deleteRecipe } = useAsyncCall((recipeId: string) =>
-  recipeStore.deleteRecipe(recipeId),
-);
+const {
+  data: recipe,
+  isLoading,
+  error,
+  refetch,
+} = useQuery(getRecipeQuery(String(route.params.id)));
 
-const onDelete = async (recipeId: string) => {
-  await deleteRecipe(recipeId);
-  router.push({ name: ROUTE_NAMES.RECIPES_MY });
+const deletingRecipe = ref<RecipePreview | null>(null);
+const openDelete = (selectedRecipe?: RecipePreview) => {
+  if (selectedRecipe) deletingRecipe.value = selectedRecipe;
 };
 </script>
