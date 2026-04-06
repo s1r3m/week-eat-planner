@@ -1,6 +1,9 @@
 <template>
   <SidebarGroup>
-    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+    <div class="flex items-center justify-between pr-4">
+      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="16" />
+    </div>
     <SidebarMenu>
       <Collapsible v-for="item in navLinks" :key="item.label" :default-open="true">
         <SidebarMenuItem>
@@ -36,7 +39,11 @@
 
 <script setup lang="ts">
 import { computed, type ComputedRef } from 'vue';
-import { storeToRefs } from 'pinia';
+import { useQuery } from '@pinia/colada';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import type { NavLink } from '../header/types/navigation';
+import { getWeeksQuery } from '@/api/weeks';
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   SidebarGroup,
@@ -47,21 +54,17 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { Calendar, ChevronRight, ForkKnife } from 'lucide-vue-next';
-import { useWeekStore } from '@/features/week';
+import { Calendar, ChevronRight, ForkKnife, Loader2 } from 'lucide-vue-next';
 import AppSidebarNavigationItem from './AppSidebarNavigationItem.vue';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import type { NavLink } from '../header/types/navigation';
 
-const weekStore = useWeekStore();
-const { weeks } = storeToRefs(weekStore);
+const { data: weeks, isLoading } = useQuery(getWeeksQuery());
 
 const navLinks: ComputedRef<NavLink[]> = computed(() => [
   {
     label: 'My weeks',
     to: { name: ROUTE_NAMES.WEEKS },
     icon: Calendar,
-    items: weeks.value.map((week) => ({
+    items: weeks.value?.map((week) => ({
       to: { name: ROUTE_NAMES.WEEK, params: { id: week.id } },
       label: week.name,
     })),

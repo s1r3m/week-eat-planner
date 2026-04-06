@@ -1,19 +1,32 @@
+import { ref } from 'vue';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
-import { createTestingPinia } from '@pinia/testing';
+import { mount } from '@vue/test-utils';
 import WeekCreateDialog from '../WeekCreateDialog.vue';
 import WeekFormDialog from '../WeekFormDialog.vue';
-import { useWeekStore } from '@/features/week/store/weeks';
+import { useMutation } from '@pinia/colada';
+
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn(),
+}));
+
+vi.mock('@/api/weeks', () => ({
+  addWeekMutation: vi.fn(),
+}));
 
 describe('WeekCreateDialog', () => {
+  const mockMutate = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    (useMutation as any).mockReturnValue({
+      mutate: mockMutate,
+      isLoading: ref(false),
+    });
   });
 
   it('renders WeekFormDialog with correct props', () => {
     const wrapper = mount(WeekCreateDialog, {
       global: {
-        plugins: [createTestingPinia({ createSpy: vi.fn })],
         stubs: {
           WeekFormDialog: true,
         },
@@ -35,7 +48,6 @@ describe('WeekCreateDialog', () => {
   it('updates modelValue when WeekFormDialog emits update:modelValue', async () => {
     const wrapper = mount(WeekCreateDialog, {
       global: {
-        plugins: [createTestingPinia({ createSpy: vi.fn })],
         stubs: {
           WeekFormDialog: true,
         },
@@ -55,7 +67,6 @@ describe('WeekCreateDialog', () => {
   it('calls addWeek and emits close on submit', async () => {
     const wrapper = mount(WeekCreateDialog, {
       global: {
-        plugins: [createTestingPinia({ createSpy: vi.fn })],
         stubs: {
           WeekFormDialog: true,
         },
@@ -65,33 +76,23 @@ describe('WeekCreateDialog', () => {
       },
     });
 
-    const weekStore = useWeekStore();
     const formDialog = wrapper.findComponent(WeekFormDialog);
 
     await formDialog.vm.$emit('submit', 'New Week');
-    await flushPromises();
 
-    expect(weekStore.addWeek).toHaveBeenCalledWith('New Week');
+    expect(mockMutate).toHaveBeenCalledWith({ name: 'New Week' });
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    // One from onCreate, maybe one from somewhere else?
-    // Actually, onCreate sets isOpen.value = false which emits update:modelValue
     expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === false)).toBe(true);
   });
 
-  it('passes isLoading state to WeekFormDialog', async () => {
-    let resolveAddWeek: (value: void | PromiseLike<void>) => void;
-    const addWeekPromise = new Promise<void>((resolve) => {
-      resolveAddWeek = resolve;
+  it('passes isLoading state to WeekFormDialog', () => {
+    (useMutation as any).mockReturnValue({
+      mutate: mockMutate,
+      isLoading: ref(true),
     });
 
     const wrapper = mount(WeekCreateDialog, {
       global: {
-        plugins: [
-          createTestingPinia({
-            createSpy: vi.fn,
-            stubActions: false,
-          }),
-        ],
         stubs: {
           WeekFormDialog: true,
         },
@@ -101,22 +102,7 @@ describe('WeekCreateDialog', () => {
       },
     });
 
-    const weekStore = useWeekStore();
-    weekStore.addWeek = vi.fn().mockReturnValue(addWeekPromise);
-
     const formDialog = wrapper.findComponent(WeekFormDialog);
-
-    // Trigger submit
-    formDialog.vm.$emit('submit', 'New Week');
-
-    // Wait for the next tick to allow useAsyncCall's isLoading to update
-    await wrapper.vm.$nextTick();
     expect(formDialog.props('isLoading')).toBe(true);
-
-    // Resolve the promise
-    resolveAddWeek!();
-    await flushPromises();
-
-    expect(formDialog.props('isLoading')).toBe(false);
   });
 });

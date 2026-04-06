@@ -1,7 +1,8 @@
+import { getWeekQuery } from '@/api/weeks';
+import { getRecipeQuery } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import type { RouteName } from '@/domain/router/routeNames';
-import { useRecipeStore } from '@/features/recipe';
-import { useWeekStore } from '@/features/week';
+import { useQuery } from '@pinia/colada';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -10,23 +11,33 @@ type Breadcrumb = {
   to?: { name: string };
 };
 
-type Generator = (route: ReturnType<typeof useRoute>) => Breadcrumb[];
+type Generator = () => Breadcrumb[];
 
 export const useBreadcrumbs = () => {
   const route = useRoute();
-  const weekStore = useWeekStore();
-  const recipeStore = useRecipeStore();
+
+  const { data: week } = useQuery(() => ({
+    ...getWeekQuery(String(route.params.id)),
+    enabled: route.name === ROUTE_NAMES.WEEK,
+  }));
+
+  const { data: recipe } = useQuery(() => ({
+    ...getRecipeQuery(String(route.params.id)),
+    enabled: route.name === ROUTE_NAMES.RECIPE,
+  }));
 
   const breadcrumbsGenerators: Partial<Record<RouteName, Generator>> = {
     [ROUTE_NAMES.WEEKS]: () => [{ label: 'My weeks' }],
-    [ROUTE_NAMES.WEEK]: (route) => [
+    [ROUTE_NAMES.WEEK]: () => [
       { to: { name: ROUTE_NAMES.WEEKS }, label: 'My weeks' },
-      { label: weekStore.getWeekNameById(route.params.id as string) || 'error' },
+      {
+        label: week.value?.name || '',
+      },
     ],
     [ROUTE_NAMES.RECIPES]: () => [{ label: 'Recipes' }],
     [ROUTE_NAMES.RECIPE]: () => [
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
-      { label: recipeStore.getRecipeNameById(route.params.id as string) || 'error' },
+      { label: recipe.value?.name || '' },
     ],
     [ROUTE_NAMES.RECIPES_MY]: () => [
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
@@ -46,6 +57,6 @@ export const useBreadcrumbs = () => {
 
   return computed(() => {
     const generator = breadcrumbsGenerators[route.name as RouteName];
-    return generator ? generator(route) : [];
+    return generator ? generator() : [];
   });
 };

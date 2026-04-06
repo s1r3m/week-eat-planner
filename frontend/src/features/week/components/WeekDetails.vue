@@ -1,5 +1,8 @@
 <template>
-  <Card class="relative group gap-0 p-0 overflow-hidden">
+  <Card
+    class="relative group gap-0 p-0 overflow-hidden"
+    :class="{ 'opacity-50 pointer-events-none': week.id.startsWith('temp-id') }"
+  >
     <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="default_img"
@@ -22,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
+import type { WeekPreview } from '@/api/weeks';
 import { Card } from '@/components/ui/card';
-import type { UserWeekMinimal } from '@/domain/week/models';
 
-defineProps<{ week: UserWeekMinimal }>();
+defineProps<{ week: WeekPreview }>();
 
 const default_img = new URL('@/assets/weeks/week-fallback.jpg', import.meta.url).href;
 </script>

@@ -1,4 +1,4 @@
-import type { DayOfWeek, MealType } from '@/domain/week/models';
+import type { DayOfWeek, MealType } from '@/api/weeks';
 
 const mealTypes = {
   BREAKFAST: 'Завтрак',

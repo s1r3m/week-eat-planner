@@ -69,5 +69,7 @@ describe('WeeksGrid', () => {
     });
 
     expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(0);
+    expect(wrapper.text()).toContain('No weeks yet');
+    expect(wrapper.text()).toContain('Try and add one to start your planning journey!');
   });
 });

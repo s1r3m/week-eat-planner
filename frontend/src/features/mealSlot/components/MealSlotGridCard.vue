@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
-import type { MealSlot } from '@/domain/week/models';
+import type { MealSlot } from '@/api/weeks';
 
 defineProps<{
   mealSlot: MealSlot;

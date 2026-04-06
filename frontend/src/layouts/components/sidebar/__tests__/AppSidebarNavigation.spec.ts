@@ -1,27 +1,36 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 import AppSidebarNavigation from '../AppSidebarNavigation.vue';
 import AppSidebarNavigationItem from '../AppSidebarNavigationItem.vue';
 import { ChevronRight } from 'lucide-vue-next';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
+import { ref } from 'vue';
+
+const mockWeeksData = ref<any[]>([]);
+
+vi.mock('@pinia/colada', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@pinia/colada')>();
+  return {
+    ...actual,
+    useQuery: vi.fn(() => ({
+      data: mockWeeksData,
+      isLoading: ref<boolean>(false),
+    })),
+  };
+});
 
 describe('AppSidebarNavigation', () => {
+  beforeEach(() => {
+    mockWeeksData.value = [
+      { id: '1', name: 'Week 1' },
+      { id: '2', name: 'Week 2' },
+    ];
+  });
   const mountComponent = () => {
     return mount(AppSidebarNavigation, {
       global: {
-        plugins: [
-          createTestingPinia({
-            initialState: {
-              'weeks-store': {
-                weeks: [
-                  { id: 1, name: 'Week 1' },
-                  { id: 2, name: 'Week 2' },
-                ],
-              },
-            },
-          }),
-        ],
+        plugins: [createTestingPinia()],
         stubs: {
           AppSidebarNavigationItem: true,
           Collapsible: { template: '<div><slot /></div>' },
@@ -46,7 +55,7 @@ describe('AppSidebarNavigation', () => {
     // 2 main items (My weeks, Recipes)
     // + 2 dynamic week items
     // + 2 static recipe sub-items
-    // Total = 7
+    // Total = 6
     expect(items.length).toBe(6);
 
     const firstItem = items[0].props('item') as NavLink;
@@ -63,15 +72,10 @@ describe('AppSidebarNavigation', () => {
   });
 
   it('handles empty weeks from store', () => {
+    mockWeeksData.value = [];
     const wrapper = mount(AppSidebarNavigation, {
       global: {
-        plugins: [
-          createTestingPinia({
-            initialState: {
-              'weeks-store': { weeks: [] },
-            },
-          }),
-        ],
+        plugins: [createTestingPinia()],
         stubs: {
           AppSidebarNavigationItem: true,
           Collapsible: { template: '<div><slot /></div>' },

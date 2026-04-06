@@ -8,7 +8,7 @@
         {{ description }}
       </p>
     </div>
-    <div class="flex gap-3 justify-end-safe">
+    <div class="flex gap-3 justify-end-safe items-center">
       <slot name="controls" />
     </div>
   </div>

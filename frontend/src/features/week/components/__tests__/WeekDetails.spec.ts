@@ -46,4 +46,17 @@ describe('WeekDetails', () => {
     // Based on our stub:
     expect(link.attributes('href')).toBe('week/week_123');
   });
+
+  it('applies pending classes when week id starts with temp-id', () => {
+    const wrapper = mount(WeekDetails, {
+      global: { stubs },
+      props: {
+        week: { ...mockWeek, id: 'temp-id-123' },
+      },
+    });
+
+    const card = wrapper.find('[data-slot="card"]');
+    expect(card.classes()).toContain('opacity-50');
+    expect(card.classes()).toContain('pointer-events-none');
+  });
 });

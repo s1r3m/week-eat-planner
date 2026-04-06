@@ -27,6 +27,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useMutation } from '@pinia/colada';
+import { deleteWeekMutation } from '@/api/weeks';
+import type { WeekPreview } from '@/api/weeks';
+
 import {
   Dialog,
   DialogContent,
@@ -38,13 +44,8 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
-import { useWeekStore } from '../store/weeks';
-import { useAsyncCall } from '@/composables/useAsyncCall';
-import type { UserWeekMinimal } from '@/domain/week/models';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { useRouter } from 'vue-router';
 
-const week = defineModel<UserWeekMinimal | null>();
+const week = defineModel<WeekPreview | null>();
 const isOpen = computed({
   get: () => !!week.value,
   set: (value) => {
@@ -52,15 +53,12 @@ const isOpen = computed({
   },
 });
 
-const weekStore = useWeekStore();
-const { call: remove, isLoading } = useAsyncCall(async (week: UserWeekMinimal) => {
-  await weekStore.removeWeek(week.id);
-});
+const { mutate: remove, isLoading } = useMutation(deleteWeekMutation());
 
 const router = useRouter();
-const onDelete = async () => {
+const onDelete = () => {
   if (!week.value) return;
-  await remove(week.value);
+  remove(week.value.id);
   week.value = null;
   router.push({ name: ROUTE_NAMES.WEEKS });
 };
