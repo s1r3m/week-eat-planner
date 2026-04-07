@@ -43,7 +43,7 @@ import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-vue-next';
-import { UNITS, type Ingredient } from '@/domain/recipe/models';
+import { UNITS, type Ingredient } from '@/api/recipes';
 import {
   Select,
   SelectContent,

@@ -12,6 +12,8 @@ class Token(BaseModel):
 
 
 class RefreshTokenFromDB(BaseModel):
+    """Schema for a refresh token as stored in the database."""
+
     token_hash: str | None = None
     user_id: UUID | None = None
 
@@ -19,6 +21,8 @@ class RefreshTokenFromDB(BaseModel):
 
 
 class TokenUpdate(BaseModel):
+    """Schema for updating a refresh token's metadata."""
+
     expires_at: datetime | None = None
     replaced_by: UUID | None = None
     revoked: bool | None = None

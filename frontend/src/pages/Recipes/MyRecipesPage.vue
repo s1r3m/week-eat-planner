@@ -8,7 +8,10 @@
         </Button>
       </template>
     </PageTitle>
-    <RecipesGrid :recipes="recipeStore.myRecipes" />
+
+    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+    <RecipesGrid v-else-if="myRecipes" :recipes="myRecipes" />
+    <TheLoadingPageState v-else-if="isLoading" loading-name="recipes" />
   </div>
 </template>
 
@@ -17,12 +20,14 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 import RecipesGrid from '@/features/recipe/components/RecipesGrid.vue';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-vue-next';
-import { useRecipeStore } from '@/features/recipe';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useQuery } from '@pinia/colada';
+import { getMyRecipesQuery } from '@/api/recipes';
+import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
-const recipeStore = useRecipeStore();
-await recipeStore.getMyRecipes();
+const { data: myRecipes, isLoading, error, refetch } = useQuery(getMyRecipesQuery());
 
 const router = useRouter();
 </script>

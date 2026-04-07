@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import RecipePreview from '../RecipePreview.vue';
+import RecipePreviewCard from '../RecipePreviewCard.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
-import type { RecipeMinimal } from '@/domain/recipe/models';
+import type { RecipePreview } from '@/api/recipes';
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -12,15 +12,16 @@ const router = createRouter({
   ],
 });
 
-describe('RecipePreview', () => {
-  const recipe: RecipeMinimal = {
+describe('RecipePreviewCard', () => {
+  const recipe: RecipePreview = {
     id: '1',
     name: 'Pasta Carbonara',
+    author: 'me',
     isFavorite: false,
   };
 
   const mountComponent = (props = {}) => {
-    return mount(RecipePreview, {
+    return mount(RecipePreviewCard, {
       props: {
         recipe,
         ...props,
@@ -43,6 +44,11 @@ describe('RecipePreview', () => {
   it('renders recipe name', () => {
     const wrapper = mountComponent();
     expect(wrapper.text()).toContain('Pasta Carbonara');
+  });
+
+  it('renders recipe author', () => {
+    const wrapper = mountComponent();
+    expect(wrapper.text()).toContain('me');
   });
 
   it('renders recipe image with correct src and alt', () => {

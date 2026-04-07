@@ -1,5 +1,8 @@
 <template>
-  <Card class="group p-0 gap-0 relative overflow-hidden">
+  <Card
+    class="group p-0 gap-0 relative overflow-hidden"
+    :class="{ 'opacity-50 pointer-events-none': recipe.id.startsWith('temp-id') }"
+  >
     <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="recipe.image_url || defaultImg"
@@ -31,10 +34,10 @@ import { ref, computed } from 'vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
-import type { RecipeMinimal } from '@/domain/recipe/models';
+import type { RecipePreview } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
-const props = defineProps<{ recipe: RecipeMinimal }>();
+const props = defineProps<{ recipe: RecipePreview }>();
 
 const isFavorite = ref(props.recipe.isFavorite);
 

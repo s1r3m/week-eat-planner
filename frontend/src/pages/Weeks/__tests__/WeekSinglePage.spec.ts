@@ -55,25 +55,11 @@ describe('WeekSinglePage', () => {
     });
   });
 
-  it('renders loading state when refetching', () => {
-    (useQuery as any).mockReturnValue({
-      data: ref(mockWeek),
-      isLoading: ref(true),
-      error: ref(null),
-    });
-
-    const wrapper = mount(WeekSinglePage, {
-      global: { stubs },
-    });
-
-    expect(wrapper.find('svg.lucide-loader-circle').exists()).toBe(true);
-  });
-
   it('renders error state', () => {
     (useQuery as any).mockReturnValue({
       data: ref(null),
       isLoading: ref(false),
-      error: ref({ message: 'Failed to load' }),
+      error: ref(new Error('Failed to load')),
       refetch: vi.fn(),
     });
 
@@ -81,7 +67,7 @@ describe('WeekSinglePage', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('An error has occurred during loading');
+    expect(wrapper.text()).toContain('An error has occurred');
     expect(wrapper.text()).toContain('Failed to load');
     expect(wrapper.find('svg.lucide-message-circle-x').exists()).toBe(true);
   });

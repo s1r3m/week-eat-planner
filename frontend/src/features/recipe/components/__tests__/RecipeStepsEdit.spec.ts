@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipeStepsEdit from '../RecipeStepsEdit.vue';
-import type { CookingStep } from '@/domain/recipe/models';
+import type { CookingStep } from '@/api/recipes';
 
 describe('RecipeStepsEdit', () => {
   const defaultSteps: CookingStep[] = [{ order: 0, step: '' }];

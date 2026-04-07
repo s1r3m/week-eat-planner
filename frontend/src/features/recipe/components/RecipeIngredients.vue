@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Ingredient } from '@/domain/recipe/models';
+import type { Ingredient } from '@/api/recipes';
 
 defineProps<{
   ingredients: Ingredient[];

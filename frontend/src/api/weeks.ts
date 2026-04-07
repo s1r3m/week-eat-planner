@@ -35,6 +35,9 @@ export interface WeekPreview {
   user_id: string;
 }
 
+/**
+ * Detailed representation of a week's meal plan.
+ */
 export interface WeekFull extends WeekPreview {
   week_days: WeekDay[];
 }
@@ -54,16 +57,28 @@ export const WEEK_KEYS = {
   detail: (id: string) => [...WEEK_KEYS.root, 'detail', id] as const,
 };
 
+/**
+ * Query options for fetching the list of all planned weeks for the current user.
+ */
 export const getWeeksQuery = defineQueryOptions(() => ({
   key: WEEK_KEYS.all(),
   query: () => apiClient.get<WeekPreview[]>('/weeks').then((res) => res.data),
 }));
 
+/**
+ * Query options for fetching the full details of a specific week, including all days and meal slots.
+ *
+ * @param id - The unique identifier of the week.
+ */
 export const getWeekQuery = defineQueryOptions((id: string) => ({
   key: WEEK_KEYS.detail(id),
   query: () => apiClient.get<WeekFull>(`/weeks/${id}`).then((res) => res.data),
 }));
 
+/**
+ * Mutation for creating a new empty week.
+ * Optimistically adds a pending week item to the list with a temporary ID.
+ */
 export const addWeekMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
@@ -94,6 +109,10 @@ export const addWeekMutation = defineMutation(() => {
   };
 });
 
+/**
+ * Mutation for updating week details such as its name.
+ * Handles optimistic updates for both the list view and the detail view.
+ */
 export const editWeekMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
@@ -134,28 +153,31 @@ export const editWeekMutation = defineMutation(() => {
   };
 });
 
+/**
+ * Mutation for deleting a week.
+ * Performs optimistic updates by filtering out the deleted week from the local cache.
+ */
 export const deleteWeekMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
   return {
-    mutation: (id: string) => apiClient.delete<null>(`/weeks/${id}`).then((res) => res.data),
+    mutation: (id: string) => apiClient.delete<void>(`/weeks/${id}`).then(() => undefined),
     onMutate: (id: string) => {
       queryCache.cancelQueries({ key: WEEK_KEYS.all() });
       const previousWeeks = queryCache.getQueryData<WeekPreview[]>(WEEK_KEYS.all()) || [];
-      queryCache.setQueryData(
-        WEEK_KEYS.all(),
-        previousWeeks.filter((week: WeekPreview) => week.id !== id),
+      queryCache.setQueryData(WEEK_KEYS.all(), (old: WeekPreview[] = []) =>
+        old.filter((week: WeekPreview) => week.id !== id),
       );
       return { previousWeeks };
     },
-    onSuccess: (_: null, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
+    onSuccess: (_: undefined, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
       console.debug(`Week ${id} has been deleted`),
-    onError: (err: Error, id: string, context: { previousWeeks?: WeekPreview[] }) => {
+    onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
       console.error(`An error occurred during deleting week ${id}: `, err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
     onSettled: (
-      _: null | undefined,
+      _: undefined,
       _error: Error | undefined,
       id: string,
       _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },

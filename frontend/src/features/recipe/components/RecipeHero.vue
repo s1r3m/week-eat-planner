@@ -5,7 +5,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { RecipeFull } from '@/domain/recipe/models';
+import type { RecipeFull } from '@/api/recipes';
 import RecipeIngredients from './RecipeIngredients.vue';
 import RecipeCover from './RecipeCover.vue';
 

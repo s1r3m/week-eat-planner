@@ -15,7 +15,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { CookingStep } from '@/domain/recipe/models';
+import type { CookingStep } from '@/api/recipes';
 
 defineProps<{
   steps: CookingStep[];

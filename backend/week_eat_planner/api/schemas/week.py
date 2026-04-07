@@ -27,6 +27,8 @@ class WeekUpdate(WeekBase):
 
 
 class OwnerId(BaseModel):
+    """Schema for identifying the owner of a week."""
+
     user_id: UUID
 
 

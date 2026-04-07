@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipeIngredientsEdit from '../RecipeIngredientsEdit.vue';
-import type { Ingredient } from '@/domain/recipe/models';
+import type { Ingredient } from '@/api/recipes';
 
 // Mock Select because Radix UI is hard to test in JSDOM without proper setup
 vi.mock('@/components/ui/select', () => ({

@@ -6,24 +6,24 @@
 </template>
 
 <script setup lang="ts">
-import PageTitle from '@/components/shared/PageTitle.vue';
-import { useAsyncCall } from '@/composables/useAsyncCall';
-import type { RecipePayload } from '@/domain/recipe/models';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { useRecipeStore } from '@/features/recipe';
-import RecipeCreateForm from '@/features/recipe/components/RecipeCreateForm.vue';
+import { useMutation } from '@pinia/colada';
 import { useRouter } from 'vue-router';
+import { addImageMutation, addRecipeMutation } from '@/api/recipes';
+import type { RecipePayload } from '@/api/recipes';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+
+import PageTitle from '@/components/shared/PageTitle.vue';
+import RecipeCreateForm from '@/features/recipe/components/RecipeCreateForm.vue';
 
 const router = useRouter();
-const recipeStore = useRecipeStore();
-const { call: create } = useAsyncCall(recipeStore.createRecipe);
-const { call: uploadImage } = useAsyncCall(recipeStore.uploadImage);
+
+const { mutateAsync: create } = useMutation(addRecipeMutation());
+const { mutate: upload } = useMutation(addImageMutation());
 
 const onCreate = async (payload: RecipePayload, image: File | null) => {
-  const recipeId = await create(payload);
-  if (!recipeId) return;
-  if (image) await uploadImage(recipeId, image);
-  await router.push({ name: ROUTE_NAMES.RECIPES_MY });
+  const createdRecipe = await create(payload);
+  if (image) upload({ id: createdRecipe.id, image });
+  router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 
 const onCancel = () => router.push({ name: ROUTE_NAMES.RECIPES_MY });

@@ -1,14 +1,14 @@
 <template>
-  <Dialog v-if="week" v-model:open="isOpen">
+  <Dialog v-if="recipe" v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle> Delete {{ week.name }}? </DialogTitle>
+        <DialogTitle> Delete {{ recipe.name }}? </DialogTitle>
         <DialogDescription> This action cannot be undone. </DialogDescription>
       </DialogHeader>
 
       <p class="text-base text-popover-foreground">
         Are you sure you want to delete
-        <span class="font-semibold text-destructive">{{ week.name }}</span
+        <span class="font-semibold text-destructive">{{ recipe.name }}</span
         >?
       </p>
 
@@ -30,8 +30,8 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
-import { deleteWeekMutation } from '@/api/weeks';
-import type { WeekPreview } from '@/api/weeks';
+import { deleteRecipeMutation } from '@/api/recipes';
+import type { RecipePreview } from '@/api/recipes';
 
 import {
   Dialog,
@@ -45,21 +45,21 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 
-const week = defineModel<WeekPreview | null>();
+const recipe = defineModel<RecipePreview | null>();
 const isOpen = computed({
-  get: () => !!week.value,
+  get: () => !!recipe.value,
   set: (value) => {
-    if (!value) week.value = null;
+    if (!value) recipe.value = null;
   },
 });
 
-const { mutate: remove, isLoading } = useMutation(deleteWeekMutation());
+const { mutate: remove, isLoading } = useMutation(deleteRecipeMutation());
 
 const router = useRouter();
 const onDelete = () => {
-  if (!week.value) return;
-  remove(week.value.id);
-  week.value = null;
-  router.push({ name: ROUTE_NAMES.WEEKS });
+  if (!recipe.value) return;
+  remove(recipe.value.id);
+  recipe.value = null;
+  router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 </script>

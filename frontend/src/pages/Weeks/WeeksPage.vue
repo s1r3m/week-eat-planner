@@ -13,19 +13,8 @@
         </template>
       </PageTitle>
 
-      <div v-if="error" class="flex justify-center-safe">
-        <div
-          class="flex flex-col gap-6 items-center-safe border-2 border-muted w-full p-6 mt-6 rounded-xl text-muted-foreground"
-        >
-          <MessageCircleX :size="42" />
-          <h2 class="text-lg">An error has occurred during loading</h2>
-          <p>{{ error.message }}</p>
-          <Button @click="refetch"> Try again</Button>
-        </div>
-      </div>
-
+      <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
       <WeeksGrid v-else-if="weeks" :weeks="weeks" />
-
       <TheLoadingPageState v-else-if="isLoading" />
     </div>
 
@@ -38,11 +27,12 @@ import { ref } from 'vue';
 import { useQuery } from '@pinia/colada';
 import { WeeksGrid, WeekCreateDialog } from '@/features/week';
 import { Button } from '@/components/ui/button';
-import { MessageCircleX, Plus, Loader2 } from 'lucide-vue-next';
+import { Plus, Loader2 } from 'lucide-vue-next';
 
 import PageTitle from '@/components/shared/PageTitle.vue';
 import { getWeeksQuery } from '@/api/weeks';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
+import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 
 const { data: weeks, error, refetch, isLoading } = useQuery(getWeeksQuery());
 

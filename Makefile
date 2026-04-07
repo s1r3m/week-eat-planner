@@ -109,13 +109,13 @@ db_dump:
 ## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 
 ## @Checks Run linters.
-lint: $(VENV_ACTIVATE)
+be_lint: $(VENV_ACTIVATE)
 	ruff check $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --diff --config $(BE_PATH)/pyproject.toml
 	mypy --config-file $(BE_PATH)/pyproject.toml $(BE_PATH)
 
 ## @Checks Run code formatter.
-style: $(VENV_ACTIVATE)
+be_style: $(VENV_ACTIVATE)
 	ruff check $(BE_PATH) --fix --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --config $(BE_PATH)/pyproject.toml
 

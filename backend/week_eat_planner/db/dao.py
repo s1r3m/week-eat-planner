@@ -3,30 +3,45 @@ from week_eat_planner.db.models import MealSlot, Recipe, RefreshToken, User, Wee
 
 
 class MealSlotDAO(BaseDAO[MealSlot]):
-    """Data Access Object for managing meal slots."""
+    """Data Access Object for managing 'MealSlot' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for meal slots.
+    """
 
     model = MealSlot
 
 
 class RecipeDAO(BaseDAO[Recipe]):
-    """Data Access Object for managing recipes."""
+    """Data Access Object for managing 'Recipe' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for recipes.
+    """
 
     model = Recipe
 
 
 class RefreshTokenDAO(BaseDAO[RefreshToken]):
-    """Data Access Object for managing refresh tokens."""
+    """Data Access Object for managing 'RefreshToken' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for refresh tokens.
+    """
 
     model = RefreshToken
 
 
 class UserDAO(BaseDAO[User]):
-    """Data Access Object for managing users."""
+    """Data Access Object for managing 'User' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for users.
+    """
 
     model = User
 
 
 class WeekDAO(BaseDAO[Week]):
-    """Data Access Object for managing weeks."""
+    """Data Access Object for managing 'Week' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for weeks.
+    """
 
     model = Week

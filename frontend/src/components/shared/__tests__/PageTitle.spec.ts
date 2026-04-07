@@ -25,4 +25,11 @@ describe('PageTitle', () => {
     expect(wrapper.text()).toContain('Only Header');
     expect(wrapper.find('#page-description').exists()).toBe(false);
   });
+
+  it('renders loading state when header is not provided', () => {
+    const wrapper = mount(PageTitle);
+
+    expect(wrapper.text()).toContain('Loading...');
+    expect(wrapper.findComponent({ name: 'Spinner' }).exists()).toBe(true);
+  });
 });

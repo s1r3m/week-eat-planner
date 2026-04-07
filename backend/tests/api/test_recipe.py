@@ -8,7 +8,7 @@ from starlette.datastructures import Headers
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
 from week_eat_planner.helpers import generate_uuid7
@@ -95,27 +95,32 @@ async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
     assert response.json() == {'detail': 'Not authenticated'}
 
 
-async def test_get_recipes__empty_list__empty_response(auth_client_for_created_user):
-    response = await auth_client_for_created_user.get(AppUrl.RECIPES)
+async def test_get_my_recipes__empty_list__empty_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
 
 
-async def test_get_recipes__recipe_exists__recipe_in_response(auth_client_for_created_user, created_recipe):
-    response = await auth_client_for_created_user.get(AppUrl.RECIPES)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
-
-
-async def test_get_recipes__several_recipes__recipe_in_response(
-    auth_client_for_created_user, created_recipe, created_recipe_with_image
+async def test_get_my_recipes__recipe_exists__recipe_in_response(
+    auth_client_for_created_user, created_recipe, created_recipe_for_other_user
 ):
-    response = await auth_client_for_created_user.get(AppUrl.RECIPES)
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
-    actual_recipes = sorted(response.json(), key=itemgetter('id'))
+    body = response.json()
+    assert body == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
+    assert str(created_recipe_for_other_user.id) not in [recipe['id'] for recipe in body]
+
+
+async def test_get_my_recipes__several_recipes__recipe_in_response(
+    auth_client_for_created_user, created_recipe, created_recipe_with_image, created_recipe_for_other_user
+):
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    actual_recipes = sorted(body, key=itemgetter('id'))
     assert actual_recipes == sorted(
         [
             RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json'),
@@ -123,10 +128,11 @@ async def test_get_recipes__several_recipes__recipe_in_response(
         ],
         key=itemgetter('id'),
     )
+    assert str(created_recipe_for_other_user.id) not in [recipe['id'] for recipe in body]
 
 
-async def test_get_recipes__no_auth__error_in_response(client):
-    response = await client.get(f'{AppUrl.RECIPES}')
+async def test_get_my_recipes__no_auth__error_in_response(client):
+    response = await client.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}
@@ -261,7 +267,7 @@ async def test_upload_image__valid_file__image_is_uploaded(auth_client_for_creat
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    expected = RecipeRead.model_validate(created_recipe).model_dump(mode='json')
+    expected = RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')
     assert body == expected
 
 

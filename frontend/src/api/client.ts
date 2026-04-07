@@ -11,20 +11,22 @@ interface ErrorResponse {
   detail: string;
 }
 
+/**
+ * Axios instance for making authenticated API requests.
+ * Automatically handles Bearer token attachment and 401 token refresh.
+ */
 export const apiClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
+/**
+ * Axios instance for authentication-related requests.
+ * Configured with `withCredentials: true` to handle session cookies.
+ */
 export const authClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 });
 
@@ -40,6 +42,17 @@ apiClient.interceptors.request.use(
 );
 
 // Error handling helpers
+/**
+ * Extracts a user-friendly error message from an unknown error object.
+ * Handles Axios errors and specific API error response formats.
+ *
+ * @param err - The error object to parse.
+ * @returns A human-readable error message.
+ * @example
+ * ```ts
+ * const message = getErrorMessage(error);
+ * ```
+ */
 export const getErrorMessage = (err: unknown): string => {
   if (!axios.isAxiosError(err)) {
     return 'Unexpected error';
