@@ -2,7 +2,6 @@
   <div id="week-container" class="space-y-6 m-6">
     <PageTitle :header="week?.name" description="Plan your meal to each day">
       <template v-if="!isLoading" #controls>
-        <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />
         <Button variant="outline" size="lg" aria-label="Edit week" @click="openEdit(week)"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
@@ -37,7 +36,7 @@ import PageTitle from '@/components/shared/PageTitle.vue';
 import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
-import { Loader2, Pen, Trash } from 'lucide-vue-next';
+import { Pen, Trash } from 'lucide-vue-next';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 

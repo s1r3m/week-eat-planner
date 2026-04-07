@@ -126,7 +126,7 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
 
 
 async def test_get_my_recipes__no_auth__error_in_response(client):
-    response = await client.get(f'{AppUrl.RECIPES_MY}')
+    response = await client.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}

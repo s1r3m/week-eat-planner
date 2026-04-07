@@ -30,32 +30,6 @@ vi.mock('vue-router', () => ({
   }),
 }));
 
-// Mock the dialog components as they are from a library
-vi.mock('@/components/ui/dialog', () => ({
-  Dialog: {
-    template: '<div><slot v-if="open" /></div>',
-    props: ['open'],
-  },
-  DialogContent: {
-    template: '<div><slot /></div>',
-  },
-  DialogHeader: {
-    template: '<div><slot /></div>',
-  },
-  DialogTitle: {
-    template: '<div><slot /></div>',
-  },
-  DialogDescription: {
-    template: '<div><slot /></div>',
-  },
-  DialogFooter: {
-    template: '<div><slot /></div>',
-  },
-  DialogClose: {
-    template: '<div @click="$emit(\'click\')"><slot /></div>',
-  },
-}));
-
 describe('RecipeDeleteDialog', () => {
   const recipe = { id: '1', name: 'Test Recipe', author: 'Author' };
 

@@ -9,7 +9,7 @@
 import { useMutation } from '@pinia/colada';
 import { useRouter } from 'vue-router';
 import { addImageMutation, addRecipeMutation } from '@/api/recipes';
-import type { RecipePayload } from '@/domain/recipe/models';
+import type { RecipePayload } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 import PageTitle from '@/components/shared/PageTitle.vue';

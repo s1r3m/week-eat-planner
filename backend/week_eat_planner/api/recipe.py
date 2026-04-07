@@ -117,7 +117,7 @@ async def get_my_recipes(
     Returns:
         A list of recipes belonging to the user.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES} request for {user}.')
+    logger.info(f'Got GET {AppUrl.RECIPES_MY} request for {user}.')
     recipes = await RecipeService(session).get_all_user_recipes(user)
     logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
 

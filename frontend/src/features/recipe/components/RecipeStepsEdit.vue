@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CookingStep } from '@/domain/recipe/models';
+import type { CookingStep } from '@/api/recipes';
 import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { X } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';

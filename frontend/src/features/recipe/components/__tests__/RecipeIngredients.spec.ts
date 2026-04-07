@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipeIngredients from '../RecipeIngredients.vue';
-import type { Ingredient } from '@/domain/recipe/models';
+import type { Ingredient } from '@/api/recipes';
 
 describe('RecipeIngredients', () => {
   it('renders ingredients list', () => {

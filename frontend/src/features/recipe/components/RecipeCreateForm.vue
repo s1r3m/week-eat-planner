@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Ingredient, CookingStep, RecipePayload } from '@/domain/recipe/models';
+import type { Ingredient, CookingStep, RecipePayload } from '@/api/recipes';
 import RecipeInfoEdit from './RecipeInfoEdit.vue';
 import RecipeIngredientsEdit from './RecipeIngredientsEdit.vue';
 import RecipeStepsEdit from './RecipeStepsEdit.vue';

@@ -9,23 +9,23 @@
       <Button @click="router.push({ name: ROUTE_NAMES.RECIPES })">To recipes</Button>
     </Card>
   </div>
-  <div class="grid gap-6 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-    <RecipePreview v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
+  <div v-else class="grid gap-6 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+    <RecipePreviewCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import type { RecipeMinimal } from '@/domain/recipe/models';
+import type { RecipePreview } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
-import RecipePreview from './RecipePreview.vue';
+import RecipePreviewCard from './RecipePreviewCard.vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
 
 defineProps<{
-  recipes: RecipeMinimal[];
+  recipes: RecipePreview[];
 }>();
 
 const router = useRouter();

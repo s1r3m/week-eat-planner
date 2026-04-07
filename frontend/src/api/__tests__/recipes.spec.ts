@@ -166,8 +166,12 @@ describe('recipes api', () => {
     });
 
     it('should handle onError', () => {
+      const consoleSpy = vi.spyOn(console, 'debug');
       const onError = (addImageMutation() as any).onError;
+
       onError(new Error('fail'));
+
+      expect(consoleSpy).toHaveBeenCalledWith('Image upload failed: ', expect.any(Error));
     });
   });
 

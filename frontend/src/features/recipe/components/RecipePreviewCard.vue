@@ -31,10 +31,10 @@ import { ref, computed } from 'vue';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
-import type { RecipeMinimal } from '@/domain/recipe/models';
+import type { RecipePreview } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
-const props = defineProps<{ recipe: RecipeMinimal }>();
+const props = defineProps<{ recipe: RecipePreview }>();
 
 const isFavorite = ref(props.recipe.isFavorite);
 

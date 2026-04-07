@@ -4,6 +4,9 @@ import { apiClient } from './client';
 export const UNITS = ['g', 'ml', 'pcs', 'cans'] as const;
 type Unit = (typeof UNITS)[number];
 
+/**
+ * Minimal recipe information used for lists and previews.
+ */
 export interface RecipePreview {
   id: string;
   name: string;
@@ -24,6 +27,9 @@ export interface Ingredient {
   unit: Unit;
 }
 
+/**
+ * Comprehensive recipe data including cooking steps and ingredients.
+ */
 export interface RecipeFull extends RecipePreview {
   steps: CookingStep[];
   ingredients: Ingredient[];
@@ -47,16 +53,29 @@ export const RECIPE_KEYS = {
   detail: (id: string) => [...RECIPE_KEYS.root, 'detail', id] as const,
 };
 
+/**
+ * Query options for fetching the current user's recipe collection.
+ * Uses `@pinia/colada` for caching and state management.
+ */
 export const getMyRecipesQuery = defineQueryOptions(() => ({
   key: RECIPE_KEYS.my(),
   query: () => apiClient.get<RecipePreview[]>('/my_recipes').then((res) => res.data),
 }));
 
+/**
+ * Query options for fetching full details of a specific recipe.
+ *
+ * @param id - Unique identifier of the recipe.
+ */
 export const getRecipeQuery = defineQueryOptions((id: string) => ({
   key: RECIPE_KEYS.detail(id),
   query: () => apiClient.get<RecipeFull>(`/recipes/${id}`).then((res) => res.data),
 }));
 
+/**
+ * Mutation for adding a new recipe.
+ * Performs optimistic updates on the 'my recipes' list by adding a temporary item.
+ */
 export const addRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   return {
@@ -92,6 +111,10 @@ export const addRecipeMutation = defineMutation(() => {
   };
 });
 
+/**
+ * Mutation for uploading or updating a recipe's cover image.
+ * Uses `FormData` to send the image file to the backend.
+ */
 export const addImageMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   return {
@@ -117,6 +140,10 @@ export const addImageMutation = defineMutation(() => {
   };
 });
 
+/**
+ * Mutation for deleting a recipe.
+ * Performs optimistic updates by removing the recipe from the local list immediately.
+ */
 export const deleteRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
