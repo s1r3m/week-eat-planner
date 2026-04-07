@@ -1,5 +1,8 @@
 <template>
-  <Card class="group p-0 gap-0 relative overflow-hidden">
+  <Card
+    class="group p-0 gap-0 relative overflow-hidden"
+    :class="{ 'opacity-50 pointer-events-none': recipe.id.startsWith('temp-id') }"
+  >
     <div class="flex flex-1 justify-center items-center aspect-3/2 overflow-hidden">
       <img
         :src="recipe.image_url || defaultImg"

@@ -108,13 +108,29 @@ describe('recipes api', () => {
       const onMutate = (addRecipeMutation() as any).onMutate;
       const context = onMutate(payload);
 
-      expect(queryCache.cancelQueries).toHaveBeenCalled();
-      expect(queryCache.setQueryData).toHaveBeenCalled();
-      expect(context).toEqual({ previousRecipes });
+      expect(queryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), expect.any(Function));
 
+      // Test the updater function
+      const updater = vi.mocked(queryCache.setQueryData).mock.calls[0][1] as Function;
+      const result = updater(previousRecipes);
+      expect(result).toHaveLength(2);
+      expect(result[1]).toMatchObject({ ...payload, author: 'me' });
+      expect(result[1].id).toMatch(/^temp-id-\d+$/);
+
+      // Test empty old data
+      const resultEmpty = updater(undefined);
+      expect(resultEmpty).toHaveLength(1);
+
+      vi.mocked(queryCache.setQueryData).mockClear();
       const onError = (addRecipeMutation() as any).onError;
       onError(new Error('test error'), payload, context);
       expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+
+      // Test missing context in onError
+      vi.mocked(queryCache.setQueryData).mockClear();
+      onError(new Error('test error'), payload, undefined as any);
+      expect(queryCache.setQueryData).not.toHaveBeenCalled();
     });
 
     it('should handle onSuccess and onSettled', () => {
@@ -153,12 +169,21 @@ describe('recipes api', () => {
       const onSuccess = (addImageMutation() as any).onSuccess;
       onSuccess(mockImage);
 
-      expect(queryCache.setQueryData).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), [
+        { ...mockRecipe, ...mockImage },
+      ]);
+
+      // Test with non-matching id
+      (queryCache.getQueryData as any).mockReturnValue([{ id: '2', name: 'Other' }]);
+      onSuccess(mockImage);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), [
+        { id: '2', name: 'Other' },
+      ]);
 
       // Test with empty cache
       (queryCache.getQueryData as any).mockReturnValue(undefined);
       onSuccess(mockImage);
-      expect(queryCache.setQueryData).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), []);
 
       const onSettled = (addImageMutation() as any).onSettled;
       onSettled();
@@ -196,13 +221,18 @@ describe('recipes api', () => {
 
       const context = mutationObj.onMutate(id);
       expect(queryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
-      expect(queryCache.setQueryData).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), []);
       expect(context).toEqual({ previousRecipes });
 
       mutationObj.onSuccess(null, id, context);
 
       mutationObj.onError(new Error('fail'), id, context);
       expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+
+      // Test missing context in onError
+      vi.mocked(queryCache.setQueryData).mockClear();
+      mutationObj.onError(new Error('fail'), id, undefined);
+      expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       mutationObj.onSettled(null, undefined, id, context);
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });

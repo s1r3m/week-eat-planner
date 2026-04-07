@@ -86,7 +86,7 @@ export const addRecipeMutation = defineMutation(() => {
       const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
       queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) => [
         ...old,
-        { id: `test-recipe-${Date.now()}`, ...payload, author: 'me' },
+        { id: `temp-id-${Date.now()}`, ...payload, author: 'me' },
       ]);
       return { previousRecipes };
     },
@@ -131,7 +131,7 @@ export const addImageMutation = defineMutation(() => {
       queryCache.setQueryData(
         RECIPE_KEYS.my(),
         recipes.map((recipe: RecipePreview) =>
-          recipe.id === data.id ? { ...recipe, ...data } : { ...recipe },
+          recipe.id === data.id ? { ...recipe, ...data } : recipe,
         ),
       );
     },

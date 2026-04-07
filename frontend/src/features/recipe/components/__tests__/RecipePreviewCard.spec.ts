@@ -46,6 +46,11 @@ describe('RecipePreviewCard', () => {
     expect(wrapper.text()).toContain('Pasta Carbonara');
   });
 
+  it('renders recipe author', () => {
+    const wrapper = mountComponent();
+    expect(wrapper.text()).toContain('me');
+  });
+
   it('renders recipe image with correct src and alt', () => {
     const recipeWithImg = { ...recipe, image_url: 'http://example.com/img.jpg' };
     const wrapper = mountComponent({ recipe: recipeWithImg });
