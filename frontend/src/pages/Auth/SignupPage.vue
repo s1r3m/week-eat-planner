@@ -50,7 +50,7 @@
 
     <div v-else class="space-y-4 mt-4 text-center text-base text-base-color">
       <p>You are already logged in.</p>
-      <p class="text-sm text-muted">You can continue planning your meals!</p>
+      <p class="text-sm text-muted-foreground">You can continue planning your meals!</p>
       <Button>
         <router-link :to="{ name: ROUTE_NAMES.WEEKS }">Go to planning</router-link>
       </Button>

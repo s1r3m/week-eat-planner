@@ -68,8 +68,12 @@ export const logoutMutation = defineMutation(() => {
     },
     onError: (err: Error) => {
       console.error('Logout failed: ', err);
+      accessToken.value = null;
     },
-    onSettled: () => queryCache.invalidateQueries({ key: AUTH_KEYS.user() }),
+    onSettled: () => {
+      queryCache.setQueryData(AUTH_KEYS.user(), () => null);
+      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+    },
   };
 });
 

@@ -100,7 +100,7 @@ router.beforeEach(async (to, from) => {
     isInitialized = true;
   }
 
-  if (!accessToken && to.meta.requiresAuth) {
+  if (!accessToken.value && to.meta.requiresAuth) {
     return {
       name: ROUTE_NAMES.LOGIN,
       query: { redirect: to.fullPath },
