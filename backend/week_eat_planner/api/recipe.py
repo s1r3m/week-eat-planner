@@ -23,15 +23,14 @@ async def create_recipe(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeRead:
-    """Creates a new recipe for the current user.
-
-    Args:
-        recipe_data: The data for the new recipe.
-        user: The authenticated user, injected by dependency.
-        session: The database session.
-
+    """
+    Create a new recipe for the authenticated user.
+    
+    Parameters:
+        recipe_data (RecipeCreate): Data for the recipe to create.
+    
     Returns:
-        The newly created recipe.
+        RecipeRead: The created recipe representation.
     """
     logger.info(f'Got POST {AppUrl.RECIPES} request for {user}.')
     recipe = await RecipeService(session).create_recipe(recipe_data, user)
@@ -47,16 +46,19 @@ async def upload_image(
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
 ) -> RecipeReadMinimal:
-    """The endpoint to upload an image to the recipe.
-
-    Args:
-        recipe: The recipe to update, injected by the `get_recipe_for_update` dependency.
-        session: The database session.
-        storage: The storage client, injected by dependency.
-        image: The image file to upload.
-
+    """
+    Upload an image for a recipe and associate it with that recipe.
+    
+    Only the `image` parameter is validated: the file's content type must be one of the allowed image types and its size must not exceed MAX_IMAGE_SIZE_BYTES. On success returns the updated recipe representation.
+    
+    Parameters:
+        image (UploadFile): The image file to upload; must be an allowed image content type and not exceed MAX_IMAGE_SIZE_BYTES.
+    
     Returns:
-        The updated recipe containing the new image URL.
+        RecipeReadMinimal: The updated recipe containing the new image key.
+    
+    Raises:
+        ValidationException: If the image content type is not allowed or the file size exceeds MAX_IMAGE_SIZE_BYTES.
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
 
@@ -88,16 +90,13 @@ async def get_recipe(
     recipe: Annotated[RecipeRead, Depends(get_recipe_by_id)],
     user: Annotated[UserRead, Depends(get_current_active_user)],
 ) -> RecipeRead:
-    """Retrieves a single recipe by its ID.
-
-    The user must have access to the recipe (either it's public or they own it).
-
-    Args:
-        recipe: The recipe object, injected by the `get_recipe_by_id` dependency.
-        user: The authenticated user, injected by dependency.
-
+    """
+    Retrieve a recipe by ID, enforcing access rules for the requester.
+    
+    The injected `recipe` is returned if the current user is authorized to access it (public or owner).
+    
     Returns:
-        The requested recipe.
+        RecipeRead: The requested recipe.
     """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
     return recipe
@@ -108,14 +107,15 @@ async def get_my_recipes(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[RecipeReadMinimal]:
-    """Retrieves all recipes created by the current user.
-
-    Args:
-        user: The authenticated user, injected by dependency.
-        session: The database session.
-
+    """
+    List recipes created by the authenticated user.
+    
+    Parameters:
+        user (UserRead): Authenticated user whose recipes will be returned.
+        session (AsyncSession): Database session used to query recipes.
+    
     Returns:
-        A list of recipes belonging to the user.
+        list[RecipeReadMinimal]: Recipes belonging to the specified user.
     """
     logger.info(f'Got GET {AppUrl.RECIPES_MY} request for {user}.')
     recipes = await RecipeService(session).get_all_user_recipes(user)

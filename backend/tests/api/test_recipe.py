@@ -96,6 +96,9 @@ async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
 
 
 async def test_get_my_recipes__empty_list__empty_response(auth_client_for_created_user):
+    """
+    Verify that an authenticated user with no recipes receives an empty list from the "my recipes" endpoint.
+    """
     response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
@@ -103,6 +106,11 @@ async def test_get_my_recipes__empty_list__empty_response(auth_client_for_create
 
 
 async def test_get_my_recipes__recipe_exists__recipe_in_response(auth_client_for_created_user, created_recipe):
+    """
+    Asserts that an authenticated user receives their created recipe in the "my recipes" list.
+    
+    Sends a GET to the authenticated "my recipes" endpoint and verifies a 200 response whose JSON body is a single-element list equal to the minimal serialized form of `created_recipe`.
+    """
     response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
@@ -112,6 +120,11 @@ async def test_get_my_recipes__recipe_exists__recipe_in_response(auth_client_for
 async def test_get_my_recipes__several_recipes__recipe_in_response(
     auth_client_for_created_user, created_recipe, created_recipe_with_image
 ):
+    """
+    Verifies that the authenticated user's "my recipes" endpoint returns multiple recipes.
+    
+    Sends a GET to the authenticated user's recipes endpoint, asserts a 200 OK response, and checks that the response JSON contains both the created recipe and the created recipe with an image (represented as RecipeReadMinimal JSON), comparing lists sorted by `id`.
+    """
     response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
@@ -126,6 +139,11 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
 
 
 async def test_get_my_recipes__no_auth__error_in_response(client):
+    """
+    Verifies that unauthenticated requests to the "my recipes" endpoint return an authentication error.
+    
+    Asserts that the response status is 401 Unauthorized and the JSON body equals {'detail': 'Not authenticated'}.
+    """
     response = await client.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
