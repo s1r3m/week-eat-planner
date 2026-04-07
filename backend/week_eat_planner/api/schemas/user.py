@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Email(BaseModel):
+    """Schema containing only the user's email address."""
     email: EmailStr
 
 
@@ -15,11 +16,15 @@ class UserCreate(Email):
 
 
 class UserId(BaseModel):
+    """Schema containing only the user's unique identifier."""
     id: UUID
 
 
 class UserRead(Email, UserId):
-    """Schema for reading user data."""
+    """Detailed schema for reading user information.
+
+    Includes active status, username, and avatar metadata.
+    """
 
     is_active: bool
     username: str | None

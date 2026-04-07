@@ -7,19 +7,34 @@ from week_eat_planner.constants import Unit
 
 
 class OwnerId(BaseModel):
+    """Schema for identifying the owner of a recipe."""
     user_id: UUID
 
 
 class RecipeId(BaseModel):
+    """Schema for identifying a recipe by its UUID."""
     id: UUID
 
 
 class CookingStep(BaseModel):
+    """Represents a single step in the cooking process.
+
+    Attributes:
+        order: The sequence number of the step.
+        step: The description of what to do in this step.
+    """
     order: int
     step: str
 
 
 class Ingredient(BaseModel):
+    """Represents an ingredient required for a recipe.
+
+    Attributes:
+        name: Name of the ingredient.
+        amount: Quantity required.
+        unit: Unit of measurement (e.g., grams, pieces).
+    """
     name: str
     amount: int
     unit: Unit
