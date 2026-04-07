@@ -1,6 +1,6 @@
 <template>
   <div class="login-page-container">
-    <template v-if="!authStore.user">
+    <template v-if="!isAuthenticated">
       <AuthCard title="Welcome back" description="Login to your account">
         <AuthForm variant="login" :submitting="isLoading" @submit="handleLogin" />
 
@@ -43,24 +43,25 @@
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/features/auth/store/auth';
 
 import AuthCard from '@/features/auth/components/AuthCard.vue';
 import AuthFooter from '@/features/auth/components/AuthFooter.vue';
 import AuthForm from '@/features/auth/components/AuthForm.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
-import { useAsyncCall } from '@/composables/useAsyncCall';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
-const authStore = useAuthStore();
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useMutation } from '@pinia/colada';
+import { isAuthenticated, loginMutation } from '@/api/auth';
+
 const router = useRouter();
 const route = useRoute();
 
-const { call: login, isLoading, error } = useAsyncCall(authStore.login);
+const { mutateAsync: login, isLoading, error } = useMutation(loginMutation());
 
 const handleLogin = async (email: string, password: string) => {
-  await login(email, password);
+  const params = new URLSearchParams({ username: email, password });
+  await login(params);
   if (!error.value) {
     await router.push({ name: (route.query.redirect as string) || ROUTE_NAMES.WEEKS });
   }

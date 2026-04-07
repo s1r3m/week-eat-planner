@@ -4,7 +4,7 @@
   >
     <MessageCircleX :size="42" />
     <h2 class="text-lg">An error has occurred</h2>
-    <p>{{ err.message }}</p>
+    <p>{{ error.message }}</p>
     <Button @click="retry"> Try again</Button>
   </Card>
 </template>
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircleX } from 'lucide-vue-next';
 
 defineProps<{
-  err: Error;
+  error: Error;
   retry: CallableFunction;
 }>();
 </script>

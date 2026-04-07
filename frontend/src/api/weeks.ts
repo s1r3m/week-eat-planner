@@ -180,7 +180,7 @@ export const deleteWeekMutation = defineMutation(() => {
       _: undefined,
       _error: Error | undefined,
       id: string,
-      _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
+      _context: { previousWeeks?: WeekPreview[] },
     ) => {
       queryCache.invalidateQueries({ key: WEEK_KEYS.all() });
       queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) });

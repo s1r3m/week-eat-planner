@@ -202,7 +202,7 @@ describe('recipes api', () => {
   describe('deleteRecipeMutation', () => {
     it('should delete a recipe', async () => {
       const id = '1';
-      mockApi.onDelete(`/recipes/${id}`).reply(200, null);
+      mockApi.onDelete(`/recipes/${id}`).reply(204, null);
 
       const mutation = (deleteRecipeMutation() as any).mutation;
       const result = await mutation(id);

@@ -13,7 +13,7 @@
         </template>
       </PageTitle>
 
-      <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+      <ErrorRetryCard v-if="error" :error="error" :retry="refetch" />
       <WeeksGrid v-else-if="weeks" :weeks="weeks" />
       <TheLoadingPageState v-else-if="isLoading" />
     </div>

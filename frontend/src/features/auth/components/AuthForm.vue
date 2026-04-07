@@ -49,5 +49,3 @@ const props = defineProps<{
 
 defineEmits<{ submit: [string, string] }>();
 </script>
-
-<style scoped></style>

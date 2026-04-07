@@ -9,7 +9,7 @@
       </template>
     </PageTitle>
 
-    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+    <ErrorRetryCard v-if="error" :error="error" :retry="refetch" />
     <RecipesGrid v-else-if="myRecipes" :recipes="myRecipes" />
     <TheLoadingPageState v-else-if="isLoading" loading-name="recipes" />
   </div>
