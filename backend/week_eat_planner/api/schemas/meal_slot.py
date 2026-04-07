@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 class MealSlotUpdate(BaseModel):
     """Schema for updating an existing meal slot's recipe reference."""
+
     recipe_id: str | None
 
 
@@ -22,6 +23,7 @@ class MealSlotAssign(MealSlotUpdate):
 
 class MealSlotId(BaseModel):
     """Schema containing only the meal slot's unique identifier."""
+
     id: UUID
 
     model_config = ConfigDict(from_attributes=True)

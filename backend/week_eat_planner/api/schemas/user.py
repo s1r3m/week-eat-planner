@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 class Email(BaseModel):
     """Schema containing only the user's email address."""
+
     email: EmailStr
 
 
@@ -17,6 +18,7 @@ class UserCreate(Email):
 
 class UserId(BaseModel):
     """Schema containing only the user's unique identifier."""
+
     id: UUID
 
 
