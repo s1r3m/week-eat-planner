@@ -110,7 +110,7 @@ async def test_get_my_recipes__recipe_exists__recipe_in_response(
     assert response.status_code == status.HTTP_200_OK
     body = response.json()
     assert body == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
-    assert created_recipe_for_other_user.id not in [recipe['id'] for recipe in body]
+    assert str(created_recipe_for_other_user.id) not in [recipe['id'] for recipe in body]
 
 
 async def test_get_my_recipes__several_recipes__recipe_in_response(
@@ -128,7 +128,7 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
         ],
         key=itemgetter('id'),
     )
-    assert created_recipe_for_other_user.id not in [recipe['id'] for recipe in body]
+    assert str(created_recipe_for_other_user.id) not in [recipe['id'] for recipe in body]
 
 
 async def test_get_my_recipes__no_auth__error_in_response(client):
