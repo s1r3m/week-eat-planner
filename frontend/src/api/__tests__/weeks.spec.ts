@@ -294,9 +294,18 @@ describe('weeks api', () => {
       const context = await mutation.onMutate(id);
 
       expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(WEEK_KEYS.all(), [
-        { id: '456', name: 'Keep' },
-      ]);
+      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+        WEEK_KEYS.all(),
+        expect.any(Function),
+      );
+
+      // Test the updater function
+      const updater = mockQueryCache.setQueryData.mock.calls.find(
+        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
+      )?.[1];
+      const updated = updater(previousWeeks);
+      expect(updated).toEqual([{ id: '456', name: 'Keep' }]);
+
       expect(context).toEqual({ previousWeeks });
     });
 
@@ -332,7 +341,17 @@ describe('weeks api', () => {
 
       await mutation.onMutate(id);
 
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(WEEK_KEYS.all(), []);
+      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+        WEEK_KEYS.all(),
+        expect.any(Function),
+      );
+
+      // Test the updater function
+      const updater = mockQueryCache.setQueryData.mock.calls.find(
+        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
+      )?.[1];
+      const updated = updater([]);
+      expect(updated).toEqual([]);
     });
 
     it('should invalidate queries in onSettled', () => {

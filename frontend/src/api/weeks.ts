@@ -165,9 +165,8 @@ export const deleteWeekMutation = defineMutation(() => {
     onMutate: (id: string) => {
       queryCache.cancelQueries({ key: WEEK_KEYS.all() });
       const previousWeeks = queryCache.getQueryData<WeekPreview[]>(WEEK_KEYS.all()) || [];
-      queryCache.setQueryData(
-        WEEK_KEYS.all(),
-        previousWeeks.filter((week: WeekPreview) => week.id !== id),
+      queryCache.setQueryData(WEEK_KEYS.all(), (old: WeekPreview[] = []) =>
+        old.filter((week: WeekPreview) => week.id !== id),
       );
       return { previousWeeks };
     },

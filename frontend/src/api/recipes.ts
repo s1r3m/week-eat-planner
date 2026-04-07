@@ -127,10 +127,8 @@ export const addImageMutation = defineMutation(() => {
     },
     onSuccess: (data: RecipePreview) => {
       console.debug('Image uploaded successfully');
-      const recipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
-      queryCache.setQueryData(
-        RECIPE_KEYS.my(),
-        recipes.map((recipe: RecipePreview) =>
+      queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) =>
+        old.map((recipe: RecipePreview) =>
           recipe.id === data.id ? { ...recipe, ...data } : recipe,
         ),
       );
@@ -152,9 +150,8 @@ export const deleteRecipeMutation = defineMutation(() => {
     onMutate: (id: string) => {
       queryCache.cancelQueries({ key: RECIPE_KEYS.my() });
       const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
-      queryCache.setQueryData(
-        RECIPE_KEYS.my(),
-        previousRecipes.filter((recipe: RecipePreview) => recipe.id !== id),
+      queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) =>
+        old.filter((recipe: RecipePreview) => recipe.id !== id),
       );
       return { previousRecipes };
     },

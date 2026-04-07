@@ -13,16 +13,10 @@ import {
 } from '../recipes';
 
 vi.mock('@pinia/colada', () => {
-  const queryCache = {
-    cancelQueries: vi.fn(),
-    getQueryData: vi.fn(),
-    setQueryData: vi.fn(),
-    invalidateQueries: vi.fn(),
-  };
   return {
     defineQueryOptions: (fn: any) => fn,
     defineMutation: (fn: any) => fn,
-    useQueryCache: vi.fn(() => queryCache),
+    useQueryCache: vi.fn(),
   };
 });
 
@@ -39,6 +33,12 @@ describe('recipes api', () => {
     setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
     vi.clearAllMocks();
+    vi.mocked(useQueryCache).mockReturnValue({
+      cancelQueries: vi.fn(),
+      getQueryData: vi.fn(),
+      setQueryData: vi.fn(),
+      invalidateQueries: vi.fn(),
+    } as any);
   });
 
   describe('getMyRecipesQuery', () => {
@@ -162,28 +162,27 @@ describe('recipes api', () => {
 
     it('should update cache on image upload success', () => {
       const queryCache = useQueryCache();
-      const mockRecipe = { id: '1', name: 'Recipe' };
-      const mockImage = { id: '1', image_url: 'http://test.jpg' };
+      const mockRecipe = { id: '1', name: 'Recipe', author: 'me' };
+      const mockImage = { id: '1', image_url: 'http://test.jpg', name: 'Recipe', author: 'me' };
       (queryCache.getQueryData as any).mockReturnValue([mockRecipe]);
 
       const onSuccess = (addImageMutation() as any).onSuccess;
       onSuccess(mockImage);
 
-      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), [
-        { ...mockRecipe, ...mockImage },
-      ]);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), expect.any(Function));
+
+      // Test the updater function
+      const updater = vi.mocked(queryCache.setQueryData).mock.calls[0][1] as Function;
+      const result = updater([mockRecipe]);
+      expect(result).toEqual([{ ...mockRecipe, ...mockImage }]);
 
       // Test with non-matching id
-      (queryCache.getQueryData as any).mockReturnValue([{ id: '2', name: 'Other' }]);
-      onSuccess(mockImage);
-      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), [
-        { id: '2', name: 'Other' },
-      ]);
+      const resultNonMatching = updater([{ id: '2', name: 'Other' }]);
+      expect(resultNonMatching).toEqual([{ id: '2', name: 'Other' }]);
 
       // Test with empty cache
-      (queryCache.getQueryData as any).mockReturnValue(undefined);
-      onSuccess(mockImage);
-      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), []);
+      const resultEmpty = updater(undefined);
+      expect(resultEmpty).toEqual([]);
 
       const onSettled = (addImageMutation() as any).onSettled;
       onSettled();
@@ -221,7 +220,13 @@ describe('recipes api', () => {
 
       const context = mutationObj.onMutate(id);
       expect(queryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
-      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), []);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), expect.any(Function));
+
+      // Test the updater function
+      const updater = vi.mocked(queryCache.setQueryData).mock.calls[0][1] as Function;
+      const result = updater(previousRecipes);
+      expect(result).toEqual([]);
+
       expect(context).toEqual({ previousRecipes });
 
       mutationObj.onSuccess(null, id, context);

@@ -59,7 +59,7 @@ describe('WeeksPage', () => {
     (useQuery as any).mockReturnValue({
       data: ref(null),
       isLoading: ref(false),
-      error: ref({ message: 'Failed to fetch' }),
+      error: ref(new Error('Failed to fetch')),
       refetch: vi.fn(),
     });
 
@@ -132,7 +132,7 @@ describe('WeeksPage', () => {
     (useQuery as any).mockReturnValue({
       data: ref(null),
       isLoading: ref(false),
-      error: ref({ message: 'Error' }),
+      error: ref(new Error('Error')),
       refetch: mockRefetch,
     });
 

@@ -59,7 +59,7 @@ describe('WeekSinglePage', () => {
     (useQuery as any).mockReturnValue({
       data: ref(null),
       isLoading: ref(false),
-      error: ref({ message: 'Failed to load' }),
+      error: ref(new Error('Failed to load')),
       refetch: vi.fn(),
     });
 
