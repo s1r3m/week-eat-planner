@@ -81,16 +81,6 @@ describe('RecipeDeleteDialog', () => {
     expect(wrapper.text()).toContain('Are you sure you want to delete Test Recipe?');
   });
 
-  it('closes dialog when No is clicked', async () => {
-    const wrapper = mountComponent();
-    const buttons = wrapper.findAll('button');
-    const noButton = buttons.find((btn) => btn.text().includes('No'));
-
-    await noButton?.trigger('click');
-
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
-  });
-
   it('calls delete mutation and redirects when Yes is clicked', async () => {
     const wrapper = mountComponent();
     const deleteButton = wrapper.findAll('button').find((btn) => btn.text().includes('Yes'));

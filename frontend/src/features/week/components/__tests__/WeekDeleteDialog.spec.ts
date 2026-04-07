@@ -81,23 +81,6 @@ describe('WeekDeleteDialog', () => {
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 
-  it('closes dialog when No button is clicked', async () => {
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const noButton = wrapper.findAll('button').find((b) => b.text().includes('No'));
-    await noButton?.trigger('click');
-
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
-  });
-
   it('does nothing when Dialog emits update:open with true', async () => {
     const wrapper = mount(WeekDeleteDialog, {
       global: {

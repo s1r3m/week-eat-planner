@@ -1,7 +1,7 @@
 <template>
   <div v-if="!recipes.length">
     <Card
-      class="flex flex-col gap-6 items-center-safe border-10 border-muted w-full p-6 mt-12 rounded-xl text-muted-foreground"
+      class="flex flex-col gap-6 items-center-safe bg-muted w-full mt-12 rounded-xl text-muted-foreground"
     >
       <Star :size="42" />
       <h2 class="text-lg">Nothing here yet</h2>

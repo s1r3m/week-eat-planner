@@ -280,7 +280,7 @@ describe('weeks api', () => {
       const mutation = deleteWeekMutation();
       const result = await mutation.mutation(id);
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
     });
 
     it('should perform optimistic update in onMutate', async () => {

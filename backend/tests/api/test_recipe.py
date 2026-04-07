@@ -102,20 +102,25 @@ async def test_get_my_recipes__empty_list__empty_response(auth_client_for_create
     assert response.json() == []
 
 
-async def test_get_my_recipes__recipe_exists__recipe_in_response(auth_client_for_created_user, created_recipe):
-    response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
-
-
-async def test_get_my_recipes__several_recipes__recipe_in_response(
-    auth_client_for_created_user, created_recipe, created_recipe_with_image
+async def test_get_my_recipes__recipe_exists__recipe_in_response(
+    auth_client_for_created_user, created_recipe, created_recipe_for_other_user
 ):
     response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
 
     assert response.status_code == status.HTTP_200_OK
-    actual_recipes = sorted(response.json(), key=itemgetter('id'))
+    body = response.json()
+    assert body == [RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json')]
+    assert created_recipe_for_other_user.id not in [recipe['id'] for recipe in body]
+
+
+async def test_get_my_recipes__several_recipes__recipe_in_response(
+    auth_client_for_created_user, created_recipe, created_recipe_with_image, created_recipe_for_other_user
+):
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_MY)
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    actual_recipes = sorted(body, key=itemgetter('id'))
     assert actual_recipes == sorted(
         [
             RecipeReadMinimal.model_validate(created_recipe).model_dump(mode='json'),
@@ -123,6 +128,7 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
         ],
         key=itemgetter('id'),
     )
+    assert created_recipe_for_other_user.id not in [recipe['id'] for recipe in body]
 
 
 async def test_get_my_recipes__no_auth__error_in_response(client):

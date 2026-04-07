@@ -13,7 +13,7 @@ export interface RecipePreview {
   author: string;
   isFavorite?: boolean;
   isOfficial?: boolean;
-  image_url?: string;
+  image_url?: string | null;
 }
 
 export interface CookingStep {
@@ -146,7 +146,7 @@ export const deleteRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
   return {
-    mutation: (id: string) => apiClient.delete<null>(`/recipes/${id}`).then((res) => res.data),
+    mutation: (id: string) => apiClient.delete<void>(`/recipes/${id}`).then(() => undefined),
     onMutate: (id: string) => {
       queryCache.cancelQueries({ key: RECIPE_KEYS.my() });
       const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
@@ -155,7 +155,7 @@ export const deleteRecipeMutation = defineMutation(() => {
       );
       return { previousRecipes };
     },
-    onSuccess: (_: null, id: string, _context: { previousRecipes?: RecipePreview[] }) => {
+    onSuccess: (_: undefined, id: string, _context: { previousRecipes?: RecipePreview[] }) => {
       console.debug(`The recipe ${id} has been deleted`);
     },
     onError: (err: Error, id: string, context?: { previousRecipes?: RecipePreview[] }) => {
@@ -165,7 +165,7 @@ export const deleteRecipeMutation = defineMutation(() => {
       }
     },
     onSettled: (
-      _: null | undefined,
+      _: undefined,
       _err: Error | undefined,
       id: string,
       _context: { previousRecipes?: RecipePreview[] },

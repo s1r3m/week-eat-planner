@@ -207,7 +207,7 @@ describe('recipes api', () => {
       const mutation = (deleteRecipeMutation() as any).mutation;
       const result = await mutation(id);
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
     });
 
     it('should handle onMutate, onError, and onSettled', () => {

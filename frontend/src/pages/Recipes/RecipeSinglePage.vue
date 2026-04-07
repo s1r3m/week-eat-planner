@@ -76,7 +76,7 @@ const {
   isLoading,
   error,
   refetch,
-} = useQuery(getRecipeQuery(String(route.params.id)));
+} = useQuery(() => getRecipeQuery(String(route.params.id)));
 
 const deletingRecipe = ref<RecipePreview | null>(null);
 const openDelete = (selectedRecipe?: RecipePreview) => {

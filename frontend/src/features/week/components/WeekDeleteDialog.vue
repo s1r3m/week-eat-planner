@@ -14,7 +14,7 @@
 
       <DialogFooter>
         <DialogClose as-child>
-          <Button variant="outline" @click="isOpen = false"> No </Button>
+          <Button variant="outline"> No </Button>
         </DialogClose>
         <Button variant="destructive" :disabled="isLoading" @click="onDelete">
           <Spinner v-if="isLoading" />

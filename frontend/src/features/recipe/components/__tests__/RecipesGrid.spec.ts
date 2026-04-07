@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipesGrid from '../RecipesGrid.vue';
 import type { RecipePreview } from '@/api/recipes';
@@ -12,6 +12,10 @@ vi.mock('vue-router', () => ({
 }));
 
 describe('RecipesGrid', () => {
+  afterEach(() => {
+    mockPush.mockClear();
+  });
+
   const recipes: RecipePreview[] = [
     { id: '1', name: 'Recipe 1', author: 'me' },
     { id: '2', name: 'Recipe 2', author: 'me' },

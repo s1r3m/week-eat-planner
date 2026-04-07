@@ -161,7 +161,7 @@ export const deleteWeekMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
   return {
-    mutation: (id: string) => apiClient.delete<null>(`/weeks/${id}`).then((res) => res.data),
+    mutation: (id: string) => apiClient.delete<void>(`/weeks/${id}`).then(() => undefined),
     onMutate: (id: string) => {
       queryCache.cancelQueries({ key: WEEK_KEYS.all() });
       const previousWeeks = queryCache.getQueryData<WeekPreview[]>(WEEK_KEYS.all()) || [];
@@ -170,14 +170,14 @@ export const deleteWeekMutation = defineMutation(() => {
       );
       return { previousWeeks };
     },
-    onSuccess: (_: null, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
+    onSuccess: (_: undefined, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
       console.debug(`Week ${id} has been deleted`),
     onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
       console.error(`An error occurred during deleting week ${id}: `, err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
     onSettled: (
-      _: null | undefined,
+      _: undefined,
       _error: Error | undefined,
       id: string,
       _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
