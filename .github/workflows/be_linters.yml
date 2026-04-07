@@ -44,4 +44,4 @@ jobs:
 
       - name: Analysing the code with linters
         run: |
-          make lint
+          make be_lint

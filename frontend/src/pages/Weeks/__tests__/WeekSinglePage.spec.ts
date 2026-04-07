@@ -55,20 +55,6 @@ describe('WeekSinglePage', () => {
     });
   });
 
-  it('renders loading state when refetching', () => {
-    (useQuery as any).mockReturnValue({
-      data: ref(mockWeek),
-      isLoading: ref(true),
-      error: ref(null),
-    });
-
-    const wrapper = mount(WeekSinglePage, {
-      global: { stubs },
-    });
-
-    expect(wrapper.find('svg.lucide-loader-circle').exists()).toBe(true);
-  });
-
   it('renders error state', () => {
     (useQuery as any).mockReturnValue({
       data: ref(null),

@@ -1,12 +1,30 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
+import { useQueryCache } from '@pinia/colada';
 import { apiClient } from '../client';
-import { getRecipesQuery, getRecipeQuery, RECIPE_KEYS } from '../recipes';
+import {
+  getMyRecipesQuery,
+  getRecipeQuery,
+  RECIPE_KEYS,
+  addRecipeMutation,
+  addImageMutation,
+  deleteRecipeMutation,
+} from '../recipes';
 
-vi.mock('@pinia/colada', () => ({
-  defineQueryOptions: (fn: any) => fn,
-}));
+vi.mock('@pinia/colada', () => {
+  const queryCache = {
+    cancelQueries: vi.fn(),
+    getQueryData: vi.fn(),
+    setQueryData: vi.fn(),
+    invalidateQueries: vi.fn(),
+  };
+  return {
+    defineQueryOptions: (fn: any) => fn,
+    defineMutation: (fn: any) => fn,
+    useQueryCache: vi.fn(() => queryCache),
+  };
+});
 
 vi.mock('@/features/auth/store/auth', () => ({
   useAuthStore: vi.fn(() => ({
@@ -23,17 +41,17 @@ describe('recipes api', () => {
     vi.clearAllMocks();
   });
 
-  describe('getRecipesQuery', () => {
+  describe('getMyRecipesQuery', () => {
     it('should have correct key', () => {
-      const options = getRecipesQuery();
-      expect(options.key).toEqual(RECIPE_KEYS.all());
+      const options = getMyRecipesQuery();
+      expect(options.key).toEqual(RECIPE_KEYS.my());
     });
 
     it('should fetch recipes', async () => {
       const mockData = [{ id: '1', name: 'Recipe 1' }];
-      mockApi.onGet('/recipes').reply(200, mockData);
+      mockApi.onGet('/my_recipes').reply(200, mockData);
 
-      const options = getRecipesQuery();
+      const options = getMyRecipesQuery();
       const result = await (options.query as any)();
 
       expect(result).toEqual(mockData);
@@ -56,6 +74,135 @@ describe('recipes api', () => {
       const result = await (options.query as any)();
 
       expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('addRecipeMutation', () => {
+    it('should post a new recipe', async () => {
+      const payload = {
+        name: 'New Recipe',
+        steps: [],
+        ingredients: [],
+        is_public: true,
+      };
+      const mockData = { id: 'new-1', ...payload };
+      mockApi.onPost('/recipes').reply(201, mockData);
+
+      const mutation = (addRecipeMutation() as any).mutation;
+      const result = await mutation(payload);
+
+      expect(result).toEqual(mockData);
+    });
+
+    it('should handle onMutate and onError', async () => {
+      const payload = {
+        name: 'New Recipe',
+        steps: [],
+        ingredients: [],
+        is_public: true,
+      };
+      const queryCache = useQueryCache();
+      const previousRecipes = [{ id: '1', name: 'Existing' }];
+      (queryCache.getQueryData as any).mockReturnValue(previousRecipes);
+
+      const onMutate = (addRecipeMutation() as any).onMutate;
+      const context = onMutate(payload);
+
+      expect(queryCache.cancelQueries).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+      expect(context).toEqual({ previousRecipes });
+
+      const onError = (addRecipeMutation() as any).onError;
+      onError(new Error('test error'), payload, context);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+    });
+
+    it('should handle onSuccess and onSettled', () => {
+      const queryCache = useQueryCache();
+      const mockData = { id: 'new-1', name: 'New' };
+      const onSuccess = (addRecipeMutation() as any).onSuccess;
+      onSuccess(mockData);
+
+      const onSettled = (addRecipeMutation() as any).onSettled;
+      onSettled();
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+    });
+  });
+
+  describe('addImageMutation', () => {
+    it('should patch recipe image', async () => {
+      const payload = {
+        id: '1',
+        image: new File([''], 'test.jpg', { type: 'image/jpeg' }),
+      };
+      const mockData = { id: '1', image_url: 'http://test.jpg' };
+      mockApi.onPatch('/recipes/1/image').reply(200, mockData);
+
+      const mutation = (addImageMutation() as any).mutation;
+      const result = await mutation(payload);
+
+      expect(result).toEqual(mockData);
+    });
+
+    it('should update cache on image upload success', () => {
+      const queryCache = useQueryCache();
+      const mockRecipe = { id: '1', name: 'Recipe' };
+      const mockImage = { id: '1', image_url: 'http://test.jpg' };
+      (queryCache.getQueryData as any).mockReturnValue([mockRecipe]);
+
+      const onSuccess = (addImageMutation() as any).onSuccess;
+      onSuccess(mockImage);
+
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+
+      // Test with empty cache
+      (queryCache.getQueryData as any).mockReturnValue(undefined);
+      onSuccess(mockImage);
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+
+      const onSettled = (addImageMutation() as any).onSettled;
+      onSettled();
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+    });
+
+    it('should handle onError', () => {
+      const onError = (addImageMutation() as any).onError;
+      onError(new Error('fail'));
+    });
+  });
+
+  describe('deleteRecipeMutation', () => {
+    it('should delete a recipe', async () => {
+      const id = '1';
+      mockApi.onDelete(`/recipes/${id}`).reply(200, null);
+
+      const mutation = (deleteRecipeMutation() as any).mutation;
+      const result = await mutation(id);
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle onMutate, onError, and onSettled', () => {
+      const id = '1';
+      const queryCache = useQueryCache();
+      const previousRecipes = [{ id: '1', name: 'Recipe' }];
+      (queryCache.getQueryData as any).mockReturnValue(previousRecipes);
+
+      const mutationObj = deleteRecipeMutation() as any;
+
+      const context = mutationObj.onMutate(id);
+      expect(queryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+      expect(context).toEqual({ previousRecipes });
+
+      mutationObj.onSuccess(null, id, context);
+
+      mutationObj.onError(new Error('fail'), id, context);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+
+      mutationObj.onSettled(null, undefined, id, context);
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
     });
   });
 });

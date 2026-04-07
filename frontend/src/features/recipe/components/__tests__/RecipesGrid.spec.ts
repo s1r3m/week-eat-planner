@@ -44,4 +44,17 @@ describe('RecipesGrid', () => {
     const previews = wrapper.findAll('.recipe-preview');
     expect(previews).toHaveLength(2);
   });
+
+  it('renders empty state when no recipes are provided', async () => {
+    const wrapper = mountComponent({ recipes: [] });
+
+    expect(wrapper.text()).toContain('Nothing here yet');
+    expect(wrapper.text()).toContain('Browse our recipe collection to start planning!');
+
+    const button = wrapper.findComponent({ name: 'Button' });
+    expect(button.exists()).toBe(true);
+
+    await button.trigger('click');
+    expect(mockPush).toHaveBeenCalledWith({ name: ROUTE_NAMES.RECIPES });
+  });
 });
