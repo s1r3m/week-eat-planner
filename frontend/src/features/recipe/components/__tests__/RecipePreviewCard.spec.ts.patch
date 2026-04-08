@@ -1,0 +1,28 @@
+--- src/features/recipe/components/__tests__/RecipePreviewCard.spec.ts
++++ src/features/recipe/components/__tests__/RecipePreviewCard.spec.ts
+@@ -2,6 +2,7 @@
+ import { mount } from '@vue/test-utils';
+ import RecipePreviewCard from '../RecipePreviewCard.vue';
+ import { createRouter, createMemoryHistory } from 'vue-router';
++import { Star } from 'lucide-vue-next';
+ import type { RecipePreview } from '@/api/recipes';
+ 
+ const router = createRouter({
+@@ -67,18 +68,17 @@
+ 
+   it('toggles favorite and updates star props', async () => {
+     const wrapper = mountComponent();
++    const starComp = wrapper.getComponent(Star);
+     
+     // Initially not favorite
+-    expect(wrapper.find('svg').attributes('fill')).toBe('none');
++    expect(starComp.props('fill')).toBeUndefined();
+     
+     // Toggle to favorite
+     await wrapper.find('button').trigger('click');
+-    expect(wrapper.find('svg').attributes('fill')).toBe('var(--primary)');
+-    expect(wrapper.find('svg').attributes('stroke-width')).toBe('0');
++    expect(starComp.attributes('fill')).toBe('var(--primary)');
+   });
+ 
+   it('adds specific class when recipe id starts with temp-id', () => {

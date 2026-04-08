@@ -1,35 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiClient, authClient, getErrorMessage, AUTH_EXCLUDED_PATHS } from '../client';
-import { useAuthStore } from '@/features/auth/store/auth';
-import { createPinia, setActivePinia } from 'pinia';
+import { accessToken, refreshToken } from '../auth';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 
-vi.mock('@/features/auth/store/auth', () => ({
-  useAuthStore: vi.fn(),
+vi.mock('../auth', () => ({
+  accessToken: { value: null },
+  refreshToken: vi.fn(),
 }));
 
 describe('apiClient', () => {
   let mockApi: MockAdapter;
   let mockAuth: MockAdapter;
-  let authStore: any;
 
   beforeEach(() => {
-    setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
     mockAuth = new MockAdapter(authClient);
-    authStore = {
-      accessToken: 'old-token',
-      setAccessToken: vi.fn((token) => {
-        authStore.accessToken = token;
-      }),
-      refreshToken: vi.fn().mockImplementation(async () => {
-        authStore.accessToken = 'new-token';
-        return 'new-token';
-      }),
-      logout: vi.fn().mockResolvedValue(undefined),
-    };
-    (useAuthStore as any).mockReturnValue(authStore);
+    accessToken.value = 'old-token';
+    vi.mocked(refreshToken).mockResolvedValue('new-token');
   });
 
   afterEach(() => {
@@ -46,7 +34,7 @@ describe('apiClient', () => {
     });
 
     it('should not add Authorization header if accessToken does not exist', async () => {
-      authStore.accessToken = null;
+      accessToken.value = null;
       mockApi.onGet('/test').reply(200, { success: true });
       const response = await apiClient.get('/test');
       expect(response.config.headers?.Authorization).toBeUndefined();
@@ -97,12 +85,12 @@ describe('apiClient', () => {
 
     it('should proceed to refresh if URL is empty', async () => {
       mockApi.onGet('').replyOnce(401).onGet('').reply(200, { data: 'ok' });
-      authStore.refreshToken.mockResolvedValue('new-token');
+      vi.mocked(refreshToken).mockResolvedValue('new-token');
 
       const response = await apiClient.get('');
 
       expect(response.data).toEqual({ data: 'ok' });
-      expect(authStore.refreshToken).toHaveBeenCalled();
+      expect(refreshToken).toHaveBeenCalled();
     });
 
     it('should handle URL without leading slash in isAuthExcluded', async () => {
@@ -111,17 +99,17 @@ describe('apiClient', () => {
       mockApi.onGet('/api/' + path).reply(401);
 
       await expect(apiClient.get(path)).rejects.toThrow();
-      expect(authStore.refreshToken).not.toHaveBeenCalled();
+      expect(refreshToken).not.toHaveBeenCalled();
     });
 
     it('should refresh token on 401 and retry original request', async () => {
       mockApi.onGet('/test').replyOnce(401).onGet('/test').reply(200, { data: 'ok' });
-      authStore.refreshToken.mockResolvedValue('new-token');
+      vi.mocked(refreshToken).mockResolvedValue('new-token');
 
       const response = await apiClient.get('/test');
 
       expect(response.data).toEqual({ data: 'ok' });
-      expect(authStore.refreshToken).toHaveBeenCalled();
+      expect(refreshToken).toHaveBeenCalled();
       expect(response.config.headers?.Authorization).toBe('Bearer new-token');
     });
 
@@ -129,41 +117,56 @@ describe('apiClient', () => {
       mockApi.onGet('/test1').replyOnce(401).onGet('/test1').reply(200, { data: 'ok1' });
       mockApi.onGet('/test2').replyOnce(401).onGet('/test2').reply(200, { data: 'ok2' });
 
-      // Create a single shared promise to simulate the store's coalescing logic
+      // Create a single shared promise to simulate the coalescing logic
       let sharedPromise: Promise<string> | null = null;
       const underlyingRefresh = vi.fn().mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
         return 'new-token';
       });
 
-      authStore.refreshToken.mockImplementation(() => {
+      vi.mocked(refreshToken).mockImplementation(() => {
         if (!sharedPromise) {
           sharedPromise = underlyingRefresh();
         }
-        return sharedPromise;
+        return sharedPromise as Promise<string>;
       });
 
       const [res1, res2] = await Promise.all([apiClient.get('/test1'), apiClient.get('/test2')]);
 
       expect(res1.data).toEqual({ data: 'ok1' });
       expect(res2.data).toEqual({ data: 'ok2' });
-      // authStore.refreshToken is called for every 401 response
-      expect(authStore.refreshToken).toHaveBeenCalledTimes(2);
-      // But the underlying operation (coalesced by the store logic) is only invoked once
+      expect(refreshToken).toHaveBeenCalledTimes(2);
       expect(underlyingRefresh).toHaveBeenCalledTimes(1);
     });
 
     it('should reject if newToken is null from refreshToken', async () => {
       mockApi.onGet('/test1').replyOnce(401);
 
-      authStore.refreshToken.mockResolvedValue(null);
+      vi.mocked(refreshToken).mockResolvedValue(''); // Or we can change test to resolve to empty string since it returns string
 
       await expect(apiClient.get('/test1')).rejects.toThrow();
     });
 
+    it('should handle missing headers in originalConfig', async () => {
+      mockApi
+        .onGet('/test-no-headers')
+        .replyOnce((config) => {
+          // Force headers to be undefined on the config that gets rejected
+          config.headers = undefined as any;
+          return [401];
+        })
+        .onGet('/test-no-headers')
+        .reply(200, { data: 'ok' });
+
+      vi.mocked(refreshToken).mockResolvedValue('new-token');
+
+      const response = await apiClient.get('/test-no-headers');
+      expect(response.config.headers?.Authorization).toBe('Bearer new-token');
+    });
+
     it('should handle refresh failure and reject original request', async () => {
       mockApi.onGet('/test').reply(401);
-      authStore.refreshToken.mockRejectedValue(new Error('Refresh failed'));
+      vi.mocked(refreshToken).mockRejectedValue(new Error('Refresh failed'));
 
       await expect(apiClient.get('/test')).rejects.toThrow('Refresh failed');
     });

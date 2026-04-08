@@ -46,7 +46,7 @@ const starProps = computed(() => {
   return isFavorite.value
     ? {
         fill: 'var(--primary)',
-        'stroke-width': 0,
+        strokeWidth: 0,
       }
     : {};
 });

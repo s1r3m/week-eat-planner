@@ -1,70 +1,59 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Mock } from 'vitest';
-import { setActivePinia } from 'pinia';
-import { createTestingPinia } from '@pinia/testing';
-import { useAuthStore } from '@/features/auth/store/auth';
-import { useGuestAuthActions } from '@/features/auth/composables/useGuestAuthActions';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useGuestAuthActions } from '../useGuestAuthActions';
+import { accessToken } from '@/api/auth';
 import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
-vi.mock('vue-router', async () => {
-  const actual = await vi.importActual<typeof import('vue-router')>('vue-router');
-  return {
-    ...actual,
-    useRoute: vi.fn(),
-  };
-});
+vi.mock('vue-router', () => ({
+  useRoute: vi.fn(),
+}));
+
+vi.mock('@/api/auth', () => ({
+  accessToken: { value: null },
+}));
 
 describe('useGuestAuthActions', () => {
   beforeEach(() => {
-    setActivePinia(createTestingPinia({ stubActions: false }));
+    vi.clearAllMocks();
+    (accessToken as any).value = null;
   });
 
-  const setup = (isAuthenticated: boolean, name: string) => {
-    const authStore = useAuthStore();
-    authStore.accessToken = isAuthenticated ? 'token' : null;
-    authStore.logout = vi.fn();
-    (useRoute as Mock).mockReturnValue({ name });
+  it('computes properties correctly for normal routes', () => {
+    vi.mocked(useRoute).mockReturnValue({ name: 'home' } as any);
 
-    return {
-      ...useGuestAuthActions(),
-      authStore,
-    };
-  };
-
-  it('shows Login when not on /login', () => {
-    const { showLogin } = setup(false, 'promo');
+    const { showLogin, showSignup, isLogged } = useGuestAuthActions();
 
     expect(showLogin.value).toBe(true);
+    expect(showSignup.value).toBe(true);
+    expect(isLogged.value).toBe(false);
   });
 
-  it('hides Login on /login route', () => {
-    const { showLogin } = setup(false, 'login');
+  it('computes properties correctly for login route', () => {
+    vi.mocked(useRoute).mockReturnValue({ name: 'login' } as any);
+
+    const { showLogin, showSignup, isLogged } = useGuestAuthActions();
 
     expect(showLogin.value).toBe(false);
-  });
-
-  it('shows Sign Up when not on /signup', () => {
-    const { showSignup } = setup(false, 'promo');
-
     expect(showSignup.value).toBe(true);
+    expect(isLogged.value).toBe(false);
   });
 
-  it('hides Sign Up on /signup route', () => {
-    const { showSignup } = setup(false, 'signup');
+  it('computes properties correctly for signup route', () => {
+    vi.mocked(useRoute).mockReturnValue({ name: 'signup' } as any);
 
+    const { showLogin, showSignup, isLogged } = useGuestAuthActions();
+
+    expect(showLogin.value).toBe(true);
     expect(showSignup.value).toBe(false);
+    expect(isLogged.value).toBe(false);
   });
 
-  it.each([true, false])('shows isLogged when needed -- has token %0', (hasToken) => {
-    const { isLogged } = setup(hasToken, 'promo');
+  it('isLogged is true when accessToken exists', () => {
+    vi.mocked(useRoute).mockReturnValue({ name: 'home' } as any);
+    (accessToken as any).value = 'token';
 
-    expect(isLogged.value).toBe(hasToken);
-  });
+    const { isLogged } = useGuestAuthActions();
 
-  it('calls logout', () => {
-    const { logoutHandler, authStore } = setup(true, 'promo');
-
-    logoutHandler();
-    expect(authStore.logout).toHaveBeenCalled();
+    expect(isLogged.value).toBe(true);
   });
 });

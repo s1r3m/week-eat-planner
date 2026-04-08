@@ -101,11 +101,12 @@ export const addRecipeMutation = defineMutation(() => {
     onError: (
       err: Error,
       payload: RecipePayload,
-      context: { previousRecipes?: RecipePreview[] },
+      context?: { previousRecipes?: RecipePreview[] },
     ) => {
       console.error(`An error has occurred during creation of ${payload.name}: `, err);
-      if (context?.previousRecipes)
+      if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
+      }
     },
     onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
   };
@@ -160,7 +161,7 @@ export const deleteRecipeMutation = defineMutation(() => {
     },
     onError: (err: Error, id: string, context?: { previousRecipes?: RecipePreview[] }) => {
       console.error(`An error has occurred during deletion of recipe ${id}: `, err);
-      if (context?.previousRecipes) {
+      if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
     },

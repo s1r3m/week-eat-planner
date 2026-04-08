@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipePreviewCard from '../RecipePreviewCard.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
-import { Star } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
 import type { RecipePreview } from '@/api/recipes';
 
 const router = createRouter({
@@ -69,20 +67,19 @@ describe('RecipePreviewCard', () => {
 
   it('toggles favorite and updates star props', async () => {
     const wrapper = mountComponent();
-    const starComp = wrapper.findComponent(Star);
-
+    const star = wrapper.find('.star-stub');
+    
     // Initially not favorite
-    expect(starComp.attributes('fill')).toBe('none');
-
+    expect(star.attributes('fill')).toBeUndefined();
+    
     // Toggle to favorite
-    const clickEvent = new Event('click');
-    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
-
-    expect(starComp.attributes('fill')).toBe('var(--primary)');
-
+    await wrapper.find('button').trigger('click');
+    expect(star.attributes('fill')).toBe('var(--primary)');
+    expect(star.attributes('stroke-width')).toBe('0');
+    
     // Toggle back
-    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
-    expect(starComp.attributes('fill')).toBe('none');
+    await wrapper.find('button').trigger('click');
+    expect(star.attributes('fill')).toBeUndefined();
   });
 
   it('adds specific class when recipe id starts with temp-id', () => {

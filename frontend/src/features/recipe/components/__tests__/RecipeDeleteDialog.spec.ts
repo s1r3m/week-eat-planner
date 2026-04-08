@@ -103,4 +103,22 @@ describe('RecipeDeleteDialog', () => {
     const deleteButton = buttons.find((btn) => btn.text().includes('Deleting...'));
     expect(deleteButton?.element.disabled).toBe(true);
   });
+
+  it('updates model to null when dialog is closed', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', false);
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
+  });
+
+  it('does not update model when dialog open state is true', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', true);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  it('returns early if recipe is null during onDelete', async () => {
+    const wrapper = mountComponent({ modelValue: null });
+    wrapper.vm.onDelete();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
 });
