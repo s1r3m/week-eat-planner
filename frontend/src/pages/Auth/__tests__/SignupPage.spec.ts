@@ -114,11 +114,15 @@ describe('SignupPage', () => {
   });
 
   it('redirects to weeks page on successful signup and login', async () => {
+    const signupMutate = vi.fn().mockResolvedValue({});
+    const loginMutate = vi.fn().mockResolvedValue({});
     const pushSpy = vi.spyOn(router, 'push');
-    (useMutation as any).mockReturnValue({
-      mutateAsync: vi.fn().mockResolvedValue({}),
-      isLoading: ref(false),
-      error: ref(null),
+
+    (useMutation as any).mockImplementation((options: any) => {
+      if (options === signupMutation()) {
+        return { mutateAsync: signupMutate, isLoading: ref(false), error: ref(null) };
+      }
+      return { mutateAsync: loginMutate, isLoading: ref(false), error: ref(null) };
     });
 
     const wrapper = mountComponent();
@@ -128,6 +132,8 @@ describe('SignupPage', () => {
 
     await wrapper.find('form').trigger('submit.prevent');
 
+    expect(signupMutate).toHaveBeenCalled();
+    expect(loginMutate).toHaveBeenCalled();
     expect(pushSpy).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
   });
 });

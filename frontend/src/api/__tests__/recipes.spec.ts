@@ -20,12 +20,6 @@ vi.mock('@pinia/colada', () => {
   };
 });
 
-vi.mock('@/features/auth/store/auth', () => ({
-  useAuthStore: vi.fn(() => ({
-    accessToken: 'test-token',
-  })),
-}));
-
 describe('recipes api', () => {
   let mockApi: MockAdapter;
 

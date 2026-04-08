@@ -107,7 +107,8 @@ router.beforeEach(async (to, from) => {
   if (!isInitialized) {
     try {
       await initAuth();
-    } catch (_err: unknown) {
+    } catch (err: unknown) {
+      console.error('Auth initialization failed:', err);
       accessToken.value = null;
     } finally {
       isInitialized = true;

@@ -71,7 +71,6 @@ export const logoutMutation = defineMutation(() => {
       accessToken.value = null;
     },
     onSettled: () => {
-      queryCache.setQueryData(AUTH_KEYS.user(), () => null);
       queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
     },
   };
@@ -99,6 +98,7 @@ export const initAuth = async () => {
   try {
     await refreshToken();
   } catch (err: unknown) {
+    console.error('Auth initialization failed:', err);
     accessToken.value = null;
   }
 };

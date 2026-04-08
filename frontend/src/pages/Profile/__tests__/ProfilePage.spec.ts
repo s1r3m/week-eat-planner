@@ -76,6 +76,11 @@ describe('ProfilePage', () => {
     const wrapper = mountComponent();
     expect(wrapper.find('input#email').exists()).toBe(true);
     expect(wrapper.find('input#username').exists()).toBe(true);
+    await wrapper.vm.$nextTick();
+    expect((wrapper.find('input#email').element as HTMLInputElement).value).toBe(
+      'test@example.com',
+    );
+    expect((wrapper.find('input#username').element as HTMLInputElement).value).toBe('testuser');
   });
 
   it('renders error state', () => {

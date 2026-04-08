@@ -129,9 +129,6 @@ describe('auth api', () => {
 
       // @ts-ignore
       mutationConfig.onSettled();
-      expect(cache.setQueryData).toHaveBeenCalled();
-      const updater = vi.mocked(cache.setQueryData).mock.calls[0][1] as Function;
-      expect(updater()).toBeNull();
       expect(cache.invalidateQueries).toHaveBeenCalled();
     });
 
