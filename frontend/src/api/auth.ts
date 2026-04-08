@@ -85,7 +85,7 @@ export const refreshToken = async () => {
     .then((res) => {
       const data = res.data;
       accessToken.value = data.access_token;
-      return accessToken.value;
+      return accessToken.value ?? '';
     })
     .finally(() => {
       refreshPromise = null;

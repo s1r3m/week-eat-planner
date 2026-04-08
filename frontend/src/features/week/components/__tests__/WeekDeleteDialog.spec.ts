@@ -108,7 +108,8 @@ describe('WeekDeleteDialog', () => {
     });
 
     const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Yes'));
-    await yesButton?.trigger('click');
+    expect(yesButton).toBeDefined();
+    await yesButton!.trigger('click');
 
     expect(mockMutate).toHaveBeenCalledWith(mockWeek.id);
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
