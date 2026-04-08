@@ -97,10 +97,7 @@ export const refreshToken = async () => {
 
 export const initAuth = async () => {
   try {
-    await authClient.post<LoginInfo>('/auth/refresh').then((res) => {
-      const data = res.data;
-      accessToken.value = data.access_token;
-    });
+    await refreshToken();
   } catch (err: unknown) {
     accessToken.value = null;
   }

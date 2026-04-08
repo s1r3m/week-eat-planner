@@ -33,8 +33,8 @@ describe('recipes api', () => {
     setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
     vi.clearAllMocks();
-    console.error = vi.fn();
-    console.debug = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
     vi.mocked(useQueryCache).mockReturnValue({
       cancelQueries: vi.fn(),
       getQueryData: vi.fn(),

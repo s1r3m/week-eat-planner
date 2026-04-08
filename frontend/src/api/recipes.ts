@@ -93,7 +93,7 @@ export const addRecipeMutation = defineMutation(() => {
     onSuccess: (
       created: RecipePreview,
       _payload: RecipePayload,
-      _context: { previousRecipes?: RecipePreview[] },
+      _context?: { previousRecipes?: RecipePreview[] },
     ) => {
       console.debug(`Recipe ${created.id} has been created`);
       return created;
@@ -156,7 +156,7 @@ export const deleteRecipeMutation = defineMutation(() => {
       );
       return { previousRecipes };
     },
-    onSuccess: (_: undefined, id: string, _context: { previousRecipes?: RecipePreview[] }) => {
+    onSuccess: (_: undefined, id: string, _context?: { previousRecipes?: RecipePreview[] }) => {
       console.debug(`The recipe ${id} has been deleted`);
     },
     onError: (err: Error, id: string, context?: { previousRecipes?: RecipePreview[] }) => {

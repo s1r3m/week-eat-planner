@@ -40,4 +40,9 @@ describe('Router', () => {
     await router.push('/non-existent-route');
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.NOT_FOUND);
   });
+
+  it('should call initAuth on first navigation', async () => {
+    await router.push({ name: ROUTE_NAMES.LOGIN });
+    expect(initAuth).toHaveBeenCalledTimes(1);
+  });
 });

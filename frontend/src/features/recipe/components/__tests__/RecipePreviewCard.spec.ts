@@ -72,7 +72,7 @@ describe('RecipePreviewCard', () => {
     const starComp = wrapper.findComponent(Star);
 
     // Initially not favorite
-    expect(starComp.attributes('fill')).toBe('none');
+    expect(starComp.attributes('fill')).toBeUndefined();
 
     // Toggle to favorite
     const clickEvent = new Event('click');
@@ -82,7 +82,7 @@ describe('RecipePreviewCard', () => {
 
     // Toggle back
     await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
-    expect(starComp.attributes('fill')).toBe('none');
+    expect(starComp.attributes('fill')).toBeUndefined();
   });
 
   it('adds specific class when recipe id starts with temp-id', () => {
