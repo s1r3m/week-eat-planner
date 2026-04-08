@@ -42,7 +42,7 @@ class UserDAO(BaseDAO[User]):
 class UserFavoriteDAO(BaseDAO[UserFavorite]):
     """Data Access Object for managing 'UserFavorite' records in the database.
 
-    Provides methods for CRUD operations and specialized queries for users.
+    Provides methods for CRUD operations and specialized queries for user favorites.
     """
 
     model = UserFavorite

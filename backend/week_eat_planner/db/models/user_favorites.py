@@ -22,4 +22,4 @@ class UserFavorite(Base):
     recipe: Mapped['Recipe'] = relationship(back_populates='favorites')
 
     def __repr__(self) -> str:
-        return f'UserFavorite({self.id=}, {self.user.email=}, {self.recipe.name=}, {self.recipe_id=})'
+        return f'UserFavorite({self.id=}, {self.user_id=}, {self.recipe_id=})'
