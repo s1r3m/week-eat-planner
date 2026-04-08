@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useQuery } from '@pinia/colada';
 import { getUserQuery } from '@/api/auth';
 
@@ -53,5 +54,6 @@ import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/compo
 import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
-const { data: user, isLoading, error, refetch } = useQuery(getUserQuery());
+const { data, isLoading, error, refetch } = useQuery(getUserQuery());
+const user = ref(data);
 </script>

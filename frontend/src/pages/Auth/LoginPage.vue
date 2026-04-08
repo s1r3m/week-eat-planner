@@ -86,7 +86,9 @@ const route = useRoute();
 
 const email = ref('');
 const password = ref('');
-const btnDisabled = computed(() => !isLoading || !email.value.length || password.value.length < 6);
+const btnDisabled = computed(
+  () => isLoading.value || !email.value.length || password.value.length < 6,
+);
 
 const { mutateAsync: login, isLoading, error } = useMutation(loginMutation());
 

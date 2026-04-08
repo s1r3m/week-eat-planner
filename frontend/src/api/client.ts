@@ -96,6 +96,7 @@ apiClient.interceptors.response.use(
 
     try {
       const newToken = await refreshToken();
+      if (!newToken.trim()) throw new Error('Refresh returned empty token');
       originalConfig.headers = originalConfig.headers || {};
       originalConfig.headers.Authorization = `Bearer ${newToken}`;
       return apiClient.request(originalConfig);

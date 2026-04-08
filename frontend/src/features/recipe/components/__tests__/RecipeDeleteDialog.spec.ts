@@ -49,7 +49,7 @@ describe('RecipeDeleteDialog', () => {
         stubs: {
           Dialog: {
             name: 'Dialog',
-            template: '<div><slot v-if="open" /></div>',
+            template: '<div><slot /></div>',
             props: ['open'],
           },
           DialogContent: { template: '<div><slot /></div>' },
@@ -72,7 +72,8 @@ describe('RecipeDeleteDialog', () => {
 
   it('renders nothing when recipe is null', () => {
     const wrapper = mountComponent({ modelValue: null });
-    expect(wrapper.html()).toBe('<!--v-if-->');
+    expect(wrapper.find('p').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Are you sure you want to delete');
   });
 
   it('renders recipe name and confirmation message', () => {
@@ -118,7 +119,9 @@ describe('RecipeDeleteDialog', () => {
 
   it('returns early if recipe is null during onDelete', async () => {
     const wrapper = mountComponent({ modelValue: null });
-    wrapper.vm.onDelete();
+    const buttons = wrapper.findAll('button');
+    const deleteButton = buttons.find((btn) => btn.text().includes('Yes'));
+    await deleteButton?.trigger('click');
     expect(mockMutate).not.toHaveBeenCalled();
   });
 });

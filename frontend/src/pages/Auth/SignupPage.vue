@@ -77,17 +77,19 @@ const router = useRouter();
 const email = ref('');
 const username = ref('');
 const password = ref('');
-const btnDisabled = computed(() => !isLoading || !email.value.length || password.value.length < 6);
+const btnDisabled = computed(
+  () => isLoading.value || !email.value.length || password.value.length < 6,
+);
 
 const { mutateAsync: signup, isLoading, error } = useMutation(signupMutation());
-const { mutateAsync: login } = useMutation(loginMutation());
+const { mutateAsync: login, error: loginError } = useMutation(loginMutation());
 
 const handleSignup = async () => {
   await signup({ email: email.value, username: username.value, password: password.value });
   if (!error.value) {
     const params = new URLSearchParams({ username: email.value, password: password.value });
     await login(params);
-    await router.push({ name: ROUTE_NAMES.WEEKS });
+    if (!loginError.value) await router.push({ name: ROUTE_NAMES.WEEKS });
   }
 };
 </script>

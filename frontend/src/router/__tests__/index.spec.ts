@@ -42,7 +42,7 @@ describe('Router', () => {
   });
 
   it('should call initAuth on first navigation', async () => {
-    await router.push({ name: ROUTE_NAMES.LOGIN });
+    await router.push({ name: ROUTE_NAMES.WEEKS });
     expect(initAuth).toHaveBeenCalledTimes(1);
   });
 });

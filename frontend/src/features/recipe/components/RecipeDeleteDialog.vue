@@ -1,22 +1,24 @@
 <template>
-  <Dialog v-if="recipe" v-model:open="isOpen">
+  <Dialog v-model:open="isOpen">
     <DialogContent>
-      <DialogHeader>
-        <DialogTitle> Delete {{ recipe.name }}? </DialogTitle>
-        <DialogDescription> This action cannot be undone. </DialogDescription>
-      </DialogHeader>
+      <template v-if="recipe">
+        <DialogHeader>
+          <DialogTitle> Delete {{ recipe.name }}? </DialogTitle>
+          <DialogDescription> This action cannot be undone. </DialogDescription>
+        </DialogHeader>
 
-      <p class="text-base text-popover-foreground">
-        Are you sure you want to delete
-        <span class="font-semibold text-destructive">{{ recipe.name }}</span
-        >?
-      </p>
+        <p class="text-base text-popover-foreground">
+          Are you sure you want to delete
+          <span class="font-semibold text-destructive">{{ recipe.name }}</span
+          >?
+        </p>
+      </template>
 
       <DialogFooter>
         <DialogClose as-child>
           <Button variant="outline"> No </Button>
         </DialogClose>
-        <Button variant="destructive" :disabled="isLoading" @click="onDelete">
+        <Button variant="destructive" :disabled="isLoading || !recipe" @click="onDelete">
           <Spinner v-if="isLoading" />
           {{ isLoading ? 'Deleting...' : 'Yes' }}
         </Button>

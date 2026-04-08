@@ -96,8 +96,13 @@ export default router;
 let isInitialized = false;
 router.beforeEach(async (to, from) => {
   if (!isInitialized) {
-    await initAuth();
-    isInitialized = true;
+    try {
+      await initAuth();
+    } catch (_err: unknown) {
+      accessToken.value = null;
+    } finally {
+      isInitialized = true;
+    }
   }
 
   if (!accessToken.value && to.meta.requiresAuth) {
