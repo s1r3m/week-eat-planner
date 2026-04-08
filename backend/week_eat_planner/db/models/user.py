@@ -6,6 +6,7 @@ from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
+from week_eat_planner.db.models.user_favorites import UserFavorite
 
 if TYPE_CHECKING:
     from .recipe import Recipe
@@ -36,6 +37,7 @@ class User(Base):
 
     weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
+    favorites: Mapped[list['UserFavorite']] = relationship(back_populates='user', cascade='all, delete-orphan')
 
     def __repr__(self) -> str:
         return f'User({self.id=}, {self.email=}, {self.is_active=}'
