@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import router from '../index';
+import router, { _resetRouterState } from '../index';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { accessToken, initAuth } from '@/api/auth';
 
@@ -16,6 +16,7 @@ describe('Router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (accessToken as any).value = null;
+    _resetRouterState();
   });
 
   it('should redirect to login when accessing a protected route and not authenticated', async () => {

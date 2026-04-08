@@ -94,6 +94,15 @@ const router = createRouter({
 export default router;
 
 let isInitialized = false;
+
+/**
+ * Reset the initialization state of the router.
+ * Used for testing purposes only.
+ */
+export const _resetRouterState = () => {
+  isInitialized = false;
+};
+
 router.beforeEach(async (to, from) => {
   if (!isInitialized) {
     try {

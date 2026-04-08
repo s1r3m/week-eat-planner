@@ -41,9 +41,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useQuery } from '@pinia/colada';
 import { getUserQuery } from '@/api/auth';
+import type { UserData } from '@/api/auth';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -55,5 +56,12 @@ import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
 const { data, isLoading, error, refetch } = useQuery(getUserQuery());
-const user = ref(data);
+const user = ref<UserData | null>(null);
+watch(
+  data,
+  (val) => {
+    if (val) user.value = { ...val };
+  },
+  { immediate: true },
+);
 </script>

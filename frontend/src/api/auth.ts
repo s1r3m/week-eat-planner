@@ -2,7 +2,7 @@ import { ref, computed } from 'vue';
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
 import { apiClient, authClient } from './client';
 
-export interface UserInfo {
+export interface UserData {
   user_id: string;
   email: string;
   is_active: boolean;
@@ -31,7 +31,7 @@ const AUTH_KEYS = {
 
 export const getUserQuery = defineQueryOptions(() => ({
   key: AUTH_KEYS.user(),
-  query: () => apiClient.get<UserInfo>('/user').then((res) => res.data),
+  query: () => apiClient.get<UserData>('/user').then((res) => res.data),
   staleTime: 60_000,
 }));
 
@@ -52,7 +52,7 @@ export const loginMutation = defineMutation(() => {
 export const signupMutation = defineMutation(() => {
   return {
     mutation: (payload: SignUpPayload) =>
-      apiClient.post<UserInfo>('/auth/signup', payload).then((res) => res.data),
+      apiClient.post<UserData>('/auth/signup', payload).then((res) => res.data),
     onSuccess: () => console.debug('Signup successful'),
     onError: (err: Error) => console.error('Signup failed: ', err),
   };
