@@ -49,7 +49,7 @@ describe('RecipeDeleteDialog', () => {
         stubs: {
           Dialog: {
             name: 'Dialog',
-            template: '<div><slot v-if="open" /></div>',
+            template: '<div><slot /></div>',
             props: ['open'],
           },
           DialogContent: { template: '<div><slot /></div>' },
@@ -72,7 +72,8 @@ describe('RecipeDeleteDialog', () => {
 
   it('renders nothing when recipe is null', () => {
     const wrapper = mountComponent({ modelValue: null });
-    expect(wrapper.html()).toBe('<!--v-if-->');
+    expect(wrapper.find('p').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Are you sure you want to delete');
   });
 
   it('renders recipe name and confirmation message', () => {
@@ -102,5 +103,25 @@ describe('RecipeDeleteDialog', () => {
     const buttons = wrapper.findAll('button');
     const deleteButton = buttons.find((btn) => btn.text().includes('Deleting...'));
     expect(deleteButton?.element.disabled).toBe(true);
+  });
+
+  it('updates model to null when dialog is closed', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', false);
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
+  });
+
+  it('does not update model when dialog open state is true', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', true);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  it('returns early if recipe is null during onDelete', async () => {
+    const wrapper = mountComponent({ modelValue: null });
+    const buttons = wrapper.findAll('button');
+    const deleteButton = buttons.find((btn) => btn.text().includes('Yes'));
+    await deleteButton?.trigger('click');
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 });

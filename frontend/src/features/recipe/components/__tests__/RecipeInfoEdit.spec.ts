@@ -92,4 +92,34 @@ describe('RecipeInfoEdit', () => {
 
     expect(window.URL.createObjectURL).not.toHaveBeenCalled();
   });
+
+  it('revokes object URL on unmount if image is present', async () => {
+    const wrapper = mount(RecipeInfoEdit, {
+      props: {
+        name: 'Test',
+      },
+    });
+    const input = wrapper.find('input#recipe-cover');
+    const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
+
+    Object.defineProperty(input.element as HTMLInputElement, 'files', {
+      value: [file],
+      configurable: true,
+    });
+    await input.trigger('change');
+
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
+
+    wrapper.unmount();
+
+    expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
+  });
+
+  it('does not revoke object URL on unmount if no image is present', () => {
+    const wrapper = mount(RecipeInfoEdit, {
+      props: { name: 'Test' },
+    });
+    wrapper.unmount();
+    expect(window.URL.revokeObjectURL).not.toHaveBeenCalled();
+  });
 });

@@ -2,9 +2,9 @@
   <SidebarMenu>
     <SidebarMenuItem>
       <DropdownMenu>
-        <DropdownMenuTrigger v-if="authStore.user" as-child>
+        <DropdownMenuTrigger v-if="user" as-child>
           <SidebarMenuButton size="lg">
-            <UserIdentity :user="authStore.user" />
+            <UserIdentity :user="user" />
             <ChevronsUpDown class="ml-auto size-3" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -59,14 +59,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuthStore, UserIdentity } from '@/features/auth';
-import { useAsyncCall } from '@/composables/useAsyncCall';
+import { UserIdentity } from '@/features/auth';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useMutation, useQuery } from '@pinia/colada';
+import { getUserQuery, logoutMutation } from '@/api/auth';
 
-const authStore = useAuthStore();
 const { isMobile, setOpenMobile } = useSidebar();
-const { call: logout } = useAsyncCall(authStore.logout);
+const { mutate: logout } = useMutation(logoutMutation());
+const { data: user } = useQuery(getUserQuery());
 
 const handleNavigation = () => {
   if (isMobile.value) {

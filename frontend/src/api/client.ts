@@ -3,7 +3,7 @@ import axios, {
   type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { useAuthStore } from '@/features/auth/store/auth';
+import { accessToken, refreshToken } from './auth';
 
 const DEFAULT_TIMEOUT = 5000;
 
@@ -33,9 +33,8 @@ export const authClient = axios.create({
 // Add Auth header.
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const authStore = useAuthStore();
-    if (authStore.accessToken && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+    if (accessToken.value && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${accessToken.value}`;
     }
     return config;
   },
@@ -95,15 +94,15 @@ apiClient.interceptors.response.use(
 
     originalConfig._retry = true;
 
-    const authStore = useAuthStore();
-    const newToken = await authStore.refreshToken();
-
-    if (newToken) {
+    try {
+      const newToken = await refreshToken();
+      if (!newToken.trim()) throw new Error('Refresh returned empty token');
       originalConfig.headers = originalConfig.headers || {};
       originalConfig.headers.Authorization = `Bearer ${newToken}`;
       return apiClient.request(originalConfig);
+    } catch (err: unknown) {
+      accessToken.value = null;
+      return Promise.reject(err);
     }
-
-    return Promise.reject(error);
   },
 );

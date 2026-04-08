@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipePreviewCard from '../RecipePreviewCard.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
+import { Star } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 import type { RecipePreview } from '@/api/recipes';
 
 const router = createRouter({
@@ -63,5 +65,30 @@ describe('RecipePreviewCard', () => {
     const wrapper = mountComponent();
     const img = wrapper.find('img');
     expect(img.attributes('src')).toContain('recipe_bg.png');
+  });
+
+  it('toggles favorite and updates star props', async () => {
+    const wrapper = mountComponent();
+    const starComp = wrapper.findComponent(Star);
+
+    // Initially not favorite
+    expect(starComp.attributes('fill')).toBe('none');
+
+    // Toggle to favorite
+    const clickEvent = new Event('click');
+    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
+
+    expect(starComp.attributes('fill')).toBe('var(--primary)');
+
+    // Toggle back
+    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
+    expect(starComp.attributes('fill')).toBe('none');
+  });
+
+  it('adds specific class when recipe id starts with temp-id', () => {
+    const tempRecipe = { ...recipe, id: 'temp-id-123' };
+    const wrapper = mountComponent({ recipe: tempRecipe });
+    expect(wrapper.classes()).toContain('opacity-50');
+    expect(wrapper.classes()).toContain('pointer-events-none');
   });
 });

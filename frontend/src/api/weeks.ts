@@ -170,7 +170,7 @@ export const deleteWeekMutation = defineMutation(() => {
       );
       return { previousWeeks };
     },
-    onSuccess: (_: undefined, id: string, _context: { previousWeeks?: WeekPreview[] }) =>
+    onSuccess: (_: undefined, id: string, _context?: { previousWeeks?: WeekPreview[] }) =>
       console.debug(`Week ${id} has been deleted`),
     onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
       console.error(`An error occurred during deleting week ${id}: `, err.message);
@@ -180,7 +180,7 @@ export const deleteWeekMutation = defineMutation(() => {
       _: undefined,
       _error: Error | undefined,
       id: string,
-      _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
+      _context: { previousWeeks?: WeekPreview[] },
     ) => {
       queryCache.invalidateQueries({ key: WEEK_KEYS.all() });
       queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) });

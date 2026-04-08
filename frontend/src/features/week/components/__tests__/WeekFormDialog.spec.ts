@@ -120,6 +120,17 @@ describe('WeekFormDialog', () => {
     expect((input.element as HTMLInputElement).value).toBe('New Initial');
   });
 
+  it('updates internal name to empty string when initialName prop changes to falsy', async () => {
+    const wrapper = mount(WeekFormDialog, {
+      global: { stubs },
+      props: { ...defaultProps, initialName: 'Some Name' },
+    });
+
+    await wrapper.setProps({ initialName: undefined });
+    const input = wrapper.find('input');
+    expect((input.element as HTMLInputElement).value).toBe('');
+  });
+
   it('emits update:modelValue when Dialog emits update:open', async () => {
     const wrapper = mount(WeekFormDialog, {
       global: { stubs },

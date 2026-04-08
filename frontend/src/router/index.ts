@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
 import AuthLayout from '@/layouts/TheAuthLayout.vue';
-
 import PromoPage from '@/pages/PromoPage.vue';
-import { useAuthStore } from '@/features/auth';
+
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { accessToken, initAuth } from '@/api/auth';
 
 const routes = [
   {
@@ -93,11 +93,29 @@ const router = createRouter({
 
 export default router;
 
-router.beforeEach(async (to, from) => {
-  const authStore = useAuthStore();
-  if (!authStore.isInitialized) await authStore.init();
+let isInitialized = false;
 
-  if (!authStore.accessToken && to.meta.requiresAuth) {
+/**
+ * Reset the initialization state of the router.
+ * Used for testing purposes only.
+ */
+export const _resetRouterState = () => {
+  isInitialized = false;
+};
+
+router.beforeEach(async (to, from) => {
+  if (!isInitialized) {
+    try {
+      await initAuth();
+    } catch (err: unknown) {
+      console.error('Auth initialization failed:', err);
+      accessToken.value = null;
+    } finally {
+      isInitialized = true;
+    }
+  }
+
+  if (!accessToken.value && to.meta.requiresAuth) {
     return {
       name: ROUTE_NAMES.LOGIN,
       query: { redirect: to.fullPath },

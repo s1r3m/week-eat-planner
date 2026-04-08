@@ -3,11 +3,12 @@ import { mount } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 import AppSidebarNavigation from '../AppSidebarNavigation.vue';
 import AppSidebarNavigationItem from '../AppSidebarNavigationItem.vue';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight, Loader2 } from 'lucide-vue-next';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
 import { ref } from 'vue';
 
 const mockWeeksData = ref<any[]>([]);
+const mockIsLoading = ref<boolean>(false);
 
 vi.mock('@pinia/colada', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@pinia/colada')>();
@@ -15,7 +16,7 @@ vi.mock('@pinia/colada', async (importOriginal) => {
     ...actual,
     useQuery: vi.fn(() => ({
       data: mockWeeksData,
-      isLoading: ref<boolean>(false),
+      isLoading: mockIsLoading,
     })),
   };
 });
@@ -26,6 +27,7 @@ describe('AppSidebarNavigation', () => {
       { id: '1', name: 'Week 1' },
       { id: '2', name: 'Week 2' },
     ];
+    mockIsLoading.value = false;
   });
   const mountComponent = () => {
     return mount(AppSidebarNavigation, {
@@ -103,5 +105,12 @@ describe('AppSidebarNavigation', () => {
     // Check if only 1 chevron is rendered (for Recipes)
     const chevrons = wrapper.findAllComponents(ChevronRight);
     expect(chevrons.length).toBe(1);
+  });
+
+  it('renders loader when isLoading is true', () => {
+    mockIsLoading.value = true;
+    const wrapper = mountComponent();
+
+    expect(wrapper.findComponent(Loader2).exists()).toBe(true);
   });
 });

@@ -27,7 +27,7 @@
       </template>
     </PageTitle>
 
-    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+    <ErrorRetryCard v-if="error" :error="error" :retry="refetch" />
 
     <div v-if="recipe" class="flex flex-col gap-6">
       <RecipeHero :recipe="recipe" />

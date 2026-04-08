@@ -16,7 +16,7 @@
       </template>
     </PageTitle>
 
-    <ErrorRetryCard v-if="error" :err="error" :retry="refetch" />
+    <ErrorRetryCard v-if="error" :error="error" :retry="refetch" />
     <MealSlotGrid v-else-if="week" :week-days="week.week_days" />
     <TheLoadingPageState v-else-if="isLoading" />
 

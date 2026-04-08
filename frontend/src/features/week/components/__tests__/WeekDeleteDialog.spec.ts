@@ -108,11 +108,30 @@ describe('WeekDeleteDialog', () => {
     });
 
     const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Yes'));
-    await yesButton?.trigger('click');
+    expect(yesButton).toBeDefined();
+    await yesButton!.trigger('click');
 
     expect(mockMutate).toHaveBeenCalledWith(mockWeek.id);
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
     expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
+  });
+
+  it('does nothing when Yes button is clicked and week is null', async () => {
+    const wrapper = mount(WeekDeleteDialog, {
+      global: {
+        stubs,
+      },
+      props: {
+        modelValue: mockWeek,
+      },
+    });
+
+    const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Yes'));
+    await wrapper.setProps({ modelValue: null });
+    await yesButton?.trigger('click');
+
+    expect(mockMutate).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('shows loading state and disables button during deletion', async () => {

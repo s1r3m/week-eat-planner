@@ -18,6 +18,8 @@ describe('RecipeCreateForm', () => {
 
     const infoEdit = wrapper.getComponent(RecipeInfoEdit);
     await infoEdit.vm.$emit('update:name', 'New Recipe');
+    const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
+    await infoEdit.vm.$emit('update:cover', mockFile);
 
     const ingredientsEdit = wrapper.getComponent(RecipeIngredientsEdit);
     await ingredientsEdit.vm.$emit('update:ingredients', [
@@ -38,6 +40,14 @@ describe('RecipeCreateForm', () => {
       steps: [{ order: 0, step: 'Wash tomato' }],
       is_public: true,
     });
-    expect(emitted?.[0][1]).toBeNull();
+    expect(emitted?.[0][1]).toBe(mockFile);
+  });
+
+  it('emits cancel when cancel button is clicked', async () => {
+    const wrapper = mount(RecipeCreateForm);
+    const cancelBtn = wrapper.findAll('button').find((b) => b.text().includes('Cancel'));
+    await cancelBtn?.trigger('click');
+
+    expect(wrapper.emitted('cancel')).toBeTruthy();
   });
 });

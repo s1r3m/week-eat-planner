@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
+import { ref } from 'vue';
 import AppSidebarFooter from '../AppSidebarFooter.vue';
-import { useAuthStore, UserIdentity } from '@/features/auth';
+import { UserIdentity } from '@/features/auth';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useMutation, useQuery } from '@pinia/colada';
 
 vi.mock('@/components/ui/sidebar', () => ({
   useSidebar: vi.fn(),
@@ -12,26 +14,32 @@ vi.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: { template: '<div><slot /></div>' },
 }));
 
-vi.mock('@/features/auth/composables/useAsyncCall', () => ({
-  useAsyncCall: vi.fn((fn) => ({ call: fn })),
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn(),
+  useQuery: vi.fn(),
+}));
+
+vi.mock('@/api/auth', () => ({
+  getUserQuery: vi.fn(),
+  logoutMutation: vi.fn(),
 }));
 
 describe('AppSidebarFooter', () => {
-  const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+  const mockUser = { id: '1', email: 'john@example.com', is_active: true };
+  const mockLogout = vi.fn();
 
-  const mountComponent = (initialState = {}) => {
+  const mountComponent = (initialState: { user?: any } = { user: mockUser }) => {
+    (useMutation as unknown as Mock).mockReturnValue({
+      mutate: mockLogout,
+    });
+
+    (useQuery as unknown as Mock).mockReturnValue({
+      data: ref(initialState.user ?? null),
+    });
+
     return mount(AppSidebarFooter, {
       global: {
-        plugins: [
-          createTestingPinia({
-            initialState: {
-              'auth-store': {
-                user: mockUser,
-                ...initialState,
-              },
-            },
-          }),
-        ],
+        plugins: [createTestingPinia()],
         stubs: {
           RouterLink: RouterLinkStub,
           UserIdentity: true,
@@ -42,6 +50,8 @@ describe('AppSidebarFooter', () => {
           DropdownMenuLabel: { template: '<div><slot /></div>' },
           DropdownMenuSeparator: { template: '<div><slot /></div>' },
           DropdownMenuTrigger: { template: '<div><slot /></div>' },
+          ChevronsUpDown: { template: '<svg/>' },
+          LogOut: { template: '<svg/>' },
         },
       },
     });
@@ -62,9 +72,7 @@ describe('AppSidebarFooter', () => {
       setOpenMobile: vi.fn(),
     } as any);
     const wrapper = mountComponent({ user: null });
-    // In the template: <DropdownMenuTrigger v-if="authStore.user" as-child>
-    // Since DropdownMenuTrigger is stubbed, we can check for its presence
-    expect(wrapper.find('dropdown-menu-trigger-stub').exists()).toBeFalsy();
+    expect(wrapper.findComponent(UserIdentity).exists()).toBeFalsy();
   });
 
   it('calls logout when Log Out is clicked', async () => {
@@ -73,7 +81,6 @@ describe('AppSidebarFooter', () => {
       setOpenMobile: vi.fn(),
     } as any);
     const wrapper = mountComponent();
-    const authStore = useAuthStore();
 
     const logoutLink = wrapper
       .findAllComponents(RouterLinkStub)
@@ -81,7 +88,7 @@ describe('AppSidebarFooter', () => {
     expect(logoutLink).toBeDefined();
 
     await logoutLink!.trigger('click');
-    expect(authStore.logout).toHaveBeenCalled();
+    expect(mockLogout).toHaveBeenCalled();
   });
 
   it('closes sidebar on mobile after clicking Profile', async () => {

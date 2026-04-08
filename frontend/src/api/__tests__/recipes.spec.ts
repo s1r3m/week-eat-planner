@@ -20,12 +20,6 @@ vi.mock('@pinia/colada', () => {
   };
 });
 
-vi.mock('@/features/auth/store/auth', () => ({
-  useAuthStore: vi.fn(() => ({
-    accessToken: 'test-token',
-  })),
-}));
-
 describe('recipes api', () => {
   let mockApi: MockAdapter;
 
@@ -33,6 +27,8 @@ describe('recipes api', () => {
     setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
     vi.mocked(useQueryCache).mockReturnValue({
       cancelQueries: vi.fn(),
       getQueryData: vi.fn(),
@@ -122,6 +118,10 @@ describe('recipes api', () => {
       const resultEmpty = updater(undefined);
       expect(resultEmpty).toHaveLength(1);
 
+      vi.mocked(queryCache.getQueryData).mockReturnValue(undefined);
+      const contextEmpty = onMutate(payload);
+      expect(contextEmpty.previousRecipes).toEqual([]);
+
       vi.mocked(queryCache.setQueryData).mockClear();
       const onError = (addRecipeMutation() as any).onError;
       onError(new Error('test error'), payload, context);
@@ -130,6 +130,11 @@ describe('recipes api', () => {
       // Test missing context in onError
       vi.mocked(queryCache.setQueryData).mockClear();
       onError(new Error('test error'), payload, undefined as any);
+      expect(queryCache.setQueryData).not.toHaveBeenCalled();
+
+      // Test context without previousRecipes
+      vi.mocked(queryCache.setQueryData).mockClear();
+      onError(new Error('test error'), payload, {} as any);
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
     });
 
@@ -190,19 +195,18 @@ describe('recipes api', () => {
     });
 
     it('should handle onError', () => {
-      const consoleSpy = vi.spyOn(console, 'debug');
       const onError = (addImageMutation() as any).onError;
 
       onError(new Error('fail'));
 
-      expect(consoleSpy).toHaveBeenCalledWith('Image upload failed: ', expect.any(Error));
+      expect(console.debug).toHaveBeenCalledWith('Image upload failed: ', expect.any(Error));
     });
   });
 
   describe('deleteRecipeMutation', () => {
     it('should delete a recipe', async () => {
       const id = '1';
-      mockApi.onDelete(`/recipes/${id}`).reply(200, null);
+      mockApi.onDelete(`/recipes/${id}`).reply(204, null);
 
       const mutation = (deleteRecipeMutation() as any).mutation;
       const result = await mutation(id);
@@ -227,6 +231,10 @@ describe('recipes api', () => {
       const result = updater(previousRecipes);
       expect(result).toEqual([]);
 
+      vi.mocked(queryCache.getQueryData).mockReturnValue(undefined);
+      const contextEmpty = mutationObj.onMutate(id);
+      expect(contextEmpty.previousRecipes).toEqual([]);
+
       expect(context).toEqual({ previousRecipes });
 
       mutationObj.onSuccess(null, id, context);
@@ -237,6 +245,11 @@ describe('recipes api', () => {
       // Test missing context in onError
       vi.mocked(queryCache.setQueryData).mockClear();
       mutationObj.onError(new Error('fail'), id, undefined);
+      expect(queryCache.setQueryData).not.toHaveBeenCalled();
+
+      // Test context without previousRecipes
+      vi.mocked(queryCache.setQueryData).mockClear();
+      mutationObj.onError(new Error('fail'), id, {} as any);
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       mutationObj.onSettled(null, undefined, id, context);
