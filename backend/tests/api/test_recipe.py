@@ -60,7 +60,7 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
     assert body == expected
 
 
-async def test_get_recipe__no_auth_public_recipe__recipe_recieved(client, public_created_recipe):
+async def test_get_recipe__no_auth_public_recipe__recipe_received(client, public_created_recipe):
     response = await client.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=public_created_recipe.id)}')
 
     body = response.json()
@@ -77,7 +77,7 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
 
 
 @pytest.mark.xfail(reason='TODO: figure out favorites')
-async def test_get_recipe__user_with_favotite_recipe__recipe_in_response(
+async def test_get_recipe__user_with_favorite_recipe__recipe_in_response(
     auth_client_for_created_user, public_created_recipe, public_favorite
 ):
     response = await auth_client_for_created_user.get(

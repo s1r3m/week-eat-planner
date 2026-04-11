@@ -3,12 +3,13 @@ from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeFavoriteFilter, RecipeUpdate, RecordId, UserRead
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.db.models.user_favorites import UserFavorite
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
+from week_eat_planner.exceptions import RecipeFavoriteMissing, RecipeForbidden, RecipeNotFound
 
 
 class RecipeService:
@@ -146,7 +147,13 @@ class RecipeService:
 
         if recipe.is_favorite:
             logger.warning(f'Recipe {recipe_id=} is already favorited')
-            return record
+            favorite = await self._user_favorites_dao.find_one_or_none(
+                RecipeFavoriteFilter(user_id=user.id, recipe_id=recipe.id)
+            )
+            if not favorite:
+                raise RecipeFavoriteMissing(recipe_id=recipe.id, user_id=user.id)
+
+            return favorite
 
         favorite_recipe = await self._user_favorites_dao.add(record)
         logger.info('Successfully marked the recipe as favorite')
@@ -166,7 +173,10 @@ class RecipeService:
 
     async def get_user_favorite_recipes(self, user: UserRead) -> list[Recipe]:
         logger.info(f'Getting all user_favorites for {user=}')
-        favorites = await self._user_favorites_dao.find_all(OwnerId(user_id=user.id))
+        favorites = await self._user_favorites_dao.find_all(
+            OwnerId(user_id=user.id),
+            options=[selectinload(UserFavorite.recipe)],
+        )
         logger.info(f'Successfully got {len(favorites)} user_favorites')
 
         return [favorite.recipe for favorite in favorites]

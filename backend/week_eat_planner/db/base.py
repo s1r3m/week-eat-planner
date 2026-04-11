@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Generic, TypeVar
 from uuid import UUID
@@ -8,6 +9,7 @@ from sqlalchemy import DateTime, delete as sql_delete, select, update as sql_upd
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.sql.base import ExecutableOption
 
 from week_eat_planner.helpers import generate_uuid7
 
@@ -163,7 +165,9 @@ class BaseDAO(Generic[T]):
 
         return record
 
-    async def find_all(self, filters: BaseModel | None = None) -> list[T]:
+    async def find_all(
+        self, filters: BaseModel | None = None, options: Sequence[ExecutableOption] | None = None
+    ) -> list[T]:
         """Retrieves all records matching the given filters.
 
         Args:
@@ -176,9 +180,10 @@ class BaseDAO(Generic[T]):
             SQLAlchemyError: If a database error occurs.
         """
         filter_by = filters.model_dump(exclude_unset=True) if filters else {}
+        options = options or []
         logger.debug(f'Querying for {self.model.__name__} records with {filter_by}.')
         try:
-            query = select(self.model).filter_by(**filter_by)
+            query = select(self.model).filter_by(**filter_by).options(*options)
             result = await self._session.execute(query)
             records = result.scalars().all()
             logger.debug(f'Found {len(records)} {self.model.__name__} records with {filter_by}.')
