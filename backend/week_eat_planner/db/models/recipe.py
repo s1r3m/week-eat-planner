@@ -41,6 +41,8 @@ class Recipe(Base):
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
     favorites: Mapped[list['UserFavorite']] = relationship(back_populates='recipe', cascade='all, delete-orphan')
 
+    is_favorite: bool = False
+
     def __repr__(self) -> str:
         return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'
 

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     OwnerId,
+    RecordId,
     UserRead,
     WeekCreate,
     WeekRead,
@@ -123,7 +124,7 @@ class WeekService:
             week: The week to delete.
         """
         logger.info(f'Deleting {week} for user {week.user_id}.')
-        await self._week_dao.delete(week)
+        await self._week_dao.delete(RecordId(id=week.id))
         logger.info(f'Successfully deleted {week}.')
 
     async def _validate_slot_and_recipe_data(

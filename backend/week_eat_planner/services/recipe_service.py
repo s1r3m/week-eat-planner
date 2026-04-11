@@ -1,12 +1,22 @@
+import asyncio
 from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeRead, RecipeUpdate, UserRead
-from week_eat_planner.api.schemas.recipe import RecipeId
-from week_eat_planner.db.dao import RecipeDAO
+from week_eat_planner.api.schemas import (
+    OwnerId,
+    RecipeCreate,
+    RecipeRead,
+    RecipeUpdate,
+    RecordId,
+    UserRead,
+    UserRecipeFavorite,
+)
+from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
+from week_eat_planner.db.models.user import User
+from week_eat_planner.db.models.user_favorites import UserFavorite
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 
 
@@ -15,13 +25,14 @@ class RecipeService:
 
     def __init__(self, session: AsyncSession) -> None:
         self._recipe_dao = RecipeDAO(session)
+        self._user_favorites_dao = UserFavoriteDAO(session)
 
     async def create_recipe(self, recipe: RecipeCreate, user: UserRead) -> Recipe:
         """Creates a new recipe.
 
         Args:
             recipe: The data for the new recipe.
-            user: The user creating the recipe.s
+            user: The user creating the recipe.
 
         Returns:
             The created recipe.
@@ -33,7 +44,7 @@ class RecipeService:
 
         return created_recipe
 
-    async def get_user_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> Recipe:
+    async def get_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> Recipe:
         """Retrieves a single recipe by its ID.
 
         Args:
@@ -48,7 +59,7 @@ class RecipeService:
             RecipeNotFound: If the recipe does not exist or the ID is invalid.
             RecipeForbidden: If the recipe is private and does not belong to the user.
         """
-        logger.info(f'Getting recipe {recipe_id} for {user}.')
+        logger.info(f'Getting user recipe {recipe_id} for {user}.')
         try:
             recipe_uuid = UUID(recipe_id)
         except ValueError as exc:
@@ -60,9 +71,15 @@ class RecipeService:
             logger.error(f'Recipe {recipe_uuid} not found.')
             raise RecipeNotFound(recipe_uuid)
 
-        if not recipe.is_public and recipe.user_id != user.id:
-            logger.error(f'Recipe {recipe_uuid} does not belong to user {user.id}.')
-            raise RecipeForbidden(recipe_uuid)
+        if not recipe.is_public and (user is None or recipe.user_id != user.id):
+            logger.error(f'{user} cannot access the {recipe}')
+            raise RecipeForbidden(recipe.id)
+
+        if user:
+            favorite = await self._user_favorites_dao.find_one_or_none(
+                UserRecipeFavorite(user_id=user.id, recipe_id=recipe.id)
+            )
+            recipe.is_favorite = favorite is not None
 
         return recipe
 
@@ -76,7 +93,14 @@ class RecipeService:
             A list of the user's recipes.
         """
         logger.info(f'Getting all recipes for User {user.email}')
-        recipes = await self._recipe_dao.find_all(OwnerId(user_id=user.id))
+        recipes, favorites = await asyncio.gather(
+            self._recipe_dao.find_all(OwnerId(user_id=user.id)),
+            self._user_favorites_dao.find_all(OwnerId(user_id=user.id)),
+        )
+        favorite_ids = {f.recipe_id for f in favorites}
+        for recipe in recipes:
+            recipe.is_favorite = recipe.id in favorite_ids
+        logger.info(f'Successfully got {len(recipes)} records')
 
         return recipes
 
@@ -91,7 +115,7 @@ class RecipeService:
             The updated recipe.
         """
         logger.info(f'Updating recipe {recipe.id} with new data: {new_data}')
-        updated_recipe = await self._recipe_dao.update(RecipeId(id=recipe.id), new_data)
+        updated_recipe = await self._recipe_dao.update(RecordId(id=recipe.id), new_data)
         logger.info(f'Successfully updated recipe {recipe.id}')
 
         return updated_recipe
@@ -106,6 +130,27 @@ class RecipeService:
             The number of deleted recipes.
         """
         logger.info(f'Deleting recipe {recipe.id}')
-        count = await self._recipe_dao.delete(RecipeId(id=recipe.id))
+        count = await self._recipe_dao.delete(RecordId(id=recipe.id))
         logger.info(f'Deleted {count} recipes.')
         return count
+
+    async def add_favorite(self, recipe: Recipe, user: User) -> UserFavorite:
+        logger.info(f'Marking the recipe {recipe=} favorite for user {user=}')
+        record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
+        favorite_recipe = await self._user_favorites_dao.add(record)
+        logger.info('Successfully marked the recipe as favorite')
+
+        return favorite_recipe
+
+    async def delete_favorite(self, user_favorite: UserFavorite) -> int:
+        logger.info(f'Deleting user favorite {user_favorite.recipe=} for {user_favorite.user=}')
+        count = await self._user_favorites_dao.delete(RecordId(id=user_favorite.id))
+        logger.info(f'Deleted {count} user_favorites.')
+        return count
+
+    async def get_user_favorite_recipes(self, user: User) -> list[Recipe]:
+        logger.info(f'Getting all user_favorites for {user=}')
+        favorites = await self._user_favorites_dao.find_all(OwnerId(user_id=user.id))
+        logger.info(f'Successfully got {len(favorites)} user_favorites')
+
+        return [favorite.recipe for favorite in favorites]

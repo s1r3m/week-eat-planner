@@ -1,8 +1,8 @@
 from typing import Any
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
+from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
 from week_eat_planner.db.models.meal_slot import DayOfWeek
 from week_eat_planner.db.models.week import Week
@@ -26,16 +26,8 @@ class WeekUpdate(WeekBase):
     pass
 
 
-class OwnerId(BaseModel):
-    """Schema for identifying the owner of a week."""
-
-    user_id: UUID
-
-
-class WeekReadMinimal(WeekBase, OwnerId):
+class WeekReadMinimal(WeekBase, OwnerId, RecordId):
     """Schema for a minimal representation of a week."""
-
-    id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 

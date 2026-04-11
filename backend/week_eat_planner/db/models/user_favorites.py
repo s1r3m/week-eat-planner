@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from .user import User
 
 
-
 class UserFavorite(Base):
     __tablename__ = 'user_favorites'
 

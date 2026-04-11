@@ -1,6 +1,6 @@
-from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict, EmailStr
+
+from week_eat_planner.api.schemas.common import RecordId
 
 
 class Email(BaseModel):
@@ -16,13 +16,7 @@ class UserCreate(Email):
     username: str | None = None
 
 
-class UserId(BaseModel):
-    """Schema containing only the user's unique identifier."""
-
-    id: UUID
-
-
-class UserRead(Email, UserId):
+class UserRead(Email, RecordId):
     """Detailed schema for reading user information.
 
     Includes active status, username, and avatar metadata.

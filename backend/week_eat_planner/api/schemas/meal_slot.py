@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.db.models.meal_slot import DayOfWeek, MealType
 
 if TYPE_CHECKING:
@@ -21,10 +21,8 @@ class MealSlotAssign(MealSlotUpdate):
     slot_id: str
 
 
-class MealSlotId(BaseModel):
+class MealSlotId(RecordId):
     """Schema containing only the meal slot's unique identifier."""
-
-    id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 
