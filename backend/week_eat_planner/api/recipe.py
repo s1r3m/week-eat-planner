@@ -88,7 +88,7 @@ async def get_recipe(
         The requested recipe.
     """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
-    recipe = RecipeService(session).get_visible_recipe(recipe_id, user)
+    recipe = await RecipeService(session).get_visible_recipe(recipe_id, user)
     return RecipeRead.model_validate(recipe)
 
 

@@ -3,6 +3,7 @@ from fastapi import status
 from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
 from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
+from week_eat_planner.api.schemas.week import WeekRead
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
 from week_eat_planner.helpers import generate_uuid7
@@ -30,7 +31,7 @@ async def test_get_weeks__week_exists__week_in_response(auth_client_for_created_
     response = await auth_client_for_created_user.get(AppUrl.WEEKS)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [WeekReadMinimal.model_validate(created_week.model_dump()).model_dump(mode='json')]
+    assert response.json() == [WeekReadMinimal.model_validate(created_week).model_dump(mode='json')]
 
 
 async def test_get_weeks__no_auth__error_in_response(client):
@@ -45,7 +46,7 @@ async def test_get_week__user_with_week__week_in_response(auth_client_for_create
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == created_week.model_dump(mode='json')
+    assert body == WeekRead.model_validate(created_week).model_dump(mode='json')
 
 
 async def test_get_week__week_not_exist__error_in_response(auth_client_for_created_user):
@@ -141,7 +142,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
     created_recipe,
     auth_client_for_created_user,
 ):
-    slot_to_assign = created_week.week_days[0]['slots'][0]
+    slot_to_assign = created_week.meal_slots[0]
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[{'slot_id': str(slot_to_assign.id), 'recipe_id': str(created_recipe.id)}],
@@ -172,7 +173,7 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[
-            {'slot_id': str(created_week.week_days[0]['slots'][0].id), 'recipe_id': str(created_recipe.id)},
+            {'slot_id': str(created_week.meal_slots[0].id), 'recipe_id': str(created_recipe.id)},
             {'slot_id': bad_uuid, 'recipe_id': str(created_recipe.id)},
         ],
     )

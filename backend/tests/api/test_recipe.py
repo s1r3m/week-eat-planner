@@ -8,7 +8,7 @@ from starlette.datastructures import Headers
 
 from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
 from week_eat_planner.helpers import generate_uuid7
@@ -44,6 +44,7 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
         is_public=RECIPE_IS_PUBLIC,
         steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
+        is_favorite=False,
     )
 
     response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=create_data.model_dump(mode='json'))
@@ -64,7 +65,7 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == created_recipe.model_dump(mode='json')
+    assert body == RecipeRead.model_validate(created_recipe).model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_with_image__recipe_in_response(
@@ -76,7 +77,7 @@ async def test_get_recipe__recipe_with_image__recipe_in_response(
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == created_recipe_with_image.model_dump(mode='json')
+    assert body == RecipeRead.model_validate(created_recipe_with_image).model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_created_user):
@@ -158,6 +159,7 @@ async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_f
             'id': str(created_recipe.id),
             'user_id': str(created_recipe.user_id),
             'author': created_recipe.author,
+            'is_favorite': created_recipe.is_favorite,
             'image_url': None,
         }
     )

@@ -7,7 +7,6 @@ from tests.constants import (
     EMAIL,
     HASHED_PASSWORD,
     RECIPE_INGREDIENTS,
-    RECIPE_IS_PUBLIC,
     RECIPE_NAME,
     RECIPE_STEPS,
     USERNAME,
@@ -41,13 +40,26 @@ def db_user() -> User:
 
 
 @pytest.fixture
-def db_recipe(db_user: User) -> Recipe:
+def db_private_recipe(db_user: User) -> Recipe:
     return Recipe(
         id=generate_uuid7(),
         name=RECIPE_NAME,
         user_id=db_user.id,
         user=db_user,
-        is_public=RECIPE_IS_PUBLIC,
+        is_public=False,
+        steps=[step.model_dump() for step in RECIPE_STEPS],
+        ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
+    )
+
+
+@pytest.fixture
+def db_public_recipe(db_user: User) -> Recipe:
+    return Recipe(
+        id=generate_uuid7(),
+        name=RECIPE_NAME,
+        user_id=db_user.id,
+        user=db_user,
+        is_public=True,
         steps=[step.model_dump() for step in RECIPE_STEPS],
         ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
     )

@@ -1,11 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.dependencies.week_deps import get_week_by_id, get_week_for_update
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     MealSlotRead,
@@ -46,7 +45,7 @@ async def create_week(
 
 
 @router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
-async def get_weeks(
+async def get_user_weeks(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[WeekReadMinimal]:
@@ -66,7 +65,9 @@ async def get_weeks(
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
 async def get_week(
-    week: Annotated[WeekRead, Depends(get_week_by_id)],
+    week_id: Annotated[str, Path(title='ID of the week to get')],
+    user: Annotated[UserRead | None, Depends(get_optional_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> WeekRead:
     """Retrieves a specific week by its ID.
 
@@ -78,14 +79,16 @@ async def get_week(
     Returns:
         The requested week object.
     """
-    logger.info(f'Request GET {AppUrl.WEEKS_TPL.format(week_id=week.id)}.')
-    return week
+    logger.info(f'Request GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}.')
+    week = await WeekService(session).get_visible_week(week_id, user)
+    return WeekRead.model_validate(week)
 
 
 @router.patch(AppUrl.WEEKS_TPL, response_model=WeekReadMinimal)
 async def update_week(
     new_data: WeekUpdate,
-    week: Annotated[WeekReadMinimal, Depends(get_week_for_update)],
+    week_id: Annotated[str, Path(title='ID of the week to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> WeekReadMinimal:
     """Updates a specific week.
@@ -100,14 +103,17 @@ async def update_week(
     Returns:
         The updated week object.
     """
-    logger.info(f'Request PATCH {AppUrl.WEEKS_TPL.format(week_id=week.id)} with {new_data=}.')
-    updated_week = await WeekService(session).update_week(week, new_data)
+    logger.info(f'Request PATCH {AppUrl.WEEKS_TPL.format(week_id=week_id)} with {new_data=}.')
+    week_service = WeekService(session)
+    week = await week_service.get_week_for_edit(week_id, user)
+    updated_week = await week_service.update_week(week, new_data)
     return WeekReadMinimal.model_validate(updated_week)
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_week(
-    week: Annotated[WeekReadMinimal, Depends(get_week_for_update)],
+    week_id: Annotated[str, Path(title='ID of the week to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.
@@ -118,14 +124,17 @@ async def delete_week(
         week: The week object to delete.
         session: The database session for committing the deletion.
     """
-    logger.info(f'Request DELETE /weeks/{week.id} for {week.user_id}.')
-    await WeekService(session).delete_week(week)
+    logger.info(f'Request DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} by {user}.')
+    week_service = WeekService(session)
+    week = await week_service.get_week_for_edit(week_id, user)
+    await week_service.delete_week(week)
 
 
 @router.patch(AppUrl.WEEK_SLOTS_TPL, response_model=list[MealSlotRead])
 async def assign_recipe_to_meal_slot(
+    week_id: Annotated[str, Path(title='ID of the week to get')],
     slots_data: list[MealSlotAssign],
-    week: Annotated[WeekRead, Depends(get_week_by_id)],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> list[MealSlotRead]:
     """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
@@ -138,6 +147,8 @@ async def assign_recipe_to_meal_slot(
     Returns:
         A list of updated meal slot objects.
     """
-    logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week.id)} with {slots_data=}.')
+    logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {slots_data=} by {user}.')
+    week_service = WeekService(session)
+    week = await week_service.get_week_for_edit(week_id, user)
     updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
     return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]

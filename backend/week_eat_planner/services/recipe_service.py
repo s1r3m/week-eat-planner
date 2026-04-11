@@ -4,14 +4,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import (
-    OwnerId,
-    RecipeCreate,
-    RecipeUpdate,
-    RecordId,
-    UserRead,
-    UserRecipeFavorite,
-)
+from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeUpdate, RecordId, UserRead, UserRecipeFavorite
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.db.models.user import User
@@ -43,7 +36,7 @@ class RecipeService:
 
         return created_recipe
 
-    async def get_visible_recipe(self, recipe_id: str, user: UserRead | None) -> Recipe:
+    async def get_visible_recipe(self, recipe_id: str, user: UserRead | None = None) -> Recipe:
         """Retrieves a single recipe by its ID.
 
         Args:
@@ -66,7 +59,7 @@ class RecipeService:
             raise RecipeForbidden(recipe.id)
 
         if user:
-            favorite = await self._user_favorites_dao.find_one_or_none(
+            favorite: UserFavorite | None = await self._user_favorites_dao.find_one_or_none(
                 UserRecipeFavorite(user_id=user.id, recipe_id=recipe.id)
             )
             recipe.is_favorite = favorite is not None
