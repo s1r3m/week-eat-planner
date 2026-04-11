@@ -1,17 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, Path, UploadFile, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.dependencies.recipe_deps import get_recipe_by_id, get_recipe_for_update
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRead
 from week_eat_planner.clients.storage_client import StorageClient
-from week_eat_planner.constants import ALLOWED_IMAGE_TYPES, AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket
+from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.exceptions import ValidationException
+from week_eat_planner.helpers import check_image_suitable
 from week_eat_planner.services.recipe_service import RecipeService
 
 router = APIRouter(tags=['Recipe'])
@@ -42,7 +41,8 @@ async def create_recipe(
 
 @router.patch(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeReadMinimal)
 async def upload_image(
-    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
+    recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
@@ -50,7 +50,7 @@ async def upload_image(
     """The endpoint to upload an image to the recipe.
 
     Args:
-        recipe: The recipe to update, injected by the `get_recipe_for_update` dependency.
+        recipe_id: The recipe_id to update.
         session: The database session.
         storage: The storage client, injected by dependency.
         image: The image file to upload.
@@ -58,35 +58,24 @@ async def upload_image(
     Returns:
         The updated recipe containing the new image URL.
     """
-    logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe.id} with {image.filename}')
+    logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe_id} with {image.filename}')
 
-    try:
-        if image.content_type not in ALLOWED_IMAGE_TYPES:
-            raise ValidationException(f'Unsupported image type: {image.content_type}')
+    await check_image_suitable(image)
 
-        # Read at most MAX_IMAGE_SIZE_BYTES + 1 to check size limit
-        content = await image.read(MAX_IMAGE_SIZE_BYTES + 1)
-        if len(content) > MAX_IMAGE_SIZE_BYTES:
-            raise ValidationException(
-                f'Image too large: maximum size is {MAX_IMAGE_SIZE_BYTES // (1024 * 1024)}MB',
-            )
+    recipe_service = RecipeService(session)
+    recipe = await recipe_service.get_recipe_for_edit(recipe_id, user)
+    image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
+    new_data = RecipeUpdate(image_key=image_key)
+    updated_recipe = await recipe_service.update_recipe(recipe, new_data)
 
-        # Reset file pointer for storage client
-        await image.seek(0)
-
-        image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
-        new_data = RecipeUpdate(image_key=image_key)
-        updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
-
-        return RecipeReadMinimal.model_validate(updated_recipe)
-    finally:
-        await image.close()
+    return RecipeReadMinimal.model_validate(updated_recipe)
 
 
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def get_recipe(
-    recipe: Annotated[RecipeRead, Depends(get_recipe_by_id)],
-    user: Annotated[UserRead, Depends(get_current_active_user)],
+    recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
+    user: Annotated[UserRead | None, Depends(get_optional_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> RecipeRead:
     """Retrieves a single recipe by its ID.
 
@@ -94,13 +83,13 @@ async def get_recipe(
 
     Args:
         recipe: The recipe object, injected by the `get_recipe_by_id` dependency.
-        user: The authenticated user, injected by dependency.
 
     Returns:
         The requested recipe.
     """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
-    return recipe
+    recipe = RecipeService(session).get_visible_recipe(recipe_id, user)
+    return RecipeRead.model_validate(recipe)
 
 
 @router.get(AppUrl.RECIPES_MY, response_model=list[RecipeReadMinimal])
@@ -127,8 +116,9 @@ async def get_my_recipes(
 @router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def update_recipe(
     new_data: RecipeUpdate,
-    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
-    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> RecipeRead:
     """Updates a recipe.
 
@@ -142,14 +132,17 @@ async def update_recipe(
     Returns:
         The updated recipe.
     """
-    logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe}')
-    updated_recipe = await RecipeService(session).update_recipe(recipe, new_data)
+    logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe_id}')
+    recipe_service = RecipeService(session)
+    recipe = await recipe_service.get_recipe_for_edit(recipe_id, user)
+    updated_recipe = await recipe_service.update_recipe(recipe, new_data)
     return RecipeRead.model_validate(updated_recipe)
 
 
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_recipe(
-    recipe: Annotated[RecipeRead, Depends(get_recipe_for_update)],
+    recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
+    user: Annotated[UserRead, Depends(get_current_active_user)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
@@ -165,8 +158,10 @@ async def delete_recipe(
     Returns:
         None. A 204 No Content status code is returned on success.
     """
-    logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe}')
-    result = await RecipeService(session).delete_recipe(recipe)
+    logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe_id}')
+    recipe_service = RecipeService(session)
+    recipe = await recipe_service.get_recipe_for_edit(recipe_id, user)
+    result = await recipe_service.delete_recipe(recipe)
     if result and recipe.image_key:
         await storage.delete_file(recipe.image_key)
         logger.debug(f'Image {recipe.image_key} was deleted.')

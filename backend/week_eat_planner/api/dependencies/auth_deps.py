@@ -26,3 +26,14 @@ async def get_current_active_user(
     """
     user = await UserService(session).get_user_by_token(token)
     return UserRead.model_validate(user)
+
+
+async def get_optional_user(
+    token: Annotated[str | None, Depends(_oauth2_scheme)],
+    session: Annotated[AsyncSession, Depends(db.get_db)],
+) -> UserRead | None:
+    if not token:
+        return None
+
+    user = await UserService(session).get_user_by_token(token)
+    return UserRead.model_validate(user)

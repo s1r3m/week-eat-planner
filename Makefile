@@ -116,8 +116,8 @@ be_lint: $(VENV_ACTIVATE)
 
 ## @Checks Run code formatter.
 be_style: $(VENV_ACTIVATE)
-	ruff check $(BE_PATH) --fix --config $(BE_PATH)/pyproject.toml
 	ruff format $(BE_PATH) --config $(BE_PATH)/pyproject.toml
+	ruff check $(BE_PATH) --fix --config $(BE_PATH)/pyproject.toml
 
 clean:
 	rm -f $(BE_PATH)/.coverage

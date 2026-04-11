@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.schemas import (
     OwnerId,
     RecipeCreate,
-    RecipeRead,
     RecipeUpdate,
     RecordId,
     UserRead,
@@ -44,7 +43,7 @@ class RecipeService:
 
         return created_recipe
 
-    async def get_recipe(self, recipe_id: str, user: UserRead, for_update: bool) -> Recipe:
+    async def get_visible_recipe(self, recipe_id: str, user: UserRead | None) -> Recipe:
         """Retrieves a single recipe by its ID.
 
         Args:
@@ -59,17 +58,8 @@ class RecipeService:
             RecipeNotFound: If the recipe does not exist or the ID is invalid.
             RecipeForbidden: If the recipe is private and does not belong to the user.
         """
-        logger.info(f'Getting user recipe {recipe_id} for {user}.')
-        try:
-            recipe_uuid = UUID(recipe_id)
-        except ValueError as exc:
-            logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
-            raise RecipeNotFound(recipe_id) from exc
-
-        recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
-        if not recipe:
-            logger.error(f'Recipe {recipe_uuid} not found.')
-            raise RecipeNotFound(recipe_uuid)
+        logger.info(f'Getting visible recipe {recipe_id} for {user}.')
+        recipe = await self._get_recipe(recipe_id, for_update=False)
 
         if not recipe.is_public and (user is None or recipe.user_id != user.id):
             logger.error(f'{user} cannot access the {recipe}')
@@ -80,6 +70,29 @@ class RecipeService:
                 UserRecipeFavorite(user_id=user.id, recipe_id=recipe.id)
             )
             recipe.is_favorite = favorite is not None
+
+        return recipe
+
+    async def get_recipe_for_edit(self, recipe_id: str, user: UserRead) -> Recipe:
+        logger.info(f'Getting user recipe {recipe_id} for {user}.')
+        recipe = await self._get_recipe(recipe_id, for_update=True)
+        if recipe.user_id != user.id:
+            logger.error(f'{user} cannot access the {recipe}')
+            raise RecipeForbidden(recipe.id)
+
+        return recipe
+
+    async def _get_recipe(self, recipe_id: str, for_update: bool) -> Recipe:
+        try:
+            recipe_uuid = UUID(recipe_id)
+        except ValueError as exc:
+            logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
+            raise RecipeNotFound(recipe_id) from exc
+
+        recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
+        if not recipe:
+            logger.error(f'Recipe {recipe_uuid} not found.')
+            raise RecipeNotFound(recipe_uuid)
 
         return recipe
 
@@ -104,7 +117,7 @@ class RecipeService:
 
         return recipes
 
-    async def update_recipe(self, recipe: RecipeRead, new_data: RecipeUpdate) -> Recipe:
+    async def update_recipe(self, recipe: Recipe, new_data: RecipeUpdate) -> Recipe:
         """Updates a recipe.
 
         Args:
@@ -120,7 +133,7 @@ class RecipeService:
 
         return updated_recipe
 
-    async def delete_recipe(self, recipe: RecipeRead) -> int:
+    async def delete_recipe(self, recipe: Recipe) -> int:
         """Deletes a recipe.
 
         Args:
