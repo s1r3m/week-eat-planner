@@ -26,6 +26,7 @@ from week_eat_planner.api.schemas import (
 )
 from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.models.recipe import Recipe
+from week_eat_planner.db.models.user_favorites import UserFavorite
 from week_eat_planner.db.models.week import Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
@@ -129,6 +130,16 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
     return _factory
 
 
+@pytest.fixture
+def created_favorite_factory(db_session: AsyncSession) -> Callable:
+    async def _factory(recipe: Recipe, user: UserRead) -> UserFavorite:
+        favorite = await RecipeService(db_session).add_favorite(recipe, user)
+        await db_session.flush()
+        return favorite
+
+    return _factory
+
+
 @pytest_asyncio.fixture
 async def created_user(user_factory: Callable) -> UserRead:
     return await user_factory(UserCreate(email=EMAIL, password=PASSWORD, username=USERNAME))
@@ -151,18 +162,27 @@ async def created_week_2(created_week_factory: Callable, created_user: UserRead)
 
 @pytest_asyncio.fixture
 async def created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> Recipe:
-    recipe_create = RecipeCreate(
-        name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS, is_favorite=False
-    )
+    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
 
     return await created_recipe_factory(created_user, recipe_data=recipe_create)
 
 
 @pytest_asyncio.fixture
+async def public_created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> Recipe:
+    recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=True, ingredients=RECIPE_INGREDIENTS)
+    return await created_recipe_factory(created_user, recipe_data=recipe_create)
+
+
+@pytest_asyncio.fixture
+async def public_favorite(
+    created_favorite_factory: Callable, public_created_recipe: Recipe, user_read: UserRead
+) -> UserFavorite:
+    return await created_favorite_factory(public_created_recipe, user_read)
+
+
+@pytest_asyncio.fixture
 async def created_recipe_for_other_user(created_recipe_factory: Callable, created_user_2: UserRead) -> Recipe:
-    recipe_create = RecipeCreate(
-        name='other_user_recipe', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS, is_favorite=False
-    )
+    recipe_create = RecipeCreate(name='other_user_recipe', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
     return await created_recipe_factory(created_user_2, recipe_data=recipe_create)
 
 
@@ -170,9 +190,7 @@ async def created_recipe_for_other_user(created_recipe_factory: Callable, create
 async def created_recipe_with_image(
     created_recipe_factory: Callable, created_user: UserRead, db_session: AsyncSession
 ) -> Recipe:
-    recipe_create = RecipeCreate(
-        name='another_name', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS, is_favorite=False
-    )
+    recipe_create = RecipeCreate(name='another_name', is_public=RECIPE_IS_PUBLIC, ingredients=RECIPE_INGREDIENTS)
     recipe = await created_recipe_factory(created_user, recipe_data=recipe_create)
     update_data = RecipeUpdate(image_key=f'{StorageBucket.RECIPES}/{recipe.id}.jpg')
     updated_recipe = await RecipeService(db_session).update_recipe(recipe, update_data)

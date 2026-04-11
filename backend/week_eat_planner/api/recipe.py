@@ -118,7 +118,7 @@ async def update_recipe(
     new_data: RecipeUpdate,
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
     user: Annotated[UserRead, Depends(get_current_active_user)],
-    session: Annotated[AsyncSession, Depends(db.get_db)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeRead:
     """Updates a recipe.
 

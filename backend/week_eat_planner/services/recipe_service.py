@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeUpdate, RecordId, UserRead, UserRecipeFavorite
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
-from week_eat_planner.db.models.user import User
 from week_eat_planner.db.models.user_favorites import UserFavorite
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 
@@ -140,7 +139,7 @@ class RecipeService:
         logger.info(f'Deleted {count} recipes.')
         return count
 
-    async def add_favorite(self, recipe: Recipe, user: User) -> UserFavorite:
+    async def add_favorite(self, recipe: Recipe, user: UserRead) -> UserFavorite:
         logger.info(f'Marking the recipe {recipe=} favorite for user {user=}')
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
         favorite_recipe = await self._user_favorites_dao.add(record)
@@ -154,7 +153,7 @@ class RecipeService:
         logger.info(f'Deleted {count} user_favorites.')
         return count
 
-    async def get_user_favorite_recipes(self, user: User) -> list[Recipe]:
+    async def get_user_favorite_recipes(self, user: UserRead) -> list[Recipe]:
         logger.info(f'Getting all user_favorites for {user=}')
         favorites = await self._user_favorites_dao.find_all(OwnerId(user_id=user.id))
         logger.info(f'Successfully got {len(favorites)} user_favorites')

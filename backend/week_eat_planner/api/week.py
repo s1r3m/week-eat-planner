@@ -150,5 +150,5 @@ async def assign_recipe_to_meal_slot(
     logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {slots_data=} by {user}.')
     week_service = WeekService(session)
     week = await week_service.get_week_for_edit(week_id, user)
-    updated_slots = await WeekService(session).assign_recipes_to_meal_slots(week, *slots_data)
+    updated_slots = await week_service.assign_recipes_to_meal_slots(week, *slots_data)
     return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]

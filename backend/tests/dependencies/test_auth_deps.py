@@ -34,6 +34,6 @@ async def test_get_optional_user__active_user__user_returned(
     mocked_user_service.get_user_by_token.assert_awaited_once_with(encoded_token)
 
 
-async def test_get_optional_user__no_token__user_returned(mocked_session):
+async def test_get_optional_user__no_token__none_returned(mocked_session):
     user = await get_optional_user(None, mocked_session)
     assert user is None

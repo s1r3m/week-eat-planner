@@ -38,7 +38,6 @@ class RecipeBase(BaseModel):
 
     name: str
     is_public: bool
-    is_favorite: bool
     steps: list[CookingStep] = Field(default_factory=list)
     ingredients: list[Ingredient] = Field(default_factory=list)
 
@@ -75,6 +74,7 @@ class RecipeRead(RecipeBase, RecordId, OwnerId, ImageMixin):
     """Schema for reading a recipe, including the database ID and user ID."""
 
     author: str
+    is_favorite: bool
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,6 +84,7 @@ class RecipeReadMinimal(RecordId, ImageMixin):
 
     name: str
     author: str
+    is_favorite: bool
 
     model_config = ConfigDict(from_attributes=True)
 

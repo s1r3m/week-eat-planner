@@ -44,7 +44,6 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
         is_public=RECIPE_IS_PUBLIC,
         steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
-        is_favorite=False,
     )
 
     response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=create_data.model_dump(mode='json'))
@@ -56,8 +55,17 @@ async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_crea
     expected['user_id'] = str(created_user.id)
     expected['author'] = created_user.username
     expected['image_url'] = None
+    expected['is_favorite'] = False
     expected.pop('image_key', None)
     assert body == expected
+
+
+async def test_get_recipe__no_auth_public_recipe__recipe_recieved(client, public_created_recipe):
+    response = await client.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=public_created_recipe.id)}')
+
+    body = response.json()
+    assert response.status_code == status.HTTP_200_OK
+    assert body == RecipeRead.model_validate(public_created_recipe).model_dump(mode='json')
 
 
 async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_created_user, created_recipe):
@@ -66,6 +74,19 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
     assert body == RecipeRead.model_validate(created_recipe).model_dump(mode='json')
+
+
+@pytest.mark.xfail(reason='TODO: figure out favorites')
+async def test_get_recipe__user_with_favotite_recipe__recipe_in_response(
+    auth_client_for_created_user, public_created_recipe, public_favorite
+):
+    response = await auth_client_for_created_user.get(
+        f'{AppUrl.RECIPES_TPL.format(recipe_id=public_created_recipe.id)}'
+    )
+
+    body = response.json()
+    assert response.status_code == status.HTTP_200_OK
+    assert body == RecipeRead.model_validate(public_created_recipe).model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_with_image__recipe_in_response(
@@ -92,8 +113,8 @@ async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_c
 async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
     response = await client.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
 
 
 async def test_get_my_recipes__empty_list__empty_response(auth_client_for_created_user):

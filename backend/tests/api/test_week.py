@@ -62,8 +62,8 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 async def test_get_week__no_auth__error_in_response(client, created_week):
     response = await client.get(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Week {created_week.id} forbidden'}
 
 
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):
@@ -158,6 +158,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
                 'id': str(created_recipe.id),
                 'name': created_recipe.name,
                 'author': created_recipe.author,
+                'is_favorite': False,
                 'image_url': None,
             },
         },

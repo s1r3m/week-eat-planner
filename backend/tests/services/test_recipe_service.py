@@ -46,7 +46,6 @@ def recipe_create() -> RecipeCreate:
         is_public=False,
         steps=RECIPE_STEPS,
         ingredients=RECIPE_INGREDIENTS,
-        is_favorite=False,
     )
 
 
@@ -203,7 +202,7 @@ async def test_add_favorite__public_recipe__recipe_favorited(
     assert result == user_favorite
 
 
-async def test_add_favorite__my_private_recipde__recipe_favorited(
+async def test_add_favorite__my_private_recipe__recipe_favorited(
     mocked_session, mocked_user_favorites_dao, db_private_recipe, user_read
 ):
     user_favorite = UserFavorite(user_id=user_read.id, recipe_id=db_private_recipe.id, id=generate_uuid7())

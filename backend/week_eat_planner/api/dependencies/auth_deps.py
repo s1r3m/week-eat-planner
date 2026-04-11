@@ -9,6 +9,7 @@ from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.user_service import UserService
 
 _oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
+_oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl='/auth/login', auto_error=False)
 
 
 async def get_current_active_user(
@@ -29,7 +30,7 @@ async def get_current_active_user(
 
 
 async def get_optional_user(
-    token: Annotated[str | None, Depends(_oauth2_scheme)],
+    token: Annotated[str | None, Depends(_oauth2_scheme_optional)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> UserRead | None:
     if not token:
