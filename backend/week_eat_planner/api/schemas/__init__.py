@@ -1,13 +1,13 @@
 from .common import OwnerId, RecordId
 from .meal_slot import MealSlotAssign, MealSlotRead
-from .recipe import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate, UserRecipeFavorite
+from .recipe import RecipeCreate, RecipeFavoriteFilter, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from .token import RefreshTokenFromDB, Token, TokenUpdate
 from .user import Email, UserCreate, UserRead
 from .week import WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 
 __all__ = [
     'Email',
-    'UserRecipeFavorite',
+    'RecipeFavoriteFilter',
     'MealSlotAssign',
     'MealSlotRead',
     'OwnerId',

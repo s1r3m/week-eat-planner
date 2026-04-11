@@ -6,7 +6,7 @@ from tests.constants import RECIPE_INGREDIENTS, RECIPE_NAME, RECIPE_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeUpdate
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient
+from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeFavoriteFilter
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.models.user_favorites import UserFavorite
 from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
@@ -74,7 +74,6 @@ async def test_get_visible_recipe__public_favorite_recipe__recipe_returned(
     mocked_session, mocked_recipe_dao, mocked_user_favorites_dao, db_public_recipe, user_read
 ):
     str_recipe_id = str(db_public_recipe.id)
-    db_public_recipe.is_favorite = True
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_public_recipe
     mocked_user_favorites_dao.find_one_or_none.return_value = UserFavorite(
         user_id=user_read.id, recipe_id=db_public_recipe.id
@@ -192,46 +191,120 @@ async def test_delete_recipe__valid_id__recipe_deleted(mocked_session, mocked_re
 
 
 async def test_add_favorite__public_recipe__recipe_favorited(
-    mocked_session, mocked_user_favorites_dao, db_public_recipe, user_read_2
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_public_recipe, user_read_2
 ):
-    user_favorite = UserFavorite(user_id=user_read_2.id, recipe_id=db_public_recipe.id, id=generate_uuid7())
+    user_favorite = UserFavorite(user_id=user_read_2.id, recipe_id=db_public_recipe.id)
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_public_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = None
     mocked_user_favorites_dao.add.return_value = user_favorite
 
-    result = await RecipeService(mocked_session).add_favorite(db_public_recipe, user_read_2)
+    result = await RecipeService(mocked_session).add_favorite(str(db_public_recipe.id), user_read_2)
 
     assert result == user_favorite
+
+
+async def test_add_favorite__public_favorite_recipe__recipe_favorite_not_modified(
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_public_recipe, user_read_2
+):
+    str_recipe_id = str(db_public_recipe.id)
+    user_favorite = UserFavorite(user_id=user_read_2.id, recipe_id=db_public_recipe.id)
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_public_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = user_favorite
+    mocked_user_favorites_dao.add.return_value = user_favorite
+
+    result = await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read_2)
+
+    assert result.recipe_id == user_favorite.recipe_id
+    assert result.user_id == user_favorite.user_id
+    mocked_user_favorites_dao.add.assert_not_awaited()
 
 
 async def test_add_favorite__my_private_recipe__recipe_favorited(
-    mocked_session, mocked_user_favorites_dao, db_private_recipe, user_read
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_private_recipe, user_read
 ):
+    str_recipe_id = str(db_private_recipe.id)
     user_favorite = UserFavorite(user_id=user_read.id, recipe_id=db_private_recipe.id, id=generate_uuid7())
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = None
     mocked_user_favorites_dao.add.return_value = user_favorite
-    result = await RecipeService(mocked_session).add_favorite(db_private_recipe, user_read)
+
+    result = await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read)
 
     assert result == user_favorite
 
 
-async def test_delete_favorite__user_favorite_exists__recipe_deleted(
-    mocked_session, mocked_user_favorites_dao, db_user_favorite
+async def test_add_favorite__not_mine_private_recipe__error_raised(
+    mocked_session, mocked_recipe_dao, db_private_recipe, user_read_2
 ):
+    str_recipe_id = str(db_private_recipe.id)
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
+
+    with pytest.raises(RecipeForbidden) as exc:
+        await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read_2)
+
+    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
+
+
+async def test_delete_favorite__public_favorite_recipe__recipe_unfavorited(
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_public_recipe, user_read
+):
+    str_recipe_id = str(db_public_recipe.id)
+    user_favorite = UserFavorite(user_id=user_read.id, recipe_id=db_public_recipe.id, id=generate_uuid7())
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_public_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = user_favorite
     mocked_user_favorites_dao.delete.return_value = 1
 
-    result = await RecipeService(mocked_session).delete_favorite(db_user_favorite)
+    result = await RecipeService(mocked_session).delete_favorite(str_recipe_id, user_read)
 
     assert result == 1
-    mocked_user_favorites_dao.delete.assert_awaited_once_with(RecordId(id=db_user_favorite.id))
+    mocked_user_favorites_dao.delete.assert_awaited_once_with(
+        RecipeFavoriteFilter(user_id=user_read.id, recipe_id=db_public_recipe.id)
+    )
 
 
-async def test_delete_favorite__user_favorite_not_exists__no_errors(
-    mocked_session, mocked_user_favorites_dao, db_user_favorite
+async def test_delete_favorite__my_private_favorite_recipe__recipe_unfavorited(
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_private_recipe, user_read
 ):
-    mocked_user_favorites_dao.delete.return_value = 0
+    str_recipe_id = str(db_private_recipe.id)
+    user_favorite = UserFavorite(user_id=user_read.id, recipe_id=db_private_recipe.id, id=generate_uuid7())
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = user_favorite
+    mocked_user_favorites_dao.delete.return_value = 1
 
-    result = await RecipeService(mocked_session).delete_favorite(db_user_favorite)
+    result = await RecipeService(mocked_session).delete_favorite(str_recipe_id, user_read)
+
+    assert result == 1
+    mocked_user_favorites_dao.delete.assert_awaited_once_with(
+        RecipeFavoriteFilter(user_id=user_read.id, recipe_id=db_private_recipe.id)
+    )
+
+
+async def test_delete_favorite__not_favorite_recipe__not_unfavorited(
+    mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_private_recipe, user_read
+):
+    str_recipe_id = str(db_private_recipe.id)
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
+    mocked_user_favorites_dao.find_one_or_none.return_value = None
+    mocked_user_favorites_dao.delete.return_value = 1
+
+    result = await RecipeService(mocked_session).delete_favorite(str_recipe_id, user_read)
 
     assert result == 0
-    mocked_user_favorites_dao.delete.assert_awaited_once_with(RecordId(id=db_user_favorite.id))
+    mocked_user_favorites_dao.delete.assert_not_awaited()
+
+
+async def test_delete_favorite__not_mine_private_favorite_recipe__error_raised(
+    mocked_session, mocked_recipe_dao, db_private_recipe, user_read_2
+):
+    str_recipe_id = str(db_private_recipe.id)
+    mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
+
+    with pytest.raises(RecipeForbidden) as exc:
+        await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read_2)
+
+    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
+    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
 
 
 async def test_get_user_favorite__favorite_exists__user_favorite_returned(

@@ -4,7 +4,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeUpdate, RecordId, UserRead, UserRecipeFavorite
+from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeFavoriteFilter, RecipeUpdate, RecordId, UserRead
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.db.models.user_favorites import UserFavorite
@@ -59,7 +59,7 @@ class RecipeService:
 
         if user:
             favorite: UserFavorite | None = await self._user_favorites_dao.find_one_or_none(
-                UserRecipeFavorite(user_id=user.id, recipe_id=recipe.id)
+                RecipeFavoriteFilter(user_id=user.id, recipe_id=recipe.id)
             )
             recipe.is_favorite = favorite is not None
 
@@ -139,17 +139,28 @@ class RecipeService:
         logger.info(f'Deleted {count} recipes.')
         return count
 
-    async def add_favorite(self, recipe: Recipe, user: UserRead) -> UserFavorite:
-        logger.info(f'Marking the recipe {recipe=} favorite for user {user=}')
+    async def add_favorite(self, recipe_id: str, user: UserRead) -> UserFavorite:
+        logger.info(f'Marking the recipe {recipe_id} favorite for {user=}')
+        recipe = await self.get_visible_recipe(recipe_id, user)
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
+
+        if recipe.is_favorite:
+            logger.warning(f'Recipe {recipe_id=} is already favorited')
+            return record
+
         favorite_recipe = await self._user_favorites_dao.add(record)
         logger.info('Successfully marked the recipe as favorite')
 
         return favorite_recipe
 
-    async def delete_favorite(self, user_favorite: UserFavorite) -> int:
-        logger.info(f'Deleting user favorite {user_favorite.recipe=} for {user_favorite.user=}')
-        count = await self._user_favorites_dao.delete(RecordId(id=user_favorite.id))
+    async def delete_favorite(self, recipe_id: str, user: UserRead) -> int:
+        logger.info(f'Deleting user favorite {recipe_id=} for {user=}')
+        recipe = await self.get_visible_recipe(recipe_id, user)
+        if not recipe.is_favorite:
+            logger.warning(f'Recipe {recipe_id=} is not favorited')
+            return 0
+
+        count = await self._user_favorites_dao.delete(RecipeFavoriteFilter(user_id=user.id, recipe_id=recipe.id))
         logger.info(f'Deleted {count} user_favorites.')
         return count
 
