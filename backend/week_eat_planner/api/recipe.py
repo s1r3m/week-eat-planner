@@ -200,4 +200,4 @@ async def remove_favorite(
 ) -> None:
     logger.info(f'Got {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for {user}')
     await RecipeService(session).delete_favorite(recipe_id, user)
-    logger.info(f'Recipe {recipe_id} successfully marked favorite for {user}')
+    logger.info(f'Recipe {recipe_id} successfully removed from favorites for {user}')

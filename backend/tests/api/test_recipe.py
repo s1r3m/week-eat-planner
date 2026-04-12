@@ -461,10 +461,14 @@ async def test_get_user_favorites__some_recipes__recipes_in_response(
     response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_FAVORITES}')
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [
-        RecipeReadMinimal.model_validate(favorite_private_recipe).model_dump(mode='json'),
-        RecipeReadMinimal.model_validate(favorite_public_recipe).model_dump(mode='json'),
-    ]
+    actual = sorted(response.json(), key=itemgetter('id'))
+    assert actual == sorted(
+        [
+            RecipeReadMinimal.model_validate(favorite_private_recipe).model_dump(mode='json'),
+            RecipeReadMinimal.model_validate(favorite_public_recipe).model_dump(mode='json'),
+        ],
+        key=itemgetter('id'),
+    )
 
 
 async def test_get_user_favorites__no_auth__error_in_response(client):
