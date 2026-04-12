@@ -6,10 +6,10 @@ from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
-from week_eat_planner.db.models.user_favorites import UserFavorite
 
 if TYPE_CHECKING:
     from .recipe import Recipe
+    from .user_favorites import UserFavorite
     from .week import Week
 
 

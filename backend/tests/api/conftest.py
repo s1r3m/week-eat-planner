@@ -132,8 +132,8 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
 
 @pytest.fixture
 def created_favorite_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(recipe: Recipe, user: UserRead) -> UserFavorite:
-        favorite = await RecipeService(db_session).add_favorite(str(recipe.id), user)
+    async def _factory(recipe: Recipe, created_user: UserRead) -> UserFavorite:
+        favorite = await RecipeService(db_session).add_favorite(str(recipe.id), created_user)
         await db_session.flush()
         return favorite
 
