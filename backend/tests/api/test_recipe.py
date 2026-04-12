@@ -50,9 +50,7 @@ async def favorite_public_recipe(auth_client_for_created_user, public_created_re
 
 @pytest_asyncio.fixture
 async def favorite_private_recipe(auth_client_for_created_user, created_recipe) -> Recipe:
-    await auth_client_for_created_user.post(
-        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
-    )
+    await auth_client_for_created_user.post(f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}')
     created_recipe.is_favorite = True
     return created_recipe
 
