@@ -67,6 +67,21 @@ class RecipeService:
         return recipe
 
     async def get_recipe_for_edit(self, recipe_id: str, user: UserRead) -> Recipe:
+        """Retrieves a recipe for editing.
+
+        Ensures the user owns the recipe and locks it for update.
+
+        Args:
+            recipe_id: The ID of the recipe to retrieve.
+            user: The user requesting the recipe for edit.
+
+        Returns:
+            The requested recipe object.
+
+        Raises:
+            RecipeNotFound: If the recipe does not exist or the ID is invalid.
+            RecipeForbidden: If the user does not own the recipe.
+        """
         logger.info(f'Getting user recipe {recipe_id} for {user}.')
         recipe = await self._get_recipe(recipe_id, for_update=True)
         if recipe.user_id != user.id:
@@ -76,6 +91,18 @@ class RecipeService:
         return recipe
 
     async def _get_recipe(self, recipe_id: str, for_update: bool) -> Recipe:
+        """Internal helper to retrieve a recipe from the database.
+
+        Args:
+            recipe_id: The ID of the recipe to retrieve.
+            for_update: Whether to lock the database row for update.
+
+        Returns:
+            The recipe object.
+
+        Raises:
+            RecipeNotFound: If the recipe does not exist or the ID is invalid.
+        """
         try:
             recipe_uuid = UUID(recipe_id)
         except ValueError as exc:
@@ -141,6 +168,15 @@ class RecipeService:
         return count
 
     async def add_favorite(self, recipe_id: str, user: UserRead) -> Recipe:
+        """Marks a recipe as a favorite for the user.
+
+        Args:
+            recipe_id: The ID of the recipe to favorite.
+            user: The user who is favoriting the recipe.
+
+        Returns:
+            The recipe object with is_favorite=True.
+        """
         logger.info(f'Marking the recipe {recipe_id} favorite for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
@@ -156,6 +192,15 @@ class RecipeService:
         return recipe
 
     async def delete_favorite(self, recipe_id: str, user: UserRead) -> int:
+        """Removes a recipe from the user's favorites.
+
+        Args:
+            recipe_id: The ID of the recipe to remove from favorites.
+            user: The user who is removing the favorite.
+
+        Returns:
+            The number of deleted favorite records (0 or 1).
+        """
         logger.info(f'Deleting user favorite {recipe_id=} for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
         if not recipe.is_favorite:
@@ -167,6 +212,14 @@ class RecipeService:
         return count
 
     async def get_user_favorite_recipes(self, user: UserRead) -> list[Recipe]:
+        """Retrieves all recipes favorited by a user.
+
+        Args:
+            user: The user whose favorites to retrieve.
+
+        Returns:
+            A list of favorited recipes.
+        """
         logger.info(f'Getting all user_favorites for {user=}')
         favorites = await self._user_favorites_dao.find_all(
             OwnerId(user_id=user.id),

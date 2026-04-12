@@ -74,7 +74,9 @@ async def get_week(
     The week must belong to the currently authenticated user.
 
     Args:
-        week: The week object, injected by dependency.
+        week_id: The ID of the week to retrieve.
+        user: The authenticated user or None for public access (TODO).
+        session: The database session.
 
     Returns:
         The requested week object.
@@ -97,7 +99,8 @@ async def update_week(
 
     Args:
         new_data: The new data for the week.
-        week: The week to be updated.
+        week_id: The ID of the week to update.
+        user: The authenticated user.
         session: The database session.
 
     Returns:
@@ -121,8 +124,9 @@ async def delete_week(
     The week must belong to the currently authenticated user.
 
     Args:
-        week: The week object to delete.
-        session: The database session for committing the deletion.
+        week_id: The ID of the week to delete.
+        user: The authenticated user.
+        session: The database session.
     """
     logger.info(f'Request DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} by {user}.')
     week_service = WeekService(session)
@@ -140,9 +144,10 @@ async def assign_recipe_to_meal_slot(
     """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
 
     Args:
+        week_id: The ID of the week containing the slots.
         slots_data: A list of slot assignments, each containing a slot ID and an optional recipe ID.
-        week: The week containing the meal slots, injected by dependency.
-        session: The database session for committing the changes.
+        user: The authenticated user.
+        session: The database session.
 
     Returns:
         A list of updated meal slot objects.

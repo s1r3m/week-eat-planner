@@ -71,6 +71,21 @@ class WeekService:
         return week
 
     async def get_week_for_edit(self, week_id: str, user: UserRead) -> Week:
+        """Retrieves a week for editing.
+
+        Ensures the user owns the week and locks it for update.
+
+        Args:
+            week_id: The ID of the week to retrieve.
+            user: The user requesting the week for edit.
+
+        Returns:
+            The requested Week object.
+
+        Raises:
+            WeekNotFound: If the week does not exist or the ID is invalid.
+            WeekForbidden: If the user does not own the week.
+        """
         week = await self._get_week(week_id, for_update=True)
         if week.user_id != user.id:
             logger.error(f'The user {user} cannot edit the week {week.id}')
@@ -79,6 +94,18 @@ class WeekService:
         return week
 
     async def _get_week(self, week_id: str, for_update: bool) -> Week:
+        """Internal helper to retrieve a week from the database.
+
+        Args:
+            week_id: The ID of the week to retrieve.
+            for_update: Whether to lock the database row for update.
+
+        Returns:
+            The Week object.
+
+        Raises:
+            WeekNotFound: If the week does not exist or the ID is invalid.
+        """
         logger.info(f'Retrieving week {week_id} {for_update=}.')
         try:
             week_uuid = UUID(week_id)
@@ -126,7 +153,7 @@ class WeekService:
         """Deletes a specific week.
 
         Args:
-            week: The week to delete.
+            week: The week object to delete.
         """
         logger.info(f'Deleting {week} for user {week.user_id}.')
         await self._week_dao.delete(RecordId(id=week.id))

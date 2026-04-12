@@ -33,6 +33,17 @@ async def get_optional_user(
     token: Annotated[str | None, Depends(_oauth2_scheme_optional)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> UserRead | None:
+    """FastAPI dependency to optionally get the current user.
+
+    If no token is provided, returns None instead of raising an error.
+
+    Args:
+        token: The optional OAuth2 password bearer token.
+        session: The database session.
+
+    Returns:
+        The authenticated User object or None.
+    """
     if not token:
         return None
 
