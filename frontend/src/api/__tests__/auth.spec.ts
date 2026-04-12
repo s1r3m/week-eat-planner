@@ -103,12 +103,12 @@ describe('auth api', () => {
       const mutationConfig = signupMutation();
       // @ts-ignore
       mutationConfig.onSuccess();
-      expect(console.debug).toHaveBeenCalledWith('Signup successful');
+      expect(console.debug).toHaveBeenCalledWith('SignUp successful');
 
       const error = new Error('fail');
       // @ts-ignore
       mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('Signup failed: ', error);
+      expect(console.error).toHaveBeenCalledWith('SignUp failed: ', error);
     });
   });
 
@@ -165,6 +165,13 @@ describe('auth api', () => {
       expect(token1).toBe('refresh-token');
       expect(token2).toBe('refresh-token');
       expect(mockAuth.history.post.length).toBe(1);
+    });
+
+    it('returns empty string if accessToken is null after refresh', async () => {
+      // @ts-ignore
+      mockAuth.onPost('/auth/refresh').reply(200, { access_token: null });
+      const result = await refreshToken();
+      expect(result).toBe('');
     });
   });
 

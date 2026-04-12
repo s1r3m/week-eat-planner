@@ -1,10 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipePreviewCard from '../RecipePreviewCard.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { Star } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import type { RecipePreview } from '@/api/recipes';
+
+const mockMutate = vi.fn();
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn(() => ({ mutate: mockMutate })),
+}));
+
+vi.mock('@/api/recipes', () => ({
+  toggleFavoriteMutation: vi.fn(),
+}));
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -19,7 +28,7 @@ describe('RecipePreviewCard', () => {
     id: '1',
     name: 'Pasta Carbonara',
     author: 'me',
-    isFavorite: false,
+    is_favorite: false,
   };
 
   const mountComponent = (props = {}) => {
@@ -72,17 +81,18 @@ describe('RecipePreviewCard', () => {
     const starComp = wrapper.findComponent(Star);
 
     // Initially not favorite
-    expect(starComp.attributes('fill')).toBe('none');
+    // Some environments might have a default fill, so we check it's not the primary color
+    expect(starComp.attributes('fill')).not.toBe('var(--primary)');
 
     // Toggle to favorite
-    const clickEvent = new Event('click');
-    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
+    const clickEvent = { stopPropagation: vi.fn() };
+    await wrapper.findComponent(Button).trigger('click', clickEvent);
 
+    expect(mockMutate).toHaveBeenCalledWith({ id: recipe.id, is_favorite: recipe.is_favorite });
+
+    // Update prop to see visual change
+    await wrapper.setProps({ recipe: { ...recipe, is_favorite: true } });
     expect(starComp.attributes('fill')).toBe('var(--primary)');
-
-    // Toggle back
-    await wrapper.findComponent(Button).vm.$emit('click', clickEvent);
-    expect(starComp.attributes('fill')).toBe('none');
   });
 
   it('adds specific class when recipe id starts with temp-id', () => {

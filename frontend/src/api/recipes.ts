@@ -275,9 +275,9 @@ export const toggleFavoriteMutation = defineMutation(() => {
       console.debug(`The recipe ${id} has been marked is_favorite=${!is_favorite}`);
       if (!is_favorite) queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
     },
-    onSettle: (
-      _err: Error,
-      _data: FavoritePayload | RecipePreview,
+    onSettled: (
+      _data: FavoritePayload | RecipePreview | undefined,
+      _err: Error | null,
       { id }: FavoritePayload,
       _context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
