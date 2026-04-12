@@ -59,7 +59,7 @@ export const RECIPE_KEYS = {
  */
 export const getMyRecipesQuery = defineQueryOptions(() => ({
   key: RECIPE_KEYS.my(),
-  query: () => apiClient.get<RecipePreview[]>('/my_recipes').then((res) => res.data),
+  query: () => apiClient.get<RecipePreview[]>('/recipes/my_recipes').then((res) => res.data),
 }));
 
 /**

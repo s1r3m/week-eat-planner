@@ -121,8 +121,3 @@ class InvalidEmail(HTTPException):
 class InvalidCredentials(HTTPException):
     def __init__(self) -> None:
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
-
-
-class RecipeFavoriteMissing(LogicException):
-    def __init__(self, recipe_id: UUID, user_id: UUID) -> None:
-        super().__init__(detail=f'Recipe {recipe_id} favorite by {user_id} is not found, but should')

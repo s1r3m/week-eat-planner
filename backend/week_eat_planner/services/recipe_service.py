@@ -9,7 +9,7 @@ from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeFavoriteFi
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.db.models.user_favorites import UserFavorite
-from week_eat_planner.exceptions import RecipeFavoriteMissing, RecipeForbidden, RecipeNotFound
+from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
 
 
 class RecipeService:
@@ -140,25 +140,20 @@ class RecipeService:
         logger.info(f'Deleted {count} recipes.')
         return count
 
-    async def add_favorite(self, recipe_id: str, user: UserRead) -> UserFavorite:
+    async def add_favorite(self, recipe_id: str, user: UserRead) -> Recipe:
         logger.info(f'Marking the recipe {recipe_id} favorite for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
 
         if recipe.is_favorite:
             logger.warning(f'Recipe {recipe_id=} is already favorited')
-            favorite = await self._user_favorites_dao.find_one_or_none(
-                RecipeFavoriteFilter(user_id=user.id, recipe_id=recipe.id)
-            )
-            if not favorite:
-                raise RecipeFavoriteMissing(recipe_id=recipe.id, user_id=user.id)
+            return recipe
 
-            return favorite
-
-        favorite_recipe = await self._user_favorites_dao.add(record)
+        await self._user_favorites_dao.add(record)
+        recipe.is_favorite = True
         logger.info('Successfully marked the recipe as favorite')
 
-        return favorite_recipe
+        return recipe
 
     async def delete_favorite(self, recipe_id: str, user: UserRead) -> int:
         logger.info(f'Deleting user favorite {recipe_id=} for {user=}')

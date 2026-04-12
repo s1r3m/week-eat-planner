@@ -6,11 +6,12 @@ import pytest_asyncio
 from fastapi import UploadFile, status
 from starlette.datastructures import Headers
 
-from tests.constants import PASSWORD, RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
+from tests.constants import RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
+from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -36,6 +37,24 @@ async def uploaded_image(created_recipe_with_image):
 
     storage = StorageClient()
     await storage.delete_file(f'recipes/{created_recipe_with_image.id}.jpg')
+
+
+@pytest_asyncio.fixture
+async def favorite_public_recipe(auth_client_for_created_user, public_created_recipe) -> Recipe:
+    await auth_client_for_created_user.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=public_created_recipe.id)}'
+    )
+    public_created_recipe.is_favorite = True
+    return public_created_recipe
+
+
+@pytest_asyncio.fixture
+async def favorite_private_recipe(auth_client_for_created_user, created_recipe) -> Recipe:
+    await auth_client_for_created_user.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
+    )
+    created_recipe.is_favorite = True
+    return created_recipe
 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
@@ -76,17 +95,16 @@ async def test_get_recipe__user_with_recipe__recipe_in_response(auth_client_for_
     assert body == RecipeRead.model_validate(created_recipe).model_dump(mode='json')
 
 
-@pytest.mark.xfail(reason='TODO: figure out favorites')
 async def test_get_recipe__user_with_favorite_recipe__recipe_in_response(
-    auth_client_for_created_user, public_created_recipe, public_favorite
+    auth_client_for_created_user, favorite_public_recipe
 ):
     response = await auth_client_for_created_user.get(
-        f'{AppUrl.RECIPES_TPL.format(recipe_id=public_created_recipe.id)}'
+        f'{AppUrl.RECIPES_TPL.format(recipe_id=favorite_public_recipe.id)}'
     )
 
     body = response.json()
     assert response.status_code == status.HTTP_200_OK
-    assert body == RecipeRead.model_validate(public_created_recipe).model_dump(mode='json')
+    assert body == RecipeRead.model_validate(favorite_public_recipe).model_dump(mode='json')
 
 
 async def test_get_recipe__recipe_with_image__recipe_in_response(
@@ -268,11 +286,9 @@ async def test_delete_recipe__recipe_with_image__recipe_removed(
 
 
 async def test_delete_recipe__other_user_existing_recipe__error_in_response(
-    created_recipe, auth_client_factory, created_user_2
+    created_recipe, auth_client_for_created_user_2
 ):
-    user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
-
-    response = await user_client_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
+    response = await auth_client_for_created_user_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
@@ -319,17 +335,16 @@ async def test_upload_image__unauthenticated__returns_401(client, created_recipe
     assert response.json() == {'detail': 'Not authenticated'}
 
 
-async def test_upload_image__not_owner__returns_403(auth_client_factory, created_user_2, created_recipe):
-    auth_client_for_another_user = await auth_client_factory(created_user_2, PASSWORD)
+async def test_upload_image__not_owner__returns_403(auth_client_for_created_user, public_created_recipe):
     files = {'image': ('test.jpg', b'fake image content', 'image/jpeg')}
 
-    response = await auth_client_for_another_user.patch(
-        AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id),
+    response = await auth_client_for_created_user.patch(
+        AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=public_created_recipe.id),
         files=files,
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+    assert response.json() == {'detail': f'Recipe {public_created_recipe.id} forbidden'}
 
 
 async def test_upload_image__invalid_content_type__returns_400(auth_client_for_created_user, created_recipe):
@@ -355,3 +370,105 @@ async def test_upload_image__file_too_large__returns_400(auth_client_for_created
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert 'Image too large' in response.json()['detail']
+
+
+async def test_add_favorite__not_mine_public_recipe__recipe_favorited(
+    auth_client_for_created_user, public_created_recipe
+):
+    response = await auth_client_for_created_user.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=public_created_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+async def test_add_favorite__my_private_recipe__recipe_favorited(auth_client_for_created_user, created_recipe):
+    response = await auth_client_for_created_user.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+async def test_add_favorite__already_favorite_recipe__no_error(auth_client_for_created_user, favorite_public_recipe):
+    response = await auth_client_for_created_user.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=favorite_public_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+async def test_add_favorite__not_mine_private_recipe__error_raised(auth_client_for_created_user_2, created_recipe):
+    response = await auth_client_for_created_user_2.post(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+
+
+async def test_delete_favorite__not_mine_public_favorited_recipe__recipe_unfavorited(
+    auth_client_for_created_user, favorite_public_recipe
+):
+    response = await auth_client_for_created_user.delete(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=favorite_public_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+async def test_delete_favorite__my_private_favorited_recipe__recipe_unfavorited(
+    auth_client_for_created_user, favorite_private_recipe
+):
+    response = await auth_client_for_created_user.delete(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=favorite_private_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+async def test_delete_favorite__not_mine_private_favorited_recipe__error_raised(
+    auth_client_for_created_user, auth_client_for_created_user_2, created_recipe
+):
+    await auth_client_for_created_user.post(f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}')
+
+    response = await auth_client_for_created_user_2.delete(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+
+
+async def test_delete_favorite__not_favorited_recipe__no_error(auth_client_for_created_user, created_recipe):
+    response = await auth_client_for_created_user.delete(
+        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+async def test_get_user_favorites__empty_list__empty_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_FAVORITES}')
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+
+async def test_get_user_favorites__some_recipes__recipes_in_response(
+    auth_client_for_created_user, favorite_private_recipe, favorite_public_recipe
+):
+    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_FAVORITES}')
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        RecipeReadMinimal.model_validate(favorite_private_recipe).model_dump(mode='json'),
+        RecipeReadMinimal.model_validate(favorite_public_recipe).model_dump(mode='json'),
+    ]
+
+
+async def test_get_user_favorites__no_auth__error_in_response(client):
+    response = await client.get(f'{AppUrl.RECIPES_FAVORITES}')
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}

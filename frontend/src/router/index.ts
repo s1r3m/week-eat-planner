@@ -61,7 +61,7 @@ const routes = [
         component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
       },
       {
-        path: 'recipes/my-recipes',
+        path: 'recipes/my_recipes',
         name: ROUTE_NAMES.RECIPES_MY,
         component: () => import('@/pages/Recipes/MyRecipesPage.vue'),
       },

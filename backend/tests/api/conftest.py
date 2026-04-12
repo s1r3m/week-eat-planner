@@ -26,7 +26,6 @@ from week_eat_planner.api.schemas import (
 )
 from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.models.recipe import Recipe
-from week_eat_planner.db.models.user_favorites import UserFavorite
 from week_eat_planner.db.models.week import Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
@@ -130,16 +129,6 @@ def created_recipe_factory(db_session: AsyncSession) -> Callable:
     return _factory
 
 
-@pytest.fixture
-def created_favorite_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(recipe: Recipe, created_user: UserRead) -> UserFavorite:
-        favorite = await RecipeService(db_session).add_favorite(str(recipe.id), created_user)
-        await db_session.flush()
-        return favorite
-
-    return _factory
-
-
 @pytest_asyncio.fixture
 async def created_user(user_factory: Callable) -> UserRead:
     return await user_factory(UserCreate(email=EMAIL, password=PASSWORD, username=USERNAME))
@@ -168,16 +157,9 @@ async def created_recipe(created_recipe_factory: Callable, created_user: UserRea
 
 
 @pytest_asyncio.fixture
-async def public_created_recipe(created_recipe_factory: Callable, created_user: UserRead) -> Recipe:
+async def public_created_recipe(created_recipe_factory: Callable, created_user_2: UserRead) -> Recipe:
     recipe_create = RecipeCreate(name=RECIPE_NAME, is_public=True, ingredients=RECIPE_INGREDIENTS)
-    return await created_recipe_factory(created_user, recipe_data=recipe_create)
-
-
-@pytest_asyncio.fixture
-async def public_favorite(
-    created_favorite_factory: Callable, public_created_recipe: Recipe, user_read: UserRead
-) -> UserFavorite:
-    return await created_favorite_factory(public_created_recipe, user_read)
+    return await created_recipe_factory(created_user_2, recipe_data=recipe_create)
 
 
 @pytest_asyncio.fixture
@@ -200,3 +182,8 @@ async def created_recipe_with_image(
 @pytest_asyncio.fixture
 async def auth_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
     return await auth_client_factory(created_user, PASSWORD)
+
+
+@pytest_asyncio.fixture
+async def auth_client_for_created_user_2(auth_client_factory: Callable, created_user_2: UserRead) -> AsyncClient:
+    return await auth_client_factory(created_user_2, PASSWORD)
