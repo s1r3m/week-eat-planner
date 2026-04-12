@@ -22,7 +22,11 @@
       class="absolute inset-0 z-10"
     ></router-link>
     <div class="flex gap-3 absolute right-2 top-2 z-20 pointer-events-auto">
-      <Button variant="secondary" class="rounded-full" @click.stop="toggleFavorite">
+      <Button
+        variant="secondary"
+        class="rounded-full"
+        @click.stop="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
+      >
         <Star v-bind="starProps" />
       </Button>
     </div>
@@ -30,20 +34,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Star } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useMutation } from '@pinia/colada';
+import { toggleFavoriteMutation } from '@/api/recipes';
 import type { RecipePreview } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Star } from 'lucide-vue-next';
+
 const props = defineProps<{ recipe: RecipePreview }>();
-
-const isFavorite = ref(props.recipe.isFavorite);
-
-const defaultImg = new URL('@/assets/recipe_bg.png', import.meta.url).href;
+const { mutate: toggle } = useMutation(toggleFavoriteMutation());
 const starProps = computed(() => {
-  return isFavorite.value
+  return props.recipe.is_favorite
     ? {
         fill: 'var(--primary)',
         strokeWidth: 0,
@@ -51,7 +55,5 @@ const starProps = computed(() => {
     : {};
 });
 
-const toggleFavorite = () => {
-  isFavorite.value = !isFavorite.value;
-};
+const defaultImg = new URL('@/assets/recipe_bg.png', import.meta.url).href;
 </script>

@@ -54,6 +54,13 @@ const [useProvideCarousel, useInjectCarousel] = createInjectionState(
   },
 );
 
+/**
+ * Hook to access the carousel state and controls.
+ * Must be used within a `<Carousel />` component.
+ *
+ * @returns The carousel state and control functions.
+ * @throws Error if used outside of a `<Carousel />` component.
+ */
 function useCarousel() {
   const carouselState = useInjectCarousel();
 

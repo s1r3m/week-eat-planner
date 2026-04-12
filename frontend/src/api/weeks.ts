@@ -1,6 +1,9 @@
 import { defineQueryOptions, defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient } from './client';
 
+/**
+ * Days of the week used for meal planning.
+ */
 export type DayOfWeek =
   | 'MONDAY'
   | 'TUESDAY'
@@ -10,18 +13,30 @@ export type DayOfWeek =
   | 'SATURDAY'
   | 'SUNDAY';
 
+/**
+ * Types of meals that can be planned in a slot.
+ */
 export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 
+/**
+ * Minimal recipe information associated with a meal slot.
+ */
 export interface MealSlotRecipe {
   id: string;
   name: string;
 }
 
+/**
+ * Represents a day in a week's meal plan, containing multiple meal slots.
+ */
 export interface WeekDay {
   name: DayOfWeek;
   slots: MealSlot[];
 }
 
+/**
+ * A specific slot in a meal plan for a given day and meal type.
+ */
 export interface MealSlot {
   id: string;
   meal_type: MealType;
@@ -29,6 +44,9 @@ export interface MealSlot {
   recipe: MealSlotRecipe | null;
 }
 
+/**
+ * Minimal week information used for lists.
+ */
 export interface WeekPreview {
   id: string;
   name: string;
@@ -42,15 +60,24 @@ export interface WeekFull extends WeekPreview {
   week_days: WeekDay[];
 }
 
+/**
+ * Payload for creating a new week.
+ */
 export interface WeekPayload {
   name: string;
 }
 
+/**
+ * Parameters for editing an existing week.
+ */
 export interface EditWeek {
   id: string;
   payload: WeekPayload;
 }
 
+/**
+ * Cache keys for week-related queries.
+ */
 export const WEEK_KEYS = {
   root: ['weeks'] as const,
   all: () => [...WEEK_KEYS.root, 'list'] as const,

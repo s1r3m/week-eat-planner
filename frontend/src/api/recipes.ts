@@ -1,7 +1,14 @@
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
+import type { EntryKey } from '@pinia/colada';
 import { apiClient } from './client';
 
+/**
+ * Supported measurement units for recipe ingredients.
+ */
 export const UNITS = ['g', 'ml', 'pcs', 'cans'] as const;
+/**
+ * Measurement units for recipe ingredients.
+ */
 type Unit = (typeof UNITS)[number];
 
 /**
@@ -11,16 +18,22 @@ export interface RecipePreview {
   id: string;
   name: string;
   author: string;
-  isFavorite?: boolean;
+  is_favorite: boolean;
   isOfficial?: boolean;
-  image_url?: string | null;
+  image_url?: string;
 }
 
+/**
+ * Represents a single step in the cooking process.
+ */
 export interface CookingStep {
   order: number;
   step: string;
 }
 
+/**
+ * Represents an ingredient required for a recipe.
+ */
 export interface Ingredient {
   name: string;
   amount: number;
@@ -35,6 +48,9 @@ export interface RecipeFull extends RecipePreview {
   ingredients: Ingredient[];
 }
 
+/**
+ * Payload for creating or updating a recipe.
+ */
 export interface RecipePayload {
   name: string;
   steps: CookingStep[];
@@ -42,14 +58,29 @@ export interface RecipePayload {
   is_public: boolean;
 }
 
+/**
+ * Payload for uploading a recipe image.
+ */
 export interface ImagePayload {
   id: string;
   image: File;
 }
 
+/**
+ * Payload for toggling a recipe's favorite status.
+ */
+export interface FavoritePayload {
+  id: string;
+  is_favorite: boolean;
+}
+
+/**
+ * Cache keys for recipe-related queries.
+ */
 export const RECIPE_KEYS = {
   root: ['recipes'] as const,
   my: () => [...RECIPE_KEYS.root, 'mine'] as const,
+  favorites: () => [...RECIPE_KEYS.root, 'favorites'] as const,
   detail: (id: string) => [...RECIPE_KEYS.root, 'detail', id] as const,
 };
 
@@ -86,7 +117,7 @@ export const addRecipeMutation = defineMutation(() => {
       const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
       queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) => [
         ...old,
-        { id: `temp-id-${Date.now()}`, ...payload, author: 'me' },
+        { id: `temp-id-${Date.now()}`, ...payload, is_favorite: false, author: 'me' },
       ]);
       return { previousRecipes };
     },
@@ -176,3 +207,86 @@ export const deleteRecipeMutation = defineMutation(() => {
     },
   };
 });
+
+/**
+ * Mutation for toggling a recipe's favorite status.
+ * Optimistically updates the recipe in the detail, list, and favorites caches.
+ */
+export const toggleFavoriteMutation = defineMutation(() => {
+  type RecipeCacheData = RecipePreview[] | RecipePreview | undefined;
+  const queryCache = useQueryCache();
+
+  return {
+    mutation: ({ id, is_favorite }: FavoritePayload) => {
+      if (is_favorite) {
+        return apiClient
+          .delete<void>(`/recipes/${id}/favorite`)
+          .then(() => ({ id, is_favorite: false }) as FavoritePayload);
+      } else {
+        return apiClient
+          .post<RecipePreview>(`/recipes/${id}/favorite`)
+          .then((res) => res.data as RecipePreview);
+      }
+    },
+    onMutate: async ({ id, is_favorite }: FavoritePayload) => {
+      const keysToHandle: EntryKey[] = [
+        RECIPE_KEYS.detail(id),
+        RECIPE_KEYS.my(),
+        RECIPE_KEYS.favorites(),
+      ];
+      await Promise.all(keysToHandle.map((key) => queryCache.cancelQueries({ key })));
+
+      const previousState = new Map<EntryKey, RecipeCacheData>();
+      keysToHandle.forEach((key) => previousState.set(key, queryCache.getQueryData(key)));
+
+      const updateRecipe = (old: RecipeCacheData) => {
+        if (Array.isArray(old)) {
+          return old.map((r) => (r.id === id ? { ...r, is_favorite: !is_favorite } : r));
+        }
+        return old && old.id === id ? { ...old, is_favorite: !is_favorite } : old;
+      };
+      keysToHandle.forEach((key) => {
+        queryCache.setQueryData(key, updateRecipe);
+      });
+      // Favorites are different
+      if (is_favorite) {
+        queryCache.setQueryData(RECIPE_KEYS.favorites(), (old: RecipePreview[] = []) =>
+          old.filter((recipe: RecipePreview) => recipe.id !== id),
+        );
+      } else {
+        // We don't have a RecipePreview to add though
+      }
+
+      return { previousState };
+    },
+    onError: (
+      err: Error,
+      _payload: FavoritePayload,
+      context?: { previousState?: Map<EntryKey, RecipeCacheData> },
+    ) => {
+      console.error('An error occurred during the update: ', err);
+      context?.previousState?.forEach((data, key) => queryCache.setQueryData(key, data));
+    },
+    onSuccess: (
+      _data: FavoritePayload | RecipePreview,
+      { id, is_favorite }: FavoritePayload,
+      _context?: { previousState?: Map<EntryKey, RecipeCacheData> },
+    ) => {
+      console.debug(`The recipe ${id} has been marked is_favorite=${!is_favorite}`);
+      if (!is_favorite) queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
+    },
+    onSettle: (
+      _err: Error,
+      _data: FavoritePayload | RecipePreview,
+      { id }: FavoritePayload,
+      _context?: { previousState?: Map<EntryKey, RecipeCacheData> },
+    ) => {
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });
+    },
+  };
+});
+
+export const getFavoritesQuery = defineQueryOptions(() => ({
+  key: RECIPE_KEYS.favorites(),
+  query: () => apiClient.get<RecipePreview[]>('/recipes/favorites').then((res) => res.data),
+}));

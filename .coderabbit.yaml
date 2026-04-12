@@ -1,0 +1,7 @@
+language: "en-US"
+reviews:
+  profile: chill
+knowledge_base:
+  jira:
+    project_keys:
+      - WEP

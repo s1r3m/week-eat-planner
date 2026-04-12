@@ -226,5 +226,10 @@ class RecipeService:
             options=[selectinload(UserFavorite.recipe)],
         )
         logger.info(f'Successfully got {len(favorites)} user_favorites')
+        recipes: list[Recipe] = []
+        for favorite in favorites:
+            recipe = favorite.recipe
+            recipe.is_favorite = True
+            recipes.append(recipe)
 
-        return [favorite.recipe for favorite in favorites]
+        return recipes

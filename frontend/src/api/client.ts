@@ -5,8 +5,14 @@ import axios, {
 } from 'axios';
 import { accessToken, refreshToken } from './auth';
 
+/**
+ * Default timeout for API requests in milliseconds.
+ */
 const DEFAULT_TIMEOUT = 5000;
 
+/**
+ * Standard error response format from the backend.
+ */
 interface ErrorResponse {
   detail: string;
 }

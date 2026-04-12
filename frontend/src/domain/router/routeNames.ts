@@ -1,3 +1,7 @@
+/**
+ * Centralized registry of all route names used in the application.
+ * Prevents magic strings and ensures type safety across the router and navigation.
+ */
 export const ROUTE_NAMES = {
   HOME: 'home' as string,
   LOGIN: 'login',
