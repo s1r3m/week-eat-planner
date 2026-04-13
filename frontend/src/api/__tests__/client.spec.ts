@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { apiClient, authClient, getErrorMessage, AUTH_EXCLUDED_PATHS } from '../client';
+import { apiClient, authClient, AUTH_EXCLUDED_PATHS } from '../client';
 import { accessToken, refreshToken } from '../auth';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
@@ -38,36 +38,6 @@ describe('apiClient', () => {
       mockApi.onGet('/test').reply(200, { success: true });
       const response = await apiClient.get('/test');
       expect(response.config.headers?.Authorization).toBeUndefined();
-    });
-  });
-
-  describe('getErrorMessage', () => {
-    it('should return "Unexpected error" for non-axios errors', () => {
-      expect(getErrorMessage(new Error('test'))).toBe('Unexpected error');
-    });
-
-    it('should return detail from response data', () => {
-      const error = {
-        isAxiosError: true,
-        response: { data: { detail: 'Specific error' } },
-      };
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
-      expect(getErrorMessage(error)).toBe('Specific error');
-    });
-
-    it('should return error message if detail is missing', () => {
-      const error = {
-        isAxiosError: true,
-        message: 'Network Error',
-      };
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
-      expect(getErrorMessage(error)).toBe('Network Error');
-    });
-
-    it('should return "Request Failed" as fallback', () => {
-      const error = { isAxiosError: true };
-      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
-      expect(getErrorMessage(error)).toBe('Request Failed');
     });
   });
 

@@ -283,7 +283,7 @@ export const toggleFavoriteMutation = defineMutation(() => {
     },
     onSettled: (
       _data: FavoritePayload | RecipePreview | undefined,
-      _err: Error | null,
+      _err: Error | null | undefined,
       { id }: FavoritePayload,
       _context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
