@@ -94,7 +94,9 @@ async def get_recipe(
     The user must have access to the recipe (either it's public or they own it).
 
     Args:
-        recipe: The recipe object, injected by the `get_recipe_by_id` dependency.
+        recipe_id: ID of the recipe to get.
+        user: The authenticated user or None, injected by dependency.
+        session: The database session.
 
     Returns:
         The requested recipe.
@@ -117,7 +119,8 @@ async def update_recipe(
 
     Args:
         new_data: The new data to update the recipe with.
-        recipe: The recipe to update, injected by the `get_recipe_for_update` dependency.
+        recipe_id: ID of the recipe to update.
+        user: The authenticated user, injected by dependency.
         session: The database session.
 
     Returns:
@@ -142,7 +145,8 @@ async def delete_recipe(
     The user must be the owner of the recipe to delete it.
 
     Args:
-        recipe: The recipe to delete, injected by the `get_recipe_for_update` dependency.
+        recipe_id: ID of the recipe to delete.
+        user: The authenticated user, injected by dependency.
         storage: The storage client for deleting the recipe's image.
         session: The database session.
 
@@ -196,6 +200,16 @@ async def create_favorite(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> RecipeReadMinimal:
+    """Adds a recipe to the user's favorites.
+
+    Args:
+        recipe_id: The ID of the recipe to favorite.
+        user: The authenticated user.
+        session: The database session.
+
+    Returns:
+        The favorited recipe.
+    """
     logger.info(f'Got {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for {user}')
     recipe = await RecipeService(session).add_favorite(recipe_id, user)
     logger.info(f'Recipe {recipe_id} successfully marked favorite for {user}')
@@ -209,6 +223,16 @@ async def remove_favorite(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
+    """Removes a recipe from the user's favorites.
+
+    Args:
+        recipe_id: The ID of the recipe to unfavorite.
+        user: The authenticated user.
+        session: The database session.
+
+    Returns:
+        None.
+    """
     logger.info(f'Got {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for {user}')
     await RecipeService(session).delete_favorite(recipe_id, user)
     logger.info(f'Recipe {recipe_id} successfully removed from favorites for {user}')

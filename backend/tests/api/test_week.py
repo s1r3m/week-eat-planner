@@ -62,9 +62,8 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 async def test_get_week__no_auth__error_in_response(client, created_week):
     response = await client.get(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    error = WeekForbiddenException(created_week.id)
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}
 
 
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):

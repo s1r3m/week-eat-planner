@@ -260,7 +260,7 @@ export const toggleFavoriteMutation = defineMutation(() => {
           old.filter((recipe: RecipePreview) => recipe.id !== id),
         );
       } else {
-        // We don't have a RecipePreview to add though
+        // We don't have a RecipePreview to add though.
       }
 
       return { previousState };

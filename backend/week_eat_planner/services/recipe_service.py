@@ -80,8 +80,8 @@ class RecipeService:
             The requested recipe object.
 
         Raises:
-            RecipeNotFound: If the recipe does not exist or the ID is invalid.
-            RecipeForbidden: If the user does not own the recipe.
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the user does not own the recipe.
         """
         logger.info(f'Getting user recipe {recipe_id} for {user}.')
         recipe = await self._get_recipe(recipe_id, for_update=True)
@@ -102,7 +102,7 @@ class RecipeService:
             The recipe object.
 
         Raises:
-            RecipeNotFound: If the recipe does not exist or the ID is invalid.
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
         """
         try:
             recipe_uuid = UUID(recipe_id)
@@ -125,6 +125,10 @@ class RecipeService:
 
         Returns:
             A list of the user's recipes.
+
+        Raises:
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Getting all recipes for User {user.email}')
         recipes = await self._recipe_dao.find_all(OwnerId(user_id=user.id))
@@ -146,6 +150,10 @@ class RecipeService:
 
         Returns:
             The updated recipe.
+
+        Raises:
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Updating recipe {recipe.id} with new data: {new_data}')
         updated_recipe = await self._recipe_dao.update(RecordId(id=recipe.id), new_data)
@@ -176,6 +184,10 @@ class RecipeService:
 
         Returns:
             The recipe object with is_favorite=True.
+
+        Raises:
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Marking the recipe {recipe_id} favorite for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
@@ -200,6 +212,10 @@ class RecipeService:
 
         Returns:
             The number of deleted favorite records (0 or 1).
+
+        Raises:
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Deleting user favorite {recipe_id=} for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
