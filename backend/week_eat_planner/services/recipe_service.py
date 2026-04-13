@@ -18,6 +18,7 @@ class RecipeService:
     """Service for handling recipe-related operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        self._session = session
         self._recipe_dao = RecipeDAO(session)
         self._user_favorites_dao = UserFavoriteDAO(session)
 
@@ -187,12 +188,19 @@ class RecipeService:
         """
         logger.info(f'Marking the recipe {recipe_id} favorite for {user=}')
         recipe = await self.get_visible_recipe(recipe_id, user)
+
+        if recipe.is_favorite:
+            logger.warning(f'Recipe {recipe_id=} is already favorited')
+            return recipe
+
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
 
         try:
             await self._user_favorites_dao.add(record)
         except IntegrityError:
+            await self._session.rollback()
             logger.warning(f'Recipe {recipe_id=} is already favorited')
+            recipe = await self.get_visible_recipe(recipe_id, user)
 
         recipe.is_favorite = True
         logger.info('Successfully marked the recipe as favorite')
@@ -241,6 +249,9 @@ class RecipeService:
         recipes: list[Recipe] = []
         for favorite in favorites:
             recipe = favorite.recipe
+            if not recipe.is_public and recipe.user_id != user.id:
+                logger.warning(f'Skipping inaccessible favorite recipe {recipe.id}')
+                continue
             recipe.is_favorite = True
             recipes.append(recipe)
 

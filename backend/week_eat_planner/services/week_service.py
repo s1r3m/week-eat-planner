@@ -264,10 +264,9 @@ class WeekService:
                 )
             )
 
-        logger.info('Validation complete!')
-
         if slot_errors:
             logger.error(f'There were errors during validation: {slot_errors}.')
             raise MealSlotAssignException(slot_errors)
 
+        logger.info('Validation complete!')
         return valid_assignments
