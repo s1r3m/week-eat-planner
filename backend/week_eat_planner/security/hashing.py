@@ -1,3 +1,5 @@
+"""Security utilities for password hashing."""
+
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=['bcrypt'])

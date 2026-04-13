@@ -1,3 +1,7 @@
+/**
+ * Vue Router configuration.
+ * Defines the application's routes, layouts, and navigation guards.
+ */
 import { createRouter, createWebHistory } from 'vue-router';
 
 import GuestLayout from '@/layouts/TheGuestLayout.vue';
@@ -61,7 +65,7 @@ const routes = [
         component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
       },
       {
-        path: 'recipes/my-recipes',
+        path: 'recipes/my_recipes',
         name: ROUTE_NAMES.RECIPES_MY,
         component: () => import('@/pages/Recipes/MyRecipesPage.vue'),
       },

@@ -2,20 +2,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.config import settings
 from week_eat_planner.constants import Unit
-
-
-class OwnerId(BaseModel):
-    """Schema for identifying the owner of a recipe."""
-
-    user_id: UUID
-
-
-class RecipeId(BaseModel):
-    """Schema for identifying a recipe by its UUID."""
-
-    id: UUID
 
 
 class CookingStep(BaseModel):
@@ -81,18 +70,25 @@ class ImageMixin(BaseModel):
         return None
 
 
-class RecipeRead(RecipeBase, RecipeId, OwnerId, ImageMixin):
+class RecipeRead(RecipeBase, RecordId, OwnerId, ImageMixin):
     """Schema for reading a recipe, including the database ID and user ID."""
 
     author: str
+    is_favorite: bool
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class RecipeReadMinimal(RecipeId, ImageMixin):
+class RecipeReadMinimal(RecordId, ImageMixin):
     """A minimal schema for recipe previews, showing only the ID and name."""
 
     name: str
     author: str
+    is_favorite: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RecipeFavoriteFilter(BaseModel):
+    user_id: UUID
+    recipe_id: UUID

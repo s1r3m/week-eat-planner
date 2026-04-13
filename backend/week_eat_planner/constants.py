@@ -1,3 +1,5 @@
+"""Application-wide constants and enumerations."""
+
 from enum import StrEnum
 
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
@@ -14,9 +16,11 @@ class AppUrl(StrEnum):
     PING = '/ping'
 
     RECIPES = '/recipes'
-    RECIPES_MY = '/my_recipes'
+    RECIPES_FAVORITES = '/recipes/favorites'
+    RECIPES_MY = '/recipes/my_recipes'
     RECIPES_TPL = '/recipes/{recipe_id}'
     RECIPES_IMAGE_TPL = '/recipes/{recipe_id}/image'
+    RECIPES_FAVORITES_TPL = '/recipes/{recipe_id}/favorite'
 
     WEEKS = '/weeks'
     WEEKS_TPL = '/weeks/{week_id}'

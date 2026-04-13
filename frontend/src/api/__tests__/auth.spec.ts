@@ -103,12 +103,12 @@ describe('auth api', () => {
       const mutationConfig = signupMutation();
       // @ts-ignore
       mutationConfig.onSuccess();
-      expect(console.debug).toHaveBeenCalledWith('Signup successful');
+      expect(console.debug).toHaveBeenCalledWith('SignUp successful');
 
       const error = new Error('fail');
       // @ts-ignore
       mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('Signup failed: ', error);
+      expect(console.error).toHaveBeenCalledWith('SignUp failed: ', error);
     });
   });
 

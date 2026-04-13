@@ -1,5 +1,8 @@
+"""Data Access Objects for database operations."""
+
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import MealSlot, Recipe, RefreshToken, User, Week
+from week_eat_planner.db.models.user_favorites import UserFavorite
 
 
 class MealSlotDAO(BaseDAO[MealSlot]):
@@ -36,6 +39,15 @@ class UserDAO(BaseDAO[User]):
     """
 
     model = User
+
+
+class UserFavoriteDAO(BaseDAO[UserFavorite]):
+    """Data Access Object for managing 'UserFavorite' records in the database.
+
+    Provides methods for CRUD operations and specialized queries for user favorites.
+    """
+
+    model = UserFavorite
 
 
 class WeekDAO(BaseDAO[Week]):

@@ -99,10 +99,13 @@ describe('WeekEditDialog', () => {
     });
 
     const formDialog = wrapper.findComponent(WeekFormDialog);
-    await wrapper.setProps({ modelValue: null });
     await formDialog.vm.$emit('submit', 'New Name');
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
 
-    expect(mockMutate).not.toHaveBeenCalled();
+    // Call it again - week should be null now because onEdit sets week.value = null
+    await formDialog.vm.$emit('submit', 'Another Name');
+    expect(mockMutate).toHaveBeenCalledTimes(1); // Should not have been called again
   });
 
   it('passes isLoading state to WeekFormDialog', async () => {

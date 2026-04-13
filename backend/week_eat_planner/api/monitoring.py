@@ -1,3 +1,5 @@
+"""Monitoring and health check endpoints."""
+
 from fastapi import APIRouter, Response
 from loguru import logger
 

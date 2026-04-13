@@ -1,3 +1,5 @@
+"""Storage dependencies for FastAPI endpoints."""
+
 from functools import lru_cache
 
 from week_eat_planner.clients.storage_client import StorageClient

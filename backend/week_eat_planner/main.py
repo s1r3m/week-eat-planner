@@ -1,3 +1,5 @@
+"""Main entry point for the FastAPI application."""
+
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 

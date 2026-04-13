@@ -23,10 +23,10 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx,vue}'],
       exclude: ['src/components/ui'],
       thresholds: {
-        statements: 85,
+        statements: 90,
         branches: 80,
-        functions: 80,
-        lines: 85,
+        functions: 88,
+        lines: 90,
       },
     },
   },

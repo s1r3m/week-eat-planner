@@ -3,13 +3,14 @@
     <PageTitle :header="recipe?.name" :description="description">
       <template #controls>
         <Button
-          :variant="isFavorite ? 'outline' : 'default'"
+          v-if="recipe"
+          :variant="recipe.is_favorite ? 'outline' : 'default'"
           size="lg"
-          :aria-label="!isFavorite ? 'Add to favorites' : 'Remove from favorites'"
-          @click="isFavorite = !isFavorite"
-          ><Star v-bind="starProps" :class="{ 'text-transparent': isFavorite }" />
+          :aria-label="!recipe.is_favorite ? 'Add to favorites' : 'Remove from favorites'"
+          @click="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
+          ><Star v-bind="starProps" :class="{ 'text-transparent': recipe?.is_favorite }" />
           <span class="hidden md:inline"
-            >{{ !isFavorite ? 'Add to' : 'Remove from' }} favorites
+            >{{ !recipe.is_favorite ? 'Add to' : 'Remove from' }} favorites
           </span></Button
         >
         <Button variant="outline" size="lg" aria-label="Edit recipe"
@@ -44,8 +45,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useQuery } from '@pinia/colada';
-import { getRecipeQuery } from '@/api/recipes';
+import { useMutation, useQuery } from '@pinia/colada';
+import { getRecipeQuery, toggleFavoriteMutation } from '@/api/recipes';
 import type { RecipePreview } from '@/api/recipes';
 
 import PageTitle from '@/components/shared/PageTitle.vue';
@@ -61,9 +62,8 @@ import RecipeDeleteDialog from '@/features/recipe/components/RecipeDeleteDialog.
 const route = useRoute();
 
 const description = computed(() => (recipe.value?.author ? `By ${recipe.value?.author}` : ''));
-const isFavorite = computed(() => recipe.value?.isFavorite);
 const starProps = computed(() =>
-  isFavorite.value
+  recipe.value?.is_favorite
     ? {
         fill: 'var(--primary)',
         'stroke-width': 0,
@@ -77,6 +77,7 @@ const {
   error,
   refetch,
 } = useQuery(() => getRecipeQuery(String(route.params.id)));
+const { mutate: toggle } = useMutation(toggleFavoriteMutation());
 
 const deletingRecipe = ref<RecipePreview | null>(null);
 const openDelete = (selectedRecipe?: RecipePreview) => {

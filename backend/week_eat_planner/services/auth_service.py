@@ -1,3 +1,5 @@
+"""Service layer for authentication and user registration logic."""
+
 from datetime import UTC, datetime, timedelta
 
 from loguru import logger
@@ -9,14 +11,14 @@ from week_eat_planner.config import settings
 from week_eat_planner.db.dao import RefreshTokenDAO, UserDAO
 from week_eat_planner.db.models import RefreshToken, User
 from week_eat_planner.exceptions import (
-    InvalidCredentials,
-    InvalidEmail,
-    RefreshTokenNotFound,
-    RefreshTokenRevoked,
-    TokenExpired,
+    InvalidCredentialsException,
+    InvalidEmailException,
+    RefreshTokenNotFoundException,
+    RefreshTokenRevokedException,
+    TokenExpiredException,
     TokenForbidden,
-    TokenRevoked,
-    UserAlreadyExists,
+    TokenRevokedException,
+    UserAlreadyExistsException,
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider
@@ -42,13 +44,13 @@ class AuthService:
             The created user object.
 
         Raises:
-            UserAlreadyExists: If a user with the same email is already registered.
+            UserAlreadyExistsException: If a user with the same email is already registered.
         """
         logger.info(f'New user registration attempt for {user_data.email=}.')
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
         if existing_user:
             logger.error(f'User with {user_data.email=} already exists.')
-            raise UserAlreadyExists(user_data.email)
+            raise UserAlreadyExistsException()
 
         user = User(
             email=str(user_data.email),
@@ -73,20 +75,20 @@ class AuthService:
             A tuple containing the access and refresh tokens.
 
         Raises:
-            InvalidEmail: If the email format is invalid.
-            InvalidCredentials: If the user is not registered or the password is incorrect.
+            InvalidEmailException: If the email format is invalid.
+            InvalidCredentialsException: If the user is not registered or the password is incorrect.
         """
         logger.info(f'Login attempt for user: {username}.')
         try:
             email = Email(email=username)
         except ValidationError as exc:
             logger.error(f'Invalid email format for {username}: {exc}')
-            raise InvalidEmail() from exc
+            raise InvalidEmailException() from exc
 
         db_user = await self._user_dao.find_one_or_none(email)
         if not (db_user and verify_password(password, str(db_user.hashed_password))):
             logger.error(f'Invalid credentials for {email}!')
-            raise InvalidCredentials()
+            raise InvalidCredentialsException()
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
@@ -103,8 +105,8 @@ class AuthService:
             A tuple containing the new access and refresh tokens.
 
         Raises:
-            RefreshTokenRevoked: If the provided token is invalid or revoked.
-            TokenExpired: If the provided token has expired.
+            RefreshTokenRevokedException: If the provided token is invalid or revoked.
+            TokenExpiredException: If the provided token has expired.
         """
         logger.info(f'Attempting to refresh tokens from {old_refresh_token}.')
         old_token = RefreshTokenFromDB(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
@@ -112,12 +114,12 @@ class AuthService:
 
         if not db_refresh_token or db_refresh_token.revoked:
             logger.error('Token is revoked.')
-            raise RefreshTokenRevoked()
+            raise RefreshTokenRevokedException()
 
         now = datetime.now(UTC)
         if db_refresh_token.expires_at <= now:
             logger.error('Refresh token expired.')
-            raise TokenExpired()
+            raise TokenExpiredException()
 
         db_user = db_refresh_token.user
         if db_refresh_token.expires_at <= now + timedelta(minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA):
@@ -160,10 +162,10 @@ class AuthService:
             raw_token: The raw (unhashed) refresh token to revoke.
 
         Raises:
-            TokenNotFound: If the refresh token does not exist.
-            TokenExpired: If the refresh token has expired.
+            RefreshTokenNotFoundException: If the refresh token does not exist.
+            TokenExpiredException: If the refresh token has expired.
             TokenForbidden: If the refresh token does not belong to the user.
-            TokenRevoked: If the refresh token has already been revoked.
+            TokenRevokedException: If the refresh token has already been revoked.
         """
         logger.info(f'Logout attempt for {user}.')
         refresh_token = RefreshTokenFromDB(
@@ -174,19 +176,19 @@ class AuthService:
 
         if not db_refresh_token:
             logger.warning(f'Attempted logout with a non-existent refresh token for {user}.')
-            raise RefreshTokenNotFound(raw_token)
+            raise RefreshTokenNotFoundException()
 
         if db_refresh_token.expires_at <= datetime.now(UTC):
             logger.warning(f'Attempted logout with expired refresh token for {user}.')
-            raise TokenExpired()
+            raise TokenExpiredException()
 
         if db_refresh_token.user_id != user.id:
             logger.warning(f'Attempted logout with refresh token that does not belong to user {user}.')
-            raise TokenForbidden(raw_token)
+            raise TokenForbidden()
 
         if db_refresh_token.revoked:
             logger.warning(f'Attempted logout with an already revoked token for user {user}.')
-            raise TokenRevoked(raw_token)
+            raise TokenRevokedException()
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
         logger.info(f'{user} logged out successfully.')

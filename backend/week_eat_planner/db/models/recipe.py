@@ -10,6 +10,7 @@ from week_eat_planner.db.models.meal_slot import MealSlot
 
 if TYPE_CHECKING:
     from .user import User
+    from .user_favorites import UserFavorite
 
 
 class Recipe(Base):
@@ -28,6 +29,7 @@ class Recipe(Base):
     """
 
     __tablename__ = 'recipes'
+    __allow_unmapped__ = True
 
     name: Mapped[str] = mapped_column(nullable=False)
     is_public: Mapped[bool] = mapped_column(default=False, nullable=False)
@@ -38,6 +40,9 @@ class Recipe(Base):
 
     user: Mapped['User'] = relationship(back_populates='recipes', lazy='selectin')
     meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
+    favorites: Mapped[list['UserFavorite']] = relationship(back_populates='recipe', cascade='all, delete-orphan')
+
+    is_favorite: bool = False
 
     def __repr__(self) -> str:
         return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'

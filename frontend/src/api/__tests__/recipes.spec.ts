@@ -10,6 +10,8 @@ import {
   addRecipeMutation,
   addImageMutation,
   deleteRecipeMutation,
+  toggleFavoriteMutation,
+  getFavoritesQuery,
 } from '../recipes';
 
 vi.mock('@pinia/colada', () => {
@@ -45,7 +47,7 @@ describe('recipes api', () => {
 
     it('should fetch recipes', async () => {
       const mockData = [{ id: '1', name: 'Recipe 1' }];
-      mockApi.onGet('/my_recipes').reply(200, mockData);
+      mockApi.onGet('/recipes/my_recipes').reply(200, mockData);
 
       const options = getMyRecipesQuery();
       const result = await (options.query as any)();
@@ -255,6 +257,139 @@ describe('recipes api', () => {
       mutationObj.onSettled(null, undefined, id, context);
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
+    });
+  });
+
+  describe('toggleFavoriteMutation', () => {
+    it('should post to favorite when is_favorite is false', async () => {
+      const payload = { id: '1', is_favorite: false };
+      const mockData = { id: '1', name: 'Recipe', is_favorite: true };
+      mockApi.onPost('/recipes/1/favorite').reply(201, mockData);
+
+      const mutation = (toggleFavoriteMutation() as any).mutation;
+      const result = await mutation(payload);
+
+      expect(result).toEqual(mockData);
+    });
+
+    it('should delete from favorite when is_favorite is true', async () => {
+      const payload = { id: '1', is_favorite: true };
+      mockApi.onDelete('/recipes/1/favorite').reply(204);
+
+      const mutation = (toggleFavoriteMutation() as any).mutation;
+      const result = await mutation(payload);
+
+      expect(result).toEqual({ id: '1', is_favorite: false });
+    });
+
+    it('should handle onMutate, onError, and onSuccess', async () => {
+      const id = '1';
+      const payload = { id, is_favorite: false };
+      const queryCache = useQueryCache();
+      const mockRecipe = { id: '1', name: 'Recipe', is_favorite: false };
+      const previousData = [mockRecipe];
+      (queryCache.getQueryData as any).mockReturnValue(previousData);
+
+      const mutationObj = toggleFavoriteMutation() as any;
+
+      const context = await mutationObj.onMutate(payload);
+      expect(queryCache.cancelQueries).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+
+      // Test onError
+      mutationObj.onError(new Error('fail'), payload, context);
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(expect.any(Array), previousData);
+
+      // Test onSuccess
+      mutationObj.onSuccess({ id, is_favorite: true }, payload, context);
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.favorites() });
+
+      // Test onSuccess for unmarking favorite
+      mutationObj.onSuccess({ id, is_favorite: false }, { id, is_favorite: true }, context);
+      // Should not invalidate favorites again (or rather, the condition if(!is_favorite) is for the payload's is_favorite)
+    });
+
+    it('should handle onMutate with is_favorite true and single recipe data', async () => {
+      const id = '1';
+      const payload = { id, is_favorite: true };
+      const queryCache = useQueryCache();
+      const mockRecipe = { id: '1', name: 'Recipe', is_favorite: true };
+
+      // Mock queryCache.getQueryData to return single recipe instead of array
+      (queryCache.getQueryData as any).mockImplementation((key: any) => {
+        if (key[1] === 'detail') return mockRecipe;
+        return [mockRecipe];
+      });
+
+      const mutationObj = toggleFavoriteMutation() as any;
+      await mutationObj.onMutate(payload);
+
+      expect(queryCache.setQueryData).toHaveBeenCalled();
+
+      // Test the updater function for array of recipes
+      const myKey = RECIPE_KEYS.my();
+      const myCall = vi
+        .mocked(queryCache.setQueryData)
+        .mock.calls.find((call) => JSON.stringify(call[0]) === JSON.stringify(myKey));
+      if (myCall) {
+        const updater = myCall[1] as Function;
+        const result = updater([
+          { id: '1', is_favorite: true },
+          { id: '2', is_favorite: false },
+        ]);
+        expect(result[0].is_favorite).toBe(false);
+        expect(result[1].is_favorite).toBe(false);
+      }
+
+      // Test the updater function for single recipe
+      const detailKey = RECIPE_KEYS.detail(id);
+      const detailCall = vi
+        .mocked(queryCache.setQueryData)
+        .mock.calls.find((call) => JSON.stringify(call[0]) === JSON.stringify(detailKey));
+      if (detailCall) {
+        const updater = detailCall[1] as Function;
+        expect(updater(mockRecipe).is_favorite).toBe(false);
+        expect(updater(null)).toBeNull();
+        expect(updater({ id: '2', is_favorite: true }).is_favorite).toBe(true);
+      }
+
+      // Test the favorites filter
+      const favoritesKey = RECIPE_KEYS.favorites();
+      const favoritesCalls = vi
+        .mocked(queryCache.setQueryData)
+        .mock.calls.filter((call) => JSON.stringify(call[0]) === JSON.stringify(favoritesKey));
+
+      expect(favoritesCalls.length).toBe(2);
+
+      const filterUpdater = favoritesCalls[1][1] as Function;
+      const favorites = [{ id: '1' }, { id: '2' }];
+      const filtered = filterUpdater(favorites);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('2');
+
+      // Test empty defaults
+      expect(filterUpdater(undefined)).toEqual([]);
+    });
+
+    it('should handle onSettled', () => {
+      const id = '1';
+      const queryCache = useQueryCache();
+      const mutationObj = toggleFavoriteMutation() as any;
+
+      mutationObj.onSettled(undefined, null, { id });
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
+    });
+  });
+
+  describe('getFavoritesQuery', () => {
+    it('should fetch favorite recipes', async () => {
+      const mockData = [{ id: '1', name: 'Favorite Recipe' }];
+      mockApi.onGet('/recipes/favorites').reply(200, mockData);
+
+      const options = getFavoritesQuery();
+      const result = await (options.query as any)();
+
+      expect(result).toEqual(mockData);
     });
   });
 });

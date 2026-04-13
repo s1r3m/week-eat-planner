@@ -1,3 +1,5 @@
+"""API router for authentication-related endpoints."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status
@@ -12,12 +14,12 @@ from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenT
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
     LoginWithAuthException,
-    RefreshTokenMissing,
-    RefreshTokenNotFound,
+    RefreshTokenMissingException,
+    RefreshTokenNotFoundException,
     SignUpWithAuthException,
-    TokenExpired,
+    TokenExpiredException,
     TokenForbidden,
-    TokenRevoked,
+    TokenRevokedException,
 )
 from week_eat_planner.services.auth_service import AuthService
 
@@ -115,7 +117,7 @@ async def refresh_tokens(
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
         logger.error('No refresh token in request cookies.')
-        raise RefreshTokenMissing()
+        raise RefreshTokenMissingException()
 
     access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
     if cookie_token != refresh_token:
@@ -158,7 +160,7 @@ async def logout(
 
     try:
         await AuthService(session).logout(user, refresh_token)
-    except (TokenExpired, TokenForbidden, RefreshTokenNotFound, TokenRevoked) as exc:
+    except (TokenExpiredException, TokenForbidden, RefreshTokenNotFoundException, TokenRevokedException) as exc:
         # If the token was already expired, revoked, or not found, the user
         # is effectively logged out, so we can return a success response.
         logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')

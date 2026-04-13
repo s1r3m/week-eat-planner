@@ -6,13 +6,25 @@ import { useQuery } from '@pinia/colada';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+/**
+ * Represents a single item in the breadcrumb navigation.
+ */
 type Breadcrumb = {
   label: string;
   to?: { name: string };
 };
 
+/**
+ * A function that generates a list of breadcrumbs for a specific route.
+ */
 type Generator = () => Breadcrumb[];
 
+/**
+ * Composable for managing and generating breadcrumb navigation based on the current route.
+ * Dynamically fetches data for routes that require contextual labels (e.g., week or recipe names).
+ *
+ * @returns A computed property containing the current list of breadcrumbs.
+ */
 export const useBreadcrumbs = () => {
   const route = useRoute();
 

@@ -1,20 +1,19 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import status
 from tests.api.conftest import WEEK_1_NAME
-from tests.constants import FOR_UPDATE_PARAMETRIZE, WEEK_1_ID
+from tests.constants import WEEK_1_ID
 
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     UserRead,
     WeekCreate,
     WeekRead,
-    WeekReadMinimal,
     WeekUpdate,
 )
+from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Recipe, Week
-from week_eat_planner.exceptions import MealSlotAssignException, WeekForbidden, WeekNotFound
+from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.week_service import WeekService
 
@@ -72,13 +71,13 @@ def db_meal_slot_for_update(db_meal_slots: list[MealSlot]) -> MealSlot:
 
 
 @pytest.fixture
-def updated_db_meal_slot(db_meal_slot_for_update: MealSlot, db_recipe: Recipe) -> MealSlot:
+def updated_db_meal_slot(db_meal_slot_for_update: MealSlot, db_private_recipe: Recipe) -> MealSlot:
     return MealSlot(
         id=db_meal_slot_for_update.id,
         week_id=db_meal_slot_for_update.week_id,
         day_of_week=db_meal_slot_for_update.day_of_week,
         meal_type=db_meal_slot_for_update.meal_type,
-        recipe_id=db_recipe.id,
+        recipe_id=db_private_recipe.id,
     )
 
 
@@ -125,57 +124,51 @@ async def test_create_week__name__week_created(mocked_week_dao, mocked_session, 
     assert week == db_week
 
 
-@pytest.mark.parametrize('for_update', FOR_UPDATE_PARAMETRIZE)
-async def test_get_week_for_user__week_exists__week_returned(
-    mocked_week_dao, mocked_session, db_week, user_read, for_update
-):
+async def test_get_visible_week__week_with_auth__week_returned(mocked_week_dao, mocked_session, db_week, user_read):
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
-    week = await WeekService(mocked_session).get_week_for_user(str_week_id, user_read, for_update=for_update)
+    week = await WeekService(mocked_session).get_visible_week(str_week_id, user_read)
 
     assert week == db_week
-    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
+    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
 
 
-@pytest.mark.parametrize('for_update', FOR_UPDATE_PARAMETRIZE)
-async def test_get_week_for_user__no_week__error_raised(
-    mocked_week_dao, mocked_session, db_week, user_read, for_update
-):
+async def test_get_visible_week__no_week__error_raised(mocked_week_dao, mocked_session, db_week, user_read):
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(WeekNotFound) as exc:
-        await WeekService(mocked_session).get_week_for_user(str_week_id, user_read, for_update=for_update)
+    with pytest.raises(WeekNotFoundException) as exc:
+        await WeekService(mocked_session).get_visible_week(str_week_id, user_read)
 
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Week {str_week_id} not found'
-    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
+    error = WeekNotFoundException(str_week_id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
 
 
-@pytest.mark.parametrize('for_update', FOR_UPDATE_PARAMETRIZE)
-async def test_get_week_for_user__week_not_owned__error_raised(
-    mocked_week_dao, mocked_session, db_week, user_read_2, for_update
-):
+async def test_get_visible_week__week_not_owned__error_raised(mocked_week_dao, mocked_session, db_week, user_read_2):
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
-    with pytest.raises(WeekForbidden) as exc:
-        await WeekService(mocked_session).get_week_for_user(str_week_id, user_read_2, for_update=for_update)
+    with pytest.raises(WeekForbiddenException) as exc:
+        await WeekService(mocked_session).get_visible_week(str_week_id, user_read_2)
 
-    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
-    assert exc.value.detail == f'Week {db_week.id} forbidden'
-    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=for_update)
+    error = WeekForbiddenException(db_week.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
 
 
-async def test_get_week_for_user__not_uuid__error_raised(mocked_week_dao, mocked_session, user_read):
+async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_session, user_read):
     bad_uuid = 'not_uuid'
 
-    with pytest.raises(WeekNotFound) as exc:
-        await WeekService(mocked_session).get_week_for_user(bad_uuid, user_read, for_update=False)
+    with pytest.raises(WeekNotFoundException) as exc:
+        await WeekService(mocked_session).get_visible_week(bad_uuid, user_read)
 
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Week {bad_uuid} not found'
+    error = WeekNotFoundException(bad_uuid)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
     mocked_week_dao.find_one_or_none_by_id.assert_not_awaited()
 
 
@@ -195,20 +188,16 @@ async def test_update_week__valid_data__week_updated(mocked_week_dao, mocked_ses
     new_name = 'New Week Name'
     updated_db_week = Week(id=db_week.id, name=new_name, user_id=user_read.id)
     mocked_week_dao.update.return_value = updated_db_week
-    week_preview = WeekReadMinimal.model_validate(db_week)
 
-    week = await WeekService(mocked_session).update_week(week_preview, WeekUpdate(name=new_name))
+    week = await WeekService(mocked_session).update_week(db_week, WeekUpdate(name=new_name))
 
     assert week == updated_db_week
 
 
-async def test_delete_week__always__week_deleted(mocked_week_dao, mocked_session, user_read, db_week):
+async def test_delete_week__always__week_deleted(mocked_week_dao, mocked_session, db_week):
     mocked_week_dao.delete.return_value = 1
-    week_preview = WeekReadMinimal.model_validate(db_week)
-
-    await WeekService(mocked_session).delete_week(week_preview)
-
-    mocked_week_dao.delete.assert_awaited_once_with(week_preview)
+    await WeekService(mocked_session).delete_week(db_week)
+    mocked_week_dao.delete.assert_awaited_once_with(RecordId(id=db_week.id))
 
 
 async def test_assign_recipes_to_meal_slots__valid_slot_and_recipe__recipe_assigned(
@@ -217,13 +206,13 @@ async def test_assign_recipes_to_meal_slots__valid_slot_and_recipe__recipe_assig
     mocked_session,
     week_read,
     db_meal_slot_for_update,
-    db_recipe,
+    db_private_recipe,
     updated_db_meal_slot,
 ):
-    mocked_recipe_dao.find_many_by_ids.return_value = [db_recipe]
+    mocked_recipe_dao.find_many_by_ids.return_value = [db_private_recipe]
     mocked_meal_slot_dao.find_many_by_ids.return_value = [db_meal_slot_for_update]
     mocked_meal_slot_dao.update.return_value = updated_db_meal_slot
-    slot_data = MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_recipe.id))
+    slot_data = MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_private_recipe.id))
 
     updated_slots = await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, slot_data)
 
@@ -236,11 +225,11 @@ async def test_assign_recipes_to_meal_slots__valid_slot_and_none_recipe__recipe_
     mocked_session,
     week_read,
     db_meal_slot_for_update,
-    db_recipe,
+    db_private_recipe,
     updated_db_meal_slot,
 ):
     updated_db_meal_slot.recipe_id = None
-    mocked_recipe_dao.find_many_by_ids.return_value = [db_recipe]
+    mocked_recipe_dao.find_many_by_ids.return_value = [db_private_recipe]
     mocked_meal_slot_dao.find_many_by_ids.return_value = [db_meal_slot_for_update]
     mocked_meal_slot_dao.update.return_value = updated_db_meal_slot
     slot_data = MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=None)
@@ -257,15 +246,15 @@ async def test_assign_recipes_to_meal_slots__mixed_recipe_and_none_multiple_slot
     week_read,
     db_meal_slot_for_update,
     db_meal_slot_for_update_2,
-    db_recipe,
+    db_private_recipe,
     updated_db_meal_slot,
     updated_db_meal_slot_2,
 ):
-    mocked_recipe_dao.find_many_by_ids.return_value = [db_recipe]
+    mocked_recipe_dao.find_many_by_ids.return_value = [db_private_recipe]
     mocked_meal_slot_dao.find_many_by_ids.return_value = [db_meal_slot_for_update, db_meal_slot_for_update_2]
     mocked_meal_slot_dao.update.side_effect = [updated_db_meal_slot, updated_db_meal_slot_2]
     slots_data = [
-        MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_recipe.id)),
+        MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_private_recipe.id)),
         MealSlotAssign(slot_id=str(db_meal_slot_for_update_2.id), recipe_id=None),
     ]
 
@@ -275,8 +264,8 @@ async def test_assign_recipes_to_meal_slots__mixed_recipe_and_none_multiple_slot
 
 
 @pytest.mark.usefixtures('db_meal_slot_for_update')
-async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(mocked_session, week_read, db_recipe):
-    slot_data = MealSlotAssign(slot_id='bad_slot_id', recipe_id=str(db_recipe.id))
+async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(mocked_session, week_read, db_private_recipe):
+    slot_data = MealSlotAssign(slot_id='bad_slot_id', recipe_id=str(db_private_recipe.id))
 
     with pytest.raises(MealSlotAssignException) as exc:
         await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, slot_data)
@@ -284,9 +273,9 @@ async def test_assign_recipes_to_meal_slots__bad_slot_id__errors_raised(mocked_s
     error_messages = [
         {**slot_data.model_dump(), 'error': 'Invalid slot ID'},
     ]
-
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Error during assigning meal_slots: {error_messages}'
+    error = MealSlotAssignException(error_messages)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_assign_recipes_to_meal_slots__bad_recipe_id__errors_raised(
@@ -300,9 +289,9 @@ async def test_assign_recipes_to_meal_slots__bad_recipe_id__errors_raised(
     error_messages = [
         {**slot_data.model_dump(), 'error': 'Invalid recipe ID'},
     ]
-
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Error during assigning meal_slots: {error_messages}'
+    error = MealSlotAssignException(error_messages)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_assign_recipes_to_meal_slots__not_found_db_objects__errors_raised(
@@ -312,12 +301,12 @@ async def test_assign_recipes_to_meal_slots__not_found_db_objects__errors_raised
     week_read,
     db_meal_slot_for_update,
     db_meal_slot_for_update_2,
-    db_recipe,
+    db_private_recipe,
 ):
     mocked_recipe_dao.find_many_by_ids.return_value = []
     mocked_meal_slot_dao.find_many_by_ids.return_value = [db_meal_slot_for_update]
     slots_data = [
-        MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_recipe.id)),
+        MealSlotAssign(slot_id=str(db_meal_slot_for_update.id), recipe_id=str(db_private_recipe.id)),
         MealSlotAssign(slot_id=str(db_meal_slot_for_update_2.id), recipe_id=None),
     ]
 
@@ -328,8 +317,9 @@ async def test_assign_recipes_to_meal_slots__not_found_db_objects__errors_raised
         {**slots_data[0].model_dump(), 'error': 'Recipe not found'},
         {**slots_data[1].model_dump(), 'error': 'Meal slot not found'},
     ]
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Error during assigning meal_slots: {error_messages}'
+    error = MealSlotAssignException(error_messages)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_assign_recipes_to_meal_slots__slot_from_other_week__error_raised(
@@ -346,9 +336,10 @@ async def test_assign_recipes_to_meal_slots__slot_from_other_week__error_raised(
     with pytest.raises(MealSlotAssignException) as exc:
         await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, *slots_data)
 
-    error_message = {**slots_data[0].model_dump(), 'error': f'Meal slot not part of week {week_read.id}'}
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Error during assigning meal_slots: {[error_message]}'
+    error_messages = [{**slots_data[0].model_dump(), 'error': f'Meal slot not part of week {week_read.id}'}]
+    error = MealSlotAssignException(error_messages)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_assign_recipes_to_meal_slots__slot_not_found__error_raised(
@@ -366,6 +357,7 @@ async def test_assign_recipes_to_meal_slots__slot_not_found__error_raised(
     with pytest.raises(MealSlotAssignException) as exc:
         await WeekService(mocked_session).assign_recipes_to_meal_slots(week_read, *slots_data)
 
-    error_message = {**slots_data[0].model_dump(), 'error': 'Recipe not owned by user'}
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Error during assigning meal_slots: {[error_message]}'
+    error_messages = [{**slots_data[0].model_dump(), 'error': 'Recipe not owned by user'}]
+    error = MealSlotAssignException(error_messages)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
