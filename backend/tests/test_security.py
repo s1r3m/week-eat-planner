@@ -1,7 +1,7 @@
 import pytest
 
 from tests.constants import EMAIL, HASHED_PASSWORD, PASSWORD
-from week_eat_planner.exceptions import InvalidJwtToken, NoEmailInToken, TokenExpired
+from week_eat_planner.exceptions import InvalidJwtTokenException, NoEmailInTokenException, TokenExpiredException
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider, get_email_from_token
 
@@ -21,16 +21,16 @@ def test_decode__valid_token__decoded_str(encoded_token):
 @pytest.mark.parametrize(
     ('invalid_token', 'error_class'),
     [
-        pytest.param(BAD_TOKEN, InvalidJwtToken, id='not_hash_token'),
-        pytest.param(TokenProvider.create_access_token(''), NoEmailInToken, id='no_email_token'),
-        pytest.param(EXPIRED_HASH, TokenExpired, id='expired_token'),
+        pytest.param(BAD_TOKEN, InvalidJwtTokenException, id='not_hash_token'),
+        pytest.param(TokenProvider.create_access_token(''), NoEmailInTokenException, id='no_email_token'),
+        pytest.param(EXPIRED_HASH, TokenExpiredException, id='expired_token'),
     ],
 )
 def test_decode__invalid_token__error_raised(invalid_token, error_class):
     with pytest.raises(error_class) as exc:
         get_email_from_token(invalid_token)
 
-    error = error_class(invalid_token) if error_class == InvalidJwtToken else error_class()
+    error = error_class(invalid_token) if error_class == InvalidJwtTokenException else error_class()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 

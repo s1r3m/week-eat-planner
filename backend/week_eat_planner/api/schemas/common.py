@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class OwnerId(BaseModel):
-    """Schema for identifying the owner of a recipe."""
+    """Schema for identifying the owner of a record."""
 
     user_id: UUID
 

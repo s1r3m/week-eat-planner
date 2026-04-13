@@ -11,6 +11,16 @@ from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserRe
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.dao import RefreshTokenDAO
+from week_eat_planner.exceptions import (
+    InvalidCredentialsException,
+    InvalidEmailException,
+    LoginWithAuthException,
+    RefreshTokenMissingException,
+    RefreshTokenRevokedException,
+    SignUpWithAuthException,
+    TokenExpiredException,
+    UserAlreadyExistsException,
+)
 
 
 @pytest_asyncio.fixture
@@ -53,8 +63,9 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
     login_data = {'email': created_user.email, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f"User with email='{created_user.email}' already exists"}
+    error = UserAlreadyExistsException(created_user.email)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
@@ -70,8 +81,9 @@ async def test_create_user__with_authorization_header__error_raised(
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Sign up requests should not be authenticated'}
+    error = SignUpWithAuthException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_login__valid_credentials__token_returned(client, created_user):
@@ -86,12 +98,14 @@ async def test_login__valid_credentials__token_returned(client, created_user):
 
 
 async def test_login__invalid_email_format__conflict_error(client):
-    token_data = {'username': 'not-a-valid-email', 'password': 'password'}
+    bad_email = 'not-a-valid-email'
+    token_data = {'username': bad_email, 'password': 'password'}
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Invalid email'}
+    error = InvalidEmailException(bad_email)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_login__invalid_password__not_found_error(client, created_user):
@@ -99,8 +113,9 @@ async def test_login__invalid_password__not_found_error(client, created_user):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Could not validate credentials'}
+    error = InvalidCredentialsException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_login__nonexistent_user__not_found_error(client):
@@ -108,8 +123,9 @@ async def test_login__nonexistent_user__not_found_error(client):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Could not validate credentials'}
+    error = InvalidCredentialsException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_login__with_authorization_header__error_raised(auth_client_for_created_user, created_user):
@@ -117,8 +133,9 @@ async def test_login__with_authorization_header__error_raised(auth_client_for_cr
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': 'Login requests should not be authenticated'}
+    error = LoginWithAuthException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
@@ -135,8 +152,9 @@ async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_fo
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Refresh Token missing'}
+    error = RefreshTokenMissingException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_refresh_token__refresh_token_far_from_expire__no_cookies_in_response(auth_client_for_created_user):
@@ -164,8 +182,9 @@ async def test_refresh_token__expired_refresh_token__error_raised(
 ):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Token expired'}
+    error = TokenExpiredException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_refresh_token__revoked_refresh_token__error_raised(
@@ -173,8 +192,9 @@ async def test_refresh_token__revoked_refresh_token__error_raised(
 ):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED, f'{response.status_code}: {response.text}'
-    assert response.json() == {'detail': 'Refresh token revoked'}
+    error = RefreshTokenRevokedException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created_user):

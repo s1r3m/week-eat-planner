@@ -14,7 +14,7 @@ from week_eat_planner.api.schemas import (
 )
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Recipe, Week
-from week_eat_planner.exceptions import MealSlotAssignException, WeekForbidden, WeekNotFound
+from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.week_service import WeekService
 
@@ -150,7 +150,7 @@ async def test_get_visible_week__no_week__error_raised(mocked_week_dao, mocked_s
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(WeekNotFound) as exc:
+    with pytest.raises(WeekNotFoundException) as exc:
         await WeekService(mocked_session).get_visible_week(str_week_id, user_read)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT
@@ -162,7 +162,7 @@ async def test_get_visible_week__week_not_owned__error_raised(mocked_week_dao, m
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
-    with pytest.raises(WeekForbidden) as exc:
+    with pytest.raises(WeekForbiddenException) as exc:
         await WeekService(mocked_session).get_visible_week(str_week_id, user_read_2)
 
     assert exc.value.status_code == status.HTTP_403_FORBIDDEN
@@ -173,7 +173,7 @@ async def test_get_visible_week__week_not_owned__error_raised(mocked_week_dao, m
 async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_session):
     bad_uuid = 'not_uuid'
 
-    with pytest.raises(WeekNotFound) as exc:
+    with pytest.raises(WeekNotFoundException) as exc:
         await WeekService(mocked_session).get_visible_week(bad_uuid)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT

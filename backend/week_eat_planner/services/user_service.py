@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.schemas import Email
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models.user import User
-from week_eat_planner.exceptions import InvalidCredentials
+from week_eat_planner.exceptions import InvalidCredentialsException
 from week_eat_planner.security.token_provider import get_email_from_token
 
 
@@ -30,7 +30,7 @@ class UserService:
         user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))
         if not user or not user.is_active:
             logger.error(f'User not found for token {token=}.')
-            raise InvalidCredentials()
+            raise InvalidCredentialsException()
 
         logger.info(f'Retrieved {user} from DB')
         return user

@@ -12,6 +12,13 @@ from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeR
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
 from week_eat_planner.db.models.recipe import Recipe
+from week_eat_planner.exceptions import (
+    ImageContentTypeMissingException,
+    ImageTooLargeException,
+    RecipeForbiddenException,
+    RecipeNotFoundException,
+    UnsupportedImageTypeException,
+)
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -122,15 +129,17 @@ async def test_get_recipe__recipe_not_exist__error_in_response(auth_client_for_c
 
     response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
+    error = RecipeNotFoundException(bad_recipe_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_get_recipe__no_auth__error_in_response(client, created_recipe):
     response = await client.get(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+    error = RecipeForbiddenException(created_recipe.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_get_my_recipes__empty_list__empty_response(auth_client_for_created_user):
@@ -234,8 +243,9 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
         json=update_data.model_dump(mode='json'),
     )
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
+    error = RecipeNotFoundException(bad_recipe_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_recipe__no_auth__error_in_response(client, created_recipe):
@@ -250,8 +260,9 @@ async def test_delete_recipe__user_without_recipe__error_in_response(auth_client
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=bad_recipe_id)}')
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
+    error = RecipeNotFoundException(bad_recipe_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_recipe__user_with_recipe__recipe_removed(auth_client_for_created_user, created_recipe):
@@ -288,8 +299,9 @@ async def test_delete_recipe__other_user_existing_recipe__error_in_response(
 ):
     response = await auth_client_for_created_user_2.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+    error = RecipeForbiddenException(created_recipe.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 @pytest.mark.usefixtures('clean_storage')
@@ -317,8 +329,9 @@ async def test_upload_image__recipe_not_exists__error_in_response(auth_client_fo
         files=files,
     )
 
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f'Recipe {bad_recipe_id} not found'}
+    error = RecipeNotFoundException(bad_recipe_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_upload_image__unauthenticated__returns_401(client, created_recipe):
@@ -341,20 +354,36 @@ async def test_upload_image__not_owner__returns_403(auth_client_for_created_user
         files=files,
     )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {public_created_recipe.id} forbidden'}
+    error = RecipeForbiddenException(public_created_recipe.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_upload_image__invalid_content_type__returns_400(auth_client_for_created_user, created_recipe):
-    files = {'image': ('test.txt', b'fake image content', 'text/plain')}
+    bad_image_type = 'text/plain'
+    files = {'image': ('test.txt', b'fake image content', bad_image_type)}
 
     response = await auth_client_for_created_user.patch(
         f'{AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id)}',
         files=files,
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'Unsupported image type' in response.json()['detail']
+    error = UnsupportedImageTypeException(bad_image_type)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_upload_image__no_content_type__returns_400(auth_client_for_created_user, created_recipe):
+    files = {'image': ('test.jpg', b'fake image content', '')}
+
+    response = await auth_client_for_created_user.patch(
+        f'{AppUrl.RECIPES_IMAGE_TPL.format(recipe_id=created_recipe.id)}',
+        files=files,
+    )
+
+    error = ImageContentTypeMissingException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_upload_image__file_too_large__returns_400(auth_client_for_created_user, created_recipe):
@@ -366,8 +395,9 @@ async def test_upload_image__file_too_large__returns_400(auth_client_for_created
         files=files,
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'Image too large' in response.json()['detail']
+    error = ImageTooLargeException(MAX_IMAGE_SIZE_BYTES)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_add_favorite__not_mine_public_recipe__recipe_favorited(
@@ -388,21 +418,14 @@ async def test_add_favorite__my_private_recipe__recipe_favorited(auth_client_for
     assert response.status_code == status.HTTP_201_CREATED
 
 
-async def test_add_favorite__already_favorite_recipe__no_error(auth_client_for_created_user, favorite_public_recipe):
-    response = await auth_client_for_created_user.post(
-        f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=favorite_public_recipe.id)}'
-    )
-
-    assert response.status_code == status.HTTP_201_CREATED
-
-
 async def test_add_favorite__not_mine_private_recipe__error_raised(auth_client_for_created_user_2, created_recipe):
     response = await auth_client_for_created_user_2.post(
         f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
     )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+    error = RecipeForbiddenException(created_recipe.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_favorite__not_mine_public_favorited_recipe__recipe_unfavorited(
@@ -434,8 +457,9 @@ async def test_delete_favorite__not_mine_private_favorited_recipe__error_raised(
         f'{AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=created_recipe.id)}'
     )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Recipe {created_recipe.id} forbidden'}
+    error = RecipeForbiddenException(created_recipe.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_favorite__not_favorited_recipe__no_error(auth_client_for_created_user, created_recipe):

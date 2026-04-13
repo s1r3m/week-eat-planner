@@ -11,13 +11,6 @@ import { accessToken, refreshToken } from './auth';
 const DEFAULT_TIMEOUT = 5000;
 
 /**
- * Standard error response format from the backend.
- */
-interface ErrorResponse {
-  detail: string;
-}
-
-/**
  * Axios instance for making authenticated API requests.
  * Automatically handles Bearer token attachment and 401 token refresh.
  */
@@ -47,26 +40,6 @@ apiClient.interceptors.request.use(
 );
 
 // Error handling helpers
-/**
- * Extracts a user-friendly error message from an unknown error object.
- * Handles Axios errors and specific API error response formats.
- *
- * @param err - The error object to parse.
- * @returns A human-readable error message.
- * @example
- * ```ts
- * const message = getErrorMessage(error);
- * ```
- */
-export const getErrorMessage = (err: unknown): string => {
-  if (!axios.isAxiosError(err)) {
-    return 'Unexpected error';
-  }
-
-  const data = err.response?.data as ErrorResponse | undefined;
-  return data?.detail || err.message || 'Request Failed';
-};
-
 export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
 
 const isAuthExcluded = (url: string | undefined): boolean => {

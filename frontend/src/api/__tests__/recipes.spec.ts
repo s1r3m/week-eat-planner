@@ -264,7 +264,7 @@ describe('recipes api', () => {
     it('should post to favorite when is_favorite is false', async () => {
       const payload = { id: '1', is_favorite: false };
       const mockData = { id: '1', name: 'Recipe', is_favorite: true };
-      mockApi.onPost('/recipes/1/favorite').reply(200, mockData);
+      mockApi.onPost('/recipes/1/favorite').reply(201, mockData);
 
       const mutation = (toggleFavoriteMutation() as any).mutation;
       const result = await mutation(payload);
@@ -274,7 +274,7 @@ describe('recipes api', () => {
 
     it('should delete from favorite when is_favorite is true', async () => {
       const payload = { id: '1', is_favorite: true };
-      mockApi.onDelete('/recipes/1/favorite').reply(200);
+      mockApi.onDelete('/recipes/1/favorite').reply(204);
 
       const mutation = (toggleFavoriteMutation() as any).mutation;
       const result = await mutation(payload);

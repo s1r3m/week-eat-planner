@@ -123,9 +123,8 @@ export const refreshToken = async () => {
   refreshPromise = authClient
     .post<LoginInfo>('/auth/refresh')
     .then((res) => {
-      const data = res.data;
-      accessToken.value = data.access_token;
-      return accessToken.value ?? '';
+      accessToken.value = res.data.access_token;
+      return accessToken.value;
     })
     .finally(() => {
       refreshPromise = null;

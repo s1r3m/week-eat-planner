@@ -14,7 +14,7 @@ vi.mock('@/features/week/store/weeks', () => ({
 
 describe('Router', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
     (accessToken as any).value = null;
     _resetRouterState();
   });

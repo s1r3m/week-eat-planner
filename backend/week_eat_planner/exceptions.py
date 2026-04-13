@@ -3,67 +3,70 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 
+# Not Found exceptions.
 class NotFoundException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
-class RecipeNotFound(NotFoundException):
+class RecipeNotFoundException(NotFoundException):
     def __init__(self, recipe_id: str | UUID) -> None:
         super().__init__(detail=f'Recipe {recipe_id} not found')
 
 
-class WeekNotFound(NotFoundException):
+class WeekNotFoundException(NotFoundException):
     def __init__(self, week_id: str | UUID) -> None:
         super().__init__(detail=f'Week {week_id} not found')
 
 
+# Bad JWT exceptions.
 class TokenException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
-class InvalidJwtToken(TokenException):
+class InvalidJwtTokenException(TokenException):
     def __init__(self, token: str) -> None:
         super().__init__(detail=f'Invalid JWT token: {token}')
 
 
-class RefreshTokenRevoked(TokenException):
+class RefreshTokenRevokedException(TokenException):
     def __init__(self) -> None:
         super().__init__(detail='Refresh token revoked')
 
 
-class NoEmailInToken(TokenException):
+class NoEmailInTokenException(TokenException):
     def __init__(self) -> None:
         super().__init__(detail='No email in JWT token')
 
 
-class RefreshTokenMissing(TokenException):
+class RefreshTokenMissingException(TokenException):
     def __init__(self) -> None:
         super().__init__(detail='Refresh Token missing')
 
 
-class RefreshTokenNotFound(TokenException):
+class RefreshTokenNotFoundException(TokenException):
     def __init__(self, token: str) -> None:
         super().__init__(detail=f'Token {token} not found')
 
 
-class TokenExpired(TokenException):
+class TokenExpiredException(TokenException):
     def __init__(self) -> None:
         super().__init__(detail='Token expired')
 
 
-class TokenRevoked(TokenException):
+class TokenRevokedException(TokenException):
     def __init__(self, token: str) -> None:
         super().__init__(detail=f'Token {token} revoked')
 
 
+# Logic exceptions.
 class LogicException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
-class UserAlreadyExists(LogicException):
+class UserAlreadyExistsException(LogicException):
     def __init__(self, email: str) -> None:
         super().__init__(detail=f'User with {email=} already exists')
 
@@ -83,12 +86,13 @@ class SignUpWithAuthException(LogicException):
         super().__init__(detail='Sign up requests should not be authenticated')
 
 
+# Access Forbidden Exceptions.
 class AccessForbiddenException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
 
-class MealSlotForbidden(AccessForbiddenException):
+class MealSlotForbiddenException(AccessForbiddenException):
     def __init__(self, meal_slot_id: UUID) -> None:
         super().__init__(detail=f'Meal slot {meal_slot_id} forbidden')
 
@@ -98,26 +102,45 @@ class TokenForbidden(AccessForbiddenException):
         super().__init__(detail=f'Token {token} forbidden')
 
 
+# Validation Exceptions.
 class ValidationException(HTTPException):
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
 
 
-class RecipeForbidden(AccessForbiddenException):
+class InvalidEmailException(ValidationException):
+    def __init__(self, email: str) -> None:
+        super().__init__(detail=f'Invalid email: {email}')
+
+
+class UnsupportedImageTypeException(ValidationException):
+    def __init__(self, image_type: str) -> None:
+        super().__init__(detail=f'Unsupported image type: {image_type}')
+
+
+class ImageTooLargeException(ValidationException):
+    def __init__(self, max_size: int) -> None:
+        super().__init__(detail=f'Image too large: maximum size is {max_size // (1024 * 1024)}MB')
+
+
+class ImageContentTypeMissingException(ValidationException):
+    def __init__(self) -> None:
+        super().__init__(detail='No Content type for the given image')
+
+
+class RecipeForbiddenException(AccessForbiddenException):
     def __init__(self, recipe_id: UUID) -> None:
         super().__init__(detail=f'Recipe {recipe_id} forbidden')
 
 
-class WeekForbidden(AccessForbiddenException):
+class WeekForbiddenException(AccessForbiddenException):
     def __init__(self, week_id: UUID) -> None:
         super().__init__(detail=f'Week {week_id} forbidden')
 
 
-class InvalidEmail(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=status.HTTP_409_CONFLICT, detail='Invalid email')
+# Auth Exceptions.
 
 
-class InvalidCredentials(HTTPException):
+class InvalidCredentialsException(HTTPException):
     def __init__(self) -> None:
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')

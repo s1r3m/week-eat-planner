@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipePreviewCard from '../RecipePreviewCard.vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
@@ -29,7 +29,12 @@ describe('RecipePreviewCard', () => {
     name: 'Pasta Carbonara',
     author: 'me',
     is_favorite: false,
+    image_url: null,
   };
+
+  beforeEach(() => {
+    mockMutate.mockReset();
+  });
 
   const mountComponent = (props = {}) => {
     return mount(RecipePreviewCard, {

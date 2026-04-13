@@ -8,7 +8,7 @@ from week_eat_planner.api.schemas import MealSlotAssign, OwnerId, RecordId, User
 from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotUpdate
 from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
-from week_eat_planner.exceptions import MealSlotAssignException, WeekForbidden, WeekNotFound
+from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 
 
 class ValidatedAssignments(NamedTuple):
@@ -66,7 +66,7 @@ class WeekService:
         # TODO: Add week public state.
         if not (user and user.id == week.user_id):
             logger.error(f'The user {user} cannot access the week {week.id}')
-            raise WeekForbidden(week.id)
+            raise WeekForbiddenException(week.id)
 
         return week
 
@@ -89,7 +89,7 @@ class WeekService:
         week = await self._get_week(week_id, for_update=True)
         if week.user_id != user.id:
             logger.error(f'The user {user} cannot edit the week {week.id}')
-            raise WeekForbidden(week.id)
+            raise WeekForbiddenException(week.id)
 
         return week
 
@@ -111,12 +111,12 @@ class WeekService:
             week_uuid = UUID(week_id)
         except ValueError as exc:
             logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
-            raise WeekNotFound(week_id) from exc
+            raise WeekNotFoundException(week_id) from exc
 
         week = await self._week_dao.find_one_or_none_by_id(week_uuid, for_update=for_update)
         if not week:
             logger.error(f'Week {week_uuid} does not exist.')
-            raise WeekNotFound(week_uuid)
+            raise WeekNotFoundException(week_uuid)
 
         return week
 

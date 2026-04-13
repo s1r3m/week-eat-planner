@@ -25,6 +25,7 @@
       <Button
         variant="secondary"
         class="rounded-full"
+        :aria-label="recipe.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
         @click.stop="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
       >
         <Star v-bind="starProps" />

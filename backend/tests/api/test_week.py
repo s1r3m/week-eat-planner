@@ -5,7 +5,7 @@ from tests.test_security import PASSWORD
 from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
 from week_eat_planner.api.schemas.week import WeekRead
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.exceptions import WeekForbidden, WeekNotFound
+from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -54,7 +54,7 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 
     response = await auth_client_for_created_user.get(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    error = WeekNotFound(bad_week_id)
+    error = WeekNotFoundException(bad_week_id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -62,8 +62,9 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 async def test_get_week__no_auth__error_in_response(client, created_week):
     response = await client.get(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {'detail': f'Week {created_week.id} forbidden'}
+    error = WeekForbiddenException(created_week.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):
@@ -97,7 +98,7 @@ async def test_update_week__user_without_week__error_in_response(auth_client_for
         json={'name': 'test'},
     )
 
-    error = WeekNotFound(bad_week_id)
+    error = WeekNotFoundException(bad_week_id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -114,7 +115,7 @@ async def test_delete_week__user_without_week__error_in_response(auth_client_for
 
     response = await auth_client_for_created_user.delete(f'{AppUrl.WEEKS_TPL.format(week_id=bad_week_id)}')
 
-    error = WeekNotFound(bad_week_id)
+    error = WeekNotFoundException(bad_week_id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -132,7 +133,7 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
     response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    error = WeekForbidden(created_week.id)
+    error = WeekForbiddenException(created_week.id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -180,5 +181,6 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     )
 
     error_message = {'recipe_id': str(created_recipe.id), 'slot_id': bad_uuid, 'error': 'Invalid slot ID'}
-    assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {'detail': f'Error during assigning meal_slots: {[error_message]}'}
+    error = MealSlotAssignException([error_message])
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}

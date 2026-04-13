@@ -15,6 +15,6 @@ describe('RecipesPage', () => {
       },
     });
     expect(wrapper.text()).toContain('Recipes');
-    expect(wrapper.text()).toContain('The page is under constrction');
+    expect(wrapper.text()).toContain('The page is under construction');
   });
 });

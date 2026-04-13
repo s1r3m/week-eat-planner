@@ -1,7 +1,7 @@
 from unittest.mock import ANY, AsyncMock
 
 import pytest
-from fastapi import status
+from sqlalchemy.exc import IntegrityError
 from tests.constants import RECIPE_INGREDIENTS, RECIPE_NAME, RECIPE_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeUpdate
@@ -9,7 +9,7 @@ from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeFavoriteFilter
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.models.user_favorites import UserFavorite
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
+from week_eat_planner.exceptions import RecipeForbiddenException, RecipeNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.recipe_service import RecipeService
 
@@ -103,11 +103,12 @@ async def test_get_visible_recipe__recipe_not_exist__error_raised(
     str_recipe_id = str(db_private_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(RecipeNotFound) as exc:
+    with pytest.raises(RecipeNotFoundException) as exc:
         await RecipeService(mocked_session).get_visible_recipe(str_recipe_id, user_read)
 
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Recipe {str_recipe_id} not found'
+    error = RecipeNotFoundException(str_recipe_id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_private_recipe.id, for_update=False)
 
 
@@ -117,11 +118,12 @@ async def test_get_visible_recipe__private_recipe_not_owned___error_raised(
     str_recipe_id = str(db_private_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
 
-    with pytest.raises(RecipeForbidden) as exc:
+    with pytest.raises(RecipeForbiddenException) as exc:
         await RecipeService(mocked_session).get_visible_recipe(str_recipe_id, user_read_2)
 
-    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
-    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
+    error = RecipeForbiddenException(db_private_recipe.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
     mocked_recipe_dao.find_one_or_none_by_id.assert_awaited_once_with(db_private_recipe.id, for_update=False)
 
 
@@ -141,11 +143,12 @@ async def test_get_visible_recipe__public_recipe_not_owned___recipe_in_response(
 async def test_get_visible_recipe__not_uuid__error_raised(mocked_recipe_dao, mocked_session):
     bad_uuid = 'not_uuid'
 
-    with pytest.raises(RecipeNotFound) as exc:
+    with pytest.raises(RecipeNotFoundException) as exc:
         await RecipeService(mocked_session).get_visible_recipe(bad_uuid)
 
-    assert exc.value.status_code == status.HTTP_409_CONFLICT
-    assert exc.value.detail == f'Recipe {bad_uuid} not found'
+    error = RecipeNotFoundException(bad_uuid)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
     mocked_recipe_dao.find_one_or_none_by_id.assert_not_awaited()
 
 
@@ -210,12 +213,11 @@ async def test_add_favorite__public_favorite_recipe__recipe_favorite_not_modifie
     user_favorite = UserFavorite(user_id=user_read_2.id, recipe_id=db_public_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_public_recipe
     mocked_user_favorites_dao.find_one_or_none.return_value = user_favorite
-    mocked_user_favorites_dao.add.return_value = user_favorite
+    mocked_user_favorites_dao.add.side_effect = IntegrityError('test', None, BaseException())
 
     result = await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read_2)
 
     assert result == db_public_recipe
-    mocked_user_favorites_dao.add.assert_not_awaited()
 
 
 async def test_add_favorite__my_private_recipe__recipe_favorited(
@@ -238,11 +240,12 @@ async def test_add_favorite__not_mine_private_recipe__error_raised(
     str_recipe_id = str(db_private_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
 
-    with pytest.raises(RecipeForbidden) as exc:
+    with pytest.raises(RecipeForbiddenException) as exc:
         await RecipeService(mocked_session).add_favorite(str_recipe_id, user_read_2)
 
-    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
-    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
+    error = RecipeForbiddenException(db_private_recipe.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_delete_favorite__public_favorite_recipe__recipe_unfavorited(
@@ -299,11 +302,12 @@ async def test_delete_favorite__not_mine_private_favorite_recipe__error_raised(
     str_recipe_id = str(db_private_recipe.id)
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
 
-    with pytest.raises(RecipeForbidden) as exc:
+    with pytest.raises(RecipeForbiddenException) as exc:
         await RecipeService(mocked_session).delete_favorite(str_recipe_id, user_read_2)
 
-    assert exc.value.status_code == status.HTTP_403_FORBIDDEN
-    assert exc.value.detail == f'Recipe {str_recipe_id} forbidden'
+    error = RecipeForbiddenException(db_private_recipe.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_get_user_favorite__favorite_exists__user_favorite_returned(

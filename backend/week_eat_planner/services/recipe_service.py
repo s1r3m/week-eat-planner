@@ -1,7 +1,7 @@
-import asyncio
 from uuid import UUID
 
 from loguru import logger
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,7 +9,7 @@ from week_eat_planner.api.schemas import OwnerId, RecipeCreate, RecipeFavoriteFi
 from week_eat_planner.db.dao import RecipeDAO, UserFavoriteDAO
 from week_eat_planner.db.models import Recipe
 from week_eat_planner.db.models.user_favorites import UserFavorite
-from week_eat_planner.exceptions import RecipeForbidden, RecipeNotFound
+from week_eat_planner.exceptions import RecipeForbiddenException, RecipeNotFoundException
 
 
 class RecipeService:
@@ -56,7 +56,7 @@ class RecipeService:
 
         if not recipe.is_public and (user is None or recipe.user_id != user.id):
             logger.error(f'{user} cannot access the {recipe}')
-            raise RecipeForbidden(recipe.id)
+            raise RecipeForbiddenException(recipe.id)
 
         if user:
             favorite: UserFavorite | None = await self._user_favorites_dao.find_one_or_none(
@@ -86,7 +86,7 @@ class RecipeService:
         recipe = await self._get_recipe(recipe_id, for_update=True)
         if recipe.user_id != user.id:
             logger.error(f'{user} cannot access the {recipe}')
-            raise RecipeForbidden(recipe.id)
+            raise RecipeForbiddenException(recipe.id)
 
         return recipe
 
@@ -107,12 +107,12 @@ class RecipeService:
             recipe_uuid = UUID(recipe_id)
         except ValueError as exc:
             logger.error(f'Invalid recipe ID -- not UUID: {recipe_id}')
-            raise RecipeNotFound(recipe_id) from exc
+            raise RecipeNotFoundException(recipe_id) from exc
 
         recipe = await self._recipe_dao.find_one_or_none_by_id(recipe_uuid, for_update=for_update)
         if not recipe:
             logger.error(f'Recipe {recipe_uuid} not found.')
-            raise RecipeNotFound(recipe_uuid)
+            raise RecipeNotFoundException(recipe_uuid)
 
         return recipe
 
@@ -126,10 +126,9 @@ class RecipeService:
             A list of the user's recipes.
         """
         logger.info(f'Getting all recipes for User {user.email}')
-        recipes, favorites = await asyncio.gather(
-            self._recipe_dao.find_all(OwnerId(user_id=user.id)),
-            self._user_favorites_dao.find_all(OwnerId(user_id=user.id)),
-        )
+        recipes = await self._recipe_dao.find_all(OwnerId(user_id=user.id))
+        favorites = await self._user_favorites_dao.find_all(OwnerId(user_id=user.id))
+
         favorite_ids = {f.recipe_id for f in favorites}
         for recipe in recipes:
             recipe.is_favorite = recipe.id in favorite_ids
@@ -181,11 +180,11 @@ class RecipeService:
         recipe = await self.get_visible_recipe(recipe_id, user)
         record = UserFavorite(user_id=user.id, recipe_id=recipe.id)
 
-        if recipe.is_favorite:
+        try:
+            await self._user_favorites_dao.add(record)
+        except IntegrityError:
             logger.warning(f'Recipe {recipe_id=} is already favorited')
-            return recipe
 
-        await self._user_favorites_dao.add(record)
         recipe.is_favorite = True
         logger.info('Successfully marked the recipe as favorite')
 

@@ -172,6 +172,7 @@ class BaseDAO(Generic[T]):
 
         Args:
             filters: A Pydantic model containing filter criteria. If None, all records are returned.
+            options: SQLAlchemy loader/execution options applied to the select query.
 
         Returns:
             A list of model instances.

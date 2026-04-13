@@ -19,8 +19,8 @@ export interface RecipePreview {
   name: string;
   author: string;
   is_favorite: boolean;
+  image_url: string | null;
   isOfficial?: boolean;
-  image_url?: string;
 }
 
 /**
@@ -117,7 +117,13 @@ export const addRecipeMutation = defineMutation(() => {
       const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
       queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) => [
         ...old,
-        { id: `temp-id-${Date.now()}`, ...payload, is_favorite: false, author: 'me' },
+        {
+          id: `temp-id-${Date.now()}`,
+          ...payload,
+          is_favorite: false,
+          author: 'me',
+          image_url: null,
+        },
       ]);
       return { previousRecipes };
     },

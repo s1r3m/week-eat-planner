@@ -29,6 +29,7 @@ class Recipe(Base):
     """
 
     __tablename__ = 'recipes'
+    __allow_unmapped__ = True
 
     name: Mapped[str] = mapped_column(nullable=False)
     is_public: Mapped[bool] = mapped_column(default=False, nullable=False)

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 class UserFavorite(Base):
     __tablename__ = 'user_favorites'
+    __table_args__ = (UniqueConstraint('user_id', 'recipe_id', name='uq_user_favorites_user_recipe'),)
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     recipe_id: Mapped[UUID] = mapped_column(ForeignKey('recipes.id', ondelete='CASCADE'), nullable=False)

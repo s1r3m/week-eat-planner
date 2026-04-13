@@ -166,13 +166,6 @@ describe('auth api', () => {
       expect(token2).toBe('refresh-token');
       expect(mockAuth.history.post.length).toBe(1);
     });
-
-    it('returns empty string if accessToken is null after refresh', async () => {
-      // @ts-ignore
-      mockAuth.onPost('/auth/refresh').reply(200, { access_token: null });
-      const result = await refreshToken();
-      expect(result).toBe('');
-    });
   });
 
   describe('initAuth', () => {
