@@ -50,7 +50,7 @@ class AuthService:
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
         if existing_user:
             logger.error(f'User with {user_data.email=} already exists.')
-            raise UserAlreadyExistsException(user_data.email)
+            raise UserAlreadyExistsException()
 
         user = User(
             email=str(user_data.email),
@@ -83,7 +83,7 @@ class AuthService:
             email = Email(email=username)
         except ValidationError as exc:
             logger.error(f'Invalid email format for {username}: {exc}')
-            raise InvalidEmailException(username) from exc
+            raise InvalidEmailException() from exc
 
         db_user = await self._user_dao.find_one_or_none(email)
         if not (db_user and verify_password(password, str(db_user.hashed_password))):

@@ -30,7 +30,7 @@ def test_decode__invalid_token__error_raised(invalid_token, error_class):
     with pytest.raises(error_class) as exc:
         get_email_from_token(invalid_token)
 
-    error = error_class(invalid_token) if error_class == InvalidJwtTokenException else error_class()
+    error = error_class()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 

@@ -63,7 +63,7 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
     login_data = {'email': created_user.email, 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
-    error = UserAlreadyExistsException(created_user.email)
+    error = UserAlreadyExistsException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -103,7 +103,7 @@ async def test_login__invalid_email_format__conflict_error(client):
 
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
-    error = InvalidEmailException(bad_email)
+    error = InvalidEmailException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 

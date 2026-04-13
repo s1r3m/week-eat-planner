@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import status
 from tests.constants import HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN
 
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
@@ -92,7 +91,7 @@ async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_
     with pytest.raises(UserAlreadyExistsException) as exc:
         await AuthService(mocked_session).register_user(UserCreate(email=user_read.email, password=PASSWORD))
 
-    error = UserAlreadyExistsException(user_read.email)
+    error = UserAlreadyExistsException()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 
@@ -123,7 +122,7 @@ async def test_login__invalid_email__error_raised(mocked_session):
     with pytest.raises(InvalidEmailException) as exc:
         await AuthService(mocked_session).login(bad_email, PASSWORD)
 
-    error = InvalidEmailException(bad_email)
+    error = InvalidEmailException()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 

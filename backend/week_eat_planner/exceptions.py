@@ -69,8 +69,8 @@ class LogicException(HTTPException):
 
 
 class UserAlreadyExistsException(LogicException):
-    def __init__(self, email: str) -> None:
-        super().__init__(detail=f'User with {email=} already exists')
+    def __init__(self) -> None:
+        super().__init__(detail='User already exists')
 
 
 class MealSlotAssignException(LogicException):
@@ -111,8 +111,8 @@ class ValidationException(HTTPException):
 
 
 class InvalidEmailException(ValidationException):
-    def __init__(self, email: str) -> None:
-        super().__init__(detail=f'Invalid email: {email}')
+    def __init__(self) -> None:
+        super().__init__(detail='Invalid email')
 
 
 class UnsupportedImageTypeException(ValidationException):
