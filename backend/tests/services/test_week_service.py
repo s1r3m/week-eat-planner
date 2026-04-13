@@ -134,17 +134,6 @@ async def test_get_visible_week__week_with_auth__week_returned(mocked_week_dao, 
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
 
 
-@pytest.mark.xfail(reason='Public weeks not implemented yet')
-async def test_get_visible_week__week_no_auth__week_returned(mocked_week_dao, mocked_session, db_week):
-    str_week_id = str(db_week.id)
-    mocked_week_dao.find_one_or_none_by_id.return_value = db_week
-
-    week = await WeekService(mocked_session).get_visible_week(str_week_id)
-
-    assert week == db_week
-    mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
-
-
 async def test_get_visible_week__no_week__error_raised(mocked_week_dao, mocked_session, db_week, user_read):
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = None
@@ -171,11 +160,11 @@ async def test_get_visible_week__week_not_owned__error_raised(mocked_week_dao, m
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
 
 
-async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_session):
+async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_session, user_read):
     bad_uuid = 'not_uuid'
 
     with pytest.raises(WeekNotFoundException) as exc:
-        await WeekService(mocked_session).get_visible_week(bad_uuid)
+        await WeekService(mocked_session).get_visible_week(bad_uuid, user_read)
 
     error = WeekNotFoundException(bad_uuid)
     assert exc.value.status_code == error.status_code

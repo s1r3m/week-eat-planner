@@ -48,7 +48,7 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
         return week
 
-    async def get_visible_week(self, week_id: str, user: UserRead | None = None) -> Week:
+    async def get_visible_week(self, week_id: str, user: UserRead) -> Week:
         """Retrieves a single week by its ID.
 
         Args:
@@ -64,8 +64,7 @@ class WeekService:
         """
         week = await self._get_week(week_id, for_update=False)
 
-        # TODO: Add week public state.
-        if not (user and user.id == week.user_id):
+        if user.id != week.user_id:
             logger.error(f'The user {user} cannot access the week {week.id}')
             raise WeekForbiddenException(week.id)
 
@@ -265,7 +264,7 @@ class WeekService:
                 )
             )
 
-            logger.info('Validation complete!')
+        logger.info('Validation complete!')
 
         if slot_errors:
             logger.error(f'There were errors during validation: {slot_errors}.')

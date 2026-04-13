@@ -150,10 +150,6 @@ class RecipeService:
 
         Returns:
             The updated recipe.
-
-        Raises:
-            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
-            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Updating recipe {recipe.id} with new data: {new_data}')
         updated_recipe = await self._recipe_dao.update(RecordId(id=recipe.id), new_data)

@@ -174,6 +174,7 @@ async def upload_image(
 
     Args:
         recipe_id: The recipe_id to update.
+        user: The authenticated user, injected by dependency.
         session: The database session.
         storage: The storage client, injected by dependency.
         image: The image file to upload.
