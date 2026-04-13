@@ -1,3 +1,5 @@
+"""Database models for the application."""
+
 from .meal_slot import DayOfWeek, MealSlot, MealType
 from .recipe import Recipe
 from .user import RefreshToken, User

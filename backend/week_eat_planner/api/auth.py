@@ -1,3 +1,5 @@
+"""API router for authentication-related endpoints."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status

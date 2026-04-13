@@ -471,7 +471,7 @@ async def test_delete_favorite__not_favorited_recipe__no_error(auth_client_for_c
 
 
 async def test_get_user_favorites__empty_list__empty_response(auth_client_for_created_user):
-    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_FAVORITES}')
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_FAVORITES)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
@@ -480,7 +480,7 @@ async def test_get_user_favorites__empty_list__empty_response(auth_client_for_cr
 async def test_get_user_favorites__some_recipes__recipes_in_response(
     auth_client_for_created_user, favorite_private_recipe, favorite_public_recipe
 ):
-    response = await auth_client_for_created_user.get(f'{AppUrl.RECIPES_FAVORITES}')
+    response = await auth_client_for_created_user.get(AppUrl.RECIPES_FAVORITES)
 
     assert response.status_code == status.HTTP_200_OK
     actual = sorted(response.json(), key=itemgetter('id'))
@@ -494,7 +494,7 @@ async def test_get_user_favorites__some_recipes__recipes_in_response(
 
 
 async def test_get_user_favorites__no_auth__error_in_response(client):
-    response = await client.get(f'{AppUrl.RECIPES_FAVORITES}')
+    response = await client.get(AppUrl.RECIPES_FAVORITES)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json() == {'detail': 'Not authenticated'}

@@ -1,3 +1,5 @@
+"""Authentication dependencies for FastAPI endpoints."""
+
 from typing import Annotated
 
 from fastapi import Depends

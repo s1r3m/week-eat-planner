@@ -1,3 +1,5 @@
+"""Service layer for week and meal slot business logic."""
+
 from typing import NamedTuple
 from uuid import UUID
 
@@ -52,14 +54,13 @@ class WeekService:
         Args:
             week_id: The ID of the week to retrieve.
             user: The user for whom to retrieve the week.
-            for_update: Whether to lock the database row for update.
 
         Returns:
             The Week object if found.
 
         Raises:
-            WeekNotFound: If the week does not exist or the ID is invalid.
-            WeekForbidden: If the week does not belong to the user.
+            WeekNotFoundException: If the week does not exist or the ID is invalid.
+            WeekForbiddenException: If the week does not belong to the user.
         """
         week = await self._get_week(week_id, for_update=False)
 
@@ -110,7 +111,7 @@ class WeekService:
         try:
             week_uuid = UUID(week_id)
         except ValueError as exc:
-            logger.error(f'Invalid recipe ID -- not UUID: {week_id}')
+            logger.error(f'Invalid week ID -- not UUID: {week_id}')
             raise WeekNotFoundException(week_id) from exc
 
         week = await self._week_dao.find_one_or_none_by_id(week_uuid, for_update=for_update)

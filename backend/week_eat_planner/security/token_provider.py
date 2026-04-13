@@ -1,3 +1,5 @@
+"""Utility for creating and validating JWT and refresh tokens."""
+
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
@@ -67,9 +69,9 @@ def get_email_from_token(token: str) -> str:
         The email address from the token's 'sub' claim.
 
     Raises:
-        NoEmailInToken: If the 'sub' claim is missing or not a string.
+        NoEmailInTokenException: If the 'sub' claim is missing or not a string.
         TokenExpiredException: If the token has expired.
-        InvalidJwtToken: If the token is invalid for any other reason.
+        InvalidJwtTokenException: If the token is invalid for any other reason.
     """
     try:
         payload = jwt.decode(
@@ -86,6 +88,6 @@ def get_email_from_token(token: str) -> str:
     except ExpiredSignatureError as exc:
         raise TokenExpiredException() from exc
     except JWTError as exc:
-        raise InvalidJwtTokenException(token) from exc
+        raise InvalidJwtTokenException() from exc
 
     return email

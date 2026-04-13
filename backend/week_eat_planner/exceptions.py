@@ -1,3 +1,5 @@
+"""Custom exception classes for the application."""
+
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -26,8 +28,8 @@ class TokenException(HTTPException):
 
 
 class InvalidJwtTokenException(TokenException):
-    def __init__(self, token: str) -> None:
-        super().__init__(detail=f'Invalid JWT token: {token}')
+    def __init__(self) -> None:
+        super().__init__(detail='Invalid JWT token')
 
 
 class RefreshTokenRevokedException(TokenException):
@@ -46,8 +48,8 @@ class RefreshTokenMissingException(TokenException):
 
 
 class RefreshTokenNotFoundException(TokenException):
-    def __init__(self, token: str) -> None:
-        super().__init__(detail=f'Token {token} not found')
+    def __init__(self) -> None:
+        super().__init__(detail='Token not found')
 
 
 class TokenExpiredException(TokenException):
@@ -56,8 +58,8 @@ class TokenExpiredException(TokenException):
 
 
 class TokenRevokedException(TokenException):
-    def __init__(self, token: str) -> None:
-        super().__init__(detail=f'Token {token} revoked')
+    def __init__(self) -> None:
+        super().__init__(detail='Token revoked')
 
 
 # Logic exceptions.
@@ -98,8 +100,8 @@ class MealSlotForbiddenException(AccessForbiddenException):
 
 
 class TokenForbidden(AccessForbiddenException):
-    def __init__(self, token: str) -> None:
-        super().__init__(detail=f'Token {token} forbidden')
+    def __init__(self) -> None:
+        super().__init__(detail='Token forbidden')
 
 
 # Validation Exceptions.

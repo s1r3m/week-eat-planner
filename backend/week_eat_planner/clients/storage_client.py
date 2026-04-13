@@ -1,3 +1,5 @@
+"""Client for interacting with object storage services."""
+
 import asyncio
 from pathlib import Path
 from uuid import UUID

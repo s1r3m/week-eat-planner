@@ -1,3 +1,5 @@
+"""Application-wide constants and enumerations."""
+
 from enum import StrEnum
 
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'

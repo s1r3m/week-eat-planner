@@ -1,3 +1,5 @@
+"""Service layer for authentication and user registration logic."""
+
 from datetime import UTC, datetime, timedelta
 
 from loguru import logger
@@ -42,7 +44,7 @@ class AuthService:
             The created user object.
 
         Raises:
-            UserAlreadyExists: If a user with the same email is already registered.
+            UserAlreadyExistsException: If a user with the same email is already registered.
         """
         logger.info(f'New user registration attempt for {user_data.email=}.')
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
@@ -73,8 +75,8 @@ class AuthService:
             A tuple containing the access and refresh tokens.
 
         Raises:
-            InvalidEmail: If the email format is invalid.
-            InvalidCredentials: If the user is not registered or the password is incorrect.
+            InvalidEmailException: If the email format is invalid.
+            InvalidCredentialsException: If the user is not registered or the password is incorrect.
         """
         logger.info(f'Login attempt for user: {username}.')
         try:
@@ -103,8 +105,8 @@ class AuthService:
             A tuple containing the new access and refresh tokens.
 
         Raises:
-            RefreshTokenRevoked: If the provided token is invalid or revoked.
-            TokenExpired: If the provided token has expired.
+            RefreshTokenRevokedException: If the provided token is invalid or revoked.
+            TokenExpiredException: If the provided token has expired.
         """
         logger.info(f'Attempting to refresh tokens from {old_refresh_token}.')
         old_token = RefreshTokenFromDB(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
@@ -160,10 +162,10 @@ class AuthService:
             raw_token: The raw (unhashed) refresh token to revoke.
 
         Raises:
-            TokenNotFound: If the refresh token does not exist.
-            TokenExpired: If the refresh token has expired.
+            RefreshTokenNotFoundException: If the refresh token does not exist.
+            TokenExpiredException: If the refresh token has expired.
             TokenForbidden: If the refresh token does not belong to the user.
-            TokenRevoked: If the refresh token has already been revoked.
+            TokenRevokedException: If the refresh token has already been revoked.
         """
         logger.info(f'Logout attempt for {user}.')
         refresh_token = RefreshTokenFromDB(
@@ -174,7 +176,7 @@ class AuthService:
 
         if not db_refresh_token:
             logger.warning(f'Attempted logout with a non-existent refresh token for {user}.')
-            raise RefreshTokenNotFoundException(raw_token)
+            raise RefreshTokenNotFoundException()
 
         if db_refresh_token.expires_at <= datetime.now(UTC):
             logger.warning(f'Attempted logout with expired refresh token for {user}.')
@@ -182,11 +184,11 @@ class AuthService:
 
         if db_refresh_token.user_id != user.id:
             logger.warning(f'Attempted logout with refresh token that does not belong to user {user}.')
-            raise TokenForbidden(raw_token)
+            raise TokenForbidden()
 
         if db_refresh_token.revoked:
             logger.warning(f'Attempted logout with an already revoked token for user {user}.')
-            raise TokenRevokedException(raw_token)
+            raise TokenRevokedException()
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
         logger.info(f'{user} logged out successfully.')

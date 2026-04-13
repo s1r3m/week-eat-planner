@@ -1,3 +1,5 @@
+"""Service layer for user-related business logic."""
+
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,16 +23,17 @@ class UserService:
             token: The JWT access token.
 
         Returns:
-            The User object if found, otherwise None.
+            The User object.
 
         Raises:
-            InvalidCredentials: If the user is not found or is not active.
+            InvalidCredentialsException: If the user is not found or is not active.
         """
-        logger.info(f'Retrieving user from {token=}.')
-        user = await self._user_dao.find_one_or_none(Email(email=get_email_from_token(token)))
+        email = get_email_from_token(token)
+        logger.info(f'Retrieving user for email={email}.')
+        user = await self._user_dao.find_one_or_none(Email(email=email))
         if not user or not user.is_active:
-            logger.error(f'User not found for token {token=}.')
+            logger.error(f'User not found for email={email}.')
             raise InvalidCredentialsException()
 
-        logger.info(f'Retrieved {user} from DB')
+        logger.info(f'Retrieved User(id={user.id}) from DB')
         return user

@@ -1,3 +1,7 @@
+/**
+ * Vue Router configuration.
+ * Defines the application's routes, layouts, and navigation guards.
+ */
 import { createRouter, createWebHistory } from 'vue-router';
 
 import GuestLayout from '@/layouts/TheGuestLayout.vue';

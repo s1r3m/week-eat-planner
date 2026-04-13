@@ -1,3 +1,5 @@
+"""API router for recipe-related endpoints."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Path, UploadFile, status
@@ -65,6 +67,15 @@ async def get_favorites(
     user: Annotated[UserRead, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[RecipeReadMinimal]:
+    """Retrieves all favorite recipes for the current user.
+
+    Args:
+        user: The authenticated user, injected by dependency.
+        session: The database session.
+
+    Returns:
+        A list of the user's favorite recipes.
+    """
     logger.info(f'Got GET {AppUrl.RECIPES_FAVORITES} for {user}')
     favorites = await RecipeService(session).get_user_favorite_recipes(user)
     logger.info(f'Successfully retrieved {len(favorites)} for {user}')

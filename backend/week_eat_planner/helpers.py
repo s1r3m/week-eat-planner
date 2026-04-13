@@ -1,3 +1,5 @@
+"""Helper functions for the application."""
+
 from uuid import UUID
 
 from fastapi import UploadFile

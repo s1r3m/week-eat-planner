@@ -1,3 +1,5 @@
+"""Data Access Objects for database operations."""
+
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import MealSlot, Recipe, RefreshToken, User, Week
 from week_eat_planner.db.models.user_favorites import UserFavorite

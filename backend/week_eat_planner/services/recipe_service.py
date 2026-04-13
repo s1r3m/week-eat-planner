@@ -1,3 +1,5 @@
+"""Service layer for recipe-related business logic."""
+
 from uuid import UUID
 
 from loguru import logger
@@ -42,14 +44,13 @@ class RecipeService:
         Args:
             recipe_id: The ID of the recipe to retrieve.
             user: The user requesting the recipe.
-            for_update: Whether to lock the recipe for an update.
 
         Returns:
             The requested recipe object.
 
         Raises:
-            RecipeNotFound: If the recipe does not exist or the ID is invalid.
-            RecipeForbidden: If the recipe is private and does not belong to the user.
+            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
+            RecipeForbiddenException: If the recipe is private and does not belong to the user.
         """
         logger.info(f'Getting visible recipe {recipe_id} for {user}.')
         recipe = await self._get_recipe(recipe_id, for_update=False)
