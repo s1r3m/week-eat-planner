@@ -17,11 +17,16 @@
     </PageTitle>
 
     <ErrorRetryCard v-if="error" :error="error" :retry="refetch" />
-    <MealSlotGrid v-else-if="week" :week-days="week.week_days" />
+    <MealSlotGrid
+      v-else-if="week"
+      :week-days="week.week_days"
+      @select-slot="selectedSlot = $event"
+    />
     <TheLoadingPageState v-else-if="isLoading" />
 
     <WeekEditDialog v-model="editingWeek" />
     <WeekDeleteDialog v-model="deletingWeek" />
+    <MealSlotAssignRecipeDialog v-if="week" v-model="selectedSlot" :week-id="week.id" />
   </div>
 </template>
 
@@ -30,10 +35,11 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery } from '@pinia/colada';
 import { getWeekQuery } from '@/api/weeks';
-import type { WeekPreview } from '@/api/weeks';
+import type { WeekPreview, MealSlot } from '@/api/weeks';
 
 import PageTitle from '@/components/shared/PageTitle.vue';
 import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
+import MealSlotAssignRecipeDialog from '@/features/mealSlot/components/MealSlotAssignRecipeDialog.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
 import { Pen, Trash } from 'lucide-vue-next';
@@ -51,6 +57,7 @@ const {
 
 const editingWeek = ref<WeekPreview | null>(null);
 const deletingWeek = ref<WeekPreview | null>(null);
+const selectedSlot = ref<MealSlot | null>(null);
 const openEdit = (selectedWeek?: WeekPreview) => {
   if (selectedWeek) editingWeek.value = selectedWeek;
 };

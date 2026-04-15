@@ -27,7 +27,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useBreadcrumbs } from '@/composables/breadcrumbs';
+import { useBreadcrumbs } from '@/layouts/composables/breadcrumbs';
 
 const breadcrumbs = useBreadcrumbs();
 </script>

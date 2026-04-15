@@ -1,5 +1,5 @@
 <template>
-  <Card variant="slot">
+  <Card variant="slot" @click="$emit('selectSlot', mealSlot)">
     <CardContent>
       <CardTitle class="text-center text-muted-foreground">
         {{ t(`mealTypes.${mealSlot.meal_type}`) }}
@@ -20,6 +20,10 @@ import type { MealSlot } from '@/api/weeks';
 
 defineProps<{
   mealSlot: MealSlot;
+}>();
+
+defineEmits<{
+  selectSlot: [mealSlot: MealSlot];
 }>();
 
 const { t } = useI18n();

@@ -18,6 +18,7 @@
       <p class="text-muted-foreground text-sm">{{ recipe.author }}</p>
     </div>
     <router-link
+      v-if="clickable"
       :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
       class="absolute inset-0 z-10"
     ></router-link>
@@ -45,7 +46,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
 
-const props = defineProps<{ recipe: RecipePreview }>();
+const props = defineProps<{ recipe: RecipePreview; clickable?: boolean }>();
 const { mutate: toggle } = useMutation(toggleFavoriteMutation());
 const starProps = computed(() => {
   return props.recipe.is_favorite

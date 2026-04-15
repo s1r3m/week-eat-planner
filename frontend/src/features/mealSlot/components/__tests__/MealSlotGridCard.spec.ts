@@ -51,4 +51,13 @@ describe('MealSlotCard', () => {
     expect(wrapper.text()).toContain('Pasta');
     expect(wrapper.text()).not.toContain(en.mealSlotCard.assignRecipe);
   });
+
+  it('emits selectSlot when clicked', async () => {
+    const wrapper = mountComponent(defaultSlot);
+
+    await wrapper.find('[data-slot="card"]').trigger('click');
+
+    expect(wrapper.emitted('selectSlot')).toBeTruthy();
+    expect(wrapper.emitted('selectSlot')?.[0]).toEqual([defaultSlot]);
+  });
 });

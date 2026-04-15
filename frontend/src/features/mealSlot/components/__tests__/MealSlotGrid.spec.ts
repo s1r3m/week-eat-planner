@@ -55,4 +55,21 @@ describe('MealSlotGrid', () => {
     const cards = wrapper.findAllComponents(MealSlotGridCard);
     expect(cards).toHaveLength(2);
   });
+
+  it('emits selectSlot when a card emits it', async () => {
+    const wrapper = mount(MealSlotGrid, {
+      props: { weekDays },
+      global: {
+        plugins: [i18n],
+      },
+    });
+
+    const card = wrapper.findComponent(MealSlotGridCard);
+    const slot = weekDays[0].slots[0];
+
+    await card.vm.$emit('selectSlot', slot);
+
+    expect(wrapper.emitted('selectSlot')).toBeTruthy();
+    expect(wrapper.emitted('selectSlot')?.[0]).toEqual([slot]);
+  });
 });
