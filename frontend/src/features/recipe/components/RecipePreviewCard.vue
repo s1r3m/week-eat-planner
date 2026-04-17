@@ -12,10 +12,10 @@
       />
     </div>
     <div class="flex flex-col bg-muted p-3">
-      <h2 class="text-lg">
+      <h2 class="text-lg truncate">
         {{ recipe.name }}
       </h2>
-      <p class="text-muted-foreground text-sm">{{ recipe.author }}</p>
+      <p class="text-muted-foreground text-sm truncate">{{ recipe.author }}</p>
     </div>
     <router-link
       v-if="!isAssign"
