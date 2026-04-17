@@ -1,7 +1,9 @@
 <template>
   <div
-    class="relative group cursor-pointer overflow-hidden rounded-lg border-2 transition-all h-32 flex items-center justify-center"
-    :class="isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-transparent bg-muted'"
+    class="relative group cursor-pointer overflow-hidden rounded-xl border-2 transition-all h-32 flex items-center justify-center"
+    :class="
+      isSelected ? 'border-primary bg-primary/8' : 'border-transparent bg-surface-container-low'
+    "
     @click="emit('select', recipe)"
   >
     <img
@@ -47,7 +49,7 @@ const { mutate: toggle } = useMutation(toggleFavoriteMutation());
 const starProps = computed(() => {
   return props.recipe.is_favorite
     ? {
-        fill: 'var(--primary)',
+        fill: 'currentColor',
         strokeWidth: 0,
       }
     : {};

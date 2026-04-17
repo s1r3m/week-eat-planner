@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen max-w-7xl mx-auto flex-col bg-background text-foreground">
+  <div class="flex min-h-screen max-w-7xl mx-auto flex-col bg-surface text-on-surface">
     <GuestAppHeader />
     <main class="flex-1">
       <router-view v-slot="{ Component, route }">

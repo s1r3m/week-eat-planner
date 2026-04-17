@@ -11,7 +11,7 @@
       <CardTitle class="text-center">
         <Badge>{{ t(`mealTypes.${mealType}`) }}</Badge>
       </CardTitle>
-      <CardDescription class="flex items-center gap-1 text-sm font-semibold pt-1 text-center">
+      <CardDescription class="flex items-center gap-1 text-label-sm font-semibold pt-1 text-center">
         <Badge variant="secondary">
           {{ recipe.name }}
         </Badge>

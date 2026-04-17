@@ -1,11 +1,11 @@
 <template>
   <Card variant="slotEmpty">
     <CardContent>
-      <CardTitle class="text-center text-muted-foreground">
+      <CardTitle class="text-center text-on-surface-variant">
         <Badge>{{ t(`mealTypes.${mealType}`) }}</Badge>
       </CardTitle>
       <CardDescription
-        class="flex items-center gap-1 text-sm font-light text-muted-foreground pt-3"
+        class="flex items-center gap-1 text-label-sm font-light text-on-surface-variant pt-3"
       >
         <PlusCircle :size="14" />
         {{ t('mealSlotCard.assignRecipe') }}

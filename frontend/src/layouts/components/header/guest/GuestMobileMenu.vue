@@ -1,5 +1,5 @@
 <template>
-  <Button variant="ghost" class="md:hidden" aria-controls="mobile-menu" @click="toggle">
+  <Button variant="ghost" size="icon" class="md:hidden" aria-controls="mobile-menu" @click="toggle">
     <Menu class="size-6" />
     <span class="sr-only">Toggle mobile menu</span>
   </Button>
