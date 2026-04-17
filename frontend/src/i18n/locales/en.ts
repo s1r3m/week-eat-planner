@@ -21,8 +21,18 @@ const mealSlotCard = {
   assignRecipe: 'Assign a recipe',
 };
 
+const assignRecipeDialog = {
+  title: 'Assign a recipe to {meal_type}',
+  description: 'Choose a recipe from the list below',
+  favorites: 'Favorites',
+  my_recipes: 'My recipes',
+  assign: 'Assign',
+  cancel: 'Cancel',
+};
+
 export default {
   mealTypes,
   daysOfWeek,
   mealSlotCard,
+  assignRecipeDialog,
 };

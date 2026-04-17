@@ -88,7 +88,6 @@ class RecipeReadMinimal(RecordId, ImageMixin):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class RecipeFavoriteFilter(BaseModel):
     user_id: UUID
     recipe_id: UUID

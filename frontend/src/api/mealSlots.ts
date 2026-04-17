@@ -29,6 +29,21 @@ export const assignRecipeMutation = defineMutation(() => {
     onMutate: ({ weekId, slots }: MealSlotVars) => {
       queryCache.cancelQueries({ key: WEEK_KEYS.detail(weekId) });
       const week = queryCache.getQueryData<WeekFull>(WEEK_KEYS.detail(weekId));
+
+      if (week) {
+        const updatedWeek: WeekFull = {
+          ...week,
+          week_days: week.week_days.map((day) => ({
+            ...day,
+            slots: day.slots.map((slot) => {
+              const update = slots.find((ms) => ms.slot_id === slot.id);
+              return update
+                ? { ...slot, recipe: { id: update.recipe_id, name: 'TBU' } as RecipePreview }
+                : slot;
+            }),
+          })),
+        };
+      }
       slots.forEach((slotUpdate) => {
         week?.week_days.forEach(({ slots }: WeekDay) => {
           slots.map((slot) =>

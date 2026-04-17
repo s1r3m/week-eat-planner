@@ -2,40 +2,47 @@
   <Dialog v-if="mealSlot" v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Assign a recipe to {{ t(`mealTypes.${mealSlot.meal_type}`) }} </DialogTitle>
-        <DialogDescription>Choose a recipe from the list below</DialogDescription>
+        <DialogTitle
+          >{{ t('assignRecipeDialog.title', { meal_type: t(`mealTypes.${mealSlot.meal_type}`) }) }}
+          <!-- { t(`mealTypes.${mealSlot.meal_type}`) }} -->
+        </DialogTitle>
+        <DialogDescription>{{ t('assignRecipeDialog.description') }}</DialogDescription>
       </DialogHeader>
 
       <div class="flex gap-3">
         <Tabs default-value="favorites">
           <TabsList>
-            <TabsTrigger value="favorites"> Favorites </TabsTrigger>
-            <TabsTrigger value="my-recipes"> My Recipes </TabsTrigger>
-            <TabsContent value="favorites">
-              <div>
-                <!-- <RecipesGrid v-if="favorites" :recipes="favorites" /> -->
-                <div v-if="favorites">
-                  <div v-for="recipe in favorites" :key="recipe.id">
-                    <RecipePreviewCard :recipe="recipe" @click.stop="selectedRecipe = recipe" />
-                  </div>
-                </div>
-                <TheLoadingPageState v-else loading-name="recipes" />
-              </div>
-            </TabsContent>
-            <TabsContent value="my-recipes">
-              <div>
-                <RecipesGrid v-if="myRecipes" :recipes="myRecipes" />
-                <TheLoadingPageState v-else loading-name="recipes" />
-              </div>
-            </TabsContent>
+            <TabsTrigger value="favorites">{{ t('assignRecipeDialog.favorites') }} </TabsTrigger>
+            <TabsTrigger value="my-recipes">{{ t('assignRecipeDialog.my_recipes') }} </TabsTrigger>
           </TabsList>
+          <TabsContent value="favorites">
+            <div>
+              <!-- <RecipesGrid v-if="favorites" :recipes="favorites" /> -->
+              <div v-if="favorites">
+                <div v-for="recipe in favorites" :key="recipe.id">
+                  <RecipePreviewCard
+                    :recipe="recipe"
+                    :is-assign="true"
+                    @click.stop="selectedRecipe = recipe"
+                  />
+                </div>
+              </div>
+              <TheLoadingPageState v-else loading-name="recipes" />
+            </div>
+          </TabsContent>
+          <TabsContent value="my-recipes">
+            <div>
+              <RecipesGrid v-if="myRecipes" :recipes="myRecipes" />
+              <TheLoadingPageState v-else loading-name="recipes" />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 
       <DialogFooter>
-        <Button :disabled="disabled" @click="onAssign">Assign</Button>
+        <Button :disabled="disabled" @click="onAssign">{{ t('assignRecipeDialog.assign') }}</Button>
         <DialogClose as-child>
-          <Button variant="outline"> Cancel </Button>
+          <Button variant="outline"> {{ t('assignRecipeDialog.cancel') }} </Button>
         </DialogClose>
       </DialogFooter>
     </DialogContent>
@@ -77,7 +84,7 @@ const isOpen = computed({
 });
 const selectedRecipe = ref<RecipePreview | null>(null);
 const disabled = computed(
-  () => !(selectedRecipe.value && mealSlot.value?.recipe !== selectedRecipe.value),
+  () => !(selectedRecipe.value && mealSlot.value?.recipe?.id !== selectedRecipe.value.id),
 );
 const { data: favorites } = useQuery(getFavoritesQuery());
 const { data: myRecipes } = useQuery(getMyRecipesQuery());

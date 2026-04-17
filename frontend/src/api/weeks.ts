@@ -1,5 +1,6 @@
 import { defineQueryOptions, defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient } from './client';
+import type { RecipePreview } from './recipes';
 
 /**
  * Days of the week used for meal planning.
@@ -19,14 +20,6 @@ export type DayOfWeek =
 export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK';
 
 /**
- * Minimal recipe information associated with a meal slot.
- */
-export interface MealSlotRecipe {
-  id: string;
-  name: string;
-}
-
-/**
  * Represents a day in a week's meal plan, containing multiple meal slots.
  */
 export interface WeekDay {
@@ -41,7 +34,7 @@ export interface MealSlot {
   id: string;
   meal_type: MealType;
   day_of_week: DayOfWeek;
-  recipe: MealSlotRecipe | null;
+  recipe: RecipePreview | null;
 }
 
 /**

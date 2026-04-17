@@ -2,14 +2,20 @@
   <div id="week-container" class="space-y-6 m-6">
     <PageTitle :header="week?.name" description="Plan your meal to each day">
       <template v-if="!isLoading" #controls>
-        <Button variant="outline" size="lg" aria-label="Edit week" @click="openEdit(week)"
+        <Button
+          v-if="week"
+          variant="outline"
+          size="lg"
+          aria-label="Edit week"
+          @click="editingWeek = week"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
         <Button
+          v-if="week"
           variant="destructiveOutline"
           size="lg"
           aria-label="Delete week"
-          @click="openDelete(week)"
+          @click="deletingWeek = week"
         >
           <Trash /><span class="hidden md:inline"> Delete </span>
         </Button>
@@ -58,10 +64,4 @@ const {
 const editingWeek = ref<WeekPreview | null>(null);
 const deletingWeek = ref<WeekPreview | null>(null);
 const selectedSlot = ref<MealSlot | null>(null);
-const openEdit = (selectedWeek?: WeekPreview) => {
-  if (selectedWeek) editingWeek.value = selectedWeek;
-};
-const openDelete = (selectedWeek?: WeekPreview) => {
-  if (selectedWeek) deletingWeek.value = selectedWeek;
-};
 </script>
