@@ -1,6 +1,6 @@
 import { defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient } from '@/api/client';
-import type { RecipePreview } from '@/api/recipes';
+import { type RecipePreview } from '@/api/recipes';
 import { WEEK_KEYS } from '@/api/weeks';
 import type { WeekFull, DayOfWeek, MealType } from '@/api/weeks';
 
@@ -12,7 +12,7 @@ export interface MealSlotPreview {
 
 export interface MealSlotUpdate {
   slot_id: string;
-  recipe_id: string | null;
+  recipe: RecipePreview | null;
 }
 
 export interface MealSlotVars {
@@ -24,8 +24,15 @@ export const assignRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
   return {
-    mutation: ({ weekId, slots }: MealSlotVars) =>
-      apiClient.patch<MealSlotPreview[]>(`/weeks/${weekId}/slots`, slots).then((res) => res.data),
+    mutation: ({ weekId, slots }: MealSlotVars) => {
+      const payload = slots.map(({ slot_id, recipe }) => ({
+        slot_id,
+        recipe_id: recipe?.id ?? null,
+      }));
+      return apiClient
+        .patch<MealSlotPreview[]>(`/weeks/${weekId}/slots`, payload)
+        .then((res) => res.data);
+    },
     onMutate: ({ weekId, slots }: MealSlotVars) => {
       queryCache.cancelQueries({ key: WEEK_KEYS.detail(weekId) });
       const week = queryCache.getQueryData<WeekFull>(WEEK_KEYS.detail(weekId));
@@ -41,15 +48,7 @@ export const assignRecipeMutation = defineMutation(() => {
               return update
                 ? {
                     ...slot,
-                    recipe: update.recipe_id
-                      ? ({
-                          id: update.recipe_id,
-                          name: 'Loading...',
-                          author: '',
-                          image_url: null,
-                          is_favorite: false,
-                        } as RecipePreview)
-                      : null,
+                    recipe: update.recipe,
                   }
                 : slot;
             }),

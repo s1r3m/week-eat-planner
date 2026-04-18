@@ -134,7 +134,12 @@ const onAssign = () => {
   if (!selectedRecipe.value || !mealSlot.value) return;
   assign({
     weekId: props.weekId,
-    slots: [{ slot_id: mealSlot.value.id, recipe_id: selectedRecipe.value.id }],
+    slots: [
+      {
+        slot_id: mealSlot.value.id,
+        recipe: selectedRecipe.value,
+      },
+    ],
   });
   isOpen.value = false;
 };

@@ -273,7 +273,7 @@ describe('MealSlotAssignRecipeDialog', () => {
 
     expect(mockMutate).toHaveBeenCalledWith({
       weekId: weekId,
-      slots: [{ slot_id: mealSlotData.id, recipe_id: mockRecipe.id }],
+      slots: [{ slot_id: mealSlotData.id, recipe: mockRecipe }],
     });
   });
 });

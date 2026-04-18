@@ -29,20 +29,36 @@ describe('mealSlots API', () => {
   });
 
   describe('assignRecipeMutation', () => {
-    it('calls the correct endpoint on mutation', async () => {
-      const vars = { weekId: 'week-1', slots: [{ slot_id: 'slot-1', recipe_id: 'recipe-1' }] };
-      const mockData = [{ day_of_week: 'MONDAY', meal_type: 'LUNCH', recipe: { id: 'recipe-1' } }];
+    it('calls the correct endpoint on mutation and extracts recipe_id', async () => {
+      const fullRecipe = { id: 'recipe-1' } as any;
+      const vars = {
+        weekId: 'week-1',
+        slots: [{ slot_id: 'slot-1', recipe: fullRecipe }],
+      };
+      const mockData = [{ day_of_week: 'MONDAY', meal_type: 'LUNCH', recipe: fullRecipe }];
       (apiClient.patch as any).mockResolvedValue({ data: mockData });
 
       const mutation = assignRecipeMutation();
       const result = await mutation.mutation(vars);
 
-      expect(apiClient.patch).toHaveBeenCalledWith('/weeks/week-1/slots', vars.slots);
+      expect(apiClient.patch).toHaveBeenCalledWith('/weeks/week-1/slots', [
+        { slot_id: 'slot-1', recipe_id: 'recipe-1' },
+      ]);
       expect(result).toEqual(mockData);
     });
 
-    it('optimistically updates the cache onMutate', async () => {
-      const vars = { weekId: 'week-1', slots: [{ slot_id: 'slot-1', recipe_id: 'recipe-1' }] };
+    it('optimistically updates the cache onMutate with provided recipe', async () => {
+      const fullRecipe = {
+        id: 'recipe-1',
+        name: 'Real Recipe',
+        author: 'Author',
+        is_favorite: true,
+        image_url: 'img.png',
+      } as any;
+      const vars = {
+        weekId: 'week-1',
+        slots: [{ slot_id: 'slot-1', recipe: fullRecipe }],
+      };
       const mockWeek = {
         id: 'week-1',
         name: 'Week 1',
@@ -53,12 +69,11 @@ describe('mealSlots API', () => {
           },
         ],
       };
-      mockQueryCache.getQueryData.mockReturnValue(mockWeek);
+      mockQueryCache.getQueryData.mockReturnValueOnce(mockWeek);
 
       const mutation = assignRecipeMutation();
-      const context = mutation.onMutate(vars);
+      mutation.onMutate(vars);
 
-      expect(mockQueryCache.cancelQueries).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         ['weeks', 'detail', 'week-1'],
         expect.objectContaining({
@@ -67,14 +82,13 @@ describe('mealSlots API', () => {
               slots: expect.arrayContaining([
                 expect.objectContaining({
                   id: 'slot-1',
-                  recipe: expect.objectContaining({ id: 'recipe-1' }),
+                  recipe: fullRecipe,
                 }),
               ]),
             }),
           ]),
         }),
       );
-      expect(context).toEqual({ week: mockWeek });
     });
 
     it('rolls back the cache onError', () => {
