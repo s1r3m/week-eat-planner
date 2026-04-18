@@ -26,7 +26,7 @@ export interface LoginInfo {
  */
 export interface SignUpPayload {
   email: string;
-  username: string;
+  username?: string;
   password: string;
 }
 
