@@ -33,7 +33,10 @@
 
         <TabsContent value="my-recipes" class="flex-1 overflow-y-auto mt-4 pr-2">
           <ErrorRetryCard v-if="myRecipesError" :error="myRecipesError" :retry="myRecipesRefetch" />
-          <div v-if="myRecipes" class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+          <div
+            v-else-if="myRecipes"
+            class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4"
+          >
             <RecipeSelectCard
               v-for="recipe in myRecipes"
               :key="recipe.id"

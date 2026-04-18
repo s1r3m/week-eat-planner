@@ -31,12 +31,13 @@ export const assignRecipeMutation = defineMutation(() => {
       const week = queryCache.getQueryData<WeekFull>(WEEK_KEYS.detail(weekId));
 
       if (week) {
+        const updatesBySlotId = new Map(slots.map((u) => [u.slot_id, u]));
         const updatedWeek: WeekFull = {
           ...week,
           week_days: week.week_days.map((day) => ({
             ...day,
             slots: day.slots.map((slot) => {
-              const update = slots.find((ms) => ms.slot_id === slot.id);
+              const update = updatesBySlotId.get(slot.id);
               return update
                 ? {
                     ...slot,
