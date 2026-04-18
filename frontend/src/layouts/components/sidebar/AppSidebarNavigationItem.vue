@@ -5,8 +5,8 @@
     as-child
   >
     <router-link :to="item.to" @click="handleNavigation">
-      <component :is="item.icon" v-if="item.icon" />
-      <span> {{ item.label }} </span>
+      <component :is="item.icon" v-if="item.icon" class="size-6" />
+      <span class="group-data-[collapsible=icon]:hidden"> {{ item.label }} </span>
     </router-link>
   </component>
 </template>

@@ -7,7 +7,7 @@
       <img class="size-10" src="@/assets/logo.png" alt="Week Eat Planner logo" />
     </div>
     <h1
-      class="text-title-lg font-semibold tracking-tight text-primary group-data-[collapsible=icon]:hidden"
+      class="text-title-lg font-semibold tracking-tight text-primary group-data-[collapsible=icon]:hidden whitespace-nowrap"
     >
       Week Eat Planner
     </h1>

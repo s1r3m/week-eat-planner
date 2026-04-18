@@ -5,7 +5,8 @@
         <Button
           v-if="week"
           variant="outline"
-          size="lg"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Edit week"
           @click="editingWeek = week"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
@@ -13,7 +14,8 @@
         <Button
           v-if="week"
           variant="destructiveOutline"
-          size="lg"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Delete week"
           @click="deletingWeek = week"
         >

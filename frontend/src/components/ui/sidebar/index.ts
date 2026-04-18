@@ -36,7 +36,7 @@ export { default as SidebarTrigger } from './SidebarTrigger.vue';
 export { useSidebar } from './utils';
 
 export const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-full p-3 text-left text-label-lg outline-hidden transition-all hover:bg-on-surface/8 focus-visible:ring-2 active:bg-on-surface/12 disabled:pointer-events-none disabled:opacity-38 aria-disabled:pointer-events-none aria-disabled:opacity-38 data-[active=true]:bg-secondary-container data-[active=true]:font-semibold data-[active=true]:text-on-secondary-container group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:p-3! [&>span:last-child]:truncate [&>svg]:size-6 [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-full p-2 text-left text-label-lg outline-hidden transition-all duration-medium2 ease-emphasized hover:bg-on-surface/8 focus-visible:ring-2 active:bg-on-surface/12 disabled:pointer-events-none disabled:opacity-38 aria-disabled:pointer-events-none aria-disabled:opacity-38 data-[active=true]:bg-secondary-container data-[active=true]:font-semibold data-[active=true]:text-on-secondary-container group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:p-3! [&>span:last-child]:truncate [&>svg]:size-6 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -44,9 +44,9 @@ export const sidebarMenuButtonVariants = cva(
         outline: 'border border-outline hover:bg-on-surface/8',
       },
       size: {
-        default: 'h-12',
-        sm: 'h-10 text-label-md',
-        lg: 'h-14 text-title-sm group-data-[collapsible=icon]:p-0!',
+        default: 'h-10',
+        sm: 'h-8 text-label-md',
+        lg: 'h-12 text-title-sm group-data-[collapsible=icon]:p-0!',
       },
     },
     defaultVariants: {

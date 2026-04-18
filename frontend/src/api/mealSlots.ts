@@ -38,21 +38,18 @@ export const assignRecipeMutation = defineMutation(() => {
             slots: day.slots.map((slot) => {
               const update = slots.find((ms) => ms.slot_id === slot.id);
               return update
-                ? { ...slot, recipe: { id: update.recipe_id, name: 'TBU' } as RecipePreview }
+                ? {
+                    ...slot,
+                    recipe: update.recipe_id
+                      ? ({ id: update.recipe_id, name: 'Loading...' } as RecipePreview)
+                      : null,
+                  }
                 : slot;
             }),
           })),
         };
+        queryCache.setQueryData(WEEK_KEYS.detail(weekId), updatedWeek);
       }
-      slots.forEach((slotUpdate) => {
-        week?.week_days.forEach(({ slots }: WeekDay) => {
-          slots.map((slot) =>
-            slot.id === slotUpdate.slot_id
-              ? { ...slot, recipe: { id: slotUpdate.recipe_id, name: 'TBU' } }
-              : slot,
-          );
-        });
-      });
       return { week };
     },
     onError: (err: Error, { weekId }: MealSlotVars, context?: { week?: WeekFull }) => {

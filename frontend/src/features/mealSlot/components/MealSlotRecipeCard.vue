@@ -7,22 +7,22 @@
       class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 opacity-40 group-hover:scale-110"
     />
 
-    <CardContent class="relative z-10 flex flex-col items-center justify-center h-full">
-      <CardTitle class="text-center">
-        <Badge>{{ t(`mealTypes.${mealType}`) }}</Badge>
-      </CardTitle>
-      <CardDescription class="flex items-center gap-1 text-label-sm font-semibold pt-1 text-center">
-        <Badge variant="secondary">
+    <CardContent class="relative z-10 flex flex-col justify-between h-full p-3">
+      <div class="flex justify-center">
+        <Badge class="text-label-sm">{{ t(`mealTypes.${mealType}`) }}</Badge>
+      </div>
+      <div class="flex justify-center">
+        <Badge variant="secondary" class="text-label-sm font-semibold truncate max-w-full">
           {{ recipe.name }}
         </Badge>
-      </CardDescription>
+      </div>
     </CardContent>
   </Card>
 </template>
 <script setup lang="ts">
 import type { RecipePreview } from '@/api/recipes';
 import Badge from '@/components/ui/badge/Badge.vue';
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useI18n } from 'vue-i18n';
 
 defineProps<{
