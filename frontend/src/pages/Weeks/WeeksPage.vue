@@ -5,7 +5,7 @@
         <template #controls>
           <div class="flex items-center gap-3">
             <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />
-            <Button size="lg" aria-label="Add a new week" @click="isCreateOpen = true">
+            <Button aria-label="Add a new week" @click="isCreateOpen = true">
               <Plus />
               <span class="hidden md:inline">Add a new week</span>
             </Button>

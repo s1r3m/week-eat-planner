@@ -10,12 +10,7 @@
           :aria-label="!recipe.is_favorite ? 'Add to favorites' : 'Remove from favorites'"
           @click="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
         >
-          <Star
-            :class="[
-              recipe.is_favorite ? 'fill-primary text-primary' : '',
-              { 'text-transparent': recipe.is_favorite },
-            ]"
-          />
+          <Star :class="recipe.is_favorite ? 'fill-primary text-transparent' : ''" />
           <span class="hidden md:inline"
             >{{ !recipe.is_favorite ? 'Add to' : 'Remove from' }} favorites
           </span></Button

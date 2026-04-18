@@ -59,7 +59,7 @@ export const assignRecipeMutation = defineMutation(() => {
     onSuccess: (res: MealSlotPreview[], _vars: MealSlotVars, _context?: { week?: WeekFull }) => {
       res.forEach((slot) => {
         console.log(
-          `Successfully assigned the recipe ${slot.recipe} to slot ${slot.meal_type} of ${slot.day_of_week}`,
+          `Successfully assigned the recipe ${slot.recipe?.name || 'none'} to slot ${slot.meal_type} of ${slot.day_of_week}`,
         );
       });
     },
