@@ -7,6 +7,7 @@ import { ref, nextTick } from 'vue';
 import type { MealSlot } from '@/api/weeks';
 import type { RecipePreview } from '@/api/recipes';
 import RecipeSelectCard from '@/features/recipe/components/RecipeSelectCard.vue';
+import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 
 vi.mock('@pinia/colada', () => ({
   useQuery: vi.fn(),
@@ -58,7 +59,7 @@ describe('MealSlotAssignRecipeDialog', () => {
   const globalMountOptions = {
     plugins: [i18n],
     stubs: {
-      Dialog: { template: '<div><slot /></div>' },
+      Dialog: { name: 'Dialog', template: '<div><slot /></div>' },
       DialogContent: { template: '<div><slot /></div>' },
       DialogHeader: { template: '<div><slot /></div>' },
       DialogTitle: { template: '<div><slot /></div>' },
@@ -123,6 +124,98 @@ describe('MealSlotAssignRecipeDialog', () => {
     await card.trigger('click');
 
     expect(card.props('isSelected')).toBe(true);
+  });
+
+  it('renders recipes from both favorites and my-recipes', async () => {
+    const favoriteRecipe: RecipePreview = { ...mockRecipe, id: 'fav-1', name: 'Favorite Recipe' };
+    const myRecipe: RecipePreview = { ...mockRecipe, id: 'my-1', name: 'My Recipe' };
+
+    (useQuery as any).mockImplementation((options: any) => {
+      // The component calls useQuery twice: first for favorites, then for myRecipes.
+      // We can use a simple toggle to return different data for each call.
+      const isFavorites = (useQuery as any).mock.calls.length % 2 === 1;
+      return {
+        data: ref(isFavorites ? [favoriteRecipe] : [myRecipe]),
+        isLoading: ref(false),
+      };
+    });
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    await nextTick();
+    const cards = wrapper.findAllComponents(RecipeSelectCard);
+    // Since stubs render both TabsContent simultaneously
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+    expect(wrapper.text()).toContain('Favorite Recipe');
+    expect(wrapper.text()).toContain('My Recipe');
+
+    // Click the second card (My Recipe) to cover the @select on the second tab
+    await cards[1].trigger('click');
+    // Since selectedRecipe is internal, we check isSelected prop on the card
+    expect(cards[1].props('isSelected')).toBe(true);
+  });
+
+  it('renders loading state when recipes are loading', async () => {
+    (useQuery as any).mockImplementation(() => ({
+      data: ref(null),
+      isLoading: ref(true),
+    }));
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    expect(wrapper.findAllComponents(TheLoadingPageState).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('handles dialog close by setting mealSlot to null', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        'onUpdate:modelValue': (val: any) => wrapper.setProps({ modelValue: val }),
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    // isOpen is a computed based on modelValue
+    // We can't directly set isOpen.value because it's internal
+    // but the Dialog stub uses v-model:open which emits update:open
+    const dialog = wrapper.findComponent({ name: 'Dialog' });
+    await dialog.vm.$emit('update:open', false);
+
+    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
+  });
+
+  it('handles null selectedRecipe in onAssign (coverage)', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    // Button is disabled, but we can still trigger onAssign if we find it
+    // Or we can just call it via vm if we didn't use script setup, but we did.
+    // So we trigger the click on the button.
+    const assignBtn = wrapper
+      .findAllComponents({ name: 'Button' })
+      .find((b) => b.text().includes('Assign'));
+    await assignBtn?.trigger('click');
+
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it('calls assign mutation with correct data on assign click', async () => {

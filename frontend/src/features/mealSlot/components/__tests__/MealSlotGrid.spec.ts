@@ -13,6 +13,12 @@ describe('MealSlotGrid', () => {
       slots: [
         {
           id: 'slot-1',
+          meal_type: 'LUNCH',
+          day_of_week: 'MONDAY',
+          recipe: null,
+        },
+        {
+          id: 'slot-1-b',
           meal_type: 'BREAKFAST',
           day_of_week: 'MONDAY',
           recipe: null,
@@ -26,7 +32,13 @@ describe('MealSlotGrid', () => {
           id: 'slot-2',
           meal_type: 'LUNCH',
           day_of_week: 'TUESDAY',
-          recipe: { id: 'recipe-1', name: 'Pasta' },
+          recipe: {
+            id: 'recipe-1',
+            name: 'Pasta',
+            author: 'me',
+            image_url: '',
+            is_favorite: false,
+          },
         },
       ],
     },
@@ -53,10 +65,10 @@ describe('MealSlotGrid', () => {
     });
 
     const cards = wrapper.findAllComponents(MealSlotGridCard);
-    expect(cards).toHaveLength(2);
+    expect(cards).toHaveLength(3);
   });
 
-  it('emits selectSlot when a card emits it', async () => {
+  it('emits selectSlot when a card is clicked', async () => {
     const wrapper = mount(MealSlotGrid, {
       props: { weekDays },
       global: {
@@ -65,9 +77,10 @@ describe('MealSlotGrid', () => {
     });
 
     const card = wrapper.findComponent(MealSlotGridCard);
-    const slot = weekDays[0].slots[0];
+    // BREAKFAST (slot-1-b) comes before LUNCH (slot-1) after sorting
+    const slot = weekDays[0].slots[1];
 
-    await card.vm.$emit('selectSlot', slot);
+    await card.trigger('click');
 
     expect(wrapper.emitted('selectSlot')).toBeTruthy();
     expect(wrapper.emitted('selectSlot')?.[0]).toEqual([slot]);
