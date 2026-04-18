@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ErrorRetryCard from '../ErrorRetryCard.vue';
 
 describe('ErrorRetryCard', () => {
   const error = new Error('Test error message');
   const mockRetry = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   const mountComponent = () => {
     return mount(ErrorRetryCard, {

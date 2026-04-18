@@ -2,7 +2,7 @@ import { defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient } from '@/api/client';
 import type { RecipePreview } from '@/api/recipes';
 import { WEEK_KEYS } from '@/api/weeks';
-import type { WeekFull, DayOfWeek, MealType, WeekDay } from '@/api/weeks';
+import type { WeekFull, DayOfWeek, MealType } from '@/api/weeks';
 
 export interface MealSlotPreview {
   day_of_week: DayOfWeek;
@@ -41,7 +41,13 @@ export const assignRecipeMutation = defineMutation(() => {
                 ? {
                     ...slot,
                     recipe: update.recipe_id
-                      ? ({ id: update.recipe_id, name: 'Loading...' } as RecipePreview)
+                      ? ({
+                          id: update.recipe_id,
+                          name: 'Loading...',
+                          author: '',
+                          image_url: null,
+                          is_favorite: false,
+                        } as RecipePreview)
                       : null,
                   }
                 : slot;
@@ -54,7 +60,7 @@ export const assignRecipeMutation = defineMutation(() => {
     },
     onError: (err: Error, { weekId }: MealSlotVars, context?: { week?: WeekFull }) => {
       console.error('An error occurred during assigning: ', err);
-      if (context) queryCache.setQueryData(WEEK_KEYS.detail(weekId), context.week);
+      if (context?.week) queryCache.setQueryData(WEEK_KEYS.detail(weekId), context.week);
     },
     onSuccess: (res: MealSlotPreview[], _vars: MealSlotVars, _context?: { week?: WeekFull }) => {
       res.forEach((slot) => {

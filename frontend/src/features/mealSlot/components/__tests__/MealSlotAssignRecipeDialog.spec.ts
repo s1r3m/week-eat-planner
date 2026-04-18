@@ -91,6 +91,41 @@ describe('MealSlotAssignRecipeDialog', () => {
     expect(wrapper.text()).toContain('Assign a recipe to');
   });
 
+  it('sets enabled to false when mealSlot is null', () => {
+    mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: null,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    const calls = (useQuery as any).mock.calls;
+    // Each call's first argument is a function that returns the options
+    const favoritesOptions = calls[0][0]();
+    const myRecipesOptions = calls[1][0]();
+
+    expect(favoritesOptions.enabled).toBe(false);
+    expect(myRecipesOptions.enabled).toBe(false);
+  });
+
+  it('sets enabled to true when mealSlot is provided', () => {
+    mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    const calls = (useQuery as any).mock.calls;
+    const favoritesOptions = calls[0][0]();
+    const myRecipesOptions = calls[1][0]();
+
+    expect(favoritesOptions.enabled).toBe(true);
+    expect(myRecipesOptions.enabled).toBe(true);
+  });
+
   it('initializes selectedRecipe from mealSlot.recipe', async () => {
     const mealSlotWithRecipe: MealSlot = { ...mealSlotData, recipe: mockRecipe };
     const wrapper = mount(MealSlotAssignRecipeDialog, {

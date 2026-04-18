@@ -73,7 +73,6 @@ const navLinks: ComputedRef<NavLink[]> = computed(() => [
     label: 'Recipes',
     to: { name: ROUTE_NAMES.RECIPES },
     icon: ForkKnife,
-    items: [],
   },
   { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes', icon: BookOpenText },
   { to: { name: ROUTE_NAMES.RECIPES_FAVORITES }, label: 'Favorites', icon: Star },

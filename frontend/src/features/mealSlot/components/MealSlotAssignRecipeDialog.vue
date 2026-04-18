@@ -4,7 +4,6 @@
       <DialogHeader>
         <DialogTitle
           >{{ t('assignRecipeDialog.title', { meal_type: t(`mealTypes.${mealSlot.meal_type}`) }) }}
-          <!-- { t(`mealTypes.${mealSlot.meal_type}`) }} -->
         </DialogTitle>
         <DialogDescription>{{ t('assignRecipeDialog.description') }}</DialogDescription>
       </DialogHeader>
@@ -16,7 +15,11 @@
         </TabsList>
 
         <TabsContent value="favorites" class="flex-1 overflow-y-auto mt-4 pr-2">
-          <div v-if="favorites" class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+          <ErrorRetryCard v-if="favError" :error="favError" :retry="favRefetch" />
+          <div
+            v-else-if="favorites"
+            class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4"
+          >
             <RecipeSelectCard
               v-for="recipe in favorites"
               :key="recipe.id"
@@ -25,10 +28,11 @@
               @select="selectedRecipe = recipe"
             />
           </div>
-          <TheLoadingPageState v-else loading-name="recipes" />
+          <TheLoadingPageState v-else-if="isFavLoading" loading-name="recipes" />
         </TabsContent>
 
         <TabsContent value="my-recipes" class="flex-1 overflow-y-auto mt-4 pr-2">
+          <ErrorRetryCard v-if="myRecipesError" :error="myRecipesError" :retry="myRecipesRefetch" />
           <div v-if="myRecipes" class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
             <RecipeSelectCard
               v-for="recipe in myRecipes"
@@ -38,7 +42,7 @@
               @select="selectedRecipe = recipe"
             />
           </div>
-          <TheLoadingPageState v-else loading-name="recipes" />
+          <TheLoadingPageState v-else-if="isMyRecipesLoading" loading-name="recipes" />
         </TabsContent>
       </Tabs>
 
@@ -72,6 +76,7 @@ import { useMutation, useQuery } from '@pinia/colada';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import { assignRecipeMutation } from '@/api/mealSlots';
 import RecipeSelectCard from '@/features/recipe/components/RecipeSelectCard.vue';
+import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 
 const props = defineProps<{
   weekId: string;
@@ -101,8 +106,25 @@ watch(
 const disabled = computed(
   () => !(selectedRecipe.value && mealSlot.value?.recipe?.id !== selectedRecipe.value.id),
 );
-const { data: favorites } = useQuery(getFavoritesQuery());
-const { data: myRecipes } = useQuery(getMyRecipesQuery());
+const enabled = computed(() => !!mealSlot.value);
+const {
+  data: favorites,
+  isLoading: isFavLoading,
+  error: favError,
+  refetch: favRefetch,
+} = useQuery(() => ({
+  ...getFavoritesQuery(),
+  enabled: enabled.value,
+}));
+const {
+  data: myRecipes,
+  isLoading: isMyRecipesLoading,
+  error: myRecipesError,
+  refetch: myRecipesRefetch,
+} = useQuery(() => ({
+  ...getMyRecipesQuery(),
+  enabled: enabled.value,
+}));
 const { mutate: assign } = useMutation(assignRecipeMutation());
 
 const onAssign = () => {

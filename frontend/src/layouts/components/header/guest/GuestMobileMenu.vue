@@ -5,7 +5,7 @@
   </Button>
 
   <Sheet v-model:open="open">
-    <SheetContent side="top">
+    <SheetContent id="mobile-menu" side="top">
       <SheetHeader>
         <AppBrand />
       </SheetHeader>
