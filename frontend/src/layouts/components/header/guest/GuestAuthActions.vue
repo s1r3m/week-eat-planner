@@ -1,15 +1,15 @@
 <template>
-  <div class="flex gap-3">
+  <div class="flex items-center gap-3">
     <template v-if="!isAuthenticated">
-      <Button v-if="showLogin" variant="outline" size="sm" as-child>
+      <Button v-if="showLogin" variant="outline" as-child>
         <router-link :to="{ name: 'login' }">Login</router-link>
       </Button>
-      <Button v-if="showSignup" size="sm" as-child>
+      <Button v-if="showSignup" as-child>
         <router-link :to="{ name: 'signup' }">Sign Up</router-link>
       </Button>
     </template>
     <template v-else>
-      <Button variant="outline" size="sm" @click="logout">
+      <Button variant="outline" @click="logout">
         <Spinner v-if="isLoading" />
         {{ isLoading ? 'Logging Out...' : 'Log Out' }}
       </Button>

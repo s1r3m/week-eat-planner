@@ -7,6 +7,9 @@ import { useRoute } from 'vue-router';
 
 vi.mock('@pinia/colada', () => ({
   useQuery: vi.fn(),
+  useMutation: vi.fn(() => ({ mutate: vi.fn() })),
+  defineQueryOptions: vi.fn((fn) => fn),
+  defineMutation: vi.fn((fn) => fn),
 }));
 
 vi.mock('vue-router', () => ({
@@ -41,6 +44,10 @@ describe('WeekSinglePage', () => {
     WeekDeleteDialog: {
       template: '<div class="delete-dialog" v-if="modelValue" />',
       props: ['modelValue'],
+    },
+    MealSlotAssignRecipeDialog: {
+      template: '<div class="assign-recipe-dialog" v-if="modelValue" />',
+      props: ['modelValue', 'weekId'],
     },
     Button: {
       template: '<button @click="$emit(\'click\')"><slot /></button>',
@@ -85,6 +92,25 @@ describe('WeekSinglePage', () => {
 
     expect(wrapper.find('h1').text()).toBe(mockWeek.name);
     expect(wrapper.findComponent(stubs.MealSlotGrid).exists()).toBe(true);
+  });
+
+  it('updates selectedSlot when MealSlotGrid emits selectSlot', async () => {
+    (useQuery as any).mockReturnValue({
+      data: ref(mockWeek),
+      isLoading: ref(false),
+      error: ref(null),
+    });
+
+    const wrapper = mount(WeekSinglePage, {
+      global: { stubs },
+    });
+
+    const grid = wrapper.findComponent(stubs.MealSlotGrid);
+    const mockSlot = { id: 'slot_1' };
+    await grid.vm.$emit('selectSlot', mockSlot);
+
+    const dialog = wrapper.findComponent(stubs.MealSlotAssignRecipeDialog);
+    expect(dialog.props('modelValue')).toEqual(mockSlot);
   });
 
   it('opens edit dialog when edit button is clicked', async () => {

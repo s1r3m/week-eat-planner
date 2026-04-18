@@ -2,7 +2,7 @@
   <AppHeader class="transition-[width,height] ease-linear">
     <template #left>
       <div class="flex items-center">
-        <SidebarTrigger class="-ml-1 size-10" />
+        <SidebarTrigger class="-ml-1 size-12" />
         <Separator orientation="vertical" class="data-[orientation=vertical]:h-4" />
       </div>
     </template>

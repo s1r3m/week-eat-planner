@@ -1,18 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MealSlotCard from '../MealSlotGridCard.vue';
+import MealSlotGridCard from '../MealSlotGridCard.vue';
 import type { MealSlot, MealType } from '@/api/weeks';
 import i18n from '@/i18n';
-import en from '@/i18n/locales/en';
+import MealSlotEmptyCard from '../MealSlotEmptyCard.vue';
+import MealSlotRecipeCard from '../MealSlotRecipeCard.vue';
 
-describe('MealSlotCard', () => {
+describe('MealSlotGridCard', () => {
   const mountComponent = (mealSlot: MealSlot) => {
-    return mount(MealSlotCard, {
+    return mount(MealSlotGridCard, {
       props: {
         mealSlot,
       },
       global: {
         plugins: [i18n],
+        stubs: {
+          MealSlotEmptyCard: true,
+          MealSlotRecipeCard: true,
+        },
       },
     });
   };
@@ -24,31 +29,23 @@ describe('MealSlotCard', () => {
     recipe: null,
   };
 
-  it('renders the meal_slot type', () => {
+  it('renders MealSlotEmptyCard when no recipe is assigned', () => {
     const wrapper = mountComponent(defaultSlot);
-
-    expect(wrapper.text()).toContain(en.mealTypes[defaultSlot.meal_type]);
+    expect(wrapper.findComponent(MealSlotEmptyCard).exists()).toBe(true);
+    expect(wrapper.findComponent(MealSlotRecipeCard).exists()).toBe(false);
   });
 
-  it('renders the assign recipe message when no recipe is assigned', () => {
-    const wrapper = mountComponent(defaultSlot);
-
-    expect(wrapper.text()).toContain(en.mealSlotCard.assignRecipe);
-  });
-
-  it.each(['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as MealType[])(
-    'renders correctly for meal type: %s',
-    (mealType) => {
-      const wrapper = mountComponent({ ...defaultSlot, meal_type: mealType });
-      expect(wrapper.text()).toContain(en.mealTypes[mealType]);
-    },
-  );
-
-  it('renders the recipe name when a recipe is assigned', () => {
-    const recipe = { id: 'recipe-1', name: 'Pasta' };
+  it('renders MealSlotRecipeCard when a recipe is assigned', () => {
+    const recipe = {
+      id: 'recipe-1',
+      name: 'Pasta',
+      is_favorite: false,
+      author: 'me',
+      image_url: 'pic',
+    };
     const wrapper = mountComponent({ ...defaultSlot, recipe });
 
-    expect(wrapper.text()).toContain('Pasta');
-    expect(wrapper.text()).not.toContain(en.mealSlotCard.assignRecipe);
+    expect(wrapper.findComponent(MealSlotRecipeCard).exists()).toBe(true);
+    expect(wrapper.findComponent(MealSlotEmptyCard).exists()).toBe(false);
   });
 });

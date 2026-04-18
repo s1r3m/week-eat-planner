@@ -29,43 +29,78 @@
   --space-xl: 1.5rem;
   --space-2xl: 2rem;
 
-  --text-page-title: 1.375rem;
-  --text-section-title: 1.125rem;
-  --text-body: 0.9375rem;
-  --text-meta: 0.8125rem;
-  --text-small: 0.75rem;
+  /* MD3 Typography Scale */
+  --text-display-lg: 3.56rem;
+  --text-display-md: 2.81rem;
+  --text-display-sm: 2.25rem;
+  --text-headline-lg: 2rem;
+  --text-headline-md: 1.75rem;
+  --text-headline-sm: 1.5rem;
+  --text-title-lg: 1.375rem;
+  --text-title-md: 1rem;
+  --text-title-sm: 0.875rem;
+  --text-body-lg: 1rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.75rem;
+  --text-label-lg: 0.875rem;
+  --text-label-md: 0.75rem;
+  --text-label-sm: 0.6875rem;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Legacy Typography (for migration) */
+  --text-page-title: var(--text-title-lg);
+  --text-section-title: var(--text-headline-sm);
+  --text-body: var(--text-body-md);
+  --text-meta: var(--text-body-sm);
+  --text-small: var(--text-label-md);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* MD3 Shapes */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.75rem;
+  --radius-full: 9999px;
 
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  /* MD3 Color System */
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-primary-container: var(--md-sys-color-primary-container);
+  --color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-secondary-container: var(--md-sys-color-secondary-container);
+  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-tertiary: var(--md-sys-color-tertiary);
+  --color-on-tertiary: var(--md-sys-color-on-tertiary);
+  --color-error: var(--md-sys-color-error);
+  --color-on-error: var(--md-sys-color-on-error);
+  --color-surface: var(--md-sys-color-surface);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
+  --color-outline-variant: var(--md-sys-color-outline-variant);
+  --color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+  --color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --color-surface-container: var(--md-sys-color-surface-container);
+  --color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --color-surface-container-highest: var(--md-sys-color-surface-container-highest);
 
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-
-  --color-destructive: var(--destructive);
-
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  /* Shadcn mappings (for legacy support) */
+  --color-background: var(--md-sys-color-surface);
+  --color-foreground: var(--md-sys-color-on-surface);
+  --color-card: var(--md-sys-color-surface-container-low);
+  --color-card-foreground: var(--md-sys-color-on-surface);
+  --color-popover: var(--md-sys-color-surface-container);
+  --color-popover-foreground: var(--md-sys-color-on-surface);
+  --color-muted: var(--md-sys-color-surface-container-low);
+  --color-muted-foreground: var(--md-sys-color-on-surface-variant);
+  --color-accent: var(--md-sys-color-primary-container);
+  --color-accent-foreground: var(--md-sys-color-on-primary-container);
+  --color-destructive: var(--md-sys-color-error);
+  --color-destructive-foreground: var(--md-sys-color-on-error);
+  --color-border: var(--md-sys-color-outline-variant);
+  --color-input: var(--md-sys-color-outline);
+  --color-ring: var(--md-sys-color-primary);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -73,14 +108,14 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar: var(--md-sys-color-surface);
+  --color-sidebar-foreground: var(--md-sys-color-on-surface);
+  --color-sidebar-primary: var(--md-sys-color-primary);
+  --color-sidebar-primary-foreground: var(--md-sys-color-on-primary);
+  --color-sidebar-accent: var(--md-sys-color-secondary-container);
+  --color-sidebar-accent-foreground: var(--md-sys-color-on-secondary-container);
+  --color-sidebar-border: var(--md-sys-color-outline-variant);
+  --color-sidebar-ring: var(--md-sys-color-primary);
 
   --color-brand-primary: #3bb8a9;
 
@@ -92,6 +127,31 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
+
+  /* MD3 Motion Tokens */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+
+  --duration-short1: 50ms;
+  --duration-short2: 100ms;
+  --duration-short3: 150ms;
+  --duration-short4: 200ms;
+  --duration-medium1: 250ms;
+  --duration-medium2: 300ms;
+  --duration-medium3: 350ms;
+  --duration-medium4: 400ms;
+  --duration-long1: 450ms;
+  --duration-long2: 500ms;
+  --duration-long3: 550ms;
+  --duration-long4: 600ms;
+  --duration-extra-long1: 700ms;
+  --duration-extra-long2: 800ms;
+  --duration-extra-long3: 900ms;
+  --duration-extra-long4: 1000ms;
 }
 
 :root {
@@ -99,99 +159,71 @@
 
   --radius: 0.625rem;
 
-  --background: #fafaf9;
-  --foreground: #1a1a1a;
+  /* MD3 Color Tokens (Light) */
+  --md-sys-color-primary: #3bb8a9;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #d9f5f2;
+  --md-sys-color-on-primary-container: #00201d;
+  --md-sys-color-secondary: #51605f;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #f2f4f5;
+  --md-sys-color-on-secondary-container: #1a1a1a;
+  --md-sys-color-tertiary: #51605f;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-error: #e5484d;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-surface: #fafaf9;
+  --md-sys-color-on-surface: #1a1a1a;
+  --md-sys-color-on-surface-variant: #51605f;
+  --md-sys-color-outline: #d4dedd;
+  --md-sys-color-outline-variant: #d4dedd;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f4f6f6;
+  --md-sys-color-surface-container: #f2f4f5;
+  --md-sys-color-surface-container-high: #edeef0;
+  --md-sys-color-surface-container-highest: #e7e9eb;
 
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-
-  --primary: #3bb8a9;
-  --primary-foreground: #ffffff;
-
-  --secondary: #f2f4f5;
-  --secondary-foreground: #1a1a1a;
-
-  --muted: #f4f6f6;
-  --muted-foreground: #51605f;
-
-  --accent: #d9f5f2;
-  --accent-foreground: #0c3d3a;
-
-  --destructive: #e5484d;
-
-  --border: #d4dedd;
-  --input: #d4dedd;
-  --ring: #3bb8a9;
-
+  /* Legacy definitions (for internal variable references if any) */
   --chart-1: #2f7cf7;
   --chart-2: #1f9e6f;
   --chart-3: #dfaf00;
   --chart-4: #e5484d;
   --chart-5: #3bb8a9;
-
-  --sidebar: #fafaf9;
-  --sidebar-foreground: #1a1a1a;
-
-  --sidebar-primary: #3bb8a9;
-  --sidebar-primary-foreground: #ffffff;
-
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-
-  --sidebar-border: #d4dedd;
-  --sidebar-ring: #3bb8a9;
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: #111b19;
-  --foreground: #e7f2f1;
+  /* MD3 Color Tokens (Dark) */
+  --md-sys-color-primary: #48cfc0;
+  --md-sys-color-on-primary: #041514;
+  --md-sys-color-primary-container: #1f342f;
+  --md-sys-color-on-primary-container: #dff7f2;
+  --md-sys-color-secondary: #a9beba;
+  --md-sys-color-on-secondary: #1a2523;
+  --md-sys-color-secondary-container: #1c2725;
+  --md-sys-color-on-secondary-container: #e7f2f1;
+  --md-sys-color-tertiary: #a9beba;
+  --md-sys-color-on-tertiary: #1a2523;
+  --md-sys-color-error: #ff6f73;
+  --md-sys-color-on-error: #4b0005;
+  --md-sys-color-surface: #111b19;
+  --md-sys-color-on-surface: #e7f2f1;
+  --md-sys-color-on-surface-variant: #a9beba;
+  --md-sys-color-outline: rgba(231, 242, 241, 0.2);
+  --md-sys-color-outline-variant: rgba(231, 242, 241, 0.16);
+  --md-sys-color-surface-container-lowest: #0c1412;
+  --md-sys-color-surface-container-low: #1a2523;
+  --md-sys-color-surface-container: #1c2725;
+  --md-sys-color-surface-container-high: #21302d;
+  --md-sys-color-surface-container-highest: #273a36;
 
-  --card: #182421;
-  --card-foreground: #e7f2f1;
-
-  --popover: #182421;
-  --popover-foreground: #e7f2f1;
-
-  --primary: #48cfc0;
-  --primary-foreground: #041514;
-
-  --secondary: #1c2725;
-  --secondary-foreground: #e7f2f1;
-
-  --muted: #1a2523;
-  --muted-foreground: #a9beba;
-
-  --accent: #1f342f;
-  --accent-foreground: #dff7f2;
-
-  --destructive: #ff6f73;
-
-  --border: rgba(231, 242, 241, 0.16);
-  --input: rgba(231, 242, 241, 0.2);
-  --ring: #48cfc0;
-
+  /* Legacy chart colors for dark */
   --chart-1: #4c8dff;
   --chart-2: #37c598;
   --chart-3: #edc94f;
   --chart-4: #ff6f73;
   --chart-5: #3fc2b2;
-
-  --sidebar: #121d1b;
-  --sidebar-foreground: #e7f2f1;
-
-  --sidebar-primary: #48cfc0;
-  --sidebar-primary-foreground: #041514;
-
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-
-  --sidebar-border: rgba(231, 242, 241, 0.14);
-  --sidebar-ring: #48cfc0;
 }
 
 @layer base {

@@ -2,7 +2,7 @@
   <div id="my-recipes-container" class="space-y-6 m-6">
     <PageTitle header="My Recipes" description="Recipes you have created">
       <template #controls>
-        <Button size="lg" @click="router.push({ name: ROUTE_NAMES.RECIPES_CREATE })">
+        <Button @click="router.push({ name: ROUTE_NAMES.RECIPES_CREATE })">
           <Plus />
           <span class="hidden md:inline">Add a recipe</span>
         </Button>

@@ -5,20 +5,27 @@
         <Button
           v-if="recipe"
           :variant="recipe.is_favorite ? 'outline' : 'default'"
-          size="lg"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
           :aria-label="!recipe.is_favorite ? 'Add to favorites' : 'Remove from favorites'"
           @click="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
-          ><Star v-bind="starProps" :class="{ 'text-transparent': recipe?.is_favorite }" />
+        >
+          <Star :class="recipe.is_favorite ? 'fill-primary text-transparent' : ''" />
           <span class="hidden md:inline"
             >{{ !recipe.is_favorite ? 'Add to' : 'Remove from' }} favorites
           </span></Button
         >
-        <Button variant="outline" size="lg" aria-label="Edit recipe"
+        <Button
+          variant="outline"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
+          aria-label="Edit recipe"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
         <Button
           variant="destructiveOutline"
-          size="lg"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Delete recipe"
           :disabled="!recipe"
           @click="openDelete(recipe)"
@@ -62,14 +69,6 @@ import RecipeDeleteDialog from '@/features/recipe/components/RecipeDeleteDialog.
 const route = useRoute();
 
 const description = computed(() => (recipe.value?.author ? `By ${recipe.value?.author}` : ''));
-const starProps = computed(() =>
-  recipe.value?.is_favorite
-    ? {
-        fill: 'var(--primary)',
-        'stroke-width': 0,
-      }
-    : {},
-);
 
 const {
   data: recipe,

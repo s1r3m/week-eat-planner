@@ -6,11 +6,11 @@ export const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 /** Cookie expiration time (7 days). */
 export const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 /** Default sidebar width when expanded. */
-export const SIDEBAR_WIDTH = '16rem';
+export const SIDEBAR_WIDTH = '18rem';
 /** Sidebar width on mobile devices. */
 export const SIDEBAR_WIDTH_MOBILE = '18rem';
 /** Sidebar width when collapsed. */
-export const SIDEBAR_WIDTH_ICON = '3rem';
+export const SIDEBAR_WIDTH_ICON = '4rem';
 /** Keyboard shortcut to toggle sidebar. */
 export const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 

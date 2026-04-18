@@ -1,8 +1,10 @@
 <template>
   <Card class="mx-6 max-w-lg lg:max-w-xl sm:mx-auto my-12">
     <CardHeader>
-      <CardTitle class="text-brand-primary text-center text-2xl">{{ title }}</CardTitle>
-      <CardDescription class="text-center"> {{ description }} </CardDescription>
+      <CardTitle class="text-primary text-center text-headline-sm">{{ title }}</CardTitle>
+      <CardDescription class="text-center text-body-md text-on-surface-variant">
+        {{ description }}
+      </CardDescription>
     </CardHeader>
 
     <CardContent>

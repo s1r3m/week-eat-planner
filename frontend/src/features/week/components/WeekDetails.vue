@@ -11,8 +11,8 @@
         class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
       />
     </div>
-    <div class="flex h-16 bg-muted p-3 items-center">
-      <h2 class="text-lg font-semibold">
+    <div class="flex h-16 bg-surface-container p-3 items-center">
+      <h2 class="text-title-lg font-semibold">
         {{ week.name }}
       </h2>
     </div>

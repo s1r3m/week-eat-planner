@@ -86,8 +86,8 @@ describe('RecipePreviewCard', () => {
     const starComp = wrapper.findComponent(Star);
 
     // Initially not favorite
-    // Some environments might have a default fill, so we check it's not the primary color
-    expect(starComp.attributes('fill')).not.toBe('var(--primary)');
+    expect(starComp.classes()).toContain('text-on-surface-variant');
+    expect(starComp.classes()).not.toContain('fill-primary');
 
     // Toggle to favorite
     const clickEvent = { stopPropagation: vi.fn() };
@@ -97,7 +97,18 @@ describe('RecipePreviewCard', () => {
 
     // Update prop to see visual change
     await wrapper.setProps({ recipe: { ...recipe, is_favorite: true } });
-    expect(starComp.attributes('fill')).toBe('var(--primary)');
+    expect(starComp.classes()).toContain('fill-primary');
+    expect(starComp.classes()).toContain('text-primary');
+  });
+
+  it('does not render router-link when isAssign is true', () => {
+    const wrapper = mountComponent({ isAssign: true });
+    expect(wrapper.find('a').exists()).toBe(false);
+  });
+
+  it('renders router-link when isAssign is false', () => {
+    const wrapper = mountComponent({ isAssign: false });
+    expect(wrapper.find('a').exists()).toBe(true);
   });
 
   it('adds specific class when recipe id starts with temp-id', () => {

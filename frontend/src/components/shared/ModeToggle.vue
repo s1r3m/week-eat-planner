@@ -34,7 +34,7 @@ defineExpose({
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button id="color-mode-toggle" variant="ghost">
+      <Button id="color-mode-toggle" variant="ghost" size="icon">
         <MoonIcon class="size-6 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         <SunIcon
           class="absolute size-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"

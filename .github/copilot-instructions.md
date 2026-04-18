@@ -5,22 +5,67 @@
 - **Backend**: Python 3.11. Uses `ruff` for linting and formatting (line length 120) and `mypy` for static type checking.
 - **Frontend**: Vue 3 with TypeScript, using the Composition API (`<script setup>`). Uses `eslint` and `prettier` for linting and formatting.
 
+## Commands
+
+All common tasks are run via `make` from the project root.
+
+### Backend
+
+```bash
+make install          # Install Python deps (uses uv into .venv_python3.11)
+make start            # Start backend at :8000 (stops containers, runs migrations, starts MinIO)
+make be_lint          # ruff check + ruff format --diff + mypy
+make be_style         # ruff check --fix + ruff format (auto-fix)
+make be_test          # pytest with 100% coverage requirement
+make migrations       # Apply alembic migrations
+make run_db           # Start PostgreSQL via docker-compose
+make stop             # docker-compose down --volumes --remove-orphans
+```
+
+### Frontend
+
+```bash
+make fe_install       # yarn install
+make fe_start         # Vite dev server at :3000
+make fe_lint          # eslint + prettier check
+make fe_style         # prettier format + eslint --fix
+make fe_test          # vitest with coverage
+```
+
+### Running a single test
+
+```bash
+# Backend — pass pytest args via the shell
+cd backend && coverage run -m pytest tests/path/to/test_file.py::TestClass::test_method -v
+
+# Frontend
+cd frontend && yarn vitest run src/path/to/component.spec.ts
+```
+
 ## Architecture
 
-- **Backend**: FastAPI web framework, `sqlalchemy[asyncio]` (v2.0) with `asyncpg` for PostgreSQL database access, `alembic` for database migrations, and `pydantic` (v2) for schemas.
-- **Frontend**: Vite-powered Vue 3 app, `pinia` (with `pinia-plugin-persistedstate`) for state management, `vue-router` for routing, and Tailwind CSS v4 for styling. Uses `reka-ui` and `lucide-vue-next`.
-- **Project Structure**: Monorepo with `backend/` (FastAPI), `frontend/` (Vue.js), and `qa/` (testing infrastructure). `docker-compose.yml` provides DB and services.
+**Monorepo**: `backend/` (FastAPI), `frontend/` (Vue 3), `qa/` (integration tests), `docker-compose.yml` (PostgreSQL + MinIO).
 
-## Build and Test
+### Backend (`backend/week_eat_planner/`)
 
-The project heavily relies on the `Makefile` at the root for common tasks.
+- **FastAPI** app with modular routers in `api/` (auth, recipe, user, week, monitoring)
+- **SQLAlchemy 2.0 async** (asyncpg) with models in `db/models/`; sessions via `db/session_maker.py`
+- **Alembic** migrations in `alembic/`
+- **Pydantic v2** schemas in `api/schemas/` per domain
+- **Auth**: JWT + HTTP-only cookie refresh tokens; `security/token_provider.py`; injected via `get_current_active_user()` dependency
+- **MinIO** (S3-compatible) for image storage via boto3
+- Backend tests in `tests/`, structured to mirror `api/`; 100% coverage enforced
 
-- **Install**: Run `make install` (uses `uv` for Python) and `make fe_install` (uses `yarn`).
-- **Start**: Run `make start` to run backend (starts DB via docker implicitly), and `make fe_start` for frontend.
-- **Lint & Format**: Run `make lint` / `make style` for backend, and `make fe_lint` / `make fe_style` for frontend.
-- **Tests**:
-  - Backend: `make be_test` (runs `pytest` with coverage).
-  - Frontend: `make fe_test` (runs `vitest`).
+### Frontend (`frontend/src/`)
+
+- **Vue 3** with `<script setup>` (Composition API), **TypeScript strict**
+- **@pinia/colada** for all server state: queries via `defineQueryOptions()` + `useQuery()`, mutations via `defineMutation()` + `useMutation()` with optimistic updates and cache invalidation
+- Cache key convention: hierarchical arrays, e.g. `['weeks', 'list']`, `['weeks', 'detail', id]` — see `api/weeks.ts` for the canonical pattern
+- **Feature-based structure**: `features/<domain>/components/` + `features/<domain>/composables/`; pages in `pages/`; shared UI in `components/`
+- **Axios** client at `api/client.ts` wraps all HTTP calls
+- **Tailwind CSS v4** + `reka-ui` component primitives + `lucide-vue-next` icons
+- **vue-i18n** for internationalization
+- Tests colocated in `__tests__/` directories alongside source files; run with Vitest + Vue Test Utils
 
 ## Conventions
 

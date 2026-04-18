@@ -12,30 +12,34 @@
       />
     </div>
     <div class="flex flex-col bg-muted p-3">
-      <h2 class="text-lg">
+      <h2 class="text-lg truncate">
         {{ recipe.name }}
       </h2>
-      <p class="text-muted-foreground text-sm">{{ recipe.author }}</p>
+      <p class="text-muted-foreground text-sm truncate">{{ recipe.author }}</p>
     </div>
     <router-link
+      v-if="!isAssign"
       :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
       class="absolute inset-0 z-10"
     ></router-link>
     <div class="flex gap-3 absolute right-2 top-2 z-20 pointer-events-auto">
       <Button
         variant="secondary"
+        size="icon-sm"
         class="rounded-full"
         :aria-label="recipe.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
         @click.stop="toggle({ id: recipe.id, is_favorite: recipe.is_favorite })"
       >
-        <Star v-bind="starProps" />
+        <Star
+          class="size-4"
+          :class="recipe.is_favorite ? 'fill-primary text-primary' : 'text-on-surface-variant'"
+        />
       </Button>
     </div>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useMutation } from '@pinia/colada';
 import { toggleFavoriteMutation } from '@/api/recipes';
 import type { RecipePreview } from '@/api/recipes';
@@ -45,16 +49,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-vue-next';
 
-const props = defineProps<{ recipe: RecipePreview }>();
+defineProps<{ recipe: RecipePreview; isAssign?: boolean }>();
 const { mutate: toggle } = useMutation(toggleFavoriteMutation());
-const starProps = computed(() => {
-  return props.recipe.is_favorite
-    ? {
-        fill: 'var(--primary)',
-        strokeWidth: 0,
-      }
-    : {};
-});
 
 const defaultImg = new URL('@/assets/recipe_bg.png', import.meta.url).href;
 </script>

@@ -4,9 +4,9 @@
     :is-active="isActiveLink(item)"
     as-child
   >
-    <router-link :to="item.to" @click="handleNavigation">
-      <component :is="item.icon" v-if="item.icon" />
-      <span> {{ item.label }} </span>
+    <router-link :to="item.to" :aria-label="item.label" @click="handleNavigation">
+      <component :is="item.icon" v-if="item.icon" class="size-6" />
+      <span class="group-data-[collapsible=icon]:sr-only"> {{ item.label }} </span>
     </router-link>
   </component>
 </template>

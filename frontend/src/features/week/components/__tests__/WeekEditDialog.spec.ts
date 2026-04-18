@@ -99,13 +99,12 @@ describe('WeekEditDialog', () => {
     });
 
     const formDialog = wrapper.findComponent(WeekFormDialog);
-    await formDialog.vm.$emit('submit', 'New Name');
+    // Trigger submit twice without waiting for nextTick to cover the null check in onEdit
+    formDialog.vm.$emit('submit', 'New Name');
+    formDialog.vm.$emit('submit', 'Another Name');
+
     expect(mockMutate).toHaveBeenCalledTimes(1);
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-
-    // Call it again - week should be null now because onEdit sets week.value = null
-    await formDialog.vm.$emit('submit', 'Another Name');
-    expect(mockMutate).toHaveBeenCalledTimes(1); // Should not have been called again
   });
 
   it('passes isLoading state to WeekFormDialog', async () => {

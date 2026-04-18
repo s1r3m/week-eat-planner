@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import UserIdentity from '../UserIdentity.vue';
-import type { UserInfo } from '@/domain/auth/models';
+import type { UserData } from '@/api/auth';
 
 describe('UserIdentity', () => {
-  const user: UserInfo = {
+  const user: UserData = {
     email: 'test@email.com',
     user_id: 'testId',
     is_active: true,

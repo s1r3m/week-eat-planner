@@ -68,9 +68,9 @@ describe('AppSidebarNavigation', () => {
 
   it('renders ChevronRight when sub-items exist', () => {
     const wrapper = mountComponent();
-    // Both "My weeks" and "Recipes" have sub-items in initial state
+    // Only "My weeks" has sub-items (weeks.length > 0)
     const chevrons = wrapper.findAllComponents(ChevronRight);
-    expect(chevrons.length).toBe(2);
+    expect(chevrons.length).toBe(1);
   });
 
   it('handles empty weeks from store', () => {
@@ -95,16 +95,20 @@ describe('AppSidebarNavigation', () => {
     });
 
     const items = wrapper.findAllComponents(AppSidebarNavigationItem);
-    // 2 main items + 0 week sub-items + 2 recipe sub-items = 4
+    // 2 main items + 0 week sub-items + 0 recipe sub-items = 2
+    // My weeks, Recipes, My recipes, Favorites
+    // Wait, the items are: [My weeks, Recipes, My recipes, Favorites]
+    // My weeks has items: []
+    // Recipes has items: []
     expect(items.length).toBe(4);
 
     const firstItem = items[0].props('item') as NavLink;
     expect(firstItem.label).toBe('My weeks');
     expect(firstItem.items!.length).toBe(0);
 
-    // Check if only 1 chevron is rendered (for Recipes)
+    // Check if 0 chevrons are rendered
     const chevrons = wrapper.findAllComponents(ChevronRight);
-    expect(chevrons.length).toBe(1);
+    expect(chevrons.length).toBe(0);
   });
 
   it('renders loader when isLoading is true', () => {

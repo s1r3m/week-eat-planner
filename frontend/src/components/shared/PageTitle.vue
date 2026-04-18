@@ -1,11 +1,11 @@
 <template>
   <div class="flex items-center justify-between">
     <div>
-      <h1 id="page-title" class="text-2xl font-semibold tracking-tight text-primary">
+      <h1 id="page-title" class="text-headline-md font-semibold tracking-tight text-primary">
         <Spinner v-if="!header" />
         {{ header ? header : 'Loading...' }}
       </h1>
-      <p v-if="description" id="page-description" class="text-muted-foreground mt-xs">
+      <p v-if="description" id="page-description" class="text-body-md text-on-surface-variant mt-1">
         {{ description }}
       </p>
     </div>
