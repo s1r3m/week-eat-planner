@@ -16,7 +16,7 @@ const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedState);
 
-const handleGlobalError = (error: unknown) => {
+export const handleGlobalError = (error: unknown) => {
   if (!axios.isAxiosError(error)) {
     toast.error(error instanceof Error ? error.message : 'An error occurred');
     return;

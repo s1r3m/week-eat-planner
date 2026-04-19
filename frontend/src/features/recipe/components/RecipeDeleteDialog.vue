@@ -32,7 +32,6 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
-import { toast } from 'vue-sonner';
 import { deleteRecipeMutation } from '@/api/recipes';
 import type { RecipePreview } from '@/api/recipes';
 
@@ -61,10 +60,8 @@ const { mutate: remove, isLoading } = useMutation(deleteRecipeMutation());
 const router = useRouter();
 const onDelete = () => {
   if (!recipe.value) return;
-  const recipeName = recipe.value.name;
   remove(recipe.value.id);
   recipe.value = null;
-  toast.success(`Recipe "${recipeName}" deleted`);
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 </script>

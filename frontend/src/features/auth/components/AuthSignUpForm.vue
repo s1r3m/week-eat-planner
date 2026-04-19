@@ -53,7 +53,7 @@ type FormValues = zod.infer<typeof schema>;
 
 const router = useRouter();
 
-const { handleSubmit, errors, meta } = useForm({
+const { handleSubmit, errors, meta, setFieldError } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     email: '',
@@ -71,8 +71,9 @@ const { mutateAsync: login, error: loginError } = useMutation(loginMutation());
 
 const onSubmit = handleSubmit(async (values: FormValues) => {
   await signup(values);
-  errors.value.email = error.value?.message;
-  if (!error.value) {
+  if (error.value) {
+    setFieldError('email', error.value.message);
+  } else {
     toast.success('Account created! Logging you in...');
     const params = new URLSearchParams({ username: values.email, password: values.password });
     await login(params);

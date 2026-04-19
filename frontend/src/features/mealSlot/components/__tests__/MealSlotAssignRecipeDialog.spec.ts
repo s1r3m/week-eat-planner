@@ -70,6 +70,10 @@ describe('MealSlotAssignRecipeDialog', () => {
       TabsList: { template: '<div><slot /></div>' },
       TabsTrigger: { template: '<div><slot /></div>' },
       TabsContent: { template: '<div><slot /></div>' },
+      Button: {
+        template: '<button :disabled="disabled"><slot /></button>',
+        props: ['disabled'],
+      },
       RecipeSelectCard: {
         template:
           '<div class="recipe-card" @click="$emit(\'select\', recipe)">{{ recipe.name }}</div>',
@@ -213,6 +217,102 @@ describe('MealSlotAssignRecipeDialog', () => {
     expect(wrapper.findAllComponents(TheLoadingPageState).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('renders error state and handles retry for favorites', async () => {
+    const mockRefetch = vi.fn();
+    (useQuery as any).mockImplementation((options: any) => {
+      const isFavorites = (useQuery as any).mock.calls.length % 2 === 1;
+      return {
+        data: ref(null),
+        isLoading: ref(false),
+        error: ref(isFavorites ? new Error('Fav error') : null),
+        refetch: mockRefetch,
+      };
+    });
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: {
+        ...globalMountOptions,
+        stubs: {
+          ...globalMountOptions.stubs,
+          ErrorRetryCard: {
+            template: '<div class="error-retry" @click="retry">Retry</div>',
+            props: ['error', 'retry'],
+          },
+        },
+      },
+    });
+
+    await nextTick();
+    const retryBtn = wrapper.find('.error-retry');
+    expect(retryBtn.exists()).toBe(true);
+    await retryBtn.trigger('click');
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('renders error state for my-recipes', async () => {
+    (useQuery as any).mockImplementation((options: any) => {
+      const isMyRecipes = (useQuery as any).mock.calls.length % 2 === 0;
+      return {
+        data: ref(null),
+        isLoading: ref(false),
+        error: ref(isMyRecipes ? new Error('MyRecipes error') : null),
+      };
+    });
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: {
+        ...globalMountOptions,
+        stubs: {
+          ...globalMountOptions.stubs,
+          ErrorRetryCard: {
+            template: '<div class="error-retry">Retry</div>',
+            props: ['error', 'retry'],
+          },
+        },
+      },
+    });
+
+    await nextTick();
+    expect(wrapper.findAll('.error-retry').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('disables assign button if no recipe is selected', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    await nextTick();
+    const assignBtn = wrapper.findAll('button').find((b) => b.text().includes('Assign'));
+    expect(assignBtn?.attributes('disabled')).toBeDefined();
+  });
+
+  it('disables assign button if selected recipe is same as current', async () => {
+    const mealSlotWithRecipe: MealSlot = { ...mealSlotData, recipe: mockRecipe };
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotWithRecipe,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    await nextTick();
+    const assignBtn = wrapper.findAll('button').find((b) => b.text().includes('Assign'));
+    expect(assignBtn?.attributes('disabled')).toBeDefined();
+  });
+
   it('handles dialog close by setting mealSlot to null', async () => {
     const wrapper = mount(MealSlotAssignRecipeDialog, {
       props: {
@@ -231,6 +331,21 @@ describe('MealSlotAssignRecipeDialog', () => {
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
+  });
+
+  it('does nothing when isOpen is set to true (coverage)', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    const dialog = wrapper.findComponent({ name: 'Dialog' });
+    await dialog.vm.$emit('update:open', true);
+
+    expect(wrapper.emitted('update:modelValue')).toBeFalsy();
   });
 
   it('handles null selectedRecipe in onAssign (coverage)', async () => {

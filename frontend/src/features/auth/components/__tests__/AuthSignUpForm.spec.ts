@@ -117,4 +117,61 @@ describe('AuthSignUpForm', () => {
     expect(wrapper.find('.spinner').exists()).toBe(true);
     expect(wrapper.find('button[type="submit"]').text()).toBe('Signing up...');
   });
+
+  it('shows error message when signup fails', async () => {
+    const signupMutate = vi.fn().mockResolvedValue(undefined);
+
+    (useMutation as any).mockReturnValue({
+      mutateAsync: signupMutate,
+      isLoading: ref(false),
+      error: ref({ message: 'Signup failed' }),
+    });
+
+    const wrapper = mountComponent();
+
+    await wrapper.find('input[type="email"]').setValue('error@example.com');
+    await wrapper.find('input#username').setValue('user');
+    await wrapper.find('input[type="password"]').setValue('password123');
+
+    // @ts-ignore
+    await wrapper.vm.onSubmit();
+    await flushPromises();
+
+    expect(signupMutate).toHaveBeenCalled();
+    // We check for the error message in the text instead of spying on the internal function
+    expect(wrapper.text()).toContain('Signup failed');
+  });
+
+  it('shows error when login fails after successful signup', async () => {
+    const signupMutate = vi.fn().mockResolvedValue({ email: 'new@example.com' });
+    const loginMutate = vi.fn().mockResolvedValue(undefined);
+    const pushSpy = vi.spyOn(router, 'push');
+
+    let mutationCounter = 0;
+    (useMutation as any).mockImplementation(() => {
+      mutationCounter++;
+      if (mutationCounter === 1) {
+        return { mutateAsync: signupMutate, isLoading: ref(false), error: ref(null) };
+      }
+      return {
+        mutateAsync: loginMutate,
+        isLoading: ref(false),
+        error: ref({ message: 'Login failed' }),
+      };
+    });
+
+    const wrapper = mountComponent();
+
+    await wrapper.find('input[type="email"]').setValue('new@example.com');
+    await wrapper.find('input#username').setValue('newuser');
+    await wrapper.find('input[type="password"]').setValue('password123');
+
+    // @ts-ignore
+    await wrapper.vm.onSubmit();
+    await flushPromises();
+
+    expect(signupMutate).toHaveBeenCalled();
+    expect(loginMutate).toHaveBeenCalled();
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
 });

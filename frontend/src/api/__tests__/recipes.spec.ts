@@ -13,6 +13,7 @@ import {
   toggleFavoriteMutation,
   getFavoritesQuery,
 } from '../recipes';
+import { toast } from 'vue-sonner';
 
 vi.mock('@pinia/colada', () => {
   return {
@@ -21,6 +22,13 @@ vi.mock('@pinia/colada', () => {
     useQueryCache: vi.fn(),
   };
 });
+
+vi.mock('vue-sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 describe('recipes api', () => {
   let mockApi: MockAdapter;
@@ -148,6 +156,10 @@ describe('recipes api', () => {
       const onSuccess = (addRecipeMutation() as any).onSuccess;
       onSuccess(mockData);
 
+      const deleteOnSuccess = (deleteRecipeMutation() as any).onSuccess;
+      deleteOnSuccess();
+      expect(toast.success).toHaveBeenCalledWith('Recipe was deleted successfully');
+
       const onSettled = (addRecipeMutation() as any).onSettled;
       onSettled();
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
@@ -197,6 +209,15 @@ describe('recipes api', () => {
       onSettled();
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
     });
+
+    it('should handle onError for image upload', () => {
+      const onError = (addImageMutation() as any).onError;
+      const error = new Error('upload failed');
+
+      onError(error, { id: '1', image: {} as File });
+
+      expect(toast.error).toHaveBeenCalledWith('Upload has failed: upload failed');
+    });
   });
 
   describe('deleteRecipeMutation', () => {
@@ -235,15 +256,20 @@ describe('recipes api', () => {
 
       mutationObj.onError(new Error('fail'), id, context);
       expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
 
       // Test missing context in onError
+      vi.mocked(toast.error).mockClear();
       vi.mocked(queryCache.setQueryData).mockClear();
       mutationObj.onError(new Error('fail'), id, undefined);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       // Test context without previousRecipes
+      vi.mocked(toast.error).mockClear();
       vi.mocked(queryCache.setQueryData).mockClear();
       mutationObj.onError(new Error('fail'), id, {} as any);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       mutationObj.onSettled(null, undefined, id, context);
