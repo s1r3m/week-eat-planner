@@ -4,8 +4,8 @@ import { apiClient } from '../client';
 import { useQueryCache } from '@pinia/colada';
 
 vi.mock('@pinia/colada', () => ({
-  defineMutation: vi.fn((fn) => fn),
-  defineQueryOptions: vi.fn((fn) => fn),
+  defineMutation: vi.fn((fn: any) => fn),
+  defineQueryOptions: vi.fn((fn: any) => fn),
   useQueryCache: vi.fn(),
 }));
 
@@ -39,7 +39,7 @@ describe('mealSlots API', () => {
       (apiClient.patch as any).mockResolvedValue({ data: mockData });
 
       const mutation = assignRecipeMutation();
-      const result = await mutation.mutation(vars);
+      const result = await (mutation as any).mutation(vars);
 
       expect(apiClient.patch).toHaveBeenCalledWith('/weeks/week-1/slots', [
         { slot_id: 'slot-1', recipe_id: 'recipe-1' },
@@ -113,19 +113,6 @@ describe('mealSlots API', () => {
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
         key: ['weeks', 'detail', 'week-1'],
       });
-    });
-
-    it('logs success on onSuccess', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      const mutation = assignRecipeMutation();
-      const res = [
-        { day_of_week: 'MONDAY', meal_type: 'LUNCH', recipe: { id: 'recipe-1' } },
-      ] as any;
-
-      mutation.onSuccess(res, { weekId: 'w', slots: [] });
-
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
     });
   });
 });

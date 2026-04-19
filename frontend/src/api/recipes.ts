@@ -132,7 +132,6 @@ export const addRecipeMutation = defineMutation(() => {
       _payload: RecipePayload,
       _context?: { previousRecipes?: RecipePreview[] },
     ) => {
-      console.debug(`Recipe ${created.id} has been created`);
       return created;
     },
     onError: (
@@ -140,7 +139,6 @@ export const addRecipeMutation = defineMutation(() => {
       payload: RecipePayload,
       context?: { previousRecipes?: RecipePreview[] },
     ) => {
-      console.error(`An error has occurred during creation of ${payload.name}: `, err);
       if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
@@ -164,14 +162,12 @@ export const addImageMutation = defineMutation(() => {
         .then((res) => res.data);
     },
     onSuccess: (data: RecipePreview) => {
-      console.debug('Image uploaded successfully');
       queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) =>
         old.map((recipe: RecipePreview) =>
           recipe.id === data.id ? { ...recipe, ...data } : recipe,
         ),
       );
     },
-    onError: (err: Error) => console.debug('Image upload failed: ', err),
     onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
   };
 });
@@ -193,11 +189,7 @@ export const deleteRecipeMutation = defineMutation(() => {
       );
       return { previousRecipes };
     },
-    onSuccess: (_: undefined, id: string, _context?: { previousRecipes?: RecipePreview[] }) => {
-      console.debug(`The recipe ${id} has been deleted`);
-    },
     onError: (err: Error, id: string, context?: { previousRecipes?: RecipePreview[] }) => {
-      console.error(`An error has occurred during deletion of recipe ${id}: `, err);
       if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
@@ -270,7 +262,6 @@ export const toggleFavoriteMutation = defineMutation(() => {
       _payload: FavoritePayload,
       context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
-      console.error('An error occurred during the update: ', err);
       context?.previousState?.forEach((data, key) => queryCache.setQueryData(key, data));
     },
     onSuccess: (

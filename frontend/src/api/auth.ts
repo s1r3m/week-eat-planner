@@ -71,7 +71,6 @@ export const loginMutation = defineMutation(() => {
       accessToken.value = data.access_token;
       queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
     },
-    onError: () => console.error('Login failed'),
   };
 });
 
@@ -82,8 +81,6 @@ export const signupMutation = defineMutation(() => {
   return {
     mutation: (payload: SignUpPayload) =>
       apiClient.post<UserData>('/auth/signup', payload).then((res) => res.data),
-    onSuccess: () => console.debug('SignUp successful'),
-    onError: (err: Error) => console.error('SignUp failed: ', err),
   };
 });
 
@@ -96,11 +93,9 @@ export const logoutMutation = defineMutation(() => {
   return {
     mutation: () => apiClient.post<void>('/auth/logout').then(() => undefined),
     onSuccess: () => {
-      console.debug('Logout successful');
       accessToken.value = null;
     },
     onError: (err: Error) => {
-      console.error('Logout failed: ', err);
       accessToken.value = null;
     },
     onSettled: () => {
@@ -140,7 +135,6 @@ export const initAuth = async () => {
   try {
     await refreshToken();
   } catch (err: unknown) {
-    console.error('Auth initialization failed:', err);
     accessToken.value = null;
   }
 };

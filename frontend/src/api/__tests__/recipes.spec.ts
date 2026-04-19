@@ -50,7 +50,8 @@ describe('recipes api', () => {
       mockApi.onGet('/recipes/my_recipes').reply(200, mockData);
 
       const options = getMyRecipesQuery();
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -69,7 +70,8 @@ describe('recipes api', () => {
       mockApi.onGet(`/recipes/${id}`).reply(200, mockData);
 
       const options = getRecipeQuery(id);
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -195,14 +197,6 @@ describe('recipes api', () => {
       onSettled();
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
     });
-
-    it('should handle onError', () => {
-      const onError = (addImageMutation() as any).onError;
-
-      onError(new Error('fail'));
-
-      expect(console.debug).toHaveBeenCalledWith('Image upload failed: ', expect.any(Error));
-    });
   });
 
   describe('deleteRecipeMutation', () => {
@@ -238,8 +232,6 @@ describe('recipes api', () => {
       expect(contextEmpty.previousRecipes).toEqual([]);
 
       expect(context).toEqual({ previousRecipes });
-
-      mutationObj.onSuccess(null, id, context);
 
       mutationObj.onError(new Error('fail'), id, context);
       expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
@@ -387,7 +379,8 @@ describe('recipes api', () => {
       mockApi.onGet('/recipes/favorites').reply(200, mockData);
 
       const options = getFavoritesQuery();
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });

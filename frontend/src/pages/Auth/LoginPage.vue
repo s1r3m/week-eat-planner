@@ -78,6 +78,7 @@ import { Input } from '@/components/ui/input';
 
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
+import { toast } from 'vue-sonner';
 import { isAuthenticated, loginMutation } from '@/api/auth';
 
 const router = useRouter();
@@ -95,6 +96,7 @@ const handleLogin = async () => {
   const params = new URLSearchParams({ username: email.value, password: password.value });
   await login(params);
   if (!error.value) {
+    toast.success('Logged in successfully');
     await router.push((route.query.redirect as string) || { name: ROUTE_NAMES.WEEKS });
   }
 };

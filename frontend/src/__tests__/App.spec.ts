@@ -8,6 +8,7 @@ describe('App', () => {
       global: {
         stubs: {
           AppShell: { template: '<div class="app"> app </div>' },
+          Toaster: { template: '<div class="toaster"> toaster </div>' },
         },
       },
     });

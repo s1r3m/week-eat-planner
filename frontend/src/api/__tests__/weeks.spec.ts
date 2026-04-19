@@ -58,7 +58,8 @@ describe('weeks api', () => {
       mockApi.onGet('/weeks').reply(200, mockData);
 
       const options = getWeeksQuery();
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -77,7 +78,8 @@ describe('weeks api', () => {
       mockApi.onGet(`/weeks/${id}`).reply(200, mockData);
 
       const options = getWeekQuery(id);
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -117,21 +119,13 @@ describe('weeks api', () => {
       expect(updated[1]).toMatchObject({ ...payload, isPending: true });
     });
 
-    it('should log success in onSuccess', () => {
-      const mutation = addWeekMutation();
-      const newWeek = { id: '123', name: 'Test', user_id: 'u1' };
-      mutation.onSuccess(newWeek, payload, {});
-      expect(console.debug).toHaveBeenCalledWith('Week 123 has been created!');
-    });
-
     it('should handle error and restore cache in onError', () => {
       const mutation = addWeekMutation();
       const error = new Error('Failed');
       const context = { previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }] };
 
-      mutation.onError(error, payload, context);
+      (mutation as any).onError(error, payload, context);
 
-      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         WEEK_KEYS.all(),
         context.previousWeeks,
@@ -142,9 +136,8 @@ describe('weeks api', () => {
       const mutation = addWeekMutation();
       const error = new Error('Failed');
 
-      mutation.onError(error, payload, {});
+      (mutation as any).onError(error, payload, {});
 
-      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
     });
 
@@ -215,12 +208,6 @@ describe('weeks api', () => {
       expect(context).toEqual({ previous: previousWeek, previousWeeks });
     });
 
-    it('should log success in onSuccess', () => {
-      const mutation = editWeekMutation();
-      mutation.onSuccess({ id: '1', name: 'U', user_id: '1' }, vars);
-      expect(console.debug).toHaveBeenCalledWith('A week 1 has been updated.');
-    });
-
     it('should restore cache on error in onError', () => {
       const mutation = editWeekMutation();
       const context = {
@@ -228,9 +215,8 @@ describe('weeks api', () => {
         previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }],
       };
 
-      mutation.onError(new Error('Fail'), vars, context);
+      (mutation as any).onError(new Error('Fail'), vars, context);
 
-      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         WEEK_KEYS.detail(vars.id),
         context.previous,
@@ -263,7 +249,7 @@ describe('weeks api', () => {
 
     it('should invalidate queries in onSettled', () => {
       const mutation = editWeekMutation();
-      mutation.onSettled(undefined as any, undefined, vars, {});
+      (mutation as any).onSettled(undefined, undefined, vars, {});
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
         key: WEEK_KEYS.detail(vars.id),
@@ -309,19 +295,12 @@ describe('weeks api', () => {
       expect(context).toEqual({ previousWeeks });
     });
 
-    it('should log success in onSuccess', () => {
-      const mutation = deleteWeekMutation();
-      mutation.onSuccess(undefined, id, {});
-      expect(console.debug).toHaveBeenCalledWith('Week 123 has been deleted');
-    });
-
     it('should restore cache on error in onError', () => {
       const mutation = deleteWeekMutation();
       const context = { previousWeeks: [{ id: '123', name: 'W', user_id: 'u' }] };
 
-      mutation.onError(new Error('Fail'), id, context);
+      (mutation as any).onError(new Error('Fail'), id, context);
 
-      expect(console.error).toHaveBeenCalled();
       expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
         WEEK_KEYS.all(),
         context.previousWeeks,
@@ -357,7 +336,7 @@ describe('weeks api', () => {
     it('should invalidate queries in onSettled', () => {
       const mutation = deleteWeekMutation();
 
-      mutation.onSettled(undefined, undefined, id, {});
+      (mutation as any).onSettled(undefined, undefined, id, {});
 
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.detail(id) });

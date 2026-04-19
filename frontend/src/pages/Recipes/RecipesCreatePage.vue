@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { useMutation } from '@pinia/colada';
 import { useRouter } from 'vue-router';
+import { toast } from 'vue-sonner';
 import { addImageMutation, addRecipeMutation } from '@/api/recipes';
 import type { RecipePayload } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
@@ -23,6 +24,7 @@ const { mutate: upload } = useMutation(addImageMutation());
 const onCreate = async (payload: RecipePayload, image: File | null) => {
   const createdRecipe = await create(payload);
   if (image) upload({ id: createdRecipe.id, image });
+  toast.success(`Recipe ${createdRecipe.name} created successfully`);
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 

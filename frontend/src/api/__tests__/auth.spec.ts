@@ -78,13 +78,6 @@ describe('auth api', () => {
       expect(accessToken.value).toBe('new-token');
       expect(cache.invalidateQueries).toHaveBeenCalled();
     });
-
-    it('logs error on error', () => {
-      const mutationConfig = loginMutation();
-      // @ts-ignore
-      mutationConfig.onError();
-      expect(console.error).toHaveBeenCalledWith('Login failed');
-    });
   });
 
   describe('signupMutation', () => {
@@ -97,18 +90,6 @@ describe('auth api', () => {
       // @ts-ignore
       const result = await mutationConfig.mutation(payload);
       expect(result).toEqual(user);
-    });
-
-    it('logs messages on success and error', () => {
-      const mutationConfig = signupMutation();
-      // @ts-ignore
-      mutationConfig.onSuccess();
-      expect(console.debug).toHaveBeenCalledWith('SignUp successful');
-
-      const error = new Error('fail');
-      // @ts-ignore
-      mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('SignUp failed: ', error);
     });
   });
 
@@ -139,7 +120,6 @@ describe('auth api', () => {
 
       // @ts-ignore
       mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('Logout failed: ', error);
       expect(accessToken.value).toBeNull();
     });
   });

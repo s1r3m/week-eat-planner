@@ -35,6 +35,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 
 import { useMutation } from '@pinia/colada';
+import { toast } from 'vue-sonner';
 import { loginMutation, signupMutation } from '@/api/auth';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
@@ -72,9 +73,13 @@ const onSubmit = handleSubmit(async (values: FormValues) => {
   await signup(values);
   errors.value.email = error.value?.message;
   if (!error.value) {
+    toast.success('Account created! Logging you in...');
     const params = new URLSearchParams({ username: values.email, password: values.password });
     await login(params);
-    if (!loginError.value) await router.push({ name: ROUTE_NAMES.WEEKS });
+    if (!loginError.value) {
+      toast.success('Logged in successfully');
+      await router.push({ name: ROUTE_NAMES.WEEKS });
+    }
   }
 });
 </script>
