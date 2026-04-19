@@ -19,11 +19,10 @@
         </Field>
       </FieldGroup>
 
-      <Button type="submit" class="w-full cursor-pointer" :disabled="disabled">
+      <Button type="submit" :disabled="disabled">
         <Spinner v-if="isLoading" />
         {{ isLoading ? 'Signing up...' : 'Sign up' }}
       </Button>
-      <FieldSeparator> Or </FieldSeparator>
     </FieldSet>
   </form>
 </template>
@@ -41,7 +40,7 @@ import { loginMutation, signupMutation } from '@/api/auth';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -74,6 +73,7 @@ const { mutateAsync: login, error: loginError } = useMutation(loginMutation());
 
 const onSubmit = handleSubmit(async (values: FormValues) => {
   await signup(values);
+  errors.value.email = error.value?.message;
   if (!error.value) {
     const params = new URLSearchParams({ username: values.email, password: values.password });
     await login(params);
