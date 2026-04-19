@@ -78,7 +78,7 @@ import { Input } from '@/components/ui/input';
 
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
-import { toast } from 'vue-sonner';
+import { toast } from '@/components/ui/sonner';
 import { isAuthenticated, loginMutation } from '@/api/auth';
 
 const router = useRouter();

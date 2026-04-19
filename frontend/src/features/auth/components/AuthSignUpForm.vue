@@ -35,7 +35,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 
 import { useMutation } from '@pinia/colada';
-import { toast } from 'vue-sonner';
+import { toast } from '@/components/ui/sonner';
 import { loginMutation, signupMutation } from '@/api/auth';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
