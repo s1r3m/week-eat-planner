@@ -19,7 +19,7 @@
         </Field>
       </FieldGroup>
 
-      <Button type="submit" :disabled="disabled">
+      <Button type="submit" :disabled="!meta.valid">
         <Spinner v-if="isLoading" />
         {{ isLoading ? 'Signing up...' : 'Sign up' }}
       </Button>
@@ -28,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useField, useForm } from 'vee-validate';
@@ -53,7 +52,7 @@ type FormValues = zod.infer<typeof schema>;
 
 const router = useRouter();
 
-const { handleSubmit, errors } = useForm({
+const { handleSubmit, errors, meta } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     email: '',
@@ -65,8 +64,6 @@ const { handleSubmit, errors } = useForm({
 const { value: email } = useField<FormValues['email']>('email');
 const { value: username } = useField<FormValues['username']>('username');
 const { value: password } = useField<FormValues['password']>('password');
-
-const disabled = computed(() => !email.value?.trim() || password.value?.trim().length < 8);
 
 const { mutateAsync: signup, isLoading, error } = useMutation(signupMutation());
 const { mutateAsync: login, error: loginError } = useMutation(loginMutation());
