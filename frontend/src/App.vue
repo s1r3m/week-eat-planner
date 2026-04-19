@@ -1,6 +1,6 @@
 <template>
   <AppShell />
-  <Toaster position="top-center" rich-colors close-button class="z-9999" />
+  <Toaster position="top-center" rich-colors class="z-9999" />
 </template>
 
 <script setup lang="ts">

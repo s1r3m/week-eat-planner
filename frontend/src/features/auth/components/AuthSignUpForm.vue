@@ -3,23 +3,25 @@
     <FieldSet>
       <FieldGroup>
         <Field>
-          <FieldLabel for="email"> Email <span>*</span> </FieldLabel>
+          <FieldLabel for="email"> Email </FieldLabel>
           <Input id="email" v-model="email" type="email" placeholder="your@email.com" />
-          <span>{{ errors.email }}</span>
+          <FieldError>{{ errors.email }}</FieldError>
         </Field>
         <Field>
           <FieldLabel for="username"> Username </FieldLabel>
           <Input id="username" v-model="username" type="text" placeholder="Your username" />
-          <span>{{ errors.username }}</span>
+          <FieldError>{{ errors.username }}</FieldError>
         </Field>
         <Field>
-          <FieldLabel for="password"> Password <span>*</span></FieldLabel>
+          <FieldLabel for="password"> Password </FieldLabel>
           <Input id="password" v-model="password" type="password" placeholder="Your password" />
-          <span>{{ errors.password }}</span>
+          <FieldError>{{ errors.password }}</FieldError>
         </Field>
       </FieldGroup>
 
-      <Button type="submit" :disabled="!meta.valid">
+      <FieldError v-if="error">{{ error.message }}</FieldError>
+
+      <Button type="submit" :disabled="!meta.valid || isLoading">
         <Spinner v-if="isLoading" />
         {{ isLoading ? 'Signing up...' : 'Sign up' }}
       </Button>
@@ -28,32 +30,26 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
 import { useField, useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 
 import { useMutation } from '@pinia/colada';
-import { toast } from '@/components/ui/sonner';
-import { loginMutation, signupMutation } from '@/api/auth';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { signupMutation } from '@/api/auth';
 
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 
 const schema = zod.object({
   email: zod.email().min(1, { message: 'This is required' }),
-  username: zod.string().optional(),
+  username: zod.string().min(1, { message: 'This is required' }),
   password: zod.string().min(1, { message: 'This is required' }).min(8, { message: 'Too short' }),
 });
 type FormValues = zod.infer<typeof schema>;
 
-const router = useRouter();
-
-const { handleSubmit, errors, meta, setFieldError } = useForm({
+const { handleSubmit, errors, meta } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     email: '',
@@ -67,26 +63,6 @@ const { value: username } = useField<FormValues['username']>('username');
 const { value: password } = useField<FormValues['password']>('password');
 
 const { mutateAsync: signup, isLoading, error } = useMutation(signupMutation());
-const { mutateAsync: login, error: loginError } = useMutation(loginMutation());
 
-const onSubmit = handleSubmit(async (values: FormValues) => {
-  await signup(values);
-  if (error.value) {
-    setFieldError('email', error.value.message);
-  } else {
-    toast.success('Account created! Logging you in...');
-    const params = new URLSearchParams({ username: values.email, password: values.password });
-    await login(params);
-    if (!loginError.value) {
-      toast.success('Logged in successfully');
-      await router.push({ name: ROUTE_NAMES.WEEKS });
-    }
-  }
-});
+const onSubmit = handleSubmit((values: FormValues) => signup(values));
 </script>
-
-<style scoped>
-span {
-  color: var(--color-destructive);
-}
-</style>

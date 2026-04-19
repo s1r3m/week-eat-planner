@@ -90,10 +90,21 @@ describe('mealSlots API', () => {
       const mutation = assignRecipeMutation();
       mutation.onMutate(vars);
 
-      const updater = mockQueryCache.setQueryData.mock.calls[0][1];
-      // Updated week is actually computed in assignRecipeMutation,
-      // but here we just check if setQueryData was called.
-      expect(mockQueryCache.setQueryData).toHaveBeenCalled();
+      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+        ['weeks', 'detail', 'week-1'],
+        expect.objectContaining({
+          week_days: expect.arrayContaining([
+            expect.objectContaining({
+              slots: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'slot-1',
+                  recipe: { id: 'r1' },
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      );
     });
 
     it('optimistically updates the cache onMutate with provided recipe', async () => {

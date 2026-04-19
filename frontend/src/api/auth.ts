@@ -1,6 +1,9 @@
 import { ref, computed } from 'vue';
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
 import { apiClient, authClient } from './client';
+import { useRouter } from 'vue-router';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { toast } from 'vue-sonner';
 
 /**
  * Publicly visible information about a user.
@@ -78,9 +81,14 @@ export const loginMutation = defineMutation(() => {
  * Mutation for registering a new user.
  */
 export const signupMutation = defineMutation(() => {
+  const router = useRouter();
   return {
     mutation: (payload: SignUpPayload) =>
       apiClient.post<UserData>('/auth/signup', payload).then((res) => res.data),
+    onSuccess: async () => {
+      toast.success('Registration complete!');
+      await router.push({ name: ROUTE_NAMES.LOGIN });
+    },
   };
 });
 

@@ -140,7 +140,7 @@ export const addRecipeMutation = defineMutation(() => {
       payload: RecipePayload,
       context?: { previousRecipes?: RecipePreview[] },
     ) => {
-      toast.error(`An error occurred during deletion of recipe ${payload.name}: ${err.message}`);
+      toast.error(`An error occurred while creating recipe ${payload.name}: ${err.message}`);
       if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
