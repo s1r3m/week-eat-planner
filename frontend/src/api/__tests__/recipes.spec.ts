@@ -156,10 +156,6 @@ describe('recipes api', () => {
       const onSuccess = (addRecipeMutation() as any).onSuccess;
       onSuccess(mockData);
 
-      const deleteOnSuccess = (deleteRecipeMutation() as any).onSuccess;
-      deleteOnSuccess();
-      expect(toast.success).toHaveBeenCalledWith('Recipe was deleted successfully');
-
       const onSettled = (addRecipeMutation() as any).onSettled;
       onSettled();
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
@@ -275,6 +271,12 @@ describe('recipes api', () => {
       mutationObj.onSettled(null, undefined, id, context);
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
+    });
+
+    it('should show success toast on successful deletion', () => {
+      const onSuccess = (deleteRecipeMutation() as any).onSuccess;
+      onSuccess();
+      expect(toast.success).toHaveBeenCalledWith('Recipe was deleted successfully');
     });
   });
 

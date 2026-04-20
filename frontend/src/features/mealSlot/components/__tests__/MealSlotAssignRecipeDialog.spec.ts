@@ -17,8 +17,8 @@ vi.mock('@pinia/colada', () => ({
 }));
 
 vi.mock('@/api/recipes', () => ({
-  getFavoritesQuery: vi.fn(),
-  getMyRecipesQuery: vi.fn(),
+  getFavoritesQuery: vi.fn(() => ({ key: ['recipes', 'favorites'] })),
+  getMyRecipesQuery: vi.fn(() => ({ key: ['recipes', 'mine'] })),
 }));
 
 vi.mock('@/api/mealSlots', () => ({
@@ -44,8 +44,9 @@ describe('MealSlotAssignRecipeDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useQuery as any).mockImplementation((query: any) => {
-      // Mocking different data for different queries if needed
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      // Default mock implementation
       return {
         data: ref([mockRecipe]),
         isLoading: ref(false),
@@ -169,10 +170,9 @@ describe('MealSlotAssignRecipeDialog', () => {
     const favoriteRecipe: RecipePreview = { ...mockRecipe, id: 'fav-1', name: 'Favorite Recipe' };
     const myRecipe: RecipePreview = { ...mockRecipe, id: 'my-1', name: 'My Recipe' };
 
-    (useQuery as any).mockImplementation((options: any) => {
-      // The component calls useQuery twice: first for favorites, then for myRecipes.
-      // We can use a simple toggle to return different data for each call.
-      const isFavorites = (useQuery as any).mock.calls.length % 2 === 1;
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isFavorites = options.key?.includes('favorites');
       return {
         data: ref(isFavorites ? [favoriteRecipe] : [myRecipe]),
         isLoading: ref(false),
@@ -219,8 +219,9 @@ describe('MealSlotAssignRecipeDialog', () => {
 
   it('renders error state and handles retry for favorites', async () => {
     const mockRefetch = vi.fn();
-    (useQuery as any).mockImplementation((options: any) => {
-      const isFavorites = (useQuery as any).mock.calls.length % 2 === 1;
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isFavorites = options.key?.includes('favorites');
       return {
         data: ref(null),
         isLoading: ref(false),
@@ -254,8 +255,9 @@ describe('MealSlotAssignRecipeDialog', () => {
   });
 
   it('renders error state for my-recipes', async () => {
-    (useQuery as any).mockImplementation((options: any) => {
-      const isMyRecipes = (useQuery as any).mock.calls.length % 2 === 0;
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isMyRecipes = options.key?.includes('mine');
       return {
         data: ref(null),
         isLoading: ref(false),
@@ -273,6 +275,7 @@ describe('MealSlotAssignRecipeDialog', () => {
         stubs: {
           ...globalMountOptions.stubs,
           ErrorRetryCard: {
+            name: 'ErrorRetryCard',
             template: '<div class="error-retry">Retry</div>',
             props: ['error', 'retry'],
           },
@@ -281,7 +284,9 @@ describe('MealSlotAssignRecipeDialog', () => {
     });
 
     await nextTick();
-    expect(wrapper.findAll('.error-retry').length).toBeGreaterThanOrEqual(1);
+    const errorCard = wrapper.findComponent({ name: 'ErrorRetryCard' });
+    expect(errorCard.exists()).toBe(true);
+    expect(errorCard.props('error')?.message).toBe('MyRecipes error');
   });
 
   it('disables assign button if no recipe is selected', async () => {
@@ -345,7 +350,8 @@ describe('MealSlotAssignRecipeDialog', () => {
     const dialog = wrapper.findComponent({ name: 'Dialog' });
     await dialog.vm.$emit('update:open', true);
 
-    expect(wrapper.emitted('update:modelValue')).toBeFalsy();
+    expect(wrapper.emitted()).toEqual({});
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it('handles null selectedRecipe in onAssign (coverage)', async () => {

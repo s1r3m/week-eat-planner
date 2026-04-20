@@ -93,7 +93,11 @@ describe('AuthSignUpForm', () => {
     await wrapper.vm.onSubmit();
     await flushPromises();
 
-    expect(signupMutate).toHaveBeenCalled();
+    expect(signupMutate).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      username: 'newuser',
+      password: 'password123',
+    });
   });
 
   it('shows loading state during submission', async () => {

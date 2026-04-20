@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
+import i18n from '@/i18n';
 import GuestMobileMenu from '../GuestMobileMenu.vue';
-import type { NavLink } from '../GuestNavigation.vue';
+import type { NavLink } from '@/layouts/components/header/types/navigation';
 
 interface GuestMobileMenuInstance {
   open: boolean;
@@ -44,6 +45,7 @@ describe('GuestMobileMenu', () => {
         links: links,
       },
       global: {
+        plugins: [i18n],
         stubs: {
           Button: {
             template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
@@ -74,6 +76,18 @@ describe('GuestMobileMenu', () => {
           SheetFooter: {
             template: '<div class="sheet-footer"><slot /></div>',
             name: 'SheetFooter',
+          },
+          SheetTitle: {
+            template: '<div class="sheet-title"><slot /></div>',
+            name: 'SheetTitle',
+          },
+          SheetDescription: {
+            template: '<div class="sheet-description"><slot /></div>',
+            name: 'SheetDescription',
+          },
+          VisuallyHidden: {
+            template: '<div class="visually-hidden"><slot /></div>',
+            name: 'VisuallyHidden',
           },
           GuestNavigation: {
             template: '<div class="guest-navigation" />',

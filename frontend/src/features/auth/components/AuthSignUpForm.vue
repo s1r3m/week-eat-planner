@@ -43,9 +43,12 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 
 const schema = zod.object({
-  email: zod.email().min(1, { message: 'This is required' }),
-  username: zod.string().min(1, { message: 'This is required' }),
-  password: zod.string().min(1, { message: 'This is required' }).min(8, { message: 'Too short' }),
+  email: zod
+    .string()
+    .min(1, { error: 'This is required' })
+    .pipe(zod.email({ error: 'Invalid email' })),
+  username: zod.string().min(1, { error: 'This is required' }),
+  password: zod.string().min(1, { error: 'This is required' }).min(8, { error: 'Too short' }),
 });
 type FormValues = zod.infer<typeof schema>;
 

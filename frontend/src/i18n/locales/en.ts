@@ -35,4 +35,8 @@ export default {
   daysOfWeek,
   mealSlotCard,
   assignRecipeDialog,
+  navigation: {
+    menu: 'Menu',
+    mobileDescription: 'Mobile navigation menu',
+  },
 };
