@@ -49,7 +49,12 @@ vi.mock('@/components/ui/sonner', () => ({
 
 vi.mock('axios', () => ({
   default: {
-    isAxiosError: vi.fn((err) => err && err.isAxiosError),
+    isAxiosError: vi.fn(
+      (err: unknown) =>
+        typeof err === 'object' &&
+        err !== null &&
+        (err as { isAxiosError?: unknown }).isAxiosError === true,
+    ),
   },
 }));
 
