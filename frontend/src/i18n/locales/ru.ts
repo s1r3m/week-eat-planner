@@ -21,8 +21,14 @@ const mealSlotCard = {
   assignRecipe: 'Добавить блюдо',
 };
 
+const navigation = {
+  menu: 'Меню',
+  mobileDescription: 'Мобильное меню навигации',
+};
+
 export default {
   mealTypes,
   daysOfWeek,
   mealSlotCard,
+  navigation,
 };

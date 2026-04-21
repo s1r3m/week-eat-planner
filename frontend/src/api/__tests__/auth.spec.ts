@@ -13,6 +13,17 @@ import { apiClient, authClient } from '../client';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
 import { useQueryCache } from '@pinia/colada';
+import { useRouter } from 'vue-router';
+import { toast } from 'vue-sonner';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
+
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(),
+}));
+
+vi.mock('vue-sonner', () => ({
+  toast: { success: vi.fn() },
+}));
 
 vi.mock('@pinia/colada', () => ({
   defineQueryOptions: (fn: any) => fn,
@@ -78,13 +89,6 @@ describe('auth api', () => {
       expect(accessToken.value).toBe('new-token');
       expect(cache.invalidateQueries).toHaveBeenCalled();
     });
-
-    it('logs error on error', () => {
-      const mutationConfig = loginMutation();
-      // @ts-ignore
-      mutationConfig.onError();
-      expect(console.error).toHaveBeenCalledWith('Login failed');
-    });
   });
 
   describe('signupMutation', () => {
@@ -99,16 +103,17 @@ describe('auth api', () => {
       expect(result).toEqual(user);
     });
 
-    it('logs messages on success and error', () => {
-      const mutationConfig = signupMutation();
-      // @ts-ignore
-      mutationConfig.onSuccess();
-      expect(console.debug).toHaveBeenCalledWith('SignUp successful');
+    it('shows toast and redirects to login on success', async () => {
+      const pushMock = vi.fn();
+      vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
-      const error = new Error('fail');
+      const mutationConfig = signupMutation();
+
       // @ts-ignore
-      mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('SignUp failed: ', error);
+      await mutationConfig.onSuccess();
+
+      expect(toast.success).toHaveBeenCalledWith('Registration complete!');
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.LOGIN });
     });
   });
 
@@ -139,7 +144,6 @@ describe('auth api', () => {
 
       // @ts-ignore
       mutationConfig.onError(error);
-      expect(console.error).toHaveBeenCalledWith('Logout failed: ', error);
       expect(accessToken.value).toBeNull();
     });
   });

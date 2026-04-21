@@ -17,8 +17,8 @@ vi.mock('@pinia/colada', () => ({
 }));
 
 vi.mock('@/api/recipes', () => ({
-  getFavoritesQuery: vi.fn(),
-  getMyRecipesQuery: vi.fn(),
+  getFavoritesQuery: vi.fn(() => ({ key: ['recipes', 'favorites'] })),
+  getMyRecipesQuery: vi.fn(() => ({ key: ['recipes', 'mine'] })),
 }));
 
 vi.mock('@/api/mealSlots', () => ({
@@ -44,8 +44,9 @@ describe('MealSlotAssignRecipeDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useQuery as any).mockImplementation((query: any) => {
-      // Mocking different data for different queries if needed
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      // Default mock implementation
       return {
         data: ref([mockRecipe]),
         isLoading: ref(false),
@@ -70,6 +71,10 @@ describe('MealSlotAssignRecipeDialog', () => {
       TabsList: { template: '<div><slot /></div>' },
       TabsTrigger: { template: '<div><slot /></div>' },
       TabsContent: { template: '<div><slot /></div>' },
+      Button: {
+        template: '<button :disabled="disabled"><slot /></button>',
+        props: ['disabled'],
+      },
       RecipeSelectCard: {
         template:
           '<div class="recipe-card" @click="$emit(\'select\', recipe)">{{ recipe.name }}</div>',
@@ -165,10 +170,9 @@ describe('MealSlotAssignRecipeDialog', () => {
     const favoriteRecipe: RecipePreview = { ...mockRecipe, id: 'fav-1', name: 'Favorite Recipe' };
     const myRecipe: RecipePreview = { ...mockRecipe, id: 'my-1', name: 'My Recipe' };
 
-    (useQuery as any).mockImplementation((options: any) => {
-      // The component calls useQuery twice: first for favorites, then for myRecipes.
-      // We can use a simple toggle to return different data for each call.
-      const isFavorites = (useQuery as any).mock.calls.length % 2 === 1;
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isFavorites = options.key?.includes('favorites');
       return {
         data: ref(isFavorites ? [favoriteRecipe] : [myRecipe]),
         isLoading: ref(false),
@@ -213,6 +217,118 @@ describe('MealSlotAssignRecipeDialog', () => {
     expect(wrapper.findAllComponents(TheLoadingPageState).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('renders error state and handles retry for favorites', async () => {
+    const favRefetch = vi.fn();
+    const myRecipesRefetch = vi.fn();
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isFavorites = options.key?.includes('favorites');
+      return {
+        data: ref(null),
+        isLoading: ref(false),
+        error: ref(isFavorites ? new Error('Fav error') : null),
+        refetch: isFavorites ? favRefetch : myRecipesRefetch,
+      };
+    });
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: {
+        ...globalMountOptions,
+        stubs: {
+          ...globalMountOptions.stubs,
+          ErrorRetryCard: {
+            template: '<div class="error-retry" @click="retry">Retry</div>',
+            props: ['error', 'retry'],
+          },
+        },
+      },
+    });
+
+    await nextTick();
+    const retryBtn = wrapper.find('.error-retry');
+    expect(retryBtn.exists()).toBe(true);
+    await retryBtn.trigger('click');
+    expect(favRefetch).toHaveBeenCalled();
+    expect(myRecipesRefetch).not.toHaveBeenCalled();
+  });
+
+  it('renders error state and handles retry for my-recipes', async () => {
+    const favRefetch = vi.fn();
+    const myRecipesRefetch = vi.fn();
+    (useQuery as any).mockImplementation((optionsFn: any) => {
+      const options = optionsFn();
+      const isMyRecipes = options.key?.includes('mine');
+      return {
+        data: ref(null),
+        isLoading: ref(false),
+        error: ref(isMyRecipes ? new Error('MyRecipes error') : null),
+        refetch: isMyRecipes ? myRecipesRefetch : favRefetch,
+      };
+    });
+
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: {
+        ...globalMountOptions,
+        stubs: {
+          ...globalMountOptions.stubs,
+          ErrorRetryCard: {
+            name: 'ErrorRetryCard',
+            template: '<div class="error-retry" @click="retry">Retry</div>',
+            props: ['error', 'retry'],
+          },
+        },
+      },
+    });
+
+    await nextTick();
+    const retryBtn = wrapper.find('.error-retry');
+    expect(retryBtn.exists()).toBe(true);
+    await retryBtn.trigger('click');
+    expect(myRecipesRefetch).toHaveBeenCalled();
+    expect(favRefetch).not.toHaveBeenCalled();
+
+    const errorCard = wrapper.findComponent({ name: 'ErrorRetryCard' });
+    expect(errorCard.exists()).toBe(true);
+    expect(errorCard.props('error')?.message).toBe('MyRecipes error');
+  });
+
+  it('disables assign button if no recipe is selected', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    await nextTick();
+    const assignBtn = wrapper.findAll('button').find((b) => b.text().includes('Assign'));
+    expect(assignBtn?.attributes('disabled')).toBeDefined();
+  });
+
+  it('disables assign button if selected recipe is same as current', async () => {
+    const mealSlotWithRecipe: MealSlot = { ...mealSlotData, recipe: mockRecipe };
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotWithRecipe,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    await nextTick();
+    const assignBtn = wrapper.findAll('button').find((b) => b.text().includes('Assign'));
+    expect(assignBtn?.attributes('disabled')).toBeDefined();
+  });
+
   it('handles dialog close by setting mealSlot to null', async () => {
     const wrapper = mount(MealSlotAssignRecipeDialog, {
       props: {
@@ -231,6 +347,22 @@ describe('MealSlotAssignRecipeDialog', () => {
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null]);
+  });
+
+  it('does nothing when isOpen is set to true (coverage)', async () => {
+    const wrapper = mount(MealSlotAssignRecipeDialog, {
+      props: {
+        modelValue: mealSlotData,
+        weekId: weekId,
+      } as any,
+      global: globalMountOptions,
+    });
+
+    const dialog = wrapper.findComponent({ name: 'Dialog' });
+    await dialog.vm.$emit('update:open', true);
+
+    expect(wrapper.emitted()).toEqual({});
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it('handles null selectedRecipe in onAssign (coverage)', async () => {

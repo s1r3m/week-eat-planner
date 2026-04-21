@@ -1,6 +1,7 @@
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
 import type { EntryKey } from '@pinia/colada';
 import { apiClient } from './client';
+import { toast } from 'vue-sonner';
 
 /**
  * Supported measurement units for recipe ingredients.
@@ -132,15 +133,14 @@ export const addRecipeMutation = defineMutation(() => {
       _payload: RecipePayload,
       _context?: { previousRecipes?: RecipePreview[] },
     ) => {
-      console.debug(`Recipe ${created.id} has been created`);
-      return created;
+      toast.success(`Recipe ${created.name} created successfully`);
     },
     onError: (
       err: Error,
       payload: RecipePayload,
       context?: { previousRecipes?: RecipePreview[] },
     ) => {
-      console.error(`An error has occurred during creation of ${payload.name}: `, err);
+      toast.error(`An error occurred while creating recipe ${payload.name}: ${err.message}`);
       if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
@@ -164,14 +164,15 @@ export const addImageMutation = defineMutation(() => {
         .then((res) => res.data);
     },
     onSuccess: (data: RecipePreview) => {
-      console.debug('Image uploaded successfully');
       queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) =>
         old.map((recipe: RecipePreview) =>
           recipe.id === data.id ? { ...recipe, ...data } : recipe,
         ),
       );
     },
-    onError: (err: Error) => console.debug('Image upload failed: ', err),
+    onError: (err: Error, _payload: ImagePayload) => {
+      toast.error(`Upload has failed: ${err.message}`);
+    },
     onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
   };
 });
@@ -193,11 +194,11 @@ export const deleteRecipeMutation = defineMutation(() => {
       );
       return { previousRecipes };
     },
-    onSuccess: (_: undefined, id: string, _context?: { previousRecipes?: RecipePreview[] }) => {
-      console.debug(`The recipe ${id} has been deleted`);
+    onSuccess: () => {
+      toast.success(`Recipe was deleted successfully`);
     },
-    onError: (err: Error, id: string, context?: { previousRecipes?: RecipePreview[] }) => {
-      console.error(`An error has occurred during deletion of recipe ${id}: `, err);
+    onError: (_err: Error, _id: string, context?: { previousRecipes?: RecipePreview[] }) => {
+      toast.error('Failed to delete the recipe');
       if (context && context.previousRecipes) {
         queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
       }
@@ -270,7 +271,6 @@ export const toggleFavoriteMutation = defineMutation(() => {
       _payload: FavoritePayload,
       context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
-      console.error('An error occurred during the update: ', err);
       context?.previousState?.forEach((data, key) => queryCache.setQueryData(key, data));
     },
     onSuccess: (

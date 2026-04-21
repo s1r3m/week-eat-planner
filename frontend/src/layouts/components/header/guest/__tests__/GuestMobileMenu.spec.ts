@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
+import i18n from '@/i18n';
 import GuestMobileMenu from '../GuestMobileMenu.vue';
-import type { NavLink } from '../GuestNavigation.vue';
+import type { NavLink } from '@/layouts/components/header/types/navigation';
 
 interface GuestMobileMenuInstance {
   open: boolean;
@@ -44,6 +45,7 @@ describe('GuestMobileMenu', () => {
         links: links,
       },
       global: {
+        plugins: [i18n],
         stubs: {
           Button: {
             template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
@@ -74,6 +76,14 @@ describe('GuestMobileMenu', () => {
           SheetFooter: {
             template: '<div class="sheet-footer"><slot /></div>',
             name: 'SheetFooter',
+          },
+          SheetTitle: {
+            template: '<div class="sheet-title"><slot /></div>',
+            name: 'SheetTitle',
+          },
+          SheetDescription: {
+            template: '<div class="sheet-description"><slot /></div>',
+            name: 'SheetDescription',
           },
           GuestNavigation: {
             template: '<div class="guest-navigation" />',
@@ -238,8 +248,8 @@ describe('GuestMobileMenu', () => {
   describe('Props Forwarding', () => {
     it('passes links prop to GuestNavigation', () => {
       const links: NavLink[] = [
-        { label: 'Home', to: '/' },
-        { label: 'About', to: '/about' },
+        { label: 'Home', to: { name: 'home' } },
+        { label: 'About', to: { name: 'about' } },
       ];
       const wrapper = mountComponent(links);
       const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });
@@ -256,9 +266,9 @@ describe('GuestMobileMenu', () => {
 
     it('handles multiple navigation links', () => {
       const links: NavLink[] = [
-        { label: 'Features', to: '/features' },
-        { label: 'Pricing', to: '/pricing' },
-        { label: 'Docs', to: '/docs' },
+        { label: 'Features', to: { name: 'features' } },
+        { label: 'Pricing', to: { name: 'pricing' } },
+        { label: 'Docs', to: { name: 'docs' } },
       ];
       const wrapper = mountComponent(links);
       const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });

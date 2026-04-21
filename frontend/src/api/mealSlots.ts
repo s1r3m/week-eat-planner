@@ -59,15 +59,7 @@ export const assignRecipeMutation = defineMutation(() => {
       return { week };
     },
     onError: (err: Error, { weekId }: MealSlotVars, context?: { week?: WeekFull }) => {
-      console.error('An error occurred during assigning: ', err);
       if (context?.week) queryCache.setQueryData(WEEK_KEYS.detail(weekId), context.week);
-    },
-    onSuccess: (res: MealSlotPreview[], _vars: MealSlotVars, _context?: { week?: WeekFull }) => {
-      res.forEach((slot) => {
-        console.log(
-          `Successfully assigned the recipe ${slot.recipe?.name || 'none'} to slot ${slot.meal_type} of ${slot.day_of_week}`,
-        );
-      });
     },
     onSettled: (
       _res: MealSlotPreview[] | undefined,

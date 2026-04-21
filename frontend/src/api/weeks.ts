@@ -114,15 +114,7 @@ export const addWeekMutation = defineMutation(() => {
       ]);
       return { previousWeeks };
     },
-    onSuccess: (
-      newWeek: WeekPreview,
-      _payload: WeekPayload,
-      _context: { previousWeeks?: WeekPreview[] },
-    ) => {
-      console.debug(`Week ${newWeek.id} has been created!`);
-    },
     onError: (err: Error, _payload: WeekPayload, context: { previousWeeks?: WeekPreview[] }) => {
-      console.error('An error occurred during creating a new week', err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
     onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
@@ -150,14 +142,11 @@ export const editWeekMutation = defineMutation(() => {
       );
       return { previous, previousWeeks };
     },
-    onSuccess: (_updatedWeek: WeekPreview, vars: EditWeek) =>
-      console.debug(`A week ${vars.id} has been updated.`),
     onError: (
       err: Error,
       vars: EditWeek,
       context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {
-      console.error(`An error occurred during editing week ${vars.id}: `, err.message);
       if (context?.previous) queryCache.setQueryData(WEEK_KEYS.detail(vars.id), context.previous);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
@@ -190,10 +179,7 @@ export const deleteWeekMutation = defineMutation(() => {
       );
       return { previousWeeks };
     },
-    onSuccess: (_: undefined, id: string, _context?: { previousWeeks?: WeekPreview[] }) =>
-      console.debug(`Week ${id} has been deleted`),
     onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
-      console.error(`An error occurred during deleting week ${id}: `, err.message);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
     onSettled: (

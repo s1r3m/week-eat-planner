@@ -24,32 +24,31 @@
               <Spinner v-if="isLoading" />
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </Button>
-            <FieldSeparator> Or </FieldSeparator>
           </FieldSet>
         </form>
+        <FieldSeparator class="my-3"> Or </FieldSeparator>
+        <AuthSocialButtons />
       </template>
 
       <template #footer>
-        <AuthFooter>
-          <CardDescription>
-            Forgot your password?
-            <router-link
-              :to="{ name: ROUTE_NAMES.FORGOT_PASSWORD }"
-              class="font-semibold text-brand-primary hover:underline"
-            >
-              Reset it
-            </router-link>
-          </CardDescription>
-          <CardDescription>
-            Don't have an account?
-            <router-link
-              :to="{ name: ROUTE_NAMES.SIGNUP }"
-              class="font-semibold text-brand-primary hover:underline"
-            >
-              Register!
-            </router-link>
-          </CardDescription>
-        </AuthFooter>
+        <CardDescription>
+          Forgot your password?
+          <router-link
+            :to="{ name: ROUTE_NAMES.FORGOT_PASSWORD }"
+            class="font-semibold text-brand-primary hover:underline"
+          >
+            Reset it
+          </router-link>
+        </CardDescription>
+        <CardDescription>
+          Don't have an account?
+          <router-link
+            :to="{ name: ROUTE_NAMES.SIGNUP }"
+            class="font-semibold text-brand-primary hover:underline"
+          >
+            Register!
+          </router-link>
+        </CardDescription>
       </template>
     </AuthCard>
 
@@ -70,7 +69,7 @@ import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AuthCard from '@/features/auth/components/AuthCard.vue';
-import AuthFooter from '@/features/auth/components/AuthFooter.vue';
+import AuthSocialButtons from '@/features/auth/components/AuthSocialButtons.vue';
 import { Button } from '@/components/ui/button';
 import { CardDescription } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
@@ -79,6 +78,7 @@ import { Input } from '@/components/ui/input';
 
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
+import { toast } from '@/components/ui/sonner';
 import { isAuthenticated, loginMutation } from '@/api/auth';
 
 const router = useRouter();
@@ -96,7 +96,15 @@ const handleLogin = async () => {
   const params = new URLSearchParams({ username: email.value, password: password.value });
   await login(params);
   if (!error.value) {
-    await router.push((route.query.redirect as string) || { name: ROUTE_NAMES.WEEKS });
+    toast.success('Logged in successfully');
+    const redirect = Array.isArray(route.query.redirect)
+      ? route.query.redirect[0]
+      : route.query.redirect;
+    await router.push(
+      typeof redirect === 'string' && redirect.startsWith('/app')
+        ? redirect
+        : { name: ROUTE_NAMES.WEEKS },
+    );
   }
 };
 </script>

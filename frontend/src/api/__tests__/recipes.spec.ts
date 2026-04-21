@@ -13,6 +13,7 @@ import {
   toggleFavoriteMutation,
   getFavoritesQuery,
 } from '../recipes';
+import { toast } from 'vue-sonner';
 
 vi.mock('@pinia/colada', () => {
   return {
@@ -21,6 +22,13 @@ vi.mock('@pinia/colada', () => {
     useQueryCache: vi.fn(),
   };
 });
+
+vi.mock('vue-sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 describe('recipes api', () => {
   let mockApi: MockAdapter;
@@ -50,7 +58,8 @@ describe('recipes api', () => {
       mockApi.onGet('/recipes/my_recipes').reply(200, mockData);
 
       const options = getMyRecipesQuery();
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -69,7 +78,8 @@ describe('recipes api', () => {
       mockApi.onGet(`/recipes/${id}`).reply(200, mockData);
 
       const options = getRecipeQuery(id);
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });
@@ -196,12 +206,13 @@ describe('recipes api', () => {
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
     });
 
-    it('should handle onError', () => {
+    it('should handle onError for image upload', () => {
       const onError = (addImageMutation() as any).onError;
+      const error = new Error('upload failed');
 
-      onError(new Error('fail'));
+      onError(error, { id: '1', image: {} as File });
 
-      expect(console.debug).toHaveBeenCalledWith('Image upload failed: ', expect.any(Error));
+      expect(toast.error).toHaveBeenCalledWith('Upload has failed: upload failed');
     });
   });
 
@@ -239,24 +250,33 @@ describe('recipes api', () => {
 
       expect(context).toEqual({ previousRecipes });
 
-      mutationObj.onSuccess(null, id, context);
-
       mutationObj.onError(new Error('fail'), id, context);
       expect(queryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), previousRecipes);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
 
       // Test missing context in onError
+      vi.mocked(toast.error).mockClear();
       vi.mocked(queryCache.setQueryData).mockClear();
       mutationObj.onError(new Error('fail'), id, undefined);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       // Test context without previousRecipes
+      vi.mocked(toast.error).mockClear();
       vi.mocked(queryCache.setQueryData).mockClear();
       mutationObj.onError(new Error('fail'), id, {} as any);
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
       expect(queryCache.setQueryData).not.toHaveBeenCalled();
 
       mutationObj.onSettled(null, undefined, id, context);
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
       expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
+    });
+
+    it('should show success toast on successful deletion', () => {
+      const onSuccess = (deleteRecipeMutation() as any).onSuccess;
+      onSuccess();
+      expect(toast.success).toHaveBeenCalledWith('Recipe was deleted successfully');
     });
   });
 
@@ -387,7 +407,8 @@ describe('recipes api', () => {
       mockApi.onGet('/recipes/favorites').reply(200, mockData);
 
       const options = getFavoritesQuery();
-      const result = await (options.query as any)();
+      // @ts-ignore
+      const result = await options.query();
 
       expect(result).toEqual(mockData);
     });

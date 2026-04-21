@@ -125,4 +125,15 @@ router.beforeEach(async (to, from) => {
       query: { redirect: to.fullPath },
     };
   }
+
+  if (
+    !to.meta?.requiresAuth &&
+    accessToken.value &&
+    to.name !== ROUTE_NAMES.HOME &&
+    to.name !== ROUTE_NAMES.NOT_FOUND
+  ) {
+    return {
+      name: ROUTE_NAMES.WEEKS,
+    };
+  }
 });

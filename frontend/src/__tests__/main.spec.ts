@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
 // Mock all dependencies before importing main
 vi.mock('vue', () => ({
@@ -23,24 +23,151 @@ vi.mock('@/router', () => ({
   default: { install: vi.fn() },
 }));
 
+vi.mock('@pinia/colada', () => ({
+  PiniaColada: { install: vi.fn() },
+  PiniaColadaQueryHooksPlugin: vi.fn(() => 'mock-plugin'),
+}));
+
+vi.mock('@/i18n', () => ({
+  default: { install: vi.fn() },
+}));
+
 // Mock the CSS import to avoid errors in test environment
 vi.mock('@/assets/style.css', () => ({}));
+vi.mock('vue-sonner/style.css', () => ({}));
 
 vi.mock('@/App.vue', () => ({
   default: { name: 'App' },
 }));
 
+vi.mock('@/components/ui/sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
+
+vi.mock('axios', () => ({
+  default: {
+    isAxiosError: vi.fn(
+      (err: unknown) =>
+        typeof err === 'object' &&
+        err !== null &&
+        (err as { isAxiosError?: unknown }).isAxiosError === true,
+    ),
+  },
+}));
+
 describe('main.ts', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('initializes the application correctly', async () => {
     const { createApp } = await import('vue');
     const { createPinia } = await import('pinia');
+    const { PiniaColada, PiniaColadaQueryHooksPlugin } = await import('@pinia/colada');
+    const i18n = (await import('@/i18n')).default;
     const router = (await import('@/router')).default;
 
     // Import the main module which should call createApp
     await import('../main');
 
+    const app = vi.mocked(createApp).mock.results[0].value;
+    const { handleGlobalError } = await import('../main');
+
     expect(createApp).toHaveBeenCalled();
     expect(createPinia).toHaveBeenCalled();
-    expect(router).toBeDefined();
+    const pinia = vi.mocked(createPinia).mock.results[0].value;
+    expect(app.use).toHaveBeenCalledWith(pinia);
+    expect(PiniaColadaQueryHooksPlugin).toHaveBeenCalledWith({ onError: handleGlobalError });
+    expect(app.use).toHaveBeenCalledWith(
+      PiniaColada,
+      expect.objectContaining({
+        plugins: ['mock-plugin'],
+        mutationOptions: { onError: handleGlobalError },
+      }),
+    );
+    expect(app.use).toHaveBeenCalledWith(router);
+    expect(app.use).toHaveBeenCalledWith(i18n);
+    expect(app.mount).toHaveBeenCalledWith('#app');
+  });
+
+  describe('handleGlobalError', () => {
+    it('handles non-axios error', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+      const error = new Error('Regular error');
+
+      handleGlobalError(error);
+
+      expect(toast.error).toHaveBeenCalledWith('Regular error');
+    });
+
+    it('handles non-axios unknown error', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+
+      handleGlobalError('something went wrong');
+
+      expect(toast.error).toHaveBeenCalledWith('An error occurred');
+    });
+
+    it('ignores silent refresh failures', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+      const axiosError = {
+        isAxiosError: true,
+        config: { url: '/api/auth/refresh' },
+      };
+
+      handleGlobalError(axiosError);
+
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('handles axios error with detail', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+      const axiosError = {
+        isAxiosError: true,
+        response: { data: { detail: 'Specific API error' } },
+      };
+
+      handleGlobalError(axiosError);
+
+      expect(toast.error).toHaveBeenCalledWith('Specific API error');
+    });
+
+    it('handles axios error with message', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+      const axiosError = {
+        isAxiosError: true,
+        message: 'Axios connection error',
+        response: { data: {} },
+      };
+
+      handleGlobalError(axiosError);
+
+      expect(toast.error).toHaveBeenCalledWith('Axios connection error');
+    });
+
+    it('handles axios error without message or detail', async () => {
+      const { handleGlobalError } = await import('../main');
+      const { toast } = await import('@/components/ui/sonner');
+      const axiosError = {
+        isAxiosError: true,
+        response: { data: {} },
+      };
+
+      handleGlobalError(axiosError);
+
+      expect(toast.error).toHaveBeenCalledWith('An error occurred');
+    });
   });
 });

@@ -4,8 +4,8 @@ import { apiClient } from '../client';
 import { useQueryCache } from '@pinia/colada';
 
 vi.mock('@pinia/colada', () => ({
-  defineMutation: vi.fn((fn) => fn),
-  defineQueryOptions: vi.fn((fn) => fn),
+  defineMutation: vi.fn((fn: any) => fn),
+  defineQueryOptions: vi.fn((fn: any) => fn),
   useQueryCache: vi.fn(),
 }));
 
@@ -39,12 +39,72 @@ describe('mealSlots API', () => {
       (apiClient.patch as any).mockResolvedValue({ data: mockData });
 
       const mutation = assignRecipeMutation();
-      const result = await mutation.mutation(vars);
+      const result = await (mutation as any).mutation(vars);
 
       expect(apiClient.patch).toHaveBeenCalledWith('/weeks/week-1/slots', [
         { slot_id: 'slot-1', recipe_id: 'recipe-1' },
       ]);
       expect(result).toEqual(mockData);
+    });
+
+    it('handles null recipe in mutation payload', async () => {
+      const vars = {
+        weekId: 'week-1',
+        slots: [{ slot_id: 'slot-1', recipe: null }],
+      };
+      (apiClient.patch as any).mockResolvedValue({ data: [] });
+
+      const mutation = assignRecipeMutation();
+      await (mutation as any).mutation(vars);
+
+      expect(apiClient.patch).toHaveBeenCalledWith('/weeks/week-1/slots', [
+        { slot_id: 'slot-1', recipe_id: null },
+      ]);
+    });
+
+    it('does nothing in onMutate if week is not in cache', () => {
+      const vars = { weekId: 'week-1', slots: [] };
+      mockQueryCache.getQueryData.mockReturnValueOnce(null);
+
+      const mutation = assignRecipeMutation();
+      mutation.onMutate(vars);
+
+      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+    });
+
+    it('leaves slot unchanged if no update is provided for it', () => {
+      const vars = {
+        weekId: 'week-1',
+        slots: [{ slot_id: 'slot-2', recipe: null }],
+      };
+      const mockWeek = {
+        id: 'week-1',
+        week_days: [
+          {
+            slots: [{ id: 'slot-1', recipe: { id: 'r1' } }],
+          },
+        ],
+      };
+      mockQueryCache.getQueryData.mockReturnValueOnce(mockWeek);
+
+      const mutation = assignRecipeMutation();
+      mutation.onMutate(vars);
+
+      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+        ['weeks', 'detail', 'week-1'],
+        expect.objectContaining({
+          week_days: expect.arrayContaining([
+            expect.objectContaining({
+              slots: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'slot-1',
+                  recipe: { id: 'r1' },
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      );
     });
 
     it('optimistically updates the cache onMutate with provided recipe', async () => {
@@ -104,28 +164,27 @@ describe('mealSlots API', () => {
       );
     });
 
+    it('does not rollback cache onError if context or week is missing', () => {
+      const vars = { weekId: 'week-1', slots: [] };
+      const mutation = assignRecipeMutation();
+
+      mockQueryCache.setQueryData.mockClear();
+      mutation.onError(new Error('test'), vars, undefined);
+      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+
+      mutation.onError(new Error('test'), vars, {});
+      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+    });
+
     it('invalidates queries onSettled', () => {
       const vars = { weekId: 'week-1', slots: [] };
       const mutation = assignRecipeMutation();
 
-      mutation.onSettled(undefined, undefined, vars);
+      mutation.onSettled(undefined, undefined, vars, undefined);
 
       expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
         key: ['weeks', 'detail', 'week-1'],
       });
-    });
-
-    it('logs success on onSuccess', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      const mutation = assignRecipeMutation();
-      const res = [
-        { day_of_week: 'MONDAY', meal_type: 'LUNCH', recipe: { id: 'recipe-1' } },
-      ] as any;
-
-      mutation.onSuccess(res, { weekId: 'w', slots: [] });
-
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
     });
   });
 });

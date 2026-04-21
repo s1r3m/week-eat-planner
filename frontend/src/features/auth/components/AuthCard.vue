@@ -1,5 +1,5 @@
 <template>
-  <Card class="mx-6 max-w-lg lg:max-w-xl sm:mx-auto my-12">
+  <Card class="m-6 max-w-lg lg:max-w-xl sm:mx-auto">
     <CardHeader>
       <CardTitle class="text-primary text-center text-headline-sm">{{ title }}</CardTitle>
       <CardDescription class="text-center text-body-md text-on-surface-variant">
@@ -7,11 +7,11 @@
       </CardDescription>
     </CardHeader>
 
-    <CardContent>
+    <CardContent class="flex flex-col gap-3 mb-6">
       <slot name="default" />
     </CardContent>
 
-    <CardFooter class="flex flex-col gap-3">
+    <CardFooter class="flex flex-col gap-3 mb-6">
       <slot name="footer" />
     </CardFooter>
   </Card>
