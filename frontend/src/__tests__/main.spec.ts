@@ -77,7 +77,8 @@ describe('main.ts', () => {
 
     expect(createApp).toHaveBeenCalled();
     expect(createPinia).toHaveBeenCalled();
-    expect(app.use).toHaveBeenCalledWith(expect.anything()); // pinia
+    const pinia = vi.mocked(createPinia).mock.results[0].value;
+    expect(app.use).toHaveBeenCalledWith(pinia);
     expect(PiniaColadaQueryHooksPlugin).toHaveBeenCalledWith({ onError: handleGlobalError });
     expect(app.use).toHaveBeenCalledWith(
       PiniaColada,

@@ -267,7 +267,7 @@ describe('GuestMobileMenu', () => {
     it('handles multiple navigation links', () => {
       const links: NavLink[] = [
         { label: 'Features', to: { name: 'features' } },
-        { label: 'Pricing', to: { name: '/pricing' } },
+        { label: 'Pricing', to: { name: 'pricing' } },
         { label: 'Docs', to: { name: 'docs' } },
       ];
       const wrapper = mountComponent(links);
