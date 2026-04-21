@@ -85,10 +85,6 @@ describe('GuestMobileMenu', () => {
             template: '<div class="sheet-description"><slot /></div>',
             name: 'SheetDescription',
           },
-          VisuallyHidden: {
-            template: '<div class="visually-hidden"><slot /></div>',
-            name: 'VisuallyHidden',
-          },
           GuestNavigation: {
             template: '<div class="guest-navigation" />',
             props: ['links'],
@@ -252,8 +248,8 @@ describe('GuestMobileMenu', () => {
   describe('Props Forwarding', () => {
     it('passes links prop to GuestNavigation', () => {
       const links: NavLink[] = [
-        { label: 'Home', to: '/' },
-        { label: 'About', to: '/about' },
+        { label: 'Home', to: { name: 'home' } },
+        { label: 'About', to: { name: 'about' } },
       ];
       const wrapper = mountComponent(links);
       const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });
@@ -270,9 +266,9 @@ describe('GuestMobileMenu', () => {
 
     it('handles multiple navigation links', () => {
       const links: NavLink[] = [
-        { label: 'Features', to: '/features' },
-        { label: 'Pricing', to: '/pricing' },
-        { label: 'Docs', to: '/docs' },
+        { label: 'Features', to: { name: 'features' } },
+        { label: 'Pricing', to: { name: '/pricing' } },
+        { label: 'Docs', to: { name: 'docs' } },
       ];
       const wrapper = mountComponent(links);
       const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });

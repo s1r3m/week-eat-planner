@@ -218,7 +218,8 @@ describe('MealSlotAssignRecipeDialog', () => {
   });
 
   it('renders error state and handles retry for favorites', async () => {
-    const mockRefetch = vi.fn();
+    const favRefetch = vi.fn();
+    const myRecipesRefetch = vi.fn();
     (useQuery as any).mockImplementation((optionsFn: any) => {
       const options = optionsFn();
       const isFavorites = options.key?.includes('favorites');
@@ -226,7 +227,7 @@ describe('MealSlotAssignRecipeDialog', () => {
         data: ref(null),
         isLoading: ref(false),
         error: ref(isFavorites ? new Error('Fav error') : null),
-        refetch: mockRefetch,
+        refetch: isFavorites ? favRefetch : myRecipesRefetch,
       };
     });
 
@@ -251,10 +252,13 @@ describe('MealSlotAssignRecipeDialog', () => {
     const retryBtn = wrapper.find('.error-retry');
     expect(retryBtn.exists()).toBe(true);
     await retryBtn.trigger('click');
-    expect(mockRefetch).toHaveBeenCalled();
+    expect(favRefetch).toHaveBeenCalled();
+    expect(myRecipesRefetch).not.toHaveBeenCalled();
   });
 
-  it('renders error state for my-recipes', async () => {
+  it('renders error state and handles retry for my-recipes', async () => {
+    const favRefetch = vi.fn();
+    const myRecipesRefetch = vi.fn();
     (useQuery as any).mockImplementation((optionsFn: any) => {
       const options = optionsFn();
       const isMyRecipes = options.key?.includes('mine');
@@ -262,6 +266,7 @@ describe('MealSlotAssignRecipeDialog', () => {
         data: ref(null),
         isLoading: ref(false),
         error: ref(isMyRecipes ? new Error('MyRecipes error') : null),
+        refetch: isMyRecipes ? myRecipesRefetch : favRefetch,
       };
     });
 
@@ -276,7 +281,7 @@ describe('MealSlotAssignRecipeDialog', () => {
           ...globalMountOptions.stubs,
           ErrorRetryCard: {
             name: 'ErrorRetryCard',
-            template: '<div class="error-retry">Retry</div>',
+            template: '<div class="error-retry" @click="retry">Retry</div>',
             props: ['error', 'retry'],
           },
         },
@@ -284,6 +289,12 @@ describe('MealSlotAssignRecipeDialog', () => {
     });
 
     await nextTick();
+    const retryBtn = wrapper.find('.error-retry');
+    expect(retryBtn.exists()).toBe(true);
+    await retryBtn.trigger('click');
+    expect(myRecipesRefetch).toHaveBeenCalled();
+    expect(favRefetch).not.toHaveBeenCalled();
+
     const errorCard = wrapper.findComponent({ name: 'ErrorRetryCard' });
     expect(errorCard.exists()).toBe(true);
     expect(errorCard.props('error')?.message).toBe('MyRecipes error');
