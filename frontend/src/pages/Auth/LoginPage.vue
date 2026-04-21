@@ -97,7 +97,14 @@ const handleLogin = async () => {
   await login(params);
   if (!error.value) {
     toast.success('Logged in successfully');
-    await router.push((route.query.redirect as string) || { name: ROUTE_NAMES.WEEKS });
+    const redirect = Array.isArray(route.query.redirect)
+      ? route.query.redirect[0]
+      : route.query.redirect;
+    await router.push(
+      typeof redirect === 'string' && redirect.startsWith('/app')
+        ? redirect
+        : { name: ROUTE_NAMES.WEEKS },
+    );
   }
 };
 </script>

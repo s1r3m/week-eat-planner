@@ -23,8 +23,18 @@ vi.mock('@/router', () => ({
   default: { install: vi.fn() },
 }));
 
+vi.mock('@pinia/colada', () => ({
+  PiniaColada: { install: vi.fn() },
+  PiniaColadaQueryHooksPlugin: vi.fn(() => 'mock-plugin'),
+}));
+
+vi.mock('@/i18n', () => ({
+  default: { install: vi.fn() },
+}));
+
 // Mock the CSS import to avoid errors in test environment
 vi.mock('@/assets/style.css', () => ({}));
+vi.mock('vue-sonner/style.css', () => ({}));
 
 vi.mock('@/App.vue', () => ({
   default: { name: 'App' },
@@ -51,14 +61,30 @@ describe('main.ts', () => {
   it('initializes the application correctly', async () => {
     const { createApp } = await import('vue');
     const { createPinia } = await import('pinia');
+    const { PiniaColada, PiniaColadaQueryHooksPlugin } = await import('@pinia/colada');
+    const i18n = (await import('@/i18n')).default;
     const router = (await import('@/router')).default;
 
     // Import the main module which should call createApp
     await import('../main');
 
+    const app = vi.mocked(createApp).mock.results[0].value;
+    const { handleGlobalError } = await import('../main');
+
     expect(createApp).toHaveBeenCalled();
     expect(createPinia).toHaveBeenCalled();
-    expect(router).toBeDefined();
+    expect(app.use).toHaveBeenCalledWith(expect.anything()); // pinia
+    expect(PiniaColadaQueryHooksPlugin).toHaveBeenCalledWith({ onError: handleGlobalError });
+    expect(app.use).toHaveBeenCalledWith(
+      PiniaColada,
+      expect.objectContaining({
+        plugins: ['mock-plugin'],
+        mutationOptions: { onError: handleGlobalError },
+      }),
+    );
+    expect(app.use).toHaveBeenCalledWith(router);
+    expect(app.use).toHaveBeenCalledWith(i18n);
+    expect(app.mount).toHaveBeenCalledWith('#app');
   });
 
   describe('handleGlobalError', () => {

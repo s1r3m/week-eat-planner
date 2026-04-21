@@ -25,8 +25,9 @@ export const handleGlobalError = (error: unknown) => {
   // Don't show toast for silent refresh failures
   if (error.config?.url?.includes('/auth/refresh')) return;
 
+  const detail = (error?.response?.data as { detail?: unknown } | undefined)?.detail;
   const message =
-    (error.response?.data as { detail?: string })?.detail || error.message || 'An error occurred';
+    typeof detail === 'string' && detail.trim() ? detail : error.message || 'An error occurred';
   toast.error(message);
 };
 
