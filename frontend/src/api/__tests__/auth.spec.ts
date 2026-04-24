@@ -18,7 +18,7 @@ import { toast } from 'vue-sonner';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 vi.mock('vue-router', () => ({
-  useRouter: vi.fn(),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 
 vi.mock('vue-sonner', () => ({
@@ -88,6 +88,20 @@ describe('auth api', () => {
 
       expect(accessToken.value).toBe('new-token');
       expect(cache.invalidateQueries).toHaveBeenCalled();
+    });
+
+    it('shows toast and redirects to weeks on success', async () => {
+      const pushMock = vi.fn();
+      vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
+
+      const mutationConfig = loginMutation();
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
+
+      // @ts-ignore
+      await mutationConfig.onSuccess(loginInfo);
+
+      expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEK });
     });
   });
 
