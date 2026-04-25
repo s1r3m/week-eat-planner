@@ -108,13 +108,13 @@ describe('auth api', () => {
   describe('signupMutation', () => {
     it('returns user data on success', async () => {
       const payload = { email: 'test@example.com', username: 'test', password: 'password' };
-      const user = { user_id: '1', email: 'test@example.com', is_active: true };
-      mockApi.onPost('/auth/signup').reply(200, user);
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
+      mockApi.onPost('/auth/signup').reply(201, loginInfo);
 
       const mutationConfig = signupMutation();
       // @ts-ignore
       const result = await mutationConfig.mutation(payload);
-      expect(result).toEqual(user);
+      expect(result).toEqual(loginInfo);
     });
 
     it('shows toast and redirects to login on success', async () => {

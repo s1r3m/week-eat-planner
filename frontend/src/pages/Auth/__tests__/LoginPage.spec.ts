@@ -44,22 +44,17 @@ describe('LoginPage', () => {
 
   it('contains a link to the signup page', () => {
     const wrapper = mountComponent();
-    const links = wrapper.findAll('a');
 
-    // First link is forgot password, second is signup
-    const signupLink = links[1];
+    const signupLink = wrapper.find('a[href="/signup"]');
 
     expect(signupLink.exists()).toBe(true);
-    expect(signupLink.attributes('href')).toBe('/signup');
     expect(signupLink.text()).toContain('Register!');
   });
 
   it('contains a link to the forgot password page', () => {
     const wrapper = mountComponent();
-    const links = wrapper.findAll('a');
 
-    // First link is forgot password
-    const forgotPasswordLink = links[0];
+    const forgotPasswordLink = wrapper.find('a[href="/forgot-password"]');
 
     expect(forgotPasswordLink.exists()).toBe(true);
     expect(forgotPasswordLink.text()).toContain('Reset it!');

@@ -33,13 +33,13 @@ async def create_user(
     request: Request,
     response: Response,
 ) -> Token:
-    """Registers a new user.
+    """Registers a new user and authenticates them.
 
     Args:
         user_data: The user's email and password.
 
     Returns:
-        The public information for the newly created user.
+        A Token object containing the access token and token type.
 
     Raises:
         SignUpWithAuthException: If the request contains an Authorization header.
@@ -116,8 +116,7 @@ async def refresh_tokens(
         raise RefreshTokenMissingException()
 
     access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
-    if cookie_token != refresh_token:
-        set_refresh_cookie(response, refresh_token)
+    set_refresh_cookie(response, refresh_token)
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 

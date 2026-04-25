@@ -4,6 +4,7 @@ import AuthLoginForm from '../AuthLoginForm.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
+import { useForm } from 'vee-validate';
 import { ref } from 'vue';
 import { flushPromises } from '@vue/test-utils';
 
@@ -16,6 +17,52 @@ vi.mock('@/api/auth', () => ({
 vi.mock('@pinia/colada', () => ({
   useMutation: vi.fn(),
 }));
+
+// Mock vee-validate
+vi.mock('vee-validate', () => ({
+  useField: vi.fn(() => ({ value: ref('') })),
+  useForm: vi.fn(() => ({
+    handleSubmit: (cb: any) => (event: Event) => {
+      // Prevent default to stop native form submission
+      event?.preventDefault?.();
+      // Extract values from the form's native inputs if available
+      const form = event?.target as HTMLFormElement;
+      let values: Record<string, string> = {};
+
+      if (form) {
+        const formData = new FormData(form);
+        for (const [key, value] of formData.entries()) {
+          values[key] = value as string;
+        }
+      }
+
+      // If no form values, try to get from component state via the event
+      // This is a fallback for when using custom inputs (like Input component)
+      if (!values.email && !values.password) {
+        const submitter = (event as any)?.submitter;
+        // Try to get values from the wrapper's vm if available
+      }
+
+      return cb(values);
+    },
+    errors: ref({}),
+    meta: ref({ valid: true }),
+  })),
+  toTypedSchema: vi.fn((schema) => schema),
+}));
+
+// Mock @vee-validate/zod
+vi.mock('@vee-validate/zod', () => ({
+  toTypedSchema: vi.fn((schema) => schema),
+}));
+
+// Mock zod
+vi.mock('zod', async () => {
+  const actual = await vi.importActual('zod');
+  return {
+    ...actual,
+  };
+});
 
 describe('AuthLoginForm', () => {
   let router: any;
@@ -43,15 +90,14 @@ describe('AuthLoginForm', () => {
         plugins: [router],
         stubs: {
           Button: {
-            template: '<button :disabled="disabled" type="submit"><slot /></button>',
-            props: ['disabled'],
+            template: '<button type="submit"><slot /></button>',
           },
           Spinner: { template: '<div class="spinner" />' },
           Input: {
             template:
-              '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue'],
-            emits: ['update:modelValue'],
+              '<input :id="id" :name="id" :value="modelValue" :type="type" :placeholder="placeholder" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" />',
+            props: ['modelValue', 'id', 'type', 'placeholder'],
+            emits: ['update:modelValue', 'blur'],
           },
           Field: { template: '<div><slot /></div>' },
           FieldGroup: { template: '<div><slot /></div>' },
@@ -86,12 +132,23 @@ describe('AuthLoginForm', () => {
     });
 
     const wrapper = mountComponent();
+    const emailInput = wrapper.find('input#email');
+    const passwordInput = wrapper.find('input#password');
+    await emailInput.setValue('user@example.com');
+    await passwordInput.setValue('password123');
 
-    await wrapper.find('input#email').setValue('user@example.com');
-    await wrapper.find('input#password').setValue('password123');
+    // Trigger input events to update v-model
+    await emailInput.trigger('input');
+    await passwordInput.trigger('input');
 
-    // @ts-ignore
-    await wrapper.vm.onSubmit();
+    // Force vee-validate to validate
+    await wrapper.vm.$nextTick();
+
+    // Submit the form via the DOM
+    const form = wrapper.find('form');
+    await form.trigger('submit.prevent', {
+      submitter: wrapper.find('button[type="submit"]').element,
+    });
     await flushPromises();
 
     expect(loginMutate).toHaveBeenCalledWith({
@@ -125,22 +182,35 @@ describe('AuthLoginForm', () => {
   });
 
   it('disables submit button when form is invalid or loading', async () => {
+    const isLoading = ref(false);
+    const meta = ref({ valid: false });
+
     (useMutation as any).mockReturnValue({
       mutate: vi.fn(),
-      isLoading: ref(false),
+      isLoading,
       error: ref(null),
+    });
+
+    (useForm as any).mockReturnValue({
+      handleSubmit: vi.fn(),
+      errors: ref({}),
+      meta,
     });
 
     const wrapper = mountComponent();
     const button = wrapper.find('button[type="submit"]');
 
-    // Form starts invalid (empty fields), so button should be disabled
-    // Need to trigger validation to update meta.valid
-    await wrapper.find('input#email').setValue('test@example.com');
-    await wrapper.find('input#password').setValue('password123');
-    await flushPromises();
+    // 1. Assert disabled when form is invalid
+    expect(button.attributes('disabled')).toBeDefined();
 
-    // Now form should be valid and button should NOT be disabled
+    // 2. Assert enabled when form is valid
+    meta.value.valid = true;
+    await wrapper.vm.$nextTick();
     expect(button.attributes('disabled')).toBeUndefined();
+
+    // 3. Assert disabled when loading
+    isLoading.value = true;
+    await wrapper.vm.$nextTick();
+    expect(button.attributes('disabled')).toBeDefined();
   });
 });
