@@ -106,7 +106,7 @@ describe('auth api', () => {
   });
 
   describe('signupMutation', () => {
-    it('returns user data on success', async () => {
+    it('returns token data on success', async () => {
       const payload = { email: 'test@example.com', username: 'test', password: 'password' };
       const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
       mockApi.onPost('/auth/signup').reply(201, loginInfo);
@@ -117,7 +117,7 @@ describe('auth api', () => {
       expect(result).toEqual(loginInfo);
     });
 
-    it('shows toast and redirects to login on success', async () => {
+    it('shows toast and redirects to weeks on success', async () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
