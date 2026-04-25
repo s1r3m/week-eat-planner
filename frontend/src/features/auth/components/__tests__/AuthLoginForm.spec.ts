@@ -124,7 +124,7 @@ describe('AuthLoginForm', () => {
     expect(wrapper.find('form').text()).toContain('Invalid credentials');
   });
 
-  it('disables submit button when form is invalid or loading', () => {
+  it('disables submit button when form is invalid or loading', async () => {
     (useMutation as any).mockReturnValue({
       mutate: vi.fn(),
       isLoading: ref(false),
@@ -134,10 +134,13 @@ describe('AuthLoginForm', () => {
     const wrapper = mountComponent();
     const button = wrapper.find('button[type="submit"]');
 
-    // Button should be disabled when form is invalid or loading
-    // The exact behavior depends on vee-validate's meta.valid state
-    const buttonText = button.text();
-    // Either button shows "Logging in..." (when loading) or "Login" (when not)
-    expect(buttonText === 'Login' || buttonText === 'Logging in...').toBe(true);
+    // Form starts invalid (empty fields), so button should be disabled
+    // Need to trigger validation to update meta.valid
+    await wrapper.find('input#email').setValue('test@example.com');
+    await wrapper.find('input#password').setValue('password123');
+    await flushPromises();
+
+    // Now form should be valid and button should NOT be disabled
+    expect(button.attributes('disabled')).toBeUndefined();
   });
 });

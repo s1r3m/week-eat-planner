@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
 from week_eat_planner.api.schemas import Token, UserCreate, UserRead
-from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
@@ -21,17 +20,19 @@ from week_eat_planner.exceptions import (
     TokenForbidden,
     TokenRevokedException,
 )
+from week_eat_planner.helpers import set_refresh_cookie
 from week_eat_planner.services.auth_service import AuthService
 
 router = APIRouter(tags=['Auth'])
 
 
-@router.post(AppUrl.AUTH_SIGNUP, response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post(AppUrl.AUTH_SIGNUP, response_model=Token, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     request: Request,
-) -> UserRead:
+    response: Response,
+) -> Token:
     """Registers a new user.
 
     Args:
@@ -49,9 +50,12 @@ async def create_user(
         logger.warning('Authorization header should not be set for sign up requests.')
         raise SignUpWithAuthException()
 
-    created_user = await AuthService(session).register_user(user_data)
+    auth_service = AuthService(session)
+    created_user = await auth_service.register_user(user_data)
+    access_token, refresh_token = await auth_service.login(created_user.email, user_data.password)
+    set_refresh_cookie(response, refresh_token)
 
-    return UserRead.model_validate(created_user)
+    return Token(access_token=access_token, token_type=TokenType.BEARER)
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=Token)
@@ -82,15 +86,7 @@ async def login(
         raise LoginWithAuthException()
 
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
-    response.set_cookie(
-        key=REFRESH_TOKEN_COOKIE_NAME,
-        value=refresh_token,
-        httponly=True,
-        secure=not settings.IS_DEBUG,
-        samesite='lax' if settings.IS_DEBUG else 'strict',
-        max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
-        path='/',
-    )
+    set_refresh_cookie(response, refresh_token)
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 
@@ -121,15 +117,7 @@ async def refresh_tokens(
 
     access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
     if cookie_token != refresh_token:
-        response.set_cookie(
-            key=REFRESH_TOKEN_COOKIE_NAME,
-            value=refresh_token,
-            httponly=True,
-            secure=not settings.IS_DEBUG,
-            samesite='lax' if settings.IS_DEBUG else 'strict',
-            max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
-            path='/',
-        )
+        set_refresh_cookie(response, refresh_token)
 
     return Token(access_token=access_token, token_type=TokenType.BEARER)
 

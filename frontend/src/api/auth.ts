@@ -83,7 +83,7 @@ export const loginMutation = defineMutation(() => {
       toast.success('Logged in successfully!');
       accessToken.value = data.access_token;
       queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
-      await router.push({ name: ROUTE_NAMES.WEEK });
+      await router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
 });
@@ -93,12 +93,16 @@ export const loginMutation = defineMutation(() => {
  */
 export const signupMutation = defineMutation(() => {
   const router = useRouter();
+  const queryCache = useQueryCache();
+
   return {
     mutation: (payload: SignUpPayload) =>
-      apiClient.post<UserData>('/auth/signup', payload).then((res) => res.data),
-    onSuccess: async () => {
+      apiClient.post<LoginInfo>('/auth/signup', payload).then((res) => res.data),
+    onSuccess: async (data: LoginInfo) => {
       toast.success('Registration complete!');
-      await router.push({ name: ROUTE_NAMES.LOGIN });
+      accessToken.value = data.access_token;
+      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      await router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
 });

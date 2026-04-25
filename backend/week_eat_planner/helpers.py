@@ -2,10 +2,11 @@
 
 from uuid import UUID
 
-from fastapi import UploadFile
+from fastapi import Response, UploadFile
 from uuid_utils import uuid7
 
-from week_eat_planner.constants import ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES
+from week_eat_planner.config import settings
+from week_eat_planner.constants import ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES, REFRESH_TOKEN_COOKIE_NAME
 from week_eat_planner.exceptions import (
     ImageContentTypeMissingException,
     ImageTooLargeException,
@@ -14,17 +15,28 @@ from week_eat_planner.exceptions import (
 
 
 def generate_uuid7() -> UUID:
-    """uuid7() returns uuid_utils.UUID but the DB doesn't recognise that.
+    """Generate a UUID v7 (time-ordered UUID).
 
+    uuid7() returns uuid_utils.UUID but the DB doesn't recognise that.
     Instead, convert the new value to uuid.UUID type.
 
     Returns:
-        uuid.UUID uuid7() representation.
+        A UUID v7 instance.
     """
     return UUID(str(uuid7()))
 
 
 async def check_image_suitable(image: UploadFile) -> None:
+    """Validate an uploaded image for type and size.
+
+    Args:
+        image: The uploaded file to validate.
+
+    Raises:
+        ImageContentTypeMissingException: If the image has no content type.
+        UnsupportedImageTypeException: If the image type is not allowed.
+        ImageTooLargeException: If the image exceeds the size limit.
+    """
     if not image.content_type:
         raise ImageContentTypeMissingException
 
@@ -38,3 +50,21 @@ async def check_image_suitable(image: UploadFile) -> None:
 
     # Reset file pointer for storage client
     await image.seek(0)
+
+
+def set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    """Set the refresh token as an HTTP-only cookie.
+
+    Args:
+        response: The FastAPI response object to set the cookie on.
+        refresh_token: The refresh token value to store in the cookie.
+    """
+    response.set_cookie(
+        key=REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh_token,
+        httponly=True,
+        secure=not settings.IS_DEBUG,
+        samesite='lax' if settings.IS_DEBUG else 'strict',
+        max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
+        path='/',
+    )

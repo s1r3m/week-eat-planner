@@ -55,8 +55,8 @@ async def test_create_user__valid_data__user_created_and_logged_in(client, usern
 
     assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
-    assert body.pop('id')
-    assert body == {'email': EMAIL, 'is_active': True, 'username': username, 'avatar_url': None}
+    assert 'access_token' in body and body['access_token']
+    assert body['token_type'] == TokenType.BEARER
 
 
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
@@ -93,7 +93,7 @@ async def test_login__valid_credentials__token_returned(client, created_user):
 
     assert response.status_code == status.HTTP_200_OK
     body = response.json()
-    assert 'access_token' in body
+    assert 'access_token' in body and body['access_token']
     assert body['token_type'] == TokenType.BEARER
 
 

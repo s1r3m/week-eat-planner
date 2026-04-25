@@ -101,7 +101,7 @@ describe('auth api', () => {
       await mutationConfig.onSuccess(loginInfo);
 
       expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
-      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEK });
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
     });
   });
 
@@ -122,12 +122,13 @@ describe('auth api', () => {
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
       const mutationConfig = signupMutation();
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
 
       // @ts-ignore
-      await mutationConfig.onSuccess();
+      await mutationConfig.onSuccess(loginInfo);
 
       expect(toast.success).toHaveBeenCalledWith('Registration complete!');
-      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.LOGIN });
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
     });
   });
 
