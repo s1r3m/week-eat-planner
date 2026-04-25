@@ -51,7 +51,7 @@ describe('auth api', () => {
   afterEach(() => {
     mockApi.restore();
     mockAuth.restore();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('isAuthenticated is true when accessToken has a value', () => {
