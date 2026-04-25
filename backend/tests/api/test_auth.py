@@ -55,8 +55,9 @@ async def test_create_user__valid_data__user_created_and_logged_in(client, usern
 
     assert response.status_code == status.HTTP_201_CREATED
     body = response.json()
-    assert body.pop('id')
-    assert body == {'email': EMAIL, 'is_active': True, 'username': username, 'avatar_url': None}
+    assert 'access_token' in body
+    assert body['access_token']
+    assert body['token_type'] == TokenType.BEARER
 
 
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
@@ -94,6 +95,7 @@ async def test_login__valid_credentials__token_returned(client, created_user):
     assert response.status_code == status.HTTP_200_OK
     body = response.json()
     assert 'access_token' in body
+    assert body['access_token']
     assert body['token_type'] == TokenType.BEARER
 
 
@@ -157,11 +159,12 @@ async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_fo
     assert response.json() == {'detail': error.detail}
 
 
-async def test_refresh_token__refresh_token_far_from_expire__no_cookies_in_response(auth_client_for_created_user):
+async def test_refresh_token__refresh_token_far_from_expire__same_token_in_cookies(auth_client_for_created_user):
+    old_token = auth_client_for_created_user.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
     assert response.status_code == status.HTTP_200_OK
-    assert not response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
+    assert old_token == response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
 
 
 async def test_refresh_token__refresh_token_about_to_expire__new_token_in_cookies(auth_client_for_created_user):

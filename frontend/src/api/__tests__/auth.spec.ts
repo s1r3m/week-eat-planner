@@ -18,7 +18,7 @@ import { toast } from 'vue-sonner';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 vi.mock('vue-router', () => ({
-  useRouter: vi.fn(),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
 }));
 
 vi.mock('vue-sonner', () => ({
@@ -51,7 +51,7 @@ describe('auth api', () => {
   afterEach(() => {
     mockApi.restore();
     mockAuth.restore();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('isAuthenticated is true when accessToken has a value', () => {
@@ -89,31 +89,46 @@ describe('auth api', () => {
       expect(accessToken.value).toBe('new-token');
       expect(cache.invalidateQueries).toHaveBeenCalled();
     });
+
+    it('shows toast and redirects to weeks on success', async () => {
+      const pushMock = vi.fn();
+      vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
+
+      const mutationConfig = loginMutation();
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
+
+      // @ts-ignore
+      await mutationConfig.onSuccess(loginInfo);
+
+      expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
+    });
   });
 
   describe('signupMutation', () => {
-    it('returns user data on success', async () => {
+    it('returns token data on success', async () => {
       const payload = { email: 'test@example.com', username: 'test', password: 'password' };
-      const user = { user_id: '1', email: 'test@example.com', is_active: true };
-      mockApi.onPost('/auth/signup').reply(200, user);
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
+      mockApi.onPost('/auth/signup').reply(201, loginInfo);
 
       const mutationConfig = signupMutation();
       // @ts-ignore
       const result = await mutationConfig.mutation(payload);
-      expect(result).toEqual(user);
+      expect(result).toEqual(loginInfo);
     });
 
-    it('shows toast and redirects to login on success', async () => {
+    it('shows toast and redirects to weeks on success', async () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
       const mutationConfig = signupMutation();
+      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
 
       // @ts-ignore
-      await mutationConfig.onSuccess();
+      await mutationConfig.onSuccess(loginInfo);
 
       expect(toast.success).toHaveBeenCalledWith('Registration complete!');
-      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.LOGIN });
+      expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
     });
   });
 

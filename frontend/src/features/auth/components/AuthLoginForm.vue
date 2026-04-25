@@ -1,5 +1,5 @@
 <template>
-  <form id="signup-form" novalidate @submit.prevent="onSubmit">
+  <form id="login-form" novalidate @submit.prevent="onSubmit">
     <FieldSet>
       <FieldGroup>
         <Field>
@@ -7,41 +7,30 @@
           <Input
             id="email"
             v-model="email"
+            :class="{ 'border-destructive': errors.email || error }"
             type="email"
-            :class="{ 'border-destructive': errors.email }"
             placeholder="your@email.com"
           />
-          <FieldError>{{ errors.email }}</FieldError>
-        </Field>
-        <Field>
-          <FieldLabel for="username"> Username </FieldLabel>
-          <Input
-            id="username"
-            v-model="username"
-            type="text"
-            :class="{ 'border-destructive': errors.username }"
-            placeholder="Your username"
-          />
-          <FieldError>{{ errors.username }}</FieldError>
+          <FieldError> {{ errors.email }}</FieldError>
         </Field>
         <Field>
           <FieldLabel for="password"> Password </FieldLabel>
           <Input
             id="password"
             v-model="password"
+            :class="{ 'border-destructive': errors.password || error }"
             type="password"
-            :class="{ 'border-destructive': errors.password }"
             placeholder="Your password"
           />
-          <FieldError>{{ errors.password }}</FieldError>
+          <FieldError> {{ errors.password }}</FieldError>
         </Field>
       </FieldGroup>
 
       <FieldError v-if="error">{{ error.message }}</FieldError>
 
-      <Button type="submit" :disabled="!meta.valid || isLoading">
+      <Button type="submit" class="w-full cursor-pointer" :disabled="!meta.valid || isLoading">
         <Spinner v-if="isLoading" />
-        {{ isLoading ? 'Signing up...' : 'Sign up' }}
+        {{ isLoading ? 'Logging in...' : 'Login' }}
       </Button>
     </FieldSet>
   </form>
@@ -53,7 +42,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 
 import { useMutation } from '@pinia/colada';
-import { signupMutation } from '@/api/auth';
+import { loginMutation } from '@/api/auth';
 
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
@@ -65,7 +54,6 @@ const schema = zod.object({
     .string()
     .min(1, { error: 'This is required' })
     .pipe(zod.email({ error: 'Invalid email' })),
-  username: zod.string().min(1, { error: 'This is required' }),
   password: zod
     .string()
     .min(1, { error: 'This is required' })
@@ -77,16 +65,14 @@ const { handleSubmit, errors, meta } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     email: '',
-    username: '',
     password: '',
   },
 });
 
 const { value: email } = useField<FormValues['email']>('email');
-const { value: username } = useField<FormValues['username']>('username');
 const { value: password } = useField<FormValues['password']>('password');
 
-const { mutateAsync: signup, isLoading, error } = useMutation(signupMutation());
+const { mutate: login, isLoading, error } = useMutation(loginMutation());
 
-const onSubmit = handleSubmit((values: FormValues) => signup(values));
+const onSubmit = handleSubmit((values: FormValues) => login(values));
 </script>

@@ -25,12 +25,18 @@ export interface LoginInfo {
 }
 
 /**
+ * Payload to login a user.
+ */
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+/**
  * Payload for registering a new user.
  */
-export interface SignUpPayload {
-  email: string;
+export interface SignUpPayload extends LoginPayload {
   username: string;
-  password: string;
 }
 
 /**
@@ -65,14 +71,19 @@ export const getUserQuery = defineQueryOptions(() => ({
  * Stores the received access token and invalidates user data cache.
  */
 export const loginMutation = defineMutation(() => {
+  const router = useRouter();
   const queryCache = useQueryCache();
 
   return {
-    mutation: (params: URLSearchParams) =>
-      apiClient.post<LoginInfo>('/auth/login', params).then((res) => res.data),
-    onSuccess: (data: LoginInfo) => {
+    mutation: (payload: LoginPayload) => {
+      const params = new URLSearchParams({ username: payload.email, password: payload.password });
+      return apiClient.post<LoginInfo>('/auth/login', params).then((res) => res.data);
+    },
+    onSuccess: async (data: LoginInfo) => {
+      toast.success('Logged in successfully!');
       accessToken.value = data.access_token;
       queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      await router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
 });
@@ -82,12 +93,16 @@ export const loginMutation = defineMutation(() => {
  */
 export const signupMutation = defineMutation(() => {
   const router = useRouter();
+  const queryCache = useQueryCache();
+
   return {
     mutation: (payload: SignUpPayload) =>
-      apiClient.post<UserData>('/auth/signup', payload).then((res) => res.data),
-    onSuccess: async () => {
+      apiClient.post<LoginInfo>('/auth/signup', payload).then((res) => res.data),
+    onSuccess: async (data: LoginInfo) => {
       toast.success('Registration complete!');
-      await router.push({ name: ROUTE_NAMES.LOGIN });
+      accessToken.value = data.access_token;
+      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      await router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
 });
