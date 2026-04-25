@@ -25,7 +25,7 @@ export interface LoginInfo {
 }
 
 /**
- * Payload to loign a user.
+ * Payload to login a user.
  */
 export interface LoginPayload {
   email: string;
