@@ -5,7 +5,7 @@
   "compilerOptions": {
     "composite": true,
     "moduleResolution": "bundler",
-    "types": ["vite/client", "vitest/globals"],
+    "types": ["vite/client", "vitest/globals", "google.accounts"],
     "paths": {
       "@/*": ["./src/*"]
     }

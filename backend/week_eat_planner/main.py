@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from week_eat_planner.api import auth, monitoring, recipe, user, week
+from week_eat_planner.clients.async_client import http_client_manager
 from week_eat_planner.db.session_maker import db
 
 
@@ -17,6 +18,7 @@ async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
 
+    await http_client_manager.close_client()
     await db.close()
 
 
@@ -35,7 +37,7 @@ def create_app() -> FastAPI:
 app = create_app()
 
 origins = [
-    'http://localhost:5173',
+    'http://localhost:3000',
     'https://yourproductionfrontend.com',
 ]
 

@@ -8,6 +8,7 @@ REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 class AppUrl(StrEnum):
     """Enumeration of API endpoint URLs."""
 
+    AUTH_GOOGLE_EXCHANGE = '/auth/google/exchange'
     AUTH_LOGIN = '/auth/login'
     AUTH_LOGOUT = '/auth/logout'
     AUTH_REFRESH = '/auth/refresh'
@@ -46,6 +47,10 @@ class Unit(StrEnum):
     GRAM = 'g'
     MILILITERS = 'ml'
     PIECES = 'pcs'
+
+
+class OAuthProvider(StrEnum):
+    GOOGLE = 'GOOGLE'
 
 
 MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024

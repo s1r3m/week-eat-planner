@@ -35,6 +35,8 @@ services:
       - ADMIN_IDS=[193191236]
       - BOT_TOKEN=your_bot_token
       - TG_API_SITE=https://api.telegram.org
+      - GOOGLE_CLIENT_id=google_app_id
+      - GOOGLE_CLIENT_SECRET=some_secret
     expose:
       - 8000
     depends_on:

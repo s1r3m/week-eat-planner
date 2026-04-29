@@ -19,6 +19,8 @@ REFRESH_TOKEN_TTL = 900
 ADMIN_IDS = [1]
 BOT_TOKEN = 'dummy_token'
 TG_API_SITE = 'http://api.telegram.org'
+GOOGLE_CLIENT_ID = 'google_id'
+GOOGLE_CLIENT_SECRET = 'google_secret'
 
 
 @pytest.fixture
@@ -40,6 +42,8 @@ def mocked_settings(mocker):
     mocker.patch.object(settings, 'ADMIN_IDS', ADMIN_IDS)
     mocker.patch.object(settings, 'BOT_TOKEN', BOT_TOKEN)
     mocker.patch.object(settings, 'TG_API_SITE', TG_API_SITE)
+    mocker.patch.object(settings, 'GOOGLE_CLIENT_ID', GOOGLE_CLIENT_ID)
+    mocker.patch.object(settings, 'GOOGLE_CLIENT_SECRET', GOOGLE_CLIENT_SECRET)
 
 
 def test_get_webhook_url__always__correct_setting(mocked_settings):

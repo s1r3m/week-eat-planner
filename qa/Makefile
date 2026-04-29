@@ -13,7 +13,7 @@ UV_VERSION = 0.6.11
 # Paths.
 PROJECT_PATH = $(shell dirname $(CURDIR))
 
-export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_at_$(PYTHON)
+export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_autotests_$(PYTHON)
 
 # Bin.
 VENV_ACTIVATE = $(VIRTUAL_ENV)/bin/activate

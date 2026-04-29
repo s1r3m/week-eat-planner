@@ -79,11 +79,11 @@ export const loginMutation = defineMutation(() => {
       const params = new URLSearchParams({ username: payload.email, password: payload.password });
       return apiClient.post<LoginInfo>('/auth/login', params).then((res) => res.data);
     },
-    onSuccess: async (data: LoginInfo) => {
+    onSuccess: (data: LoginInfo) => {
       toast.success('Logged in successfully!');
       accessToken.value = data.access_token;
       queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
-      await router.push({ name: ROUTE_NAMES.WEEKS });
+      router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
 });
@@ -118,7 +118,7 @@ export const logoutMutation = defineMutation(() => {
     onSuccess: () => {
       accessToken.value = null;
     },
-    onError: (err: Error) => {
+    onError: (_err: Error) => {
       accessToken.value = null;
     },
     onSettled: () => {
@@ -161,3 +161,23 @@ export const initAuth = async () => {
     accessToken.value = null;
   }
 };
+
+export const googleAuthMutation = defineMutation(() => {
+  const queryCache = useQueryCache();
+  const router = useRouter();
+
+  return {
+    mutation: (code: string) =>
+      apiClient.post<LoginInfo>('/auth/google/exchange', { code }).then((res) => res.data),
+    onSuccess: (response: LoginInfo) => {
+      accessToken.value = response.access_token;
+      router.push({ name: ROUTE_NAMES.WEEKS });
+    },
+    onError: (err: Error) => {
+      toast.error(`Request failed: ${err.message}`);
+    },
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+    },
+  };
+});

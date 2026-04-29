@@ -30,9 +30,12 @@ class User(Base):
     __tablename__ = 'users'
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-    username: Mapped[str] = mapped_column(unique=False, nullable=True)
-    avatar_url: Mapped[str] = mapped_column(unique=False, nullable=True)
-    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    username: Mapped[str] = mapped_column(unique=False, nullable=False)  # TODO: make it unique
+    avatar_url: Mapped[str | None] = mapped_column(unique=True, nullable=True)
+    avatar_key: Mapped[str | None] = mapped_column(nullable=True)
+    oauth_provider: Mapped[str | None] = mapped_column(nullable=True)
+    oauth_id: Mapped[str | None] = mapped_column(nullable=True)
+    hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
 
     weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')

@@ -2,12 +2,16 @@
 
 from datetime import UTC, datetime, timedelta
 
+from httpx import AsyncClient
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserRead
+from week_eat_planner.api.schemas.user import GoogleCode, UserFilter
+from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.config import settings
+from week_eat_planner.constants import OAuthProvider
 from week_eat_planner.db.dao import RefreshTokenDAO, UserDAO
 from week_eat_planner.db.models import RefreshToken, User
 from week_eat_planner.exceptions import (
@@ -86,13 +90,32 @@ class AuthService:
             raise InvalidEmailException() from exc
 
         db_user = await self._user_dao.find_one_or_none(email)
-        if not (db_user and verify_password(password, str(db_user.hashed_password))):
+        if not (db_user and db_user.hashed_password and verify_password(password, str(db_user.hashed_password))):
             logger.error(f'Invalid credentials for {email}!')
-            raise InvalidCredentialsException()
+            raise InvalidCredentialsException()  # TODO: update with a proper error in case oauth was used
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
         logger.info(f'User {email} logged in successfully.')
+        return access_token, refresh_token
+
+    async def login_with_google(self, data: GoogleCode, httpx_client: AsyncClient) -> tuple[str, str]:
+        logger.info('Auth with Google OAuth begins')
+        client = GoogleAuthClient(httpx_client)
+        user_data = await client.token_exchange(data.code)
+        db_user = await self._user_dao.find_one_or_none(UserFilter(oauth_id=user_data.oauth_id))
+        if not db_user:
+            # Create a user in db.
+            # Check if email is used.
+            email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
+            if email_user and email_user.hashed_password:
+                logger.error('The email is used by email registration')
+                raise InvalidCredentialsException()  # TODO: update with a proper error
+
+            user = User(**user_data.model_dump(), oauth_provider=OAuthProvider.GOOGLE)
+            db_user = await self._user_dao.add(user)
+
+        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token
 
     async def refresh_tokens(self, old_refresh_token: str) -> tuple[str, str]:

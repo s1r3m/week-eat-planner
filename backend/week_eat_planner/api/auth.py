@@ -4,11 +4,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
+from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
 from week_eat_planner.api.schemas import Token, UserCreate, UserRead
+from week_eat_planner.api.schemas.user import GoogleCode
 from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
@@ -154,3 +157,23 @@ async def logout(
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/')
     return
+
+
+@router.post(AppUrl.AUTH_GOOGLE_EXCHANGE, response_model=Token)
+async def google_auth(
+    data: GoogleCode,
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    httpx_client: Annotated[AsyncClient, Depends(get_httpx_client)],
+    response: Response,
+) -> Token:
+    """Implements Google OAuth 2.0 flow.
+    If the user exists -- log them in. Otherwise create a record and then log in.
+
+    Returns:
+        A Token object containing the access token.
+    """
+    logger.info(f'Got POST {AppUrl.AUTH_GOOGLE_EXCHANGE} request.')
+    access_token, refresh_token = await AuthService(session).login_with_google(data, httpx_client)
+
+    set_refresh_cookie(response, refresh_token)
+    return Token(access_token=access_token, token_type=TokenType.BEARER)

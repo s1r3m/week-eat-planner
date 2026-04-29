@@ -31,11 +31,11 @@ describe('AuthSocialButtons', () => {
     expect(buttons[1].text()).toContain('Facebook');
   });
 
-  it('disables both OAuth buttons', () => {
+  it('renders Google enabled and Facebook disabled', () => {
     const wrapper = mountComponent();
     const buttons = wrapper.findAll('button');
 
-    expect(buttons[0].attributes('disabled')).toBeDefined();
+    expect(buttons[0].attributes('disabled')).toBeUndefined();
     expect(buttons[1].attributes('disabled')).toBeDefined();
   });
 

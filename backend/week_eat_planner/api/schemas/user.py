@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from week_eat_planner.api.schemas.common import RecordId
+from week_eat_planner.constants import OAuthProvider
 
 
 class Email(BaseModel):
@@ -23,7 +24,24 @@ class UserRead(Email, RecordId):
     """
 
     is_active: bool
-    username: str | None
+    username: str
     avatar_url: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserFilter(BaseModel):
+    oauth_id: str | None = None
+    email: str | None = None
+
+
+class GoogleCode(BaseModel):
+    code: str
+
+
+class OAuthUserData(BaseModel):
+    oauth_provider: OAuthProvider = Field(exclude=True)
+    oauth_id: str
+    email: str
+    username: str
+    avatar_url: str | None
