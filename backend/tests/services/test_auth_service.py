@@ -80,7 +80,9 @@ async def test_register_user__valid_email__user_returned(mocked_user_dao, mocked
     mocked_user_dao.find_one_or_none.return_value = None
     mocked_user_dao.add.return_value = user_read
 
-    user = await AuthService(mocked_session).register_user(UserCreate(email=user_read.email, password=PASSWORD))
+    user = await AuthService(mocked_session).register_user(
+        UserCreate(email=user_read.email, password=PASSWORD, username=user_read.username)
+    )
 
     assert user == user_read
 
@@ -89,7 +91,9 @@ async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_
     mocked_user_dao.find_one_or_none.return_value = user_read
 
     with pytest.raises(UserAlreadyExistsException) as exc:
-        await AuthService(mocked_session).register_user(UserCreate(email=user_read.email, password=PASSWORD))
+        await AuthService(mocked_session).register_user(
+            UserCreate(email=user_read.email, password=PASSWORD, username=user_read.username)
+        )
 
     error = UserAlreadyExistsException()
     assert exc.value.status_code == error.status_code

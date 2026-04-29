@@ -41,16 +41,8 @@ async def revoked_refresh_token_user(db_session: AsyncSession, created_user: Use
     await db_session.flush()
     return created_user
 
-
-@pytest.mark.parametrize(
-    'username',
-    [
-        pytest.param(USERNAME, id='with_username'),
-        pytest.param(None, id='without_username'),
-    ],
-)
-async def test_create_user__valid_data__user_created_and_logged_in(client, username):
-    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
+async def test_create_user__valid_data__user_created_and_logged_in(client):
+    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -60,8 +52,22 @@ async def test_create_user__valid_data__user_created_and_logged_in(client, usern
     assert body['token_type'] == TokenType.BEARER
 
 
+@pytest.mark.parametrize(
+    'username',
+    [
+        pytest.param(None, id='not_present'),
+        pytest.param('', id='empty_string'),
+    ]
+)
+async def test_create_user__bad_username__unprocessable_entity_error(client, username):
+    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
-    login_data = {'email': created_user.email, 'password': PASSWORD}
+    login_data = {'email': created_user.email, 'password': PASSWORD, 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     error = UserAlreadyExistsException()
@@ -78,7 +84,7 @@ async def test_create_user__invalid_email_format__unprocessable_entity_error(cli
 async def test_create_user__with_authorization_header__error_raised(
     auth_client_for_created_user,
 ):
-    login_data = {'email': EMAIL, 'password': PASSWORD}
+    login_data = {'email': EMAIL, 'password': PASSWORD, 'username': USERNAME}
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_SIGNUP, json=login_data)
 

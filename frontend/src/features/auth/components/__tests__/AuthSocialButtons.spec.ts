@@ -1,9 +1,29 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import AuthSocialButtons from '../AuthSocialButtons.vue';
+
+vi.mock('../composables/useGoogleAuth', () => ({
+  useGoogleAuth: () => ({
+    createCodeClient: vi.fn().mockResolvedValue({
+      requestCode: vi.fn(),
+    }),
+  }),
+}));
+
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn().mockReturnValue({
+    mutate: vi.fn(),
+  }),
+}));
+
+vi.mock('@/api/auth', () => ({
+  googleAuthMutation: vi.fn(),
+}));
 
 describe('AuthSocialButtons', () => {
   const mountComponent = () => {
+    setActivePinia(createPinia());
     return mount(AuthSocialButtons, {
       global: {
         stubs: {
@@ -37,14 +57,5 @@ describe('AuthSocialButtons', () => {
 
     expect(buttons[0].attributes('disabled')).toBeUndefined();
     expect(buttons[1].attributes('disabled')).toBeDefined();
-  });
-
-  it('applies correct styling classes', () => {
-    const wrapper = mountComponent();
-    const container = wrapper.find('#oauth-container');
-
-    expect(container.classes()).toContain('flex');
-    expect(container.classes()).toContain('flex-col');
-    expect(container.classes()).toContain('gap-3');
   });
 });

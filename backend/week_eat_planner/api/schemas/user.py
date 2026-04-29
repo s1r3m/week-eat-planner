@@ -14,7 +14,7 @@ class UserCreate(Email):
     """Schema for creating a new user."""
 
     password: str
-    username: str | None = None
+    username: str = Field(min_length=1)
 
 
 class UserRead(Email, RecordId):
