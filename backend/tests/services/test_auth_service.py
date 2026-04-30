@@ -5,11 +5,14 @@ import pytest
 from tests.constants import HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN
 
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
+from week_eat_planner.api.schemas.user import GoogleCode, OAuthUserData
 from week_eat_planner.config import settings
+from week_eat_planner.constants import OAuthProvider
 from week_eat_planner.db.models import RefreshToken
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
     InvalidEmailException,
+    OAuthAccountException,
     RefreshTokenNotFoundException,
     RefreshTokenRevokedException,
     TokenExpiredException,
@@ -127,6 +130,80 @@ async def test_login__invalid_email__error_raised(mocked_session):
         await AuthService(mocked_session).login(bad_email, PASSWORD)
 
     error = InvalidEmailException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_login__oauth_account_no_password__error_raised(mocked_user_dao, mocked_session, db_user):
+    db_user.hashed_password = None
+    mocked_user_dao.find_one_or_none.return_value = db_user
+
+    with pytest.raises(OAuthAccountException) as exc:
+        await AuthService(mocked_session).login(db_user.email, PASSWORD)
+
+    error = OAuthAccountException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+@pytest.fixture
+def mocked_google_auth_client(mocker) -> AsyncMock:
+    client_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.services.auth_service.GoogleAuthClient', return_value=client_mock)
+    return client_mock
+
+
+@pytest.fixture
+def oauth_user_data() -> OAuthUserData:
+    return OAuthUserData(
+        oauth_provider=OAuthProvider.GOOGLE,
+        oauth_id='google-sub-123',
+        email='oauth@example.com',
+        username='OAuth User',
+        avatar_url='https://example.com/avatar.jpg',
+    )
+
+
+async def test_login_with_google__existing_user__tokens_returned(
+    mocked_user_dao, mocked_refresh_token_dao, mocked_session, db_user, oauth_user_data, mocked_google_auth_client
+):
+    mocked_google_auth_client.token_exchange.return_value = oauth_user_data
+    mocked_user_dao.find_one_or_none.return_value = db_user
+
+    access_token, refresh_token = await AuthService(mocked_session).login_with_google(
+        GoogleCode(code='auth_code'), AsyncMock()
+    )
+
+    assert access_token
+    assert refresh_token
+
+
+async def test_login_with_google__new_user__user_created_and_tokens_returned(
+    mocked_user_dao, mocked_refresh_token_dao, mocked_session, db_user, oauth_user_data, mocked_google_auth_client
+):
+    mocked_google_auth_client.token_exchange.return_value = oauth_user_data
+    mocked_user_dao.find_one_or_none.side_effect = [None, None]
+    mocked_user_dao.add.return_value = db_user
+
+    access_token, refresh_token = await AuthService(mocked_session).login_with_google(
+        GoogleCode(code='auth_code'), AsyncMock()
+    )
+
+    assert access_token
+    assert refresh_token
+    mocked_user_dao.add.assert_awaited_once()
+
+
+async def test_login_with_google__email_registered_via_other_method__error_raised(
+    mocked_user_dao, mocked_session, db_user, oauth_user_data, mocked_google_auth_client
+):
+    mocked_google_auth_client.token_exchange.return_value = oauth_user_data
+    mocked_user_dao.find_one_or_none.side_effect = [None, db_user]
+
+    with pytest.raises(OAuthAccountException) as exc:
+        await AuthService(mocked_session).login_with_google(GoogleCode(code='auth_code'), AsyncMock())
+
+    error = OAuthAccountException()
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
 

@@ -17,6 +17,7 @@ from week_eat_planner.db.models import RefreshToken, User
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
     InvalidEmailException,
+    OAuthAccountException,
     RefreshTokenNotFoundException,
     RefreshTokenRevokedException,
     TokenExpiredException,
@@ -90,9 +91,12 @@ class AuthService:
             raise InvalidEmailException() from exc
 
         db_user = await self._user_dao.find_one_or_none(email)
-        if not (db_user and db_user.hashed_password and verify_password(password, str(db_user.hashed_password))):
+        if db_user and not db_user.hashed_password:
+            logger.error(f'OAuth account attempted password login for {email}.')
+            raise OAuthAccountException()
+        if not (db_user and verify_password(password, str(db_user.hashed_password))):
             logger.error(f'Invalid credentials for {email}!')
-            raise InvalidCredentialsException()  # TODO: update with a proper error in case oauth was used
+            raise InvalidCredentialsException()
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
@@ -108,9 +112,9 @@ class AuthService:
             # Create a user in db.
             # Check if email is used.
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
-            if email_user and email_user.hashed_password:
-                logger.error('The email is used by email registration')
-                raise InvalidCredentialsException()  # TODO: update with a proper error
+            if email_user:
+                logger.error(f'Email {user_data.email} already registered via another method.')
+                raise OAuthAccountException()
 
             user = User(**user_data.model_dump(), oauth_provider=OAuthProvider.GOOGLE)
             db_user = await self._user_dao.add(user)
