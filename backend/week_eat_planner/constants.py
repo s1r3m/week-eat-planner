@@ -31,6 +31,8 @@ class AppUrl(StrEnum):
 
 
 class StorageBucket(StrEnum):
+    """Enumeration of object storage bucket names."""
+
     RECIPES = 'recipes'
     USERS = 'users'
     WEEKS = 'weeks'
@@ -43,6 +45,8 @@ class TokenType(StrEnum):
 
 
 class Unit(StrEnum):
+    """Enumeration of supported measurement units for recipe ingredients."""
+
     CANS = 'cans'
     GRAM = 'g'
     MILILITERS = 'ml'
@@ -50,6 +54,8 @@ class Unit(StrEnum):
 
 
 class OAuthProvider(StrEnum):
+    """Enumeration of supported OAuth identity providers."""
+
     GOOGLE = 'GOOGLE'
 
 

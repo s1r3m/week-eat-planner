@@ -22,4 +22,5 @@ export const ROUTE_NAMES = {
   NOT_FOUND: 'not-found',
 } as const;
 
+/** Union type of all valid route name values. */
 export type RouteName = (typeof ROUTE_NAMES)[keyof typeof ROUTE_NAMES];

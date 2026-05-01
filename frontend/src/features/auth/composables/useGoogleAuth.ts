@@ -1,5 +1,11 @@
 let googleScriptPromise: Promise<void> | null = null;
 
+/**
+ * Lazily loads the Google Identity Services script.
+ * Subsequent calls reuse the same promise, so the script is appended at most once.
+ *
+ * @returns A promise that resolves when the script is ready or rejects on load failure.
+ */
 export const loadGoogleScript = async (): Promise<void> => {
   if (googleScriptPromise) return googleScriptPromise;
 
@@ -25,6 +31,9 @@ export const loadGoogleScript = async (): Promise<void> => {
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
+/**
+ * Composable that exposes Google OAuth utilities for the custom button flow.
+ */
 export const useGoogleAuth = () => {
   /**
    * Initializes the OAuth2 Code Client for a custom button flow.

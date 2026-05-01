@@ -31,16 +31,22 @@ class UserRead(Email, RecordId):
 
 
 class UserFilter(BaseModel):
+    """Filter for querying users by OAuth credentials or email."""
+
     oauth_provider: OAuthProvider | None = None
     oauth_id: str | None = None
     email: str | None = None
 
 
 class GoogleCode(BaseModel):
+    """Request body carrying the one-time authorization code from the Google OAuth consent screen."""
+
     code: str = Field(min_length=1)
 
 
 class OAuthUserData(BaseModel):
+    """Verified identity data extracted from a Google ID token after a successful OAuth exchange."""
+
     oauth_provider: OAuthProvider
     oauth_id: str
     email: str

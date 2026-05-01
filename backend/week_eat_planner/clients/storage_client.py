@@ -52,6 +52,7 @@ class StorageClient:
         _client = self._get_client()
 
         def _upload() -> None:
+            """Blocking boto3 upload run inside a thread."""
             _client.upload_fileobj(
                 Fileobj=upload_file.file,
                 Bucket=bucket,
@@ -77,6 +78,7 @@ class StorageClient:
         logger.debug(f'Deleting key={file_key}: {bucket=} {key=}')
 
         def _delete() -> None:
+            """Blocking boto3 delete run inside a thread."""
             _client.delete_object(Bucket=bucket, Key=key)
 
         await asyncio.to_thread(_delete)

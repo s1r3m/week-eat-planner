@@ -11,6 +11,8 @@ from week_eat_planner.exceptions import InvalidJwtTokenException, NoEmailInToken
 
 
 class TokenProvider:
+    """Factory for creating and hashing JWT access tokens and opaque refresh tokens."""
+
     @classmethod
     def create_access_token(cls, email: str) -> str:
         """Creates a new JWT access token for a user.

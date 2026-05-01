@@ -14,6 +14,8 @@ from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenEx
 
 
 class ValidatedAssignments(NamedTuple):
+    """A meal slot and its new recipe assignment after passing all validation checks."""
+
     meal_slot: MealSlotId
     recipe: MealSlotUpdate
 

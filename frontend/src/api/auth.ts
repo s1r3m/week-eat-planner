@@ -162,6 +162,10 @@ export const initAuth = async () => {
   }
 };
 
+/**
+ * Mutation for authenticating a user via Google OAuth.
+ * Exchanges the authorization code for an access token and redirects to the weeks page.
+ */
 export const googleAuthMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   const router = useRouter();

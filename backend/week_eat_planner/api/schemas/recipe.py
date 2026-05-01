@@ -65,6 +65,7 @@ class ImageMixin(BaseModel):
 
     @computed_field
     def image_url(self) -> str | None:
+        """Derives a full public URL from the stored image key, or None if no image is set."""
         if self.image_key:
             return f'{settings.STORAGE_HOST}/{self.image_key}'
         return None
@@ -90,5 +91,7 @@ class RecipeReadMinimal(RecordId, ImageMixin):
 
 
 class RecipeFavoriteFilter(BaseModel):
+    """Filter for looking up a specific user–recipe favorite relationship."""
+
     user_id: UUID
     recipe_id: UUID
