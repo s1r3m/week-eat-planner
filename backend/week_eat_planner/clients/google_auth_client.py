@@ -7,9 +7,12 @@ from week_eat_planner.api.schemas.user import OAuthUserData
 from week_eat_planner.config import settings
 from week_eat_planner.constants import OAuthProvider
 
+GOOGLE_ISSUER = 'https://accounts.google.com'
+
 
 class GoogleUrl(StrEnum):
     TOKEN = 'https://oauth2.googleapis.com/token'
+    JWKS = 'https://www.googleapis.com/oauth2/v3/certs'
 
 
 class GoogleAuthClient:
@@ -28,8 +31,19 @@ class GoogleAuthClient:
             },
         )
         response.raise_for_status()
-        body = response.json()
-        data = jwt.get_unverified_claims(body['id_token'])
+        id_token = response.json()['id_token']
+
+        jwks_response = await self._client.get(GoogleUrl.JWKS)
+        jwks_response.raise_for_status()
+        jwks = jwks_response.json()
+
+        data = jwt.decode(
+            id_token,
+            jwks,
+            algorithms=['RS256'],
+            audience=settings.GOOGLE_CLIENT_ID,
+            issuer=GOOGLE_ISSUER,
+        )
 
         return OAuthUserData(
             oauth_provider=OAuthProvider.GOOGLE,
