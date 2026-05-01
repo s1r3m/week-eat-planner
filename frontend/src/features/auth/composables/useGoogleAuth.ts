@@ -19,8 +19,7 @@ export const loadGoogleScript = async (): Promise<void> => {
   return googleScriptPromise;
 };
 
-const CLIENT_ID =
-  '218612793791-n92qmv43m970cnp03qhtflchkrp6s8fr.apps.googleusercontent.com' as const;
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
 export const useGoogleAuth = () => {
   /**
