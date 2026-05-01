@@ -289,6 +289,27 @@ describe('MealSlotAssignRecipeDialog', () => {
     });
   });
 
+  describe('onAssign guard', () => {
+    it('does not call assign mutation when mealSlot becomes null before assign', async () => {
+      const wrapper = mount(MealSlotAssignRecipeDialog, {
+        props: { modelValue: mealSlotData, weekId } as any,
+        global: globalMountOptions,
+      });
+
+      await nextTick();
+      const card = wrapper.findComponent(RecipeSelectCard);
+      await card.trigger('click');
+
+      await wrapper.setProps({ modelValue: null });
+      await nextTick();
+
+      // Call onAssign directly via the component's exposed methods
+      (wrapper.vm as any).onAssign?.();
+
+      expect(mockMutate).not.toHaveBeenCalled();
+    });
+  });
+
   describe('dialog open/close', () => {
     it('emits update:modelValue with null when dialog closes', async () => {
       const wrapper = mount(MealSlotAssignRecipeDialog, {

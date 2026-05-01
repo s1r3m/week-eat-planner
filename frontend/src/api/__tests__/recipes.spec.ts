@@ -344,6 +344,54 @@ describe('recipes api', () => {
         expect(mockQueryCache.setQueryData).toHaveBeenCalled();
       });
 
+      it('flips is_favorite on all matching recipes in an array cache entry', async () => {
+        const recipes = [
+          { id: '1', name: 'Recipe', is_favorite: false },
+          { id: '2', name: 'Other', is_favorite: false },
+        ];
+        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(recipes);
+
+        const config = toggleFavoriteMutation() as any;
+        await config.onMutate({ id: '1', is_favorite: false });
+
+        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
+        const result = updater(recipes);
+        expect(result[0]).toEqual({ ...recipes[0], is_favorite: true });
+        expect(result[1]).toBe(recipes[1]);
+      });
+
+      it('flips is_favorite on a single-recipe (detail) cache entry', async () => {
+        const recipe = { id: '1', name: 'Recipe', is_favorite: false };
+        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(recipe);
+
+        const config = toggleFavoriteMutation() as any;
+        await config.onMutate({ id: '1', is_favorite: false });
+
+        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
+        expect(updater(recipe)).toEqual({ ...recipe, is_favorite: true });
+      });
+
+      it('leaves a non-matching single-recipe cache entry unchanged', async () => {
+        const recipe = { id: '2', name: 'Other', is_favorite: true };
+        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(recipe);
+
+        const config = toggleFavoriteMutation() as any;
+        await config.onMutate({ id: '1', is_favorite: true });
+
+        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
+        expect(updater(recipe)).toBe(recipe);
+      });
+
+      it('handles undefined cache entry in updateRecipe', async () => {
+        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(undefined);
+
+        const config = toggleFavoriteMutation() as any;
+        await config.onMutate({ id: '1', is_favorite: false });
+
+        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
+        expect(updater(undefined)).toBeUndefined();
+      });
+
       it('filters recipe out of favorites cache when un-favoriting', async () => {
         vi.mocked(mockQueryCache.getQueryData).mockReturnValue([{ id: '1' }, { id: '2' }]);
 

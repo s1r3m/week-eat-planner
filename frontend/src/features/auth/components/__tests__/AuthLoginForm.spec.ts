@@ -4,7 +4,7 @@ import AuthLoginForm from '../AuthLoginForm.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
-import { useForm } from 'vee-validate';
+import { useField, useForm } from 'vee-validate';
 import { ref } from 'vue';
 
 vi.mock('@/api/auth', () => ({
@@ -125,6 +125,26 @@ describe('AuthLoginForm', () => {
 
     const wrapper = mountComponent();
     expect(wrapper.find('form').text()).toContain('Invalid credentials');
+  });
+
+  it('updates the email and password fields when the user types', async () => {
+    const emailRef = ref('');
+    const passwordRef = ref('');
+    vi.mocked(useField)
+      .mockReturnValueOnce({ value: emailRef } as any)
+      .mockReturnValueOnce({ value: passwordRef } as any);
+    vi.mocked(useMutation).mockReturnValue({
+      mutate: vi.fn(),
+      isLoading: ref(false),
+      error: ref(null),
+    } as any);
+
+    const wrapper = mountComponent();
+    await wrapper.find('input[type="email"]').setValue('user@example.com');
+    await wrapper.find('input[type="password"]').setValue('secret123');
+
+    expect(emailRef.value).toBe('user@example.com');
+    expect(passwordRef.value).toBe('secret123');
   });
 
   it('disables the submit button when the form is invalid or loading', async () => {

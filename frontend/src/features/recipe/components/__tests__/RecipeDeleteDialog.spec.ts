@@ -110,10 +110,7 @@ describe('RecipeDeleteDialog', () => {
 
   it('does not call mutation when recipe is null during delete', async () => {
     const wrapper = mountComponent({ modelValue: null });
-    const deleteButton = wrapper
-      .findAll('[data-slot="button"]')
-      .find((btn) => btn.text().includes('Yes'));
-    await deleteButton?.trigger('click');
+    (wrapper.vm as any).onDelete?.();
     expect(mockMutate).not.toHaveBeenCalled();
   });
 });

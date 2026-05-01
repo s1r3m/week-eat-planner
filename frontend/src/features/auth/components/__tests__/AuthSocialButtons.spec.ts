@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AuthSocialButtons from '../AuthSocialButtons.vue';
 import { useMutation } from '@pinia/colada';
+import { useGoogleAuth } from '@/features/auth/composables/useGoogleAuth';
 
-vi.mock('../composables/useGoogleAuth', () => ({
-  useGoogleAuth: () => ({
-    createCodeClient: vi.fn().mockResolvedValue({ requestCode: vi.fn() }),
-  }),
+vi.mock('@/features/auth/composables/useGoogleAuth', () => ({
+  useGoogleAuth: vi.fn(),
 }));
 
 vi.mock('@pinia/colada', () => ({
@@ -19,8 +18,15 @@ vi.mock('@/api/auth', () => ({
 }));
 
 describe('AuthSocialButtons', () => {
+  const requestCode = vi.fn();
+  const createCodeClient = vi.fn();
+
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.clearAllMocks();
+    requestCode.mockReset();
+    createCodeClient.mockResolvedValue({ requestCode });
+    vi.mocked(useGoogleAuth).mockReturnValue({ createCodeClient } as any);
     vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn() } as any);
   });
 
@@ -46,5 +52,27 @@ describe('AuthSocialButtons', () => {
 
     expect(buttons[0].attributes('disabled')).toBeUndefined();
     expect(buttons[1].attributes('disabled')).toBeDefined();
+  });
+
+  it('initializes the code client on mount with a callback that calls googleAuth', async () => {
+    const googleAuth = vi.fn();
+    vi.mocked(useMutation).mockReturnValue({ mutate: googleAuth } as any);
+    mountComponent();
+    await flushPromises();
+
+    expect(createCodeClient).toHaveBeenCalledOnce();
+    const callback = createCodeClient.mock.calls[0][0];
+    callback({ code: 'auth-code-123' });
+    expect(googleAuth).toHaveBeenCalledWith('auth-code-123');
+  });
+
+  it('calls requestCode on the code client when the Google button is clicked', async () => {
+    const wrapper = mountComponent();
+    await flushPromises();
+
+    const googleButton = wrapper.find('button:not([disabled])');
+    await googleButton.trigger('click');
+
+    expect(requestCode).toHaveBeenCalledOnce();
   });
 });

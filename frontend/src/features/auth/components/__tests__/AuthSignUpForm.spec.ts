@@ -4,7 +4,7 @@ import AuthSignUpForm from '../AuthSignUpForm.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
-import { useForm } from 'vee-validate';
+import { useField, useForm } from 'vee-validate';
 import { ref } from 'vue';
 
 vi.mock('@/api/auth', () => ({
@@ -107,6 +107,30 @@ describe('AuthSignUpForm', () => {
     const wrapper = mountComponent();
     expect(wrapper.find('[role="status"]').exists()).toBe(true);
     expect(wrapper.find('[data-slot="button"]').text()).toContain('Signing up...');
+  });
+
+  it('updates email, username, and password fields when the user types', async () => {
+    const emailRef = ref('');
+    const usernameRef = ref('');
+    const passwordRef = ref('');
+    vi.mocked(useField)
+      .mockReturnValueOnce({ value: emailRef } as any)
+      .mockReturnValueOnce({ value: usernameRef } as any)
+      .mockReturnValueOnce({ value: passwordRef } as any);
+    vi.mocked(useMutation).mockReturnValue({
+      mutateAsync: vi.fn(),
+      isLoading: ref(false),
+      error: ref(null),
+    } as any);
+
+    const wrapper = mountComponent();
+    await wrapper.find('input[type="email"]').setValue('new@example.com');
+    await wrapper.find('input[type="text"]').setValue('myusername');
+    await wrapper.find('input[type="password"]').setValue('secret123');
+
+    expect(emailRef.value).toBe('new@example.com');
+    expect(usernameRef.value).toBe('myusername');
+    expect(passwordRef.value).toBe('secret123');
   });
 
   it('displays the mutation error message when signup fails', () => {
