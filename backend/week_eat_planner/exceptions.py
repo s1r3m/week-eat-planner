@@ -151,3 +151,18 @@ class InvalidCredentialsException(HTTPException):
 class OAuthAccountException(LogicException):
     def __init__(self) -> None:
         super().__init__(detail='This email is registered via a social login')
+
+
+class PasswordAccountException(LogicException):
+    def __init__(self) -> None:
+        super().__init__(detail='This email is registered with a password')
+
+
+class OAuthInvalidCodeException(ValidationException):
+    def __init__(self) -> None:
+        super().__init__(detail='Invalid or expired authorization code')
+
+
+class OAuthProviderException(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=status.HTTP_502_BAD_GATEWAY, detail='OAuth provider error')

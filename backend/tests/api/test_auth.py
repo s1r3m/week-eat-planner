@@ -18,6 +18,9 @@ from week_eat_planner.exceptions import (
     InvalidEmailException,
     LoginWithAuthException,
     OAuthAccountException,
+    OAuthInvalidCodeException,
+    OAuthProviderException,
+    PasswordAccountException,
     RefreshTokenMissingException,
     RefreshTokenRevokedException,
     SignUpWithAuthException,
@@ -275,7 +278,7 @@ async def test_google_auth__valid_code__tokens_returned(mocker, client):
         avatar_url=None,
     )
     mocker.patch(
-        'week_eat_planner.services.auth_service.GoogleAuthClient.token_exchange',
+        'week_eat_planner.services.auth_service.GoogleAuthClient.get_oauth_user',
         new=AsyncMock(return_value=oauth_user_data),
     )
 
@@ -286,3 +289,42 @@ async def test_google_auth__valid_code__tokens_returned(mocker, client):
     assert 'access_token' in body
     assert body['access_token']
     assert body['token_type'] == TokenType.BEARER
+
+
+async def test_google_auth__invalid_code__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=OAuthInvalidCodeException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'bad_code'})
+
+    error = OAuthInvalidCodeException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_google_auth__provider_error__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=OAuthProviderException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'auth_code'})
+
+    error = OAuthProviderException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_google_auth__email_has_password_account__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=PasswordAccountException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'auth_code'})
+
+    error = PasswordAccountException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
