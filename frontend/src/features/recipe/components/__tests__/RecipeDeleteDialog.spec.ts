@@ -91,7 +91,8 @@ describe('RecipeDeleteDialog', () => {
     const deleteButton = wrapper
       .findAll('[data-slot="button"]')
       .find((btn) => btn.text().includes('Deleting...'));
-    expect(deleteButton?.attributes('disabled')).toBeDefined();
+    expect(deleteButton).toBeDefined();
+    expect(deleteButton!.attributes('disabled')).toBeDefined();
   });
 
   describe('dialog open/close', () => {

@@ -32,13 +32,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint('uq_users_oauth_provider_oauth_id', 'users', type_='unique')
-    op.alter_column('users', 'hashed_password',
-               existing_type=sa.VARCHAR(),
-               nullable=False)
-    op.alter_column('users', 'username',
-               existing_type=sa.VARCHAR(),
-               nullable=True)
-    op.drop_column('users', 'oauth_id')
-    op.drop_column('users', 'oauth_provider')
-    op.drop_column('users', 'avatar_key')
+    # Cannot safely restore hashed_password NOT NULL if OAuth users with NULL
+    # hashed_password exist. Manual data cleanup required before downgrading.
+    raise NotImplementedError(
+        "Downgrade is not supported automatically. OAuth users may have NULL "
+        "hashed_password, which would violate the NOT NULL constraint being restored. "
+        "Delete or backfill all OAuth-only rows before running this downgrade manually."
+    )

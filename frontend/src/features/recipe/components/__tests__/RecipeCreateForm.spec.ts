@@ -43,7 +43,8 @@ describe('RecipeCreateForm', () => {
     const createBtn = wrapper
       .findAll('[data-slot="button"]')
       .find((b) => b.text().includes('Create recipe'));
-    await createBtn?.trigger('click');
+    expect(createBtn).toBeDefined();
+    await createBtn!.trigger('click');
 
     const emitted = wrapper.emitted('create');
     expect(emitted).toBeTruthy();
@@ -61,7 +62,8 @@ describe('RecipeCreateForm', () => {
     const cancelBtn = wrapper
       .findAll('[data-slot="button"]')
       .find((b) => b.text().includes('Cancel'));
-    await cancelBtn?.trigger('click');
+    expect(cancelBtn).toBeDefined();
+    await cancelBtn!.trigger('click');
     expect(wrapper.emitted('cancel')).toBeTruthy();
   });
 });

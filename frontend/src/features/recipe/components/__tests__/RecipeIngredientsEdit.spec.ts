@@ -37,7 +37,8 @@ describe('RecipeIngredientsEdit', () => {
     const addButton = wrapper
       .findAll('[data-slot="button"]')
       .find((b) => b.text().includes('Add an ingredient'));
-    await addButton?.trigger('click');
+    expect(addButton).toBeDefined();
+    await addButton!.trigger('click');
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 
