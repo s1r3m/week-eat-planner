@@ -13,7 +13,7 @@ describe('AppShell', () => {
     },
   });
 
-  it('renders RouterView', async () => {
+  it('renders the child component passed by RouterView', async () => {
     const wrapper = mount(TestAppShell, {
       global: {
         stubs: {

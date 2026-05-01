@@ -10,17 +10,15 @@ describe('UserIdentity', () => {
     is_active: true,
   };
 
-  it('renders the component with user email and placeholder name fallbacks', () => {
-    const wrapper = mount(UserIdentity, {
-      props: { user: user },
-    });
+  it('shows email and derives initials and display name from the email prefix', () => {
+    const wrapper = mount(UserIdentity, { props: { user } });
 
     expect(wrapper.text()).toContain(user.email);
     expect(wrapper.text()).toContain('test');
     expect(wrapper.text()).toContain('TE');
   });
 
-  it('renders the component with user email and given username', () => {
+  it('shows the provided username and its initials', () => {
     const wrapper = mount(UserIdentity, {
       props: { user: { ...user, username: 'Barry' } },
     });
@@ -30,15 +28,13 @@ describe('UserIdentity', () => {
     expect(wrapper.text()).toContain('BA');
   });
 
-  it('renders the component with user email and avatar', () => {
+  it('renders the avatar image when avatar_url is provided', () => {
     const avatarUrl = 'http://test.com/url';
     const wrapper = mount(UserIdentity, {
       props: { user: { ...user, avatar_url: avatarUrl } },
     });
 
     expect(wrapper.text()).toContain(user.email);
-    expect(wrapper.text()).toContain('test');
-
     const img = wrapper.find('img');
     expect(img.exists()).toBe(true);
     expect(img.attributes('src')).toBe(avatarUrl);

@@ -4,7 +4,7 @@ import { defineComponent, h, ref, nextTick } from 'vue';
 import TheAuthLayout from '../TheAuthLayout.vue';
 
 describe('TheAuthLayout', () => {
-  it('renders all components and handles component visibility', async () => {
+  it('renders sidebar, header and the routed component', async () => {
     const component = ref<any>(h('div', { class: 'child-component' }));
     const wrapper = mount(TheAuthLayout, {
       global: {
@@ -18,10 +18,7 @@ describe('TheAuthLayout', () => {
             setup(_, { slots }) {
               return () =>
                 slots.default
-                  ? slots.default({
-                      Component: component.value,
-                      route: { fullPath: '/test' },
-                    })
+                  ? slots.default({ Component: component.value, route: { fullPath: '/test' } })
                   : null;
             },
           }),
@@ -40,7 +37,7 @@ describe('TheAuthLayout', () => {
     expect(wrapper.find('.child-component').exists()).toBe(false);
   });
 
-  it('renders loading state when Component is provided but Suspense is in fallback', async () => {
+  it('renders the loading state while the async component is resolving', async () => {
     const AsyncComp = defineComponent({
       async setup() {
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -63,10 +60,7 @@ describe('TheAuthLayout', () => {
             setup(_, { slots }) {
               return () =>
                 slots.default
-                  ? slots.default({
-                      Component: h(AsyncComp),
-                      route: { fullPath: '/test' },
-                    })
+                  ? slots.default({ Component: h(AsyncComp), route: { fullPath: '/test' } })
                   : null;
             },
           }),

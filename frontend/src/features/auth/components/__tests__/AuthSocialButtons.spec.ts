@@ -1,20 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AuthSocialButtons from '../AuthSocialButtons.vue';
+import { useMutation } from '@pinia/colada';
 
 vi.mock('../composables/useGoogleAuth', () => ({
   useGoogleAuth: () => ({
-    createCodeClient: vi.fn().mockResolvedValue({
-      requestCode: vi.fn(),
-    }),
+    createCodeClient: vi.fn().mockResolvedValue({ requestCode: vi.fn() }),
   }),
 }));
 
 vi.mock('@pinia/colada', () => ({
-  useMutation: vi.fn().mockReturnValue({
-    mutate: vi.fn(),
-  }),
+  useMutation: vi.fn(),
 }));
 
 vi.mock('@/api/auth', () => ({
@@ -22,20 +19,12 @@ vi.mock('@/api/auth', () => ({
 }));
 
 describe('AuthSocialButtons', () => {
-  const mountComponent = () => {
+  beforeEach(() => {
     setActivePinia(createPinia());
-    return mount(AuthSocialButtons, {
-      global: {
-        stubs: {
-          Button: {
-            template:
-              '<button :disabled="disabled" variant="outline" class="w-full"><slot /></button>',
-            props: ['disabled', 'variant'],
-          },
-        },
-      },
-    });
-  };
+    vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn() } as any);
+  });
+
+  const mountComponent = () => mount(AuthSocialButtons);
 
   it('renders the OAuth container', () => {
     const wrapper = mountComponent();

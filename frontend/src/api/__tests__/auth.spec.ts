@@ -164,9 +164,14 @@ describe('auth api', () => {
     });
 
     it('returns the same promise if called concurrently', async () => {
-      mockAuth.onPost('/auth/refresh').reply(
-        () => new Promise((resolve) => setTimeout(() => resolve([200, { access_token: 'refresh-token' }]), 50)),
-      );
+      mockAuth
+        .onPost('/auth/refresh')
+        .reply(
+          () =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve([200, { access_token: 'refresh-token' }]), 50),
+            ),
+        );
 
       const [token1, token2] = await Promise.all([refreshToken(), refreshToken()]);
       expect(token1).toBe('refresh-token');
@@ -177,7 +182,9 @@ describe('auth api', () => {
 
   describe('initAuth', () => {
     it('sets accessToken when refresh succeeds', async () => {
-      mockAuth.onPost('/auth/refresh').reply(200, { access_token: 'init-token', token_type: 'bearer' });
+      mockAuth
+        .onPost('/auth/refresh')
+        .reply(200, { access_token: 'init-token', token_type: 'bearer' });
 
       await initAuth();
       expect(accessToken.value).toBe('init-token');

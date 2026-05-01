@@ -123,7 +123,13 @@ describe('recipes api', () => {
 
     describe('onSuccess', () => {
       it('shows a success toast with the recipe name', () => {
-        const created = { id: 'new-1', name: 'My Recipe', author: 'me', is_favorite: false, image_url: null };
+        const created = {
+          id: 'new-1',
+          name: 'My Recipe',
+          author: 'me',
+          is_favorite: false,
+          image_url: null,
+        };
 
         const config = addRecipeMutation() as any;
         config.onSuccess(created, payload, {});
@@ -134,13 +140,20 @@ describe('recipes api', () => {
 
     describe('onError', () => {
       it('shows an error toast and restores the previous cache', () => {
-        const context = { previousRecipes: [{ id: '1', name: 'Existing', author: 'me', is_favorite: false, image_url: null }] };
+        const context = {
+          previousRecipes: [
+            { id: '1', name: 'Existing', author: 'me', is_favorite: false, image_url: null },
+          ],
+        };
 
         const config = addRecipeMutation() as any;
         config.onError(new Error('network'), payload, context);
 
         expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('New Recipe'));
-        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), context.previousRecipes);
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          RECIPE_KEYS.my(),
+          context.previousRecipes,
+        );
       });
 
       it('does nothing to the cache when context is missing', () => {
@@ -173,8 +186,20 @@ describe('recipes api', () => {
 
     describe('onSuccess', () => {
       it('merges updated image data into the my-recipes cache', () => {
-        const existing = { id: '1', name: 'Recipe', author: 'me', is_favorite: false, image_url: null };
-        const updated = { id: '1', name: 'Recipe', author: 'me', is_favorite: false, image_url: 'http://new.jpg' };
+        const existing = {
+          id: '1',
+          name: 'Recipe',
+          author: 'me',
+          is_favorite: false,
+          image_url: null,
+        };
+        const updated = {
+          id: '1',
+          name: 'Recipe',
+          author: 'me',
+          is_favorite: false,
+          image_url: 'http://new.jpg',
+        };
 
         const config = addImageMutation() as any;
         config.onSuccess(updated);
@@ -217,7 +242,10 @@ describe('recipes api', () => {
 
     describe('onMutate', () => {
       it('optimistically removes the recipe from the list', () => {
-        const previousRecipes = [{ id: '1', name: 'Recipe' }, { id: '2', name: 'Other' }];
+        const previousRecipes = [
+          { id: '1', name: 'Recipe' },
+          { id: '2', name: 'Other' },
+        ];
         vi.mocked(mockQueryCache.getQueryData).mockReturnValue(previousRecipes);
 
         const config = deleteRecipeMutation() as any;
@@ -256,7 +284,10 @@ describe('recipes api', () => {
         config.onError(new Error('fail'), id, context);
 
         expect(toast.error).toHaveBeenCalledWith('Failed to delete the recipe');
-        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(RECIPE_KEYS.my(), context.previousRecipes);
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          RECIPE_KEYS.my(),
+          context.previousRecipes,
+        );
       });
 
       it('still shows the error toast when context is missing', () => {
@@ -274,7 +305,9 @@ describe('recipes api', () => {
         config.onSettled(null, undefined, id, {});
 
         expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
-        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail(id) });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: RECIPE_KEYS.detail(id),
+        });
       });
     });
   });
@@ -317,9 +350,11 @@ describe('recipes api', () => {
         const config = toggleFavoriteMutation() as any;
         await config.onMutate({ id: '1', is_favorite: true });
 
-        const filterCalls = vi.mocked(mockQueryCache.setQueryData).mock.calls.filter(
-          (call: any[]) => JSON.stringify(call[0]) === JSON.stringify(RECIPE_KEYS.favorites()),
-        );
+        const filterCalls = vi
+          .mocked(mockQueryCache.setQueryData)
+          .mock.calls.filter(
+            (call: any[]) => JSON.stringify(call[0]) === JSON.stringify(RECIPE_KEYS.favorites()),
+          );
         const filterUpdater = filterCalls[filterCalls.length - 1]?.[1] as Function;
         const filtered = filterUpdater([{ id: '1' }, { id: '2' }]);
         expect(filtered).toEqual([{ id: '2' }]);
@@ -331,9 +366,11 @@ describe('recipes api', () => {
         const config = toggleFavoriteMutation() as any;
         await config.onMutate({ id: '1', is_favorite: true });
 
-        const filterCalls = vi.mocked(mockQueryCache.setQueryData).mock.calls.filter(
-          (call: any[]) => JSON.stringify(call[0]) === JSON.stringify(RECIPE_KEYS.favorites()),
-        );
+        const filterCalls = vi
+          .mocked(mockQueryCache.setQueryData)
+          .mock.calls.filter(
+            (call: any[]) => JSON.stringify(call[0]) === JSON.stringify(RECIPE_KEYS.favorites()),
+          );
         const filterUpdater = filterCalls[filterCalls.length - 1]?.[1] as Function;
         expect(filterUpdater(undefined)).toEqual([]);
       });
@@ -358,7 +395,9 @@ describe('recipes api', () => {
         const config = toggleFavoriteMutation() as any;
         config.onSuccess({}, { id: '1', is_favorite: false }, {});
 
-        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.favorites() });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: RECIPE_KEYS.favorites(),
+        });
       });
 
       it('does not invalidate favorites cache when a recipe is un-favorited', () => {
@@ -374,7 +413,9 @@ describe('recipes api', () => {
         const config = toggleFavoriteMutation() as any;
         config.onSettled(undefined, null, { id: '1' }, {});
 
-        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail('1') });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: RECIPE_KEYS.detail('1'),
+        });
       });
     });
   });

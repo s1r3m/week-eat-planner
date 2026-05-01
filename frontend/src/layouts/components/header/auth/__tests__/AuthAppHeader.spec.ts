@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
-
 import AuthAppHeader from '../AuthAppHeader.vue';
 import ModeToggle from '@/components/shared/ModeToggle.vue';
 import Separator from '@/components/ui/separator/Separator.vue';
@@ -23,25 +22,19 @@ describe('AuthAppHeader', () => {
       },
     });
 
-  describe('Rendering', () => {
-    it('renders the component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.exists()).toBe(true);
-    });
+  it('renders the component', () => {
+    expect(mountComponent().exists()).toBe(true);
+  });
 
-    it('renders the logo component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(Separator).exists()).toBe(true);
-    });
+  it('renders the Separator component', () => {
+    expect(mountComponent().findComponent(Separator).exists()).toBe(true);
+  });
 
-    it('renders ModeToggle component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(ModeToggle).exists()).toBe(true);
-    });
+  it('renders the ModeToggle component', () => {
+    expect(mountComponent().findComponent(ModeToggle).exists()).toBe(true);
+  });
 
-    it('renders navigation menu', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(SidebarTrigger).exists()).toBe(true);
-    });
+  it('renders the SidebarTrigger component', () => {
+    expect(mountComponent().findComponent(SidebarTrigger).exists()).toBe(true);
   });
 });

@@ -13,33 +13,25 @@ describe('AppBrand', () => {
       },
     });
 
-  it('renders router-link as root', () => {
+  it('renders a link element', () => {
     const wrapper = mountComponent();
-    const link = wrapper.find('a');
-
-    expect(link.exists()).toBeTruthy();
+    expect(wrapper.find('a').exists()).toBe(true);
   });
 
-  it('navigates to the promo page', () => {
+  it('links to the home page route', () => {
     const wrapper = mountComponent();
-    const routerLink = wrapper.findComponent(RouterLinkStub);
-
-    expect(routerLink.props().to).toEqual({ name: ROUTE_NAMES.HOME });
+    expect(wrapper.findComponent(RouterLinkStub).props().to).toEqual({ name: ROUTE_NAMES.HOME });
   });
 
-  it('renders the brand logo', () => {
+  it('renders the brand logo with correct alt text', () => {
     const wrapper = mountComponent();
     const logo = wrapper.find('img');
-
-    expect(logo.exists()).toBeTruthy();
+    expect(logo.exists()).toBe(true);
     expect(logo.attributes('alt')).toBe('Week Eat Planner logo');
   });
 
   it('renders the application name', () => {
     const wrapper = mountComponent();
-    const title = wrapper.find('h1');
-
-    expect(title.exists()).toBeTruthy();
-    expect(title.text()).toBe('Week Eat Planner');
+    expect(wrapper.find('h1').text()).toBe('Week Eat Planner');
   });
 });

@@ -13,55 +13,44 @@ import {
 } from '@/components/ui/sidebar';
 
 describe('AppSidebar', () => {
-  const mountComponent = () => {
-    return mount(AppSidebar, {
+  const mountComponent = () =>
+    mount(AppSidebar, {
       global: {
         stubs: {
           AppBrand: true,
           AppSidebarNavigation: true,
           AppSidebarFooter: true,
-          Sidebar: {
-            template: '<div><slot /></div>',
-            props: ['variant'],
-          },
+          Sidebar: { template: '<div><slot /></div>', props: ['variant'] },
           SidebarHeader: { template: '<div><slot /></div>' },
           SidebarContent: { template: '<div><slot /></div>' },
           SidebarFooter: { template: '<div><slot /></div>' },
           SidebarMenu: { template: '<div><slot /></div>' },
           SidebarMenuItem: { template: '<div><slot /></div>' },
-          SidebarMenuButton: {
-            template: '<div><slot /></div>',
-            props: ['asChild'],
-          },
+          SidebarMenuButton: { template: '<div><slot /></div>', props: ['asChild'] },
         },
       },
     });
-  };
 
-  it('renders Sidebar with inset variant', () => {
-    const wrapper = mountComponent();
-    const sidebar = wrapper.findComponent(Sidebar);
-    expect(sidebar.props('variant')).toBe('inset');
+  it('uses the inset variant on the Sidebar', () => {
+    expect(mountComponent().findComponent(Sidebar).props('variant')).toBe('inset');
   });
 
-  it('renders AppBrand inside SidebarHeader and MenuButton', () => {
+  it('renders AppBrand inside SidebarMenuButton in the header', () => {
     const wrapper = mountComponent();
-    const header = wrapper.findComponent(SidebarHeader);
-    const menuButton = header.findComponent(SidebarMenuButton);
-
+    const menuButton = wrapper.findComponent(SidebarHeader).findComponent(SidebarMenuButton);
     expect(menuButton.props('asChild')).toBeDefined();
-    expect(menuButton.findComponent(AppBrand).exists()).toBeTruthy();
+    expect(menuButton.findComponent(AppBrand).exists()).toBe(true);
   });
 
   it('renders AppSidebarNavigation inside SidebarContent', () => {
-    const wrapper = mountComponent();
-    const content = wrapper.getComponent(SidebarContent);
-    expect(content.findComponent(AppSidebarNavigation).exists()).toBeTruthy();
+    expect(
+      mountComponent().getComponent(SidebarContent).findComponent(AppSidebarNavigation).exists(),
+    ).toBe(true);
   });
 
   it('renders AppSidebarFooter inside SidebarFooter', () => {
-    const wrapper = mountComponent();
-    const footer = wrapper.getComponent(SidebarFooter);
-    expect(footer.findComponent(AppSidebarFooter).exists()).toBeTruthy();
+    expect(
+      mountComponent().getComponent(SidebarFooter).findComponent(AppSidebarFooter).exists(),
+    ).toBe(true);
   });
 });

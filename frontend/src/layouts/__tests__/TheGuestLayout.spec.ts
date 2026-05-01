@@ -4,7 +4,7 @@ import { defineComponent, h, ref, nextTick } from 'vue';
 import TheGuestLayout from '../TheGuestLayout.vue';
 
 describe('TheGuestLayout', () => {
-  it('renders GuestAppHeader, RouterView content and GuestFooter and handles component visibility', async () => {
+  it('renders header, routed component and footer', async () => {
     const component = ref<any>(h('div', { class: 'child-component' }));
     const wrapper = mount(TheGuestLayout, {
       global: {
@@ -15,10 +15,7 @@ describe('TheGuestLayout', () => {
             setup(_, { slots }) {
               return () =>
                 slots.default
-                  ? slots.default({
-                      Component: component.value,
-                      route: { fullPath: '/test' },
-                    })
+                  ? slots.default({ Component: component.value, route: { fullPath: '/test' } })
                   : null;
             },
           }),

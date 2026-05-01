@@ -1,96 +1,93 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import AuthSignUpForm from '../AuthSignUpForm.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation } from '@pinia/colada';
+import { useForm } from 'vee-validate';
 import { ref } from 'vue';
-import { flushPromises } from '@vue/test-utils';
 
-// Mock auth API
 vi.mock('@/api/auth', () => ({
   signupMutation: vi.fn(),
 }));
 
-// Mock Pinia Colada
 vi.mock('@pinia/colada', () => ({
   useMutation: vi.fn(),
 }));
+
+vi.mock('vee-validate', () => ({
+  useField: vi.fn(() => ({ value: ref('') })),
+  useForm: vi.fn(() => ({
+    handleSubmit: (cb: any) => (event: Event) => {
+      event?.preventDefault?.();
+      return cb({});
+    },
+    errors: ref({}),
+    meta: ref({ valid: true }),
+  })),
+  toTypedSchema: vi.fn((schema) => schema),
+}));
+
+vi.mock('@vee-validate/zod', () => ({
+  toTypedSchema: vi.fn((schema) => schema),
+}));
+
+vi.mock('zod', async () => {
+  const actual = await vi.importActual('zod');
+  return { ...actual };
+});
 
 describe('AuthSignUpForm', () => {
   let router: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-
     router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', name: ROUTE_NAMES.HOME, component: { template: '<div>Home</div>' } },
-        {
-          path: '/login',
-          name: ROUTE_NAMES.LOGIN,
-          component: { template: '<div>Login</div>' },
-        },
+        { path: '/login', name: ROUTE_NAMES.LOGIN, component: { template: '<div>Login</div>' } },
       ],
     });
   });
 
-  const mountComponent = (props = {}) => {
-    return mount(AuthSignUpForm, {
+  const mountComponent = (props = {}) =>
+    mount(AuthSignUpForm, {
       props,
-      global: {
-        plugins: [router],
-        stubs: {
-          Button: {
-            template: '<button :disabled="disabled" type="submit"><slot /></button>',
-            props: ['disabled'],
-          },
-          Spinner: { template: '<div class="spinner" />' },
-          Input: {
-            template:
-              '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue'],
-            emits: ['update:modelValue'],
-          },
-          Field: { template: '<div><slot /></div>' },
-          FieldGroup: { template: '<div><slot /></div>' },
-          FieldLabel: { template: '<label><slot /></label>' },
-          FieldSet: { template: '<fieldset><slot /></fieldset>' },
-        },
-      },
+      global: { plugins: [router] },
     });
-  };
 
-  it('renders signup form fields', () => {
-    (useMutation as any).mockReturnValue({
+  it('renders email, username, password inputs and a sign up button', () => {
+    vi.mocked(useMutation).mockReturnValue({
       mutateAsync: vi.fn(),
       isLoading: ref(false),
       error: ref(null),
-    });
+    } as any);
 
     const wrapper = mountComponent();
     expect(wrapper.find('input[type="email"]').exists()).toBe(true);
-    expect(wrapper.find('input#username').exists()).toBe(true);
+    expect(wrapper.find('input[type="text"]').exists()).toBe(true);
     expect(wrapper.find('input[type="password"]').exists()).toBe(true);
-    expect(wrapper.find('button[type="submit"]').text()).toBe('Sign up');
+    expect(wrapper.find('[data-slot="button"]').text()).toBe('Sign up');
   });
 
-  it('submits the form with correct values', async () => {
-    const signupMutate = vi.fn().mockResolvedValue({ email: 'new@example.com' });
+  it('calls the signup mutation with the validated form values on submit', async () => {
+    const signupMutate = vi.fn().mockResolvedValue({});
+    vi.mocked(useMutation).mockReturnValue({
+      mutateAsync: signupMutate,
+      isLoading: ref(false),
+      error: ref(null),
+    } as any);
 
-    (useMutation as any).mockImplementation(() => {
-      return { mutateAsync: signupMutate, isLoading: ref(false), error: ref(null) };
-    });
+    vi.mocked(useForm).mockReturnValue({
+      handleSubmit: (cb: any) => () =>
+        cb({ email: 'new@example.com', username: 'newuser', password: 'password123' }),
+      errors: ref({}),
+      meta: ref({ valid: true }),
+    } as any);
 
     const wrapper = mountComponent();
-
-    await wrapper.find('input[type="email"]').setValue('new@example.com');
-    await wrapper.find('input#username').setValue('newuser');
-    await wrapper.find('input[type="password"]').setValue('password123');
-
-    // @ts-ignore
-    await wrapper.vm.onSubmit();
+    await wrapper.find('form').trigger('submit.prevent');
     await flushPromises();
 
     expect(signupMutate).toHaveBeenCalledWith({
@@ -100,39 +97,26 @@ describe('AuthSignUpForm', () => {
     });
   });
 
-  it('shows loading state during submission', async () => {
-    (useMutation as any).mockReturnValue({
+  it('shows a spinner and updated button text while loading', () => {
+    vi.mocked(useMutation).mockReturnValue({
       mutateAsync: vi.fn(),
       isLoading: ref(true),
       error: ref(null),
-    });
+    } as any);
 
     const wrapper = mountComponent();
-    expect(wrapper.find('.spinner').exists()).toBe(true);
-    expect(wrapper.find('button[type="submit"]').text()).toBe('Signing up...');
+    expect(wrapper.find('[role="status"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="button"]').text()).toContain('Signing up...');
   });
 
-  it('shows error message when signup fails', async () => {
-    const signupMutate = vi.fn().mockResolvedValue(undefined);
-
-    (useMutation as any).mockReturnValue({
-      mutateAsync: signupMutate,
+  it('displays the mutation error message when signup fails', () => {
+    vi.mocked(useMutation).mockReturnValue({
+      mutateAsync: vi.fn(),
       isLoading: ref(false),
       error: ref({ message: 'Signup failed' }),
-    });
+    } as any);
 
     const wrapper = mountComponent();
-
-    await wrapper.find('input[type="email"]').setValue('error@example.com');
-    await wrapper.find('input#username').setValue('user');
-    await wrapper.find('input[type="password"]').setValue('password123');
-
-    // @ts-ignore
-    await wrapper.vm.onSubmit();
-    await flushPromises();
-
-    expect(signupMutate).toHaveBeenCalled();
-    // We check for the error message in the text instead of spying on the internal function
     expect(wrapper.text()).toContain('Signup failed');
   });
 });

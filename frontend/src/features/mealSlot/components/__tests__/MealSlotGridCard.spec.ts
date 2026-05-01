@@ -1,26 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import MealSlotGridCard from '../MealSlotGridCard.vue';
-import type { MealSlot, MealType } from '@/api/weeks';
+import type { MealSlot } from '@/api/weeks';
 import i18n from '@/i18n';
 import MealSlotEmptyCard from '../MealSlotEmptyCard.vue';
 import MealSlotRecipeCard from '../MealSlotRecipeCard.vue';
 
 describe('MealSlotGridCard', () => {
-  const mountComponent = (mealSlot: MealSlot) => {
-    return mount(MealSlotGridCard, {
-      props: {
-        mealSlot,
-      },
-      global: {
-        plugins: [i18n],
-        stubs: {
-          MealSlotEmptyCard: true,
-          MealSlotRecipeCard: true,
-        },
-      },
+  const mountComponent = (mealSlot: MealSlot) =>
+    mount(MealSlotGridCard, {
+      props: { mealSlot },
+      global: { plugins: [i18n] },
     });
-  };
 
   const defaultSlot: MealSlot = {
     id: 'meal-1',
