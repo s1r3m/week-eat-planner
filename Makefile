@@ -13,9 +13,14 @@ UV_VERSION = 0.6.11
 # Paths.
 PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
+
 FE_PATH = $(PROJECT_PATH)/frontend
 ENV_FILE = $(BE_PATH)/.env
 BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
+
+FE_ENV_FILE = $(FE_PATH)/.env
+FE_ENV_FILE = $(FE_PATH)/.env
+FE_TEST_ENV_FILE = $(FE_PATH)/.env.fe_test
 
 export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
@@ -138,8 +143,12 @@ coverage:
 
 ## -------------------------------------------------- FE ---------------------------------------------------------------
 
+## @Tests Prepare env file for fe unittests
+$(FE_ENV_FILE):
+	cp $(FE_TEST_ENV_FILE) $(FE_ENV_FILE)
+
 # @FE Install requirements
-fe_install:
+fe_install: $(FE_ENV_FILE)
 	@echo "🚀 Installing the packages..."
 	cd $(FE_PATH) && yarn install
 
