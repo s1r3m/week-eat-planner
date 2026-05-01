@@ -31,7 +31,7 @@ class User(Base):
     __table_args__ = (UniqueConstraint('oauth_provider', 'oauth_id', name='uq_users_oauth_provider_oauth_id'),)
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-    username: Mapped[str] = mapped_column(unique=False, nullable=False)  # TODO: make it unique
+    username: Mapped[str] = mapped_column(unique=False, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(nullable=True)
     avatar_key: Mapped[str | None] = mapped_column(nullable=True)
     oauth_provider: Mapped[str | None] = mapped_column(nullable=True)

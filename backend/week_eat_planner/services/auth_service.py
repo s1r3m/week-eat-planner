@@ -11,7 +11,6 @@ from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate,
 from week_eat_planner.api.schemas.user import GoogleCode, UserFilter
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.config import settings
-from week_eat_planner.constants import OAuthProvider
 from week_eat_planner.db.dao import RefreshTokenDAO, UserDAO
 from week_eat_planner.db.models import RefreshToken, User
 from week_eat_planner.exceptions import (
@@ -134,7 +133,7 @@ class AuthService:
                 logger.error(f'Email {user_data.email} already has a password account.')
                 raise PasswordAccountException()
 
-            user = User(**user_data.model_dump(), oauth_provider=OAuthProvider.GOOGLE)
+            user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
             logger.info(f'Created new user via Google OAuth for {user_data.email}.')
         else:

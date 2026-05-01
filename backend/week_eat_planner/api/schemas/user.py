@@ -40,7 +40,7 @@ class GoogleCode(BaseModel):
 
 
 class OAuthUserData(BaseModel):
-    oauth_provider: OAuthProvider = Field(exclude=True)
+    oauth_provider: OAuthProvider
     oauth_id: str
     email: str
     username: str

@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import AuthSocialButtons from '../AuthSocialButtons.vue';
 import { useMutation } from '@pinia/colada';
 import { useGoogleAuth } from '@/features/auth/composables/useGoogleAuth';
+import { toast } from 'vue-sonner';
 
 vi.mock('@/features/auth/composables/useGoogleAuth', () => ({
   useGoogleAuth: vi.fn(),
@@ -15,6 +16,10 @@ vi.mock('@pinia/colada', () => ({
 
 vi.mock('@/api/auth', () => ({
   googleAuthMutation: vi.fn(),
+}));
+
+vi.mock('vue-sonner', () => ({
+  toast: { error: vi.fn() },
 }));
 
 describe('AuthSocialButtons', () => {
@@ -46,12 +51,32 @@ describe('AuthSocialButtons', () => {
     expect(buttons[1].text()).toContain('Facebook');
   });
 
-  it('renders Google enabled and Facebook disabled', () => {
+  it('renders Google disabled before mount resolves and Facebook always disabled', () => {
     const wrapper = mountComponent();
     const buttons = wrapper.findAll('button');
 
+    expect(buttons[0].attributes('disabled')).toBeDefined();
+    expect(buttons[1].attributes('disabled')).toBeDefined();
+  });
+
+  it('enables the Google button after the code client initialises', async () => {
+    const wrapper = mountComponent();
+    await flushPromises();
+
+    const buttons = wrapper.findAll('button');
     expect(buttons[0].attributes('disabled')).toBeUndefined();
     expect(buttons[1].attributes('disabled')).toBeDefined();
+  });
+
+  it('keeps the Google button disabled and shows an error toast when the GSI script fails to load', async () => {
+    createCodeClient.mockRejectedValue(new Error('network error'));
+    const wrapper = mountComponent();
+    await flushPromises();
+
+    expect(wrapper.findAll('button')[0].attributes('disabled')).toBeDefined();
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      'No social OAuth available. Try again later.',
+    );
   });
 
   it('initializes the code client on mount with a callback that calls googleAuth', async () => {

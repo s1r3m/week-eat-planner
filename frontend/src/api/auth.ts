@@ -170,6 +170,7 @@ export const googleAuthMutation = defineMutation(() => {
     mutation: (code: string) =>
       apiClient.post<LoginInfo>('/auth/google/exchange', { code }).then((res) => res.data),
     onSuccess: (response: LoginInfo) => {
+      toast.success('Logged in successfully!');
       accessToken.value = response.access_token;
       router.push({ name: ROUTE_NAMES.WEEKS });
     },

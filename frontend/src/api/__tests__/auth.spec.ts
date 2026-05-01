@@ -209,7 +209,7 @@ describe('auth api', () => {
       expect(result).toEqual(loginInfo);
     });
 
-    it('sets accessToken and redirects to weeks on success', () => {
+    it('sets accessToken, shows toast, and redirects to weeks on success', () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
@@ -217,7 +217,17 @@ describe('auth api', () => {
       config.onSuccess({ access_token: 'google-token', token_type: 'bearer' });
 
       expect(accessToken.value).toBe('google-token');
+      expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
       expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
+    });
+
+    it('returns an error when the exchange endpoint fails', async () => {
+      mockApi
+        .onPost('/auth/google/exchange')
+        .reply(400, { detail: 'Invalid or expired authorization code' });
+
+      const config = googleAuthMutation() as any;
+      await expect(config.mutation('bad-code')).rejects.toThrow();
     });
 
     it('shows error toast on failure', () => {
