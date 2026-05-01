@@ -48,6 +48,7 @@ describe('useGoogleAuth', () => {
 
   describe('createCodeClient', () => {
     it('calls initCodeClient after loading the Google script', async () => {
+      vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'test-google-client-id');
       appendSpy.mockImplementation((script: any) => {
         script.onload();
       });
@@ -69,6 +70,7 @@ describe('useGoogleAuth', () => {
         }),
       );
       expect(client).toBeDefined();
+      vi.unstubAllEnvs();
     });
 
     it('throws when VITE_GOOGLE_CLIENT_ID is not set', async () => {

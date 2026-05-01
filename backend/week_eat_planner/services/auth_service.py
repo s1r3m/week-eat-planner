@@ -1,5 +1,6 @@
 """Service layer for authentication and user registration logic."""
 
+import hashlib
 from datetime import UTC, datetime, timedelta
 
 from httpx import AsyncClient
@@ -27,6 +28,11 @@ from week_eat_planner.exceptions import (
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider
+
+
+def _email_token(email: str) -> str:
+    """Returns the first 10 hex chars of the email's SHA-256 digest for safe logging."""
+    return hashlib.sha256(email.encode()).hexdigest()[:10]
 
 
 class AuthService:
@@ -132,14 +138,14 @@ class AuthService:
         if not db_user:
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
             if email_user:
-                logger.error(f'Email {user_data.email} already has a password account.')
+                logger.error(f'Email token={_email_token(user_data.email)} already has a password account.')
                 raise PasswordAccountException()
 
             user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
-            logger.info(f'Created new user via Google OAuth for {user_data.email}.')
+            logger.info(f'Created new user via Google OAuth (token={_email_token(user_data.email)}).')
         else:
-            logger.info(f'Existing Google OAuth user {user_data.email} logged in.')
+            logger.info(f'Existing Google OAuth user logged in (token={_email_token(user_data.email)}).')
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token

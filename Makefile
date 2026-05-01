@@ -13,12 +13,11 @@ UV_VERSION = 0.6.11
 # Paths.
 PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
-
 FE_PATH = $(PROJECT_PATH)/frontend
+
 ENV_FILE = $(BE_PATH)/.env
 BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
 
-FE_ENV_FILE = $(FE_PATH)/.env
 FE_ENV_FILE = $(FE_PATH)/.env
 FE_TEST_ENV_FILE = $(FE_PATH)/.env.fe_test
 
