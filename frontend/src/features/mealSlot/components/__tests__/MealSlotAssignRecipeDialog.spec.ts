@@ -303,8 +303,8 @@ describe('MealSlotAssignRecipeDialog', () => {
       await wrapper.setProps({ modelValue: null });
       await nextTick();
 
-      // Call onAssign directly via the component's exposed methods
-      (wrapper.vm as any).onAssign?.();
+      expect(typeof (wrapper.vm as any).onAssign).toBe('function');
+      (wrapper.vm as any).onAssign();
 
       expect(mockMutate).not.toHaveBeenCalled();
     });

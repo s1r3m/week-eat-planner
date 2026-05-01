@@ -9,6 +9,8 @@
       <img
         src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
         class="size-4"
+        alt=""
+        aria-hidden="true"
       />
       Continue with Google
     </Button>

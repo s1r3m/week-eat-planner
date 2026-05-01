@@ -29,44 +29,44 @@ describe('GuestNavigation', () => {
 
     it('renders a link for each item in the array', () => {
       const links: NavLink[] = [
-        { label: 'Home', to: '/' },
-        { label: 'About', to: '/about' },
-        { label: 'Contact', to: '/contact' },
+        { label: 'Home', to: { name: 'home' } },
+        { label: 'About', to: { name: 'about' } },
+        { label: 'Contact', to: { name: 'contact' } },
       ];
       const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
       expect(navLinks).toHaveLength(3);
-      expect(navLinks[0].props('to')).toBe('/');
-      expect(navLinks[1].props('to')).toBe('/about');
-      expect(navLinks[2].props('to')).toBe('/contact');
+      expect(navLinks[0].props('to')).toEqual({ name: 'home' });
+      expect(navLinks[1].props('to')).toEqual({ name: 'about' });
+      expect(navLinks[2].props('to')).toEqual({ name: 'contact' });
     });
 
     it('renders the correct label text for each link', () => {
       const links: NavLink[] = [
-        { label: 'Features', to: '/features' },
-        { label: 'Pricing', to: '/pricing' },
+        { label: 'Features', to: { name: 'features' } },
+        { label: 'Pricing', to: { name: 'pricing' } },
       ];
       const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
       navLinks.forEach((link, i) => expect(link.text()).toContain(links[i].label));
     });
 
-    it('renders links with different URL formats', () => {
+    it('renders links with optional params and hash', () => {
       const links: NavLink[] = [
-        { label: 'Absolute', to: '/home' },
-        { label: 'Hash', to: '#section' },
-        { label: 'External', to: 'https://example.com' },
+        { label: 'Simple', to: { name: 'home' } },
+        { label: 'With hash', to: { name: 'docs', hash: '#section' } },
+        { label: 'With params', to: { name: 'recipe', params: { id: '42' } } },
       ];
       const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
-      expect(navLinks[0].props('to')).toBe('/home');
-      expect(navLinks[1].props('to')).toBe('#section');
-      expect(navLinks[2].props('to')).toBe('https://example.com');
+      expect(navLinks[0].props('to')).toEqual({ name: 'home' });
+      expect(navLinks[1].props('to')).toEqual({ name: 'docs', hash: '#section' });
+      expect(navLinks[2].props('to')).toEqual({ name: 'recipe', params: { id: '42' } });
     });
   });
 
   describe('navigationMenuTriggerStyle calls', () => {
     it('calls navigationMenuTriggerStyle once per link', () => {
       mountComponent([
-        { label: 'Link 1', to: '/1' },
-        { label: 'Link 2', to: '/2' },
+        { label: 'Link 1', to: { name: 'link1' } },
+        { label: 'Link 2', to: { name: 'link2' } },
       ]);
       expect(mockNavigationMenuTriggerStyle).toHaveBeenCalledTimes(2);
     });

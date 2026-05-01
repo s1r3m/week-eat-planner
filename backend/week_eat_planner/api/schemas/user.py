@@ -31,12 +31,13 @@ class UserRead(Email, RecordId):
 
 
 class UserFilter(BaseModel):
+    oauth_provider: OAuthProvider | None = None
     oauth_id: str | None = None
     email: str | None = None
 
 
 class GoogleCode(BaseModel):
-    code: str
+    code: str = Field(min_length=1)
 
 
 class OAuthUserData(BaseModel):

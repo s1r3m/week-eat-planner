@@ -38,6 +38,7 @@ describe('weeks api', () => {
   afterEach(() => {
     mockApi.restore();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getWeeksQuery', () => {

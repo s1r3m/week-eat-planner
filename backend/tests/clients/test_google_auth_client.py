@@ -6,11 +6,13 @@ from httpx import HTTPStatusError, Request, RequestError, Response
 from jose import JWTError
 
 from week_eat_planner.clients.google_auth_client import GOOGLE_ISSUER, GoogleAuthClient, GoogleUrl
+from week_eat_planner.config import settings
 from week_eat_planner.exceptions import OAuthInvalidCodeException, OAuthProviderException
 
 FAKE_ID_TOKEN_CLAIMS = {
     'sub': 'google-sub-123',
     'email': 'user@example.com',
+    'email_verified': True,
     'name': 'Test User',
     'picture': 'https://example.com/avatar.jpg',
 }
@@ -63,6 +65,7 @@ async def test_get_oauth_user__jwks_fetched_and_decoded_with_correct_params(mock
     mock_httpx_client.get.assert_awaited_once()
     call_kwargs = mock_decode.call_args
     assert call_kwargs.kwargs['algorithms'] == ['RS256']
+    assert call_kwargs.kwargs['audience'] == settings.GOOGLE_CLIENT_ID
     assert call_kwargs.kwargs['issuer'] == GOOGLE_ISSUER
 
 
@@ -126,6 +129,60 @@ async def test_get_oauth_user__network_error__provider_error_raised(mock_httpx_c
 
 async def test_get_oauth_user__invalid_jwt__provider_error_raised(mocker, mock_httpx_client):
     mocker.patch('week_eat_planner.clients.google_auth_client.jwt.decode', side_effect=JWTError('bad token'))
+    client = GoogleAuthClient(mock_httpx_client)
+
+    with pytest.raises(OAuthProviderException) as exc:
+        await client.get_oauth_user('auth_code')
+
+    error = OAuthProviderException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_get_oauth_user__missing_id_token__provider_error_raised(mock_httpx_client):
+    mock_httpx_client.post.return_value.json.return_value = {}
+    client = GoogleAuthClient(mock_httpx_client)
+
+    with pytest.raises(OAuthProviderException) as exc:
+        await client.get_oauth_user('auth_code')
+
+    error = OAuthProviderException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+@pytest.mark.parametrize(
+    'claims',
+    [
+        pytest.param({'email': 'user@example.com', 'name': 'Test User'}, id='missing_sub'),
+        pytest.param({'sub': 'google-sub-123', 'name': 'Test User'}, id='missing_email'),
+        pytest.param({'sub': 'google-sub-123', 'email': 'user@example.com'}, id='missing_name'),
+    ],
+)
+async def test_get_oauth_user__missing_required_claims__provider_error_raised(mocker, mock_httpx_client, claims):
+    mocker.patch('week_eat_planner.clients.google_auth_client.jwt.decode', return_value=claims)
+    client = GoogleAuthClient(mock_httpx_client)
+
+    with pytest.raises(OAuthProviderException) as exc:
+        await client.get_oauth_user('auth_code')
+
+    error = OAuthProviderException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+@pytest.mark.parametrize(
+    'email_verified',
+    [
+        pytest.param(False, id='false'),
+        pytest.param(None, id='missing'),
+    ],
+)
+async def test_get_oauth_user__unverified_email__provider_error_raised(mocker, mock_httpx_client, email_verified):
+    claims = {**FAKE_ID_TOKEN_CLAIMS, 'email_verified': email_verified}
+    if email_verified is None:
+        claims.pop('email_verified')
+    mocker.patch('week_eat_planner.clients.google_auth_client.jwt.decode', return_value=claims)
     client = GoogleAuthClient(mock_httpx_client)
 
     with pytest.raises(OAuthProviderException) as exc:

@@ -70,7 +70,10 @@ class GoogleAuthClient:
                 },
             )
             token_response.raise_for_status()
-            id_token = token_response.json()['id_token']
+            id_token = token_response.json().get('id_token')
+            if id_token is None:
+                logger.error('Google token response is missing the id_token field.')
+                raise OAuthProviderException()
             logger.debug('Received ID token from Google token endpoint.')
 
             jwks_response = await self._client.get(GoogleUrl.JWKS)
@@ -85,6 +88,14 @@ class GoogleAuthClient:
                 audience=settings.GOOGLE_CLIENT_ID,
                 issuer=GOOGLE_ISSUER,
             )
+            missing_claims = [key for key in ('sub', 'email', 'name') if key not in data]
+            if missing_claims:
+                logger.error(f'Google ID token is missing required claims: {missing_claims}.')
+                raise OAuthProviderException()
+            if not data.get('email_verified'):
+                logger.error('Google ID token has an unverified email.')
+                raise OAuthProviderException()
+
         except HTTPStatusError as exc:
             if exc.response.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED):
                 logger.warning(f'Google rejected authorization code with {exc.response.status_code}.')
@@ -98,7 +109,7 @@ class GoogleAuthClient:
             logger.error(f'Google ID token verification failed: {exc}.')
             raise OAuthProviderException() from exc
 
-        logger.info(f'Successfully verified Google identity for {data["email"]}.')
+        logger.info('Successfully verified Google identity.')
         return OAuthUserData(
             oauth_provider=OAuthProvider.GOOGLE,
             oauth_id=data['sub'],

@@ -126,7 +126,9 @@ class AuthService:
         logger.info('Google OAuth login attempt started.')
         client = GoogleAuthClient(httpx_client)
         user_data = await client.get_oauth_user(data.code)
-        db_user = await self._user_dao.find_one_or_none(UserFilter(oauth_id=user_data.oauth_id))
+        db_user = await self._user_dao.find_one_or_none(
+            UserFilter(oauth_provider=user_data.oauth_provider, oauth_id=user_data.oauth_id)
+        )
         if not db_user:
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
             if email_user:

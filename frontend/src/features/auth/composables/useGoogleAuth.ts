@@ -11,7 +11,11 @@ export const loadGoogleScript = async (): Promise<void> => {
     script.defer = true;
 
     script.onload = () => resolve();
-    script.onerror = reject;
+    script.onerror = (error) => {
+      googleScriptPromise = null;
+      script.remove();
+      reject(error);
+    };
 
     document.head.append(script);
   });
@@ -29,6 +33,10 @@ export const useGoogleAuth = () => {
   const createCodeClient = async (
     callback: (response: google.accounts.oauth2.CodeResponse) => void,
   ) => {
+    if (!CLIENT_ID) {
+      throw new Error('Missing VITE_GOOGLE_CLIENT_ID in env');
+    }
+
     await loadGoogleScript();
     return window.google.accounts.oauth2.initCodeClient({
       client_id: CLIENT_ID,

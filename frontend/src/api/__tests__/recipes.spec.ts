@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
 import { useQueryCache } from '@pinia/colada';
@@ -43,6 +43,11 @@ describe('recipes api', () => {
       invalidateQueries: vi.fn(),
     } as any;
     vi.mocked(useQueryCache).mockReturnValue(mockQueryCache);
+  });
+
+  afterEach(() => {
+    mockApi.restore();
+    vi.restoreAllMocks();
   });
 
   describe('getMyRecipesQuery', () => {

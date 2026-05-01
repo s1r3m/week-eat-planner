@@ -83,7 +83,7 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
 
 
 async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
-    invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password'}
+    invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password', 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=invalid_login_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 

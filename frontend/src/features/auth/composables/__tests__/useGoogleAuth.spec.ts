@@ -70,5 +70,18 @@ describe('useGoogleAuth', () => {
       );
       expect(client).toBeDefined();
     });
+
+    it('throws when VITE_GOOGLE_CLIENT_ID is not set', async () => {
+      vi.stubEnv('VITE_GOOGLE_CLIENT_ID', '');
+
+      const { useGoogleAuth } = await import('../useGoogleAuth');
+      const { createCodeClient } = useGoogleAuth();
+
+      await expect(createCodeClient(vi.fn())).rejects.toThrow(
+        'Missing VITE_GOOGLE_CLIENT_ID in env',
+      );
+
+      vi.unstubAllEnvs();
+    });
   });
 });

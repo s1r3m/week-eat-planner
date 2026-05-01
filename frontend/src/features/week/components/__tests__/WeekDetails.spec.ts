@@ -7,7 +7,7 @@ const router = createRouter({
   history: createMemoryHistory(),
   routes: [
     { path: '/', name: 'home', component: { template: '<div></div>' } },
-    { path: '/week/:id', name: 'week', component: { template: '<div></div>' } },
+    { path: '/weeks/:id', name: 'week', component: { template: '<div></div>' } },
   ],
 });
 
@@ -31,7 +31,7 @@ describe('WeekDetails', () => {
   it('renders a link to the week page', () => {
     const link = mountComponent().find('a');
     expect(link.exists()).toBe(true);
-    expect(link.attributes('href')).toBe('/week/week_123');
+    expect(link.attributes('href')).toBe('/weeks/week_123');
   });
 
   it('applies reduced-opacity classes when the week id starts with temp-id', () => {

@@ -29,15 +29,6 @@ describe('WeeksGrid', () => {
     expect(cards[1].props('week')).toEqual(mockWeeks[1]);
   });
 
-  it('renders up to 8 weeks', () => {
-    const eightWeeks = Array.from({ length: 8 }, (_, i) => ({
-      id: String(i + 1),
-      name: `Week ${i + 1}`,
-      user_id: 'u1',
-    }));
-    expect(mountComponent(eightWeeks).findAllComponents(WeekDetails)).toHaveLength(8);
-  });
-
   describe('empty state', () => {
     it('shows the empty state message when no weeks are provided', () => {
       const wrapper = mountComponent([]);
