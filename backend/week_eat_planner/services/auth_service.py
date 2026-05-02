@@ -138,8 +138,12 @@ class AuthService:
         if not db_user:
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
             if email_user:
-                logger.error(f'Email token={_email_token(user_data.email)} already has a password account.')
-                raise PasswordAccountException()
+                email_token = _email_token(user_data.email)
+                if email_user.hashed_password:
+                    logger.error(f'Email token={email_token} already has a password account.')
+                    raise PasswordAccountException()
+                logger.error(f'Email token={email_token} is already registered via OAuth.')
+                raise OAuthAccountException()
 
             user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
