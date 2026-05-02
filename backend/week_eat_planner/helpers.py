@@ -1,5 +1,6 @@
 """Helper functions for the application."""
 
+import hashlib
 from uuid import UUID
 
 from fastapi import Response, UploadFile
@@ -68,3 +69,8 @@ def set_refresh_cookie(response: Response, refresh_token: str) -> None:
         max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
         path='/',
     )
+
+
+def get_email_token(email: str) -> str:
+    """Returns the first 10 hex chars of the email's SHA-256 digest for safe logging."""
+    return hashlib.sha256(email.encode()).hexdigest()[:10]

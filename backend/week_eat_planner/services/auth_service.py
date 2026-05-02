@@ -1,6 +1,5 @@
 """Service layer for authentication and user registration logic."""
 
-import hashlib
 from datetime import UTC, datetime, timedelta
 
 from httpx import AsyncClient
@@ -26,13 +25,9 @@ from week_eat_planner.exceptions import (
     TokenRevokedException,
     UserAlreadyExistsException,
 )
+from week_eat_planner.helpers import get_email_token
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider
-
-
-def _email_token(email: str) -> str:
-    """Returns the first 10 hex chars of the email's SHA-256 digest for safe logging."""
-    return hashlib.sha256(email.encode()).hexdigest()[:10]
 
 
 class AuthService:
@@ -98,7 +93,7 @@ class AuthService:
 
         db_user = await self._user_dao.find_one_or_none(email)
         if db_user and not db_user.hashed_password:
-            logger.error(f'OAuth account attempted password login for {email}.')
+            logger.error(f'OAuth account attempted password login for {get_email_token(username)}.')
             raise OAuthAccountException()
         if not (db_user and verify_password(password, str(db_user.hashed_password))):
             logger.error(f'Invalid credentials for {email}!')
@@ -139,7 +134,7 @@ class AuthService:
         if not db_user:
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
             if email_user:
-                email_token = _email_token(user_data.email)
+                email_token = get_email_token(user_data.email)
                 if email_user.hashed_password:
                     logger.error(f'Email token={email_token} already has a password account.')
                     raise PasswordAccountException()
@@ -148,9 +143,9 @@ class AuthService:
 
             user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
-            logger.info(f'Created new user via Google OAuth (token={_email_token(user_data.email)}).')
+            logger.info(f'Created new user via Google OAuth (token={get_email_token(user_data.email)}).')
         else:
-            logger.info(f'Existing Google OAuth user logged in (token={_email_token(user_data.email)}).')
+            logger.info(f'Existing Google OAuth user logged in (token={get_email_token(user_data.email)}).')
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token
