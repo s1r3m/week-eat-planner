@@ -126,6 +126,7 @@ class AuthService:
         Raises:
             PasswordAccountException: If the email from Google is already registered
                 with a password account.
+            OAuthAccountException: If the email was used in some other OAuth registration.
             OAuthInvalidCodeException: If Google rejects the authorization code.
             OAuthProviderException: If the Google token exchange or JWT verification fails.
         """
