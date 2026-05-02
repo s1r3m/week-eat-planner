@@ -6,13 +6,8 @@ import AppSidebarNavigationItem from '../AppSidebarNavigationItem.vue';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
 import { markRaw } from 'vue';
 
-vi.mock('vue-router', () => ({
-  useRoute: vi.fn(),
-}));
-
-vi.mock('@/components/ui/sidebar', () => ({
-  useSidebar: vi.fn(),
-}));
+vi.mock('vue-router', () => ({ useRoute: vi.fn() }));
+vi.mock('@/components/ui/sidebar', () => ({ useSidebar: vi.fn() }));
 
 vi.mock('@/components/ui/sidebar/SidebarMenuButton.vue', () => ({
   default: {
@@ -32,128 +27,84 @@ vi.mock('@/components/ui/sidebar/SidebarMenuSubButton.vue', () => ({
 
 describe('AppSidebarNavigationItem', () => {
   const MockIcon = markRaw({ template: '<svg data-testid="mock-icon" />' });
-  const mockItem: NavLink = {
-    to: { name: 'test' },
-    label: 'Test Item',
-    icon: MockIcon as any,
-  };
+  const mockItem: NavLink = { to: { name: 'test' }, label: 'Test Item', icon: MockIcon as any };
 
-  const mountComponent = (props = {}) => {
-    return mount(AppSidebarNavigationItem, {
-      props: {
-        item: mockItem,
-        ...props,
-      },
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
+  const withRoute = (name: string, path = '/') =>
+    vi.mocked(useRoute).mockReturnValue({ name, path } as any);
+  const withSidebar = (isMobile = false) =>
+    vi
+      .mocked(useSidebar)
+      .mockReturnValue({ isMobile: { value: isMobile }, setOpenMobile: vi.fn() } as any);
+
+  const mountComponent = (props = {}) =>
+    mount(AppSidebarNavigationItem, {
+      props: { item: mockItem, ...props },
+      global: { stubs: { RouterLink: RouterLinkStub } },
     });
-  };
 
   it('renders SidebarMenuButton by default', () => {
-    vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
-    const wrapper = mountComponent();
-    expect(wrapper.find('[data-testid="sidebar-menu-button"]').exists()).toBeTruthy();
+    withRoute('/');
+    withSidebar();
+    expect(mountComponent().find('[data-testid="sidebar-menu-button"]').exists()).toBe(true);
   });
 
   it('renders SidebarMenuSubButton when variant is child', () => {
-    vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
-    const wrapper = mountComponent({ variant: 'child' });
-    expect(wrapper.find('[data-testid="sidebar-menu-sub-button"]').exists()).toBeTruthy();
+    withRoute('/');
+    withSidebar();
+    expect(
+      mountComponent({ variant: 'child' }).find('[data-testid="sidebar-menu-sub-button"]').exists(),
+    ).toBe(true);
   });
 
-  it('sets isActive to true when current route matches item.to', () => {
-    vi.mocked(useRoute).mockReturnValue({ name: 'test' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
-    const wrapper = mountComponent();
-    const button = wrapper.findComponent({ name: 'SidebarMenuButton' });
-    expect(button.props('isActive')).toBe(true);
+  it('marks the button as active when the current route matches item.to', () => {
+    withRoute('test');
+    withSidebar();
+    expect(mountComponent().findComponent({ name: 'SidebarMenuButton' }).props('isActive')).toBe(
+      true,
+    );
   });
 
-  it('sets isActive to false when current route does not match item.to', () => {
-    vi.mocked(useRoute).mockReturnValue({ name: 'other' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
-    const wrapper = mountComponent();
-    const button = wrapper.findComponent({ name: 'SidebarMenuButton' });
-    expect(button.props('isActive')).toBe(false);
+  it('marks the button as inactive when the current route does not match', () => {
+    withRoute('other');
+    withSidebar();
+    expect(mountComponent().findComponent({ name: 'SidebarMenuButton' }).props('isActive')).toBe(
+      false,
+    );
   });
 
-  it('sets isActive to true when current route matches item.to with params', () => {
+  it('marks the button as active when the route path matches an item with params', () => {
     const itemWithParams: NavLink = {
       to: { name: 'week', params: { id: '123' } },
       label: 'Week 123',
     };
-    vi.mocked(useRoute).mockReturnValue({ path: '/weeks/123' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
+    withRoute('/weeks/123', '/weeks/123');
+    withSidebar();
     const wrapper = mount(AppSidebarNavigationItem, {
       props: { item: itemWithParams },
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
+      global: { stubs: { RouterLink: RouterLinkStub } },
     });
-
-    const button = wrapper.findComponent({ name: 'SidebarMenuButton' });
-    expect(button.props('isActive')).toBe(true);
+    expect(wrapper.findComponent({ name: 'SidebarMenuButton' }).props('isActive')).toBe(true);
   });
 
-  it('closes sidebar on mobile after clicking the link', async () => {
+  it('closes the sidebar on mobile when the link is clicked', async () => {
     const setOpenMobile = vi.fn();
-    vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);
+    withRoute('/');
     vi.mocked(useSidebar).mockReturnValue({ isMobile: { value: true }, setOpenMobile } as any);
-
-    const wrapper = mountComponent();
-    const link = wrapper.findComponent(RouterLinkStub);
-    await link.trigger('click');
-
+    await mountComponent().findComponent(RouterLinkStub).trigger('click');
     expect(setOpenMobile).toHaveBeenCalledWith(false);
   });
 
-  it('does not close sidebar on desktop after clicking the link', async () => {
+  it('does not close the sidebar on desktop when the link is clicked', async () => {
     const setOpenMobile = vi.fn();
-    vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);
+    withRoute('/');
     vi.mocked(useSidebar).mockReturnValue({ isMobile: { value: false }, setOpenMobile } as any);
-
-    const wrapper = mountComponent();
-    const link = wrapper.findComponent(RouterLinkStub);
-    await link.trigger('click');
-
+    await mountComponent().findComponent(RouterLinkStub).trigger('click');
     expect(setOpenMobile).not.toHaveBeenCalled();
   });
 
-  it('renders the icon if provided', () => {
-    vi.mocked(useRoute).mockReturnValue({ path: '/' } as any);
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-
-    const wrapper = mountComponent();
-    expect(wrapper.find('[data-testid="mock-icon"]').exists()).toBeTruthy();
+  it('renders the provided icon', () => {
+    withRoute('/');
+    withSidebar();
+    expect(mountComponent().find('[data-testid="mock-icon"]').exists()).toBe(true);
   });
 });

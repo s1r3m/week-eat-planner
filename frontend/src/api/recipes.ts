@@ -292,6 +292,9 @@ export const toggleFavoriteMutation = defineMutation(() => {
   };
 });
 
+/**
+ * Query options for fetching the current user's favorited recipes.
+ */
 export const getFavoritesQuery = defineQueryOptions(() => ({
   key: RECIPE_KEYS.favorites(),
   query: () => apiClient.get<RecipePreview[]>('/recipes/favorites').then((res) => res.data),

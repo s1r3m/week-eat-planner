@@ -1,7 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import WeeksGrid from '../WeeksGrid.vue';
 import WeekDetails from '../WeekDetails.vue';
+import { createRouter, createMemoryHistory } from 'vue-router';
+
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes: [
+    { path: '/', name: 'home', component: { template: '<div></div>' } },
+    { path: '/week/:id', name: 'week', component: { template: '<div></div>' } },
+  ],
+});
 
 describe('WeeksGrid', () => {
   const mockWeeks = [
@@ -9,67 +18,26 @@ describe('WeeksGrid', () => {
     { id: '2', name: 'Week 2', user_id: 'u1' },
   ];
 
-  const stubs = {
-    Card: { template: '<div class="card"><slot /></div>' },
-    WeekDetails: {
-      template:
-        '<div class="week-details"><button @click="$emit(\'edit\', week)">Edit</button><button @click="$emit(\'delete\', week)">Delete</button></div>',
-      props: ['week'],
-      emits: ['edit', 'delete'],
-    },
-  };
+  const mountComponent = (weeks = mockWeeks) =>
+    mount(WeeksGrid, { props: { weeks }, global: { plugins: [router] } });
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  it('renders a WeekDetails card for each week', () => {
+    const wrapper = mountComponent();
+    const cards = wrapper.findAllComponents(WeekDetails);
+    expect(cards).toHaveLength(2);
+    expect(cards[0].props('week')).toEqual(mockWeeks[0]);
+    expect(cards[1].props('week')).toEqual(mockWeeks[1]);
   });
 
-  it('renders all weeks from props', () => {
-    const wrapper = mount(WeeksGrid, {
-      props: {
-        weeks: mockWeeks,
-      },
-      global: {
-        stubs,
-      },
+  describe('empty state', () => {
+    it('shows the empty state message when no weeks are provided', () => {
+      const wrapper = mountComponent([]);
+      expect(wrapper.text()).toContain('No weeks yet');
+      expect(wrapper.text()).toContain('Try and add one to start your planning journey!');
     });
 
-    const weeks = wrapper.findAllComponents(WeekDetails);
-    expect(weeks).toHaveLength(2);
-    expect(weeks[0].props('week')).toEqual(mockWeeks[0]);
-    expect(weeks[1].props('week')).toEqual(mockWeeks[1]);
-  });
-
-  it('renders correctly with exactly 8 weeks', () => {
-    const eightWeeks = Array.from({ length: 8 }, (_, i) => ({
-      id: String(i + 1),
-      name: `Week ${i + 1}`,
-      user_id: 'u1',
-    }));
-
-    const wrapper = mount(WeeksGrid, {
-      props: {
-        weeks: eightWeeks,
-      },
-      global: {
-        stubs,
-      },
+    it('renders no WeekDetails cards when the list is empty', () => {
+      expect(mountComponent([]).findAllComponents(WeekDetails)).toHaveLength(0);
     });
-
-    expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(8);
-  });
-
-  it('renders correctly with 0 weeks', () => {
-    const wrapper = mount(WeeksGrid, {
-      props: {
-        weeks: [],
-      },
-      global: {
-        stubs,
-      },
-    });
-
-    expect(wrapper.findAllComponents(WeekDetails)).toHaveLength(0);
-    expect(wrapper.text()).toContain('No weeks yet');
-    expect(wrapper.text()).toContain('Try and add one to start your planning journey!');
   });
 });

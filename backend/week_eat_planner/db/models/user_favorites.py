@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 
 class UserFavorite(Base):
+    """Join table recording which recipes a user has marked as favorites."""
+
     __tablename__ = 'user_favorites'
     __table_args__ = (UniqueConstraint('user_id', 'recipe_id', name='uq_user_favorites_user_recipe'),)
 

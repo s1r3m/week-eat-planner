@@ -23,12 +23,10 @@ describe('AuthAppBreadcrumbs', () => {
     vi.mocked(useBreadcrumbs).mockReturnValue(breadcrumbsMock as any);
   });
 
-  const mountComponent = () => {
-    return mount(AuthAppBreadcrumbs, {
+  const mountComponent = () =>
+    mount(AuthAppBreadcrumbs, {
       global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
+        stubs: { RouterLink: RouterLinkStub },
         components: {
           Breadcrumb,
           BreadcrumbList,
@@ -38,80 +36,56 @@ describe('AuthAppBreadcrumbs', () => {
         },
       },
     });
-  };
 
-  describe('Rendering', () => {
-    it('renders the component', () => {
-      const wrapper = mountComponent();
-
-      expect(wrapper.exists()).toBe(true);
-      expect(wrapper.findComponent(Breadcrumb).exists()).toBe(true);
-    });
-
-    it('renders BreadcrumbList', () => {
-      const wrapper = mountComponent();
-
-      expect(wrapper.findComponent(BreadcrumbList).exists()).toBe(true);
-    });
+  it('renders the Breadcrumb and BreadcrumbList components', () => {
+    const wrapper = mountComponent();
+    expect(wrapper.findComponent(Breadcrumb).exists()).toBe(true);
+    expect(wrapper.findComponent(BreadcrumbList).exists()).toBe(true);
   });
 
-  describe('Breadcrumb items', () => {
-    it('displays breadcrumbs from composable', () => {
-      breadcrumbsMock.value = [
-        { label: 'Dashboard', to: { name: 'dashboard' } },
-        { label: 'Settings', to: { name: 'settings' } },
-      ];
-      const wrapper = mountComponent();
+  it('renders a BreadcrumbItem for each breadcrumb', () => {
+    breadcrumbsMock.value = [
+      { label: 'Dashboard', to: { name: 'dashboard' } },
+      { label: 'Settings', to: { name: 'settings' } },
+    ];
+    const items = mountComponent().findAllComponents(BreadcrumbItem);
+    expect(items).toHaveLength(2);
+    expect(items[0].text()).toContain('Dashboard');
+    expect(items[1].text()).toContain('Settings');
+  });
 
-      const items = wrapper.findAllComponents(BreadcrumbItem);
-      expect(items).toHaveLength(2);
-      expect(items[0].text()).toContain('Dashboard');
-      expect(items[1].text()).toContain('Settings');
-    });
+  it('renders router-links for items that have a to property', () => {
+    breadcrumbsMock.value = [
+      { label: 'Home', to: { name: 'home' } },
+      { label: 'Dashboard', to: { name: 'dashboard' } },
+    ];
+    const links = mountComponent().findAllComponents(RouterLinkStub);
+    expect(links).toHaveLength(2);
+    expect(links[0].props('to')).toEqual({ name: 'home' });
+    expect(links[1].props('to')).toEqual({ name: 'dashboard' });
+  });
 
-    it('renders router-link for items with to property', () => {
-      breadcrumbsMock.value = [
-        { label: 'Home', to: { name: 'home' } },
-        { label: 'Dashboard', to: { name: 'dashboard' } },
-      ];
-      const wrapper = mountComponent();
+  it('renders BreadcrumbPage for items without a to property', () => {
+    breadcrumbsMock.value = [
+      { label: 'Dashboard', to: { name: 'dashboard' } },
+      { label: 'Current Page' },
+    ];
+    const pages = mountComponent().findAllComponents(BreadcrumbPage);
+    expect(pages).toHaveLength(1);
+    expect(pages[0].text()).toContain('Current Page');
+  });
 
-      const routerLinks = wrapper.findAllComponents(RouterLinkStub);
-      expect(routerLinks).toHaveLength(2);
-      expect(routerLinks[0].props('to')).toEqual({ name: 'home' });
-      expect(routerLinks[1].props('to')).toEqual({ name: 'dashboard' });
-    });
+  it('renders a separator between each pair of breadcrumb items', () => {
+    breadcrumbsMock.value = [
+      { label: 'First', to: { name: 'first' } },
+      { label: 'Second', to: { name: 'second' } },
+      { label: 'Third' },
+    ];
+    expect(mountComponent().findAllComponents(BreadcrumbSeparator)).toHaveLength(2);
+  });
 
-    it('renders BreadcrumbPage for items without to property', () => {
-      breadcrumbsMock.value = [
-        { label: 'Dashboard', to: { name: 'dashboard' } },
-        { label: 'Current Page' },
-      ];
-      const wrapper = mountComponent();
-
-      const pages = wrapper.findAllComponents(BreadcrumbPage);
-      expect(pages).toHaveLength(1);
-      expect(pages[0].text()).toContain('Current Page');
-    });
-
-    it('renders separators between breadcrumb items', () => {
-      breadcrumbsMock.value = [
-        { label: 'First', to: { name: 'first' } },
-        { label: 'Second', to: { name: 'second' } },
-        { label: 'Third' },
-      ];
-      const wrapper = mountComponent();
-
-      const separators = wrapper.findAllComponents(BreadcrumbSeparator);
-      expect(separators).toHaveLength(2);
-    });
-
-    it('renders no separators for single breadcrumb item', () => {
-      breadcrumbsMock.value = [{ label: 'Single' }];
-      const wrapper = mountComponent();
-
-      const separators = wrapper.findAllComponents(BreadcrumbSeparator);
-      expect(separators).toHaveLength(0);
-    });
+  it('renders no separators for a single breadcrumb item', () => {
+    breadcrumbsMock.value = [{ label: 'Single' }];
+    expect(mountComponent().findAllComponents(BreadcrumbSeparator)).toHaveLength(0);
   });
 });

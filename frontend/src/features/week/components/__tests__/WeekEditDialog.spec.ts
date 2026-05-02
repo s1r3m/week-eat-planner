@@ -18,25 +18,17 @@ describe('WeekEditDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useMutation as any).mockReturnValue({
-      mutate: mockMutate,
-      isLoading: false,
-    });
+    vi.mocked(useMutation).mockReturnValue({ mutate: mockMutate, isLoading: false } as any);
   });
 
-  it('renders WeekFormDialog with correct props', () => {
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
+  const mountComponent = (modelValue = mockWeek) =>
+    mount(WeekEditDialog, {
+      props: { modelValue },
+      global: { stubs: { WeekFormDialog: true } },
     });
 
-    const formDialog = wrapper.findComponent(WeekFormDialog);
+  it('passes correct props to WeekFormDialog', () => {
+    const formDialog = mountComponent().findComponent(WeekFormDialog);
     expect(formDialog.exists()).toBe(true);
     expect(formDialog.props('title')).toBe(`Edit ${mockWeek.name}`);
     expect(formDialog.props('initialName')).toBe(mockWeek.name);
@@ -44,106 +36,42 @@ describe('WeekEditDialog', () => {
     expect(formDialog.props('isLoading')).toBe(false);
   });
 
+  it('propagates isLoading to WeekFormDialog', () => {
+    vi.mocked(useMutation).mockReturnValue({ mutate: mockMutate, isLoading: true } as any);
+    expect(mountComponent().findComponent(WeekFormDialog).props('isLoading')).toBe(true);
+  });
+
   it('calls updateWeek and closes dialog on submit', async () => {
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const formDialog = wrapper.findComponent(WeekFormDialog);
-
-    await formDialog.vm.$emit('submit', 'Updated Week Name');
+    const wrapper = mountComponent();
+    await wrapper.findComponent(WeekFormDialog).vm.$emit('submit', 'Updated Week Name');
 
     expect(mockMutate).toHaveBeenCalledWith({
       id: mockWeek.id,
       payload: { name: 'Updated Week Name' },
     });
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
+    expect(wrapper.emitted('update:modelValue')?.some((e) => e[0] === null)).toBe(true);
   });
 
-  it('does nothing when WeekFormDialog emits update:modelValue with true', async () => {
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
+  it('emits update:modelValue with null when WeekFormDialog emits false', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent(WeekFormDialog).vm.$emit('update:modelValue', false);
 
-    const formDialog = wrapper.findComponent(WeekFormDialog);
-    await formDialog.vm.$emit('update:modelValue', true);
+    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
+  });
 
+  it('does not emit when WeekFormDialog emits update:modelValue with true', async () => {
+    const wrapper = mountComponent();
+    await wrapper.findComponent(WeekFormDialog).vm.$emit('update:modelValue', true);
     expect(wrapper.emitted('update:modelValue')).toBeFalsy();
   });
 
-  it('does nothing on submit if week is null', async () => {
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
+  it('does not call mutation twice when submit fires consecutively', async () => {
+    const wrapper = mountComponent();
     const formDialog = wrapper.findComponent(WeekFormDialog);
-    // Trigger submit twice without waiting for nextTick to cover the null check in onEdit
     formDialog.vm.$emit('submit', 'New Name');
     formDialog.vm.$emit('submit', 'Another Name');
 
     expect(mockMutate).toHaveBeenCalledTimes(1);
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-  });
-
-  it('passes isLoading state to WeekFormDialog', async () => {
-    (useMutation as any).mockReturnValue({
-      mutate: mockMutate,
-      isLoading: true,
-    });
-
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const formDialog = wrapper.findComponent(WeekFormDialog);
-    expect(formDialog.props('isLoading')).toBe(true);
-  });
-
-  it('updates modelValue when WeekFormDialog emits update:modelValue', async () => {
-    const wrapper = mount(WeekEditDialog, {
-      global: {
-        stubs: {
-          WeekFormDialog: true,
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const formDialog = wrapper.findComponent(WeekFormDialog);
-    await formDialog.vm.$emit('update:modelValue', false);
-
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
   });
 });

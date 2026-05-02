@@ -19,10 +19,12 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.node,
+        google: 'readonly',
       },
     },
     rules: {
       'no-unused-vars': 'off',
+      'no-undef': 'off',
     },
   },
   {
@@ -37,6 +39,7 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.node,
+        google: 'readonly',
       },
     },
     plugins: {

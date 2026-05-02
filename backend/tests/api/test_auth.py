@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
@@ -8,13 +9,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
 from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserRead
+from week_eat_planner.api.schemas.user import OAuthUserData
 from week_eat_planner.config import settings
-from week_eat_planner.constants import AppUrl, REFRESH_TOKEN_COOKIE_NAME, TokenType
+from week_eat_planner.constants import AppUrl, OAuthProvider, REFRESH_TOKEN_COOKIE_NAME, TokenType
 from week_eat_planner.db.dao import RefreshTokenDAO
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
     InvalidEmailException,
     LoginWithAuthException,
+    OAuthAccountException,
+    OAuthInvalidCodeException,
+    OAuthProviderException,
+    PasswordAccountException,
     RefreshTokenMissingException,
     RefreshTokenRevokedException,
     SignUpWithAuthException,
@@ -42,15 +48,8 @@ async def revoked_refresh_token_user(db_session: AsyncSession, created_user: Use
     return created_user
 
 
-@pytest.mark.parametrize(
-    'username',
-    [
-        pytest.param(USERNAME, id='with_username'),
-        pytest.param(None, id='without_username'),
-    ],
-)
-async def test_create_user__valid_data__user_created_and_logged_in(client, username):
-    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
+async def test_create_user__valid_data__user_created_and_logged_in(client):
+    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -60,8 +59,22 @@ async def test_create_user__valid_data__user_created_and_logged_in(client, usern
     assert body['token_type'] == TokenType.BEARER
 
 
+@pytest.mark.parametrize(
+    'username',
+    [
+        pytest.param(None, id='not_present'),
+        pytest.param('', id='empty_string'),
+    ],
+)
+async def test_create_user__bad_username__unprocessable_entity_error(client, username):
+    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
-    login_data = {'email': created_user.email, 'password': PASSWORD}
+    login_data = {'email': created_user.email, 'password': PASSWORD, 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
     error = UserAlreadyExistsException()
@@ -70,7 +83,7 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
 
 
 async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
-    invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password'}
+    invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password', 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=invalid_login_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -78,7 +91,7 @@ async def test_create_user__invalid_email_format__unprocessable_entity_error(cli
 async def test_create_user__with_authorization_header__error_raised(
     auth_client_for_created_user,
 ):
-    login_data = {'email': EMAIL, 'password': PASSWORD}
+    login_data = {'email': EMAIL, 'password': PASSWORD, 'username': USERNAME}
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_SIGNUP, json=login_data)
 
@@ -240,3 +253,78 @@ async def test_logout__unexpected_http_exception__error_raised(mocker, auth_clie
 
     assert response.status_code == unexpected_error.status_code
     assert response.json() == {'detail': unexpected_error.detail}
+
+
+async def test_login__oauth_account__error_raised(mocker, client, created_user):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login',
+        side_effect=OAuthAccountException(),
+    )
+    token_data = {'username': created_user.email, 'password': PASSWORD}
+
+    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+
+    error = OAuthAccountException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_google_auth__valid_code__tokens_returned(mocker, client):
+    oauth_user_data = OAuthUserData(
+        oauth_provider=OAuthProvider.GOOGLE,
+        oauth_id='google-sub-123',
+        email='oauth@example.com',
+        username='OAuth User',
+        avatar_url=None,
+    )
+    mocker.patch(
+        'week_eat_planner.services.auth_service.GoogleAuthClient.get_oauth_user',
+        new=AsyncMock(return_value=oauth_user_data),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'test_auth_code'})
+
+    assert response.status_code == status.HTTP_200_OK
+    body = response.json()
+    assert 'access_token' in body
+    assert body['access_token']
+    assert body['token_type'] == TokenType.BEARER
+
+
+async def test_google_auth__invalid_code__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=OAuthInvalidCodeException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'bad_code'})
+
+    error = OAuthInvalidCodeException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_google_auth__provider_error__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=OAuthProviderException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'auth_code'})
+
+    error = OAuthProviderException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_google_auth__email_has_password_account__error_raised(mocker, client):
+    mocker.patch(
+        'week_eat_planner.api.auth.AuthService.login_with_google',
+        side_effect=PasswordAccountException(),
+    )
+
+    response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'auth_code'})
+
+    error = PasswordAccountException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}

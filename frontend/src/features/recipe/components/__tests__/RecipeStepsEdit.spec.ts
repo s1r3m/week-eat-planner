@@ -6,17 +6,12 @@ import type { CookingStep } from '@/api/recipes';
 describe('RecipeStepsEdit', () => {
   const defaultSteps: CookingStep[] = [{ order: 0, step: '' }];
 
-  it('renders initial step', () => {
-    const wrapper = mount(RecipeStepsEdit, {
-      props: {
-        steps: defaultSteps,
-      },
-    });
-    const items = wrapper.findAll('li');
-    expect(items).toHaveLength(1);
+  it('renders the initial step', () => {
+    const wrapper = mount(RecipeStepsEdit, { props: { steps: defaultSteps } });
+    expect(wrapper.findAll('li')).toHaveLength(1);
   });
 
-  it('adds a step', async () => {
+  it('adds a step when the add button is clicked', async () => {
     const wrapper = mount(RecipeStepsEdit, {
       props: {
         steps: [...defaultSteps],
@@ -28,26 +23,24 @@ describe('RecipeStepsEdit', () => {
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 
-  it('removes a step and updates order', async () => {
+  it('removes a step when the remove button is clicked', async () => {
     const wrapper = mount(RecipeStepsEdit, {
       props: {
         steps: [...defaultSteps],
         'onUpdate:steps': (e: any) => wrapper.setProps({ steps: e }),
       },
     });
-    // Add two more steps
     const addButton = wrapper.findAll('button').find((b) => b.text().includes('Add'));
     await addButton?.trigger('click');
     await addButton?.trigger('click');
     expect(wrapper.findAll('li')).toHaveLength(3);
 
-    // Remove middle one
     const removeButtons = wrapper.findAll('button.text-destructive');
     await removeButtons[1].trigger('click');
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 
-  it('updates step text', async () => {
+  it('updates step text on input', async () => {
     const wrapper = mount(RecipeStepsEdit, {
       props: {
         steps: [...defaultSteps],

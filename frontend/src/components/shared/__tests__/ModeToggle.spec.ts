@@ -15,16 +15,15 @@ vi.mock('@vueuse/core', async () => {
 });
 
 describe('ModeToggle', () => {
-  it('updates theme when an option is selected', async () => {
+  it('initialises useColorMode with the correct configuration', () => {
     const store = ref<BasicColorSchema>('auto');
-    const useColorModeMock = vi.mocked(vueuse.useColorMode).mockReturnValue({
+    vi.mocked(vueuse.useColorMode).mockReturnValue({
       store,
     } as UseColorModeReturn<BasicColorSchema>);
 
-    const wrapper = mount(ModeToggle);
+    mount(ModeToggle);
 
-    const vm = wrapper.vm as { menuValue: BasicColorSchema };
-    expect(useColorModeMock).toHaveBeenCalledWith(
+    expect(vi.mocked(vueuse.useColorMode)).toHaveBeenCalledWith(
       expect.objectContaining({
         selector: 'html',
         attribute: 'class',
@@ -32,7 +31,29 @@ describe('ModeToggle', () => {
         storageKey: 'week-eat-planner.theme',
       }),
     );
-    expect(vm.menuValue).toBe('auto'); // Default value
+  });
+
+  it('defaults menuValue to auto', () => {
+    const store = ref<BasicColorSchema>('auto');
+    vi.mocked(vueuse.useColorMode).mockReturnValue({
+      store,
+    } as UseColorModeReturn<BasicColorSchema>);
+
+    const wrapper = mount(ModeToggle);
+    const vm = wrapper.vm as { menuValue: BasicColorSchema };
+
+    expect(vm.menuValue).toBe('auto');
+  });
+
+  it('syncs the store when menuValue is changed', () => {
+    const store = ref<BasicColorSchema>('auto');
+    vi.mocked(vueuse.useColorMode).mockReturnValue({
+      store,
+    } as UseColorModeReturn<BasicColorSchema>);
+
+    const wrapper = mount(ModeToggle);
+    const vm = wrapper.vm as { menuValue: BasicColorSchema };
+
     vm.menuValue = 'dark';
     expect(store.value).toBe('dark');
     vm.menuValue = 'light';
@@ -42,7 +63,7 @@ describe('ModeToggle', () => {
   it.each([
     { mode: 'light', component: SunIcon },
     { mode: 'dark', component: MoonIcon },
-  ])('renders icons correctly for mode: $mode', ({ mode, component }) => {
+  ])('renders the $mode icon when mode is $mode', ({ mode, component }) => {
     vi.mocked(vueuse.useColorMode).mockReturnValue({
       store: ref<BasicColorSchema>(mode as BasicColorSchema),
     } as UseColorModeReturn<BasicColorSchema>);
@@ -52,7 +73,7 @@ describe('ModeToggle', () => {
     expect(wrapper.findComponent(component).exists()).toBe(true);
   });
 
-  it('renders dropdown menu items', () => {
+  it('renders all three theme options in the dropdown', () => {
     const store = ref<BasicColorSchema>('auto');
     vi.mocked(vueuse.useColorMode).mockReturnValue({
       store,

@@ -5,22 +5,11 @@ import i18n from '@/i18n';
 import en from '@/i18n/locales/en';
 
 describe('MealSlotEmptyCard', () => {
-  const mountComponent = (mealType: string = 'LUNCH') => {
-    return mount(MealSlotEmptyCard, {
-      props: {
-        mealType,
-      },
-      global: {
-        plugins: [i18n],
-        stubs: {
-          Card: { template: '<div v-bind="$attrs"><slot /></div>' },
-          CardContent: { template: '<div><slot /></div>' },
-          Badge: { template: '<span><slot /></span>' },
-          PlusCircle: { template: '<div class="plus-icon" />' },
-        },
-      },
+  const mountComponent = (mealType: string = 'LUNCH') =>
+    mount(MealSlotEmptyCard, {
+      props: { mealType },
+      global: { plugins: [i18n] },
     });
-  };
 
   it('renders the meal type label', () => {
     const wrapper = mountComponent('BREAKFAST');

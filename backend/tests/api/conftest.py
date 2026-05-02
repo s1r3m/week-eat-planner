@@ -136,7 +136,7 @@ async def created_user(user_factory: Callable) -> UserRead:
 
 @pytest_asyncio.fixture
 async def created_user_2(user_factory: Callable) -> UserRead:
-    return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD, username=None))
+    return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD, username='user_2'))
 
 
 @pytest_asyncio.fixture

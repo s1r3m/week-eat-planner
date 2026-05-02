@@ -39,7 +39,9 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Error handling helpers
+/**
+ * API paths excluded from automatic 401 token-refresh handling.
+ */
 export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
 
 const isAuthExcluded = (url: string | undefined): boolean => {

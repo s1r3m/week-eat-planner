@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, type Mock } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 import { ref } from 'vue';
@@ -29,13 +29,8 @@ describe('AppSidebarFooter', () => {
   const mockLogout = vi.fn();
 
   const mountComponent = (initialState: { user?: any } = { user: mockUser }) => {
-    (useMutation as unknown as Mock).mockReturnValue({
-      mutate: mockLogout,
-    });
-
-    (useQuery as unknown as Mock).mockReturnValue({
-      data: ref(initialState.user ?? null),
-    });
+    vi.mocked(useMutation).mockReturnValue({ mutate: mockLogout } as any);
+    vi.mocked(useQuery).mockReturnValue({ data: ref(initialState.user ?? null) } as any);
 
     return mount(AppSidebarFooter, {
       global: {
@@ -57,64 +52,52 @@ describe('AppSidebarFooter', () => {
     });
   };
 
-  it('renders UserIdentity when user is logged in', () => {
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-    const wrapper = mountComponent();
-    expect(wrapper.findComponent(UserIdentity).exists()).toBeTruthy();
+  const withSidebar = (isMobile: boolean) =>
+    vi
+      .mocked(useSidebar)
+      .mockReturnValue({ isMobile: { value: isMobile }, setOpenMobile: vi.fn() } as any);
+
+  it('renders UserIdentity when a user is logged in', () => {
+    withSidebar(false);
+    expect(mountComponent().findComponent(UserIdentity).exists()).toBe(true);
   });
 
-  it('does not render trigger when user is not logged in', () => {
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
-    const wrapper = mountComponent({ user: null });
-    expect(wrapper.findComponent(UserIdentity).exists()).toBeFalsy();
+  it('does not render UserIdentity when no user is logged in', () => {
+    withSidebar(false);
+    expect(mountComponent({ user: null }).findComponent(UserIdentity).exists()).toBe(false);
   });
 
-  it('calls logout when Log Out is clicked', async () => {
-    vi.mocked(useSidebar).mockReturnValue({
-      isMobile: { value: false },
-      setOpenMobile: vi.fn(),
-    } as any);
+  it('calls logout when the Log Out link is clicked', async () => {
+    withSidebar(false);
     const wrapper = mountComponent();
-
     const logoutLink = wrapper
       .findAllComponents(RouterLinkStub)
-      .find((link) => link.text().includes('Log Out'));
+      .find((l) => l.text().includes('Log Out'));
     expect(logoutLink).toBeDefined();
-
     await logoutLink!.trigger('click');
     expect(mockLogout).toHaveBeenCalled();
   });
 
-  it('closes sidebar on mobile after clicking Profile', async () => {
+  it('closes the sidebar on mobile when Profile is clicked', async () => {
     const setOpenMobile = vi.fn();
     vi.mocked(useSidebar).mockReturnValue({ isMobile: { value: true }, setOpenMobile } as any);
     const wrapper = mountComponent();
-
     const profileLink = wrapper
       .findAllComponents(RouterLinkStub)
-      .find((link) => link.text().includes('Profile'));
+      .find((l) => l.text().includes('Profile'));
     expect(profileLink).toBeDefined();
-
     await profileLink!.trigger('click');
     expect(setOpenMobile).toHaveBeenCalledWith(false);
   });
 
-  it('does not close sidebar on desktop after clicking Profile', async () => {
+  it('does not close the sidebar on desktop when Profile is clicked', async () => {
     const setOpenMobile = vi.fn();
     vi.mocked(useSidebar).mockReturnValue({ isMobile: { value: false }, setOpenMobile } as any);
     const wrapper = mountComponent();
-
     const profileLink = wrapper
       .findAllComponents(RouterLinkStub)
-      .find((link) => link.text().includes('Profile'));
+      .find((l) => l.text().includes('Profile'));
     expect(profileLink).toBeDefined();
-
     await profileLink!.trigger('click');
     expect(setOpenMobile).not.toHaveBeenCalled();
   });

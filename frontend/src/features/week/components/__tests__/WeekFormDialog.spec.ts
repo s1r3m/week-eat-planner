@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import WeekFormDialog from '../WeekFormDialog.vue';
 
@@ -11,147 +11,94 @@ describe('WeekFormDialog', () => {
     initialName: '',
   };
 
-  const stubs = {
-    Dialog: {
-      template: '<div><slot /></div>',
-      props: ['open'],
-      emits: ['update:open'],
-    },
+  const dialogStubs = {
+    Dialog: { template: '<div><slot /></div>', props: ['open'], emits: ['update:open'] },
     DialogContent: { template: '<div><slot /></div>' },
     DialogHeader: { template: '<div><slot /></div>' },
     DialogTitle: { template: '<div><slot /></div>' },
     DialogDescription: { template: '<div><slot /></div>' },
     DialogFooter: { template: '<div><slot /></div>' },
     DialogClose: { template: '<div><slot /></div>' },
-    FieldGroup: { template: '<div><slot /></div>' },
-    FieldLabel: { template: '<label><slot /></label>' },
-    Input: {
-      template:
-        '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-      props: ['modelValue'],
-      emits: ['update:modelValue'],
-    },
-    Spinner: { template: '<div class="spinner"></div>' },
-    Button: {
-      template: '<button :disabled="disabled"><slot /></button>',
-      props: ['disabled'],
-    },
   };
 
-  it('renders correctly with props', () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: defaultProps,
-    });
+  const mountComponent = (props = {}) =>
+    mount(WeekFormDialog, { props: { ...defaultProps, ...props }, global: { stubs: dialogStubs } });
 
+  it('renders title, description, and submit button label', () => {
+    const wrapper = mountComponent();
     expect(wrapper.text()).toContain(defaultProps.title);
     expect(wrapper.text()).toContain(defaultProps.description);
-    const button = wrapper.find('button[type="submit"]');
-    expect(button.text()).toBe(defaultProps.submitLabel);
+    expect(wrapper.find('[data-slot="button"][type="submit"]').text()).toBe(
+      defaultProps.submitLabel,
+    );
   });
 
-  it('updates name when input changes', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: defaultProps,
-    });
-
-    const input = wrapper.find('input');
-    await input.setValue('New Week');
-
-    const button = wrapper.find<HTMLButtonElement>('button[type="submit"]');
-    expect(button.element.disabled).toBe(false);
+  it('enables the submit button when a non-empty, changed name is entered', async () => {
+    const wrapper = mountComponent();
+    await wrapper.find('[data-slot="input"]').setValue('New Week');
+    expect(
+      wrapper.find('[data-slot="button"][type="submit"]').attributes('disabled'),
+    ).toBeUndefined();
   });
 
-  it('disables submit button if name is empty or unchanged', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: { ...defaultProps, initialName: 'Original' },
-    });
+  it('disables the submit button when name is empty or equal to the initial name', async () => {
+    const wrapper = mountComponent({ initialName: 'Original' });
+    const submitBtn = wrapper.find('[data-slot="button"][type="submit"]');
 
-    const button = wrapper.find<HTMLButtonElement>('button[type="submit"]');
+    expect(submitBtn.attributes('disabled')).toBeDefined();
 
-    expect(button.element.disabled).toBe(true);
+    await wrapper.find('[data-slot="input"]').setValue('Changed');
+    expect(submitBtn.attributes('disabled')).toBeUndefined();
 
-    const input = wrapper.find('input');
-    await input.setValue('Changed');
-    expect(button.element.disabled).toBe(false);
+    await wrapper.find('[data-slot="input"]').setValue('Original');
+    expect(submitBtn.attributes('disabled')).toBeDefined();
 
-    await input.setValue('Original');
-    expect(button.element.disabled).toBe(true);
-
-    await input.setValue('   ');
-    expect(button.element.disabled).toBe(true);
+    await wrapper.find('[data-slot="input"]').setValue('   ');
+    expect(submitBtn.attributes('disabled')).toBeDefined();
   });
 
-  it('emits submit event with name when form is submitted', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: defaultProps,
-    });
-
-    await wrapper.find('input').setValue('My New Week');
+  it('emits submit with the entered name when the form is submitted', async () => {
+    const wrapper = mountComponent();
+    await wrapper.find('[data-slot="input"]').setValue('My New Week');
     await wrapper.find('form').trigger('submit.prevent');
 
     expect(wrapper.emitted('submit')).toBeTruthy();
     expect(wrapper.emitted('submit')![0]).toEqual(['My New Week']);
   });
 
-  it('shows loading state in button', () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: { ...defaultProps, isLoading: true },
-    });
-
-    const button = wrapper.find<HTMLButtonElement>('button[type="submit"]');
-    expect(button.text()).toBe('Saving...');
-    expect(button.element.disabled).toBe(true);
-    expect(wrapper.find('.spinner').exists()).toBe(true);
+  it('shows loading spinner and disables submit while isLoading is true', () => {
+    const wrapper = mountComponent({ isLoading: true });
+    const submitBtn = wrapper.find('[data-slot="button"][type="submit"]');
+    expect(submitBtn.text()).toContain('Saving...');
+    expect(submitBtn.attributes('disabled')).toBeDefined();
+    expect(wrapper.find('[role="status"]').exists()).toBe(true);
   });
 
-  it('updates internal name when initialName prop changes', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: defaultProps,
-    });
-
+  it('syncs the input value when initialName prop changes', async () => {
+    const wrapper = mountComponent();
     await wrapper.setProps({ initialName: 'New Initial' });
-    const input = wrapper.find('input');
-    expect((input.element as HTMLInputElement).value).toBe('New Initial');
+    expect((wrapper.find('[data-slot="input"]').element as HTMLInputElement).value).toBe(
+      'New Initial',
+    );
   });
 
-  it('updates internal name to empty string when initialName prop changes to falsy', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: { ...defaultProps, initialName: 'Some Name' },
-    });
-
+  it('resets the input to empty when initialName prop changes to falsy', async () => {
+    const wrapper = mountComponent({ initialName: 'Some Name' });
     await wrapper.setProps({ initialName: undefined });
-    const input = wrapper.find('input');
-    expect((input.element as HTMLInputElement).value).toBe('');
+    expect((wrapper.find('[data-slot="input"]').element as HTMLInputElement).value).toBe('');
   });
 
-  it('emits update:modelValue when Dialog emits update:open', async () => {
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: { ...defaultProps, modelValue: true },
-    });
-
-    const dialog = wrapper.getComponent(stubs.Dialog);
-    await dialog.vm.$emit('update:open', false);
+  it('emits update:modelValue when the Dialog emits update:open', async () => {
+    const wrapper = mountComponent({ modelValue: true });
+    await wrapper.findComponent(dialogStubs.Dialog).vm.$emit('update:open', false);
 
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
     expect(wrapper.emitted('update:modelValue')![0]).toEqual([false]);
   });
 
-  it('initializes name to empty string if initialName is undefined', () => {
+  it('initializes with empty input when initialName is undefined', () => {
     const { initialName, ...propsWithoutInitial } = defaultProps;
-    const wrapper = mount(WeekFormDialog, {
-      global: { stubs },
-      props: propsWithoutInitial,
-    });
-
-    const input = wrapper.find('input');
-    expect((input.element as HTMLInputElement).value).toBe('');
+    const wrapper = mountComponent(propsWithoutInitial);
+    expect((wrapper.find('[data-slot="input"]').element as HTMLInputElement).value).toBe('');
   });
 });

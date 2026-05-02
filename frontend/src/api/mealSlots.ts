@@ -4,22 +4,35 @@ import { type RecipePreview } from '@/api/recipes';
 import { WEEK_KEYS } from '@/api/weeks';
 import type { WeekFull, DayOfWeek, MealType } from '@/api/weeks';
 
+/**
+ * Snapshot of a meal slot returned by the API after an update.
+ */
 export interface MealSlotPreview {
   day_of_week: DayOfWeek;
   meal_type: MealType;
   recipe: RecipePreview | null;
 }
 
+/**
+ * A single slot update pairing a slot ID with its new recipe (or null to clear it).
+ */
 export interface MealSlotUpdate {
   slot_id: string;
   recipe: RecipePreview | null;
 }
 
+/**
+ * Variables required to assign or clear recipes across one or more slots in a week.
+ */
 export interface MealSlotVars {
   weekId: string;
   slots: MealSlotUpdate[];
 }
 
+/**
+ * Mutation for assigning or clearing recipes in meal slots.
+ * Optimistically updates the week detail cache and rolls back on error.
+ */
 export const assignRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 

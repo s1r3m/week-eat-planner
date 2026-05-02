@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
-// Mock all dependencies before importing main
 vi.mock('vue', () => ({
   createApp: vi.fn(() => ({
     use: vi.fn().mockReturnThis(),
@@ -67,14 +66,13 @@ describe('main.ts', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes the application correctly', async () => {
+  it('bootstraps the Vue app with all plugins and mounts to #app', async () => {
     const { createApp } = await import('vue');
     const { createPinia } = await import('pinia');
     const { PiniaColada, PiniaColadaQueryHooksPlugin } = await import('@pinia/colada');
     const i18n = (await import('@/i18n')).default;
     const router = (await import('@/router')).default;
 
-    // Import the main module which should call createApp
     await import('../main');
 
     const app = vi.mocked(createApp).mock.results[0].value;
@@ -98,7 +96,7 @@ describe('main.ts', () => {
   });
 
   describe('handleGlobalError', () => {
-    it('handles non-axios error', async () => {
+    it('shows the error message for a plain Error', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
       const error = new Error('Regular error');
@@ -108,7 +106,7 @@ describe('main.ts', () => {
       expect(toast.error).toHaveBeenCalledWith('Regular error');
     });
 
-    it('handles non-axios unknown error', async () => {
+    it('shows a generic message for an unknown non-Error value', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
 
@@ -117,7 +115,7 @@ describe('main.ts', () => {
       expect(toast.error).toHaveBeenCalledWith('An error occurred');
     });
 
-    it('ignores silent refresh failures', async () => {
+    it('silently ignores errors from the refresh endpoint', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
       const axiosError = {
@@ -130,7 +128,7 @@ describe('main.ts', () => {
       expect(toast.error).not.toHaveBeenCalled();
     });
 
-    it('handles axios error with detail', async () => {
+    it('shows response detail when the axios error has one', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
       const axiosError = {
@@ -143,7 +141,7 @@ describe('main.ts', () => {
       expect(toast.error).toHaveBeenCalledWith('Specific API error');
     });
 
-    it('handles axios error with message', async () => {
+    it('shows the error message when axios error has no detail', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
       const axiosError = {
@@ -157,7 +155,7 @@ describe('main.ts', () => {
       expect(toast.error).toHaveBeenCalledWith('Axios connection error');
     });
 
-    it('handles axios error without message or detail', async () => {
+    it('shows a generic message when axios error has neither detail nor message', async () => {
       const { handleGlobalError } = await import('../main');
       const { toast } = await import('@/components/ui/sonner');
       const axiosError = {

@@ -38,6 +38,12 @@ describe('Router', () => {
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.LOGIN);
   });
 
+  it('should redirect authenticated users away from guest routes to weeks', async () => {
+    (accessToken as any).value = 'valid-token';
+    await router.push({ name: ROUTE_NAMES.SIGNUP });
+    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.WEEKS);
+  });
+
   it('should redirect to not found for unknown routes', async () => {
     await router.push('/non-existent-route');
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.NOT_FOUND);
@@ -61,7 +67,16 @@ describe('Router', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should visit all routes to cover dynamic imports', async () => {
+  it('should visit all guest routes to cover dynamic imports', async () => {
+    (accessToken as any).value = null;
+    const guestRoutes = [ROUTE_NAMES.SIGNUP, ROUTE_NAMES.FORGOT_PASSWORD];
+    for (const name of guestRoutes) {
+      await router.push({ name });
+      expect(router.currentRoute.value.name).toBe(name);
+    }
+  });
+
+  it('should visit all auth routes to cover dynamic imports', async () => {
     (accessToken as any).value = 'valid-token';
     const routeNames = [
       ROUTE_NAMES.WEEKS,

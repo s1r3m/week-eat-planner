@@ -1,36 +1,50 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipeCreateForm from '../RecipeCreateForm.vue';
 import RecipeInfoEdit from '../RecipeInfoEdit.vue';
 import RecipeIngredientsEdit from '../RecipeIngredientsEdit.vue';
 import RecipeStepsEdit from '../RecipeStepsEdit.vue';
 
+vi.mock('@/components/ui/select', () => ({
+  Select: {
+    name: 'Select',
+    template: '<div><slot /></div>',
+    props: ['modelValue', 'defaultValue'],
+    emits: ['update:modelValue'],
+  },
+  SelectContent: { template: '<div><slot /></div>' },
+  SelectGroup: { template: '<div><slot /></div>' },
+  SelectItem: { template: '<div><slot /></div>' },
+  SelectTrigger: { template: '<div><slot /></div>' },
+  SelectValue: { template: '<div><slot /></div>' },
+}));
+
 describe('RecipeCreateForm', () => {
-  it('renders all sections', () => {
+  it('renders all section components', () => {
     const wrapper = mount(RecipeCreateForm);
     expect(wrapper.getComponent(RecipeInfoEdit)).toBeDefined();
     expect(wrapper.getComponent(RecipeIngredientsEdit)).toBeDefined();
     expect(wrapper.getComponent(RecipeStepsEdit)).toBeDefined();
   });
 
-  it('updates state on child component updates', async () => {
+  it('collects values from all sections and emits create on submit', async () => {
     const wrapper = mount(RecipeCreateForm);
 
-    const infoEdit = wrapper.getComponent(RecipeInfoEdit);
-    await infoEdit.vm.$emit('update:name', 'New Recipe');
+    await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:name', 'New Recipe');
     const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
-    await infoEdit.vm.$emit('update:cover', mockFile);
+    await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:cover', mockFile);
+    await wrapper
+      .getComponent(RecipeIngredientsEdit)
+      .vm.$emit('update:ingredients', [{ name: 'Tomato', amount: 2, unit: 'pcs' }]);
+    await wrapper
+      .getComponent(RecipeStepsEdit)
+      .vm.$emit('update:steps', [{ order: 0, step: 'Wash tomato' }]);
 
-    const ingredientsEdit = wrapper.getComponent(RecipeIngredientsEdit);
-    await ingredientsEdit.vm.$emit('update:ingredients', [
-      { name: 'Tomato', amount: 2, unit: 'pcs' },
-    ]);
-
-    const stepsEdit = wrapper.getComponent(RecipeStepsEdit);
-    await stepsEdit.vm.$emit('update:steps', [{ order: 0, step: 'Wash tomato' }]);
-
-    const createBtn = wrapper.findAll('button').find((b) => b.text().includes('Create recipe'));
-    await createBtn?.trigger('click');
+    const createBtn = wrapper
+      .findAll('[data-slot="button"]')
+      .find((b) => b.text().includes('Create recipe'));
+    expect(createBtn).toBeDefined();
+    await createBtn!.trigger('click');
 
     const emitted = wrapper.emitted('create');
     expect(emitted).toBeTruthy();
@@ -43,11 +57,13 @@ describe('RecipeCreateForm', () => {
     expect(emitted?.[0][1]).toBe(mockFile);
   });
 
-  it('emits cancel when cancel button is clicked', async () => {
+  it('emits cancel when the cancel button is clicked', async () => {
     const wrapper = mount(RecipeCreateForm);
-    const cancelBtn = wrapper.findAll('button').find((b) => b.text().includes('Cancel'));
-    await cancelBtn?.trigger('click');
-
+    const cancelBtn = wrapper
+      .findAll('[data-slot="button"]')
+      .find((b) => b.text().includes('Cancel'));
+    expect(cancelBtn).toBeDefined();
+    await cancelBtn!.trigger('click');
     expect(wrapper.emitted('cancel')).toBeTruthy();
   });
 });

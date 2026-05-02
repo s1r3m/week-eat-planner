@@ -14,22 +14,11 @@ describe('MealSlotRecipeCard', () => {
     image_url: 'http://example.com/pasta.jpg',
   };
 
-  const mountComponent = (mealType: string = 'LUNCH', recipe: RecipePreview = mockRecipe) => {
-    return mount(MealSlotRecipeCard, {
-      props: {
-        mealType,
-        recipe,
-      },
-      global: {
-        plugins: [i18n],
-        stubs: {
-          Card: { template: '<div v-bind="$attrs"><slot /></div>' },
-          CardContent: { template: '<div><slot /></div>' },
-          Badge: { template: '<span><slot /></span>' },
-        },
-      },
+  const mountComponent = (mealType: string = 'LUNCH', recipe: RecipePreview = mockRecipe) =>
+    mount(MealSlotRecipeCard, {
+      props: { mealType, recipe },
+      global: { plugins: [i18n] },
     });
-  };
 
   it('renders the meal type label', () => {
     const wrapper = mountComponent('DINNER');

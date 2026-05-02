@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     BOT_TOKEN: str
     TG_API_SITE: str
 
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+
     model_config = SettingsConfigDict(env_file=Path(__file__).parents[1] / '.env')
 
     def get_webhook_url(self) -> str:

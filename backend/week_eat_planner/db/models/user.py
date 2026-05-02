@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
@@ -28,11 +28,25 @@ class User(Base):
     """
 
     __tablename__ = 'users'
+    __table_args__ = (
+        UniqueConstraint('oauth_provider', 'oauth_id', name='uq_users_oauth_provider_oauth_id'),
+        CheckConstraint(
+            '(oauth_provider IS NULL) = (oauth_id IS NULL)',
+            name='ck_users_oauth_provider_id_both_or_neither',
+        ),
+        CheckConstraint(
+            'hashed_password IS NOT NULL OR (oauth_provider IS NOT NULL AND oauth_id IS NOT NULL)',
+            name='ck_users_has_login_method',
+        ),
+    )
 
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-    username: Mapped[str] = mapped_column(unique=False, nullable=True)
-    avatar_url: Mapped[str] = mapped_column(unique=False, nullable=True)
-    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    username: Mapped[str] = mapped_column(unique=False, nullable=False)
+    avatar_url: Mapped[str | None] = mapped_column(nullable=True)
+    avatar_key: Mapped[str | None] = mapped_column(nullable=True)
+    oauth_provider: Mapped[str | None] = mapped_column(nullable=True)
+    oauth_id: Mapped[str | None] = mapped_column(nullable=True)
+    hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
 
     weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')

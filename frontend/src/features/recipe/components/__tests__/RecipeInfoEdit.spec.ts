@@ -15,57 +15,41 @@ describe('RecipeInfoEdit', () => {
     });
   });
 
-  it('updates name on input', async () => {
+  it('updates the cover alt via RecipeCover when name is changed', async () => {
     const wrapper = mount(RecipeInfoEdit, {
       props: {
         name: '',
         'onUpdate:name': (e: string) => wrapper.setProps({ name: e }),
       },
     });
-    const input = wrapper.find('input#recipe-name');
-    await input.setValue('Carbonara');
+    await wrapper.find('input#recipe-name').setValue('Carbonara');
     expect(wrapper.getComponent(RecipeCover).props('alt')).toBe('Carbonara');
   });
 
-  it('handles file change', async () => {
-    const wrapper = mount(RecipeInfoEdit, {
-      props: {
-        name: 'Test',
-      },
-    });
+  it('creates an object URL and passes it as src to RecipeCover on file change', async () => {
+    const wrapper = mount(RecipeInfoEdit, { props: { name: 'Test' } });
     const input = wrapper.find('input#recipe-cover');
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
 
-    // Mocking files property
-    Object.defineProperty(input.element as HTMLInputElement, 'files', {
-      value: [file],
-    });
-
+    Object.defineProperty(input.element as HTMLInputElement, 'files', { value: [file] });
     await input.trigger('change');
 
     expect(window.URL.createObjectURL).toHaveBeenCalledWith(file);
     expect(wrapper.getComponent(RecipeCover).props('src')).toBe('mock-url');
   });
 
-  it('revokes old object URL when file changes', async () => {
-    const wrapper = mount(RecipeInfoEdit, {
-      props: {
-        name: 'Test',
-      },
-    });
+  it('revokes the previous object URL when a new file is selected', async () => {
+    const wrapper = mount(RecipeInfoEdit, { props: { name: 'Test' } });
     const input = wrapper.find('input#recipe-cover');
     const file1 = new File([''], 'test1.jpg', { type: 'image/jpeg' });
     const file2 = new File([''], 'test2.jpg', { type: 'image/jpeg' });
 
-    // First file
     Object.defineProperty(input.element as HTMLInputElement, 'files', {
       value: [file1],
       configurable: true,
     });
     await input.trigger('change');
-    expect(window.URL.createObjectURL).toHaveBeenCalledTimes(1);
 
-    // Second file
     Object.defineProperty(input.element as HTMLInputElement, 'files', {
       value: [file2],
       configurable: true,
@@ -76,12 +60,8 @@ describe('RecipeInfoEdit', () => {
     expect(window.URL.createObjectURL).toHaveBeenCalledTimes(2);
   });
 
-  it('does nothing if no files are selected', async () => {
-    const wrapper = mount(RecipeInfoEdit, {
-      props: {
-        name: 'Test',
-      },
-    });
+  it('does nothing when the file input is cleared', async () => {
+    const wrapper = mount(RecipeInfoEdit, { props: { name: 'Test' } });
     const input = wrapper.find('input#recipe-cover');
 
     Object.defineProperty(input.element as HTMLInputElement, 'files', {
@@ -93,12 +73,8 @@ describe('RecipeInfoEdit', () => {
     expect(window.URL.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('revokes object URL on unmount if image is present', async () => {
-    const wrapper = mount(RecipeInfoEdit, {
-      props: {
-        name: 'Test',
-      },
-    });
+  it('revokes the object URL on unmount when an image is loaded', async () => {
+    const wrapper = mount(RecipeInfoEdit, { props: { name: 'Test' } });
     const input = wrapper.find('input#recipe-cover');
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
 
@@ -108,17 +84,12 @@ describe('RecipeInfoEdit', () => {
     });
     await input.trigger('change');
 
-    expect(window.URL.createObjectURL).toHaveBeenCalled();
-
     wrapper.unmount();
-
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
   });
 
-  it('does not revoke object URL on unmount if no image is present', () => {
-    const wrapper = mount(RecipeInfoEdit, {
-      props: { name: 'Test' },
-    });
+  it('does not revoke any URL on unmount when no image has been loaded', () => {
+    const wrapper = mount(RecipeInfoEdit, { props: { name: 'Test' } });
     wrapper.unmount();
     expect(window.URL.revokeObjectURL).not.toHaveBeenCalled();
   });

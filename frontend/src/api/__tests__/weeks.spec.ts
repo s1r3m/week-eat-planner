@@ -12,7 +12,6 @@ import {
 } from '../weeks';
 import type { WeekPayload, EditWeek } from '../weeks';
 
-// Mock @pinia/colada
 const mockQueryCache = {
   cancelQueries: vi.fn(),
   getQueryData: vi.fn(),
@@ -24,12 +23,6 @@ vi.mock('@pinia/colada', () => ({
   defineQueryOptions: (fn: any) => fn,
   defineMutation: (fn: any) => fn,
   useQueryCache: () => mockQueryCache,
-}));
-
-vi.mock('@/features/auth/store/auth', () => ({
-  useAuthStore: vi.fn(() => ({
-    accessToken: 'test-token',
-  })),
 }));
 
 describe('weeks api', () => {
@@ -45,42 +38,39 @@ describe('weeks api', () => {
   afterEach(() => {
     mockApi.restore();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getWeeksQuery', () => {
-    it('should have correct key', () => {
-      const options = getWeeksQuery();
+    it('uses the correct cache key', () => {
+      const options = getWeeksQuery() as any;
       expect(options.key).toEqual(WEEK_KEYS.all());
     });
 
-    it('should fetch weeks', async () => {
+    it('fetches the list of weeks', async () => {
       const mockData = [{ id: '1', name: 'Week 1', user_id: 'user1' }];
       mockApi.onGet('/weeks').reply(200, mockData);
 
-      const options = getWeeksQuery();
-      // @ts-ignore
+      const options = getWeeksQuery() as any;
       const result = await options.query();
-
       expect(result).toEqual(mockData);
     });
   });
 
   describe('getWeekQuery', () => {
-    it('should have correct dynamic key', () => {
+    it('uses a key scoped to the week id', () => {
       const id = 'week-123';
-      const options = getWeekQuery(id);
+      const options = getWeekQuery(id) as any;
       expect(options.key).toEqual(WEEK_KEYS.detail(id));
     });
 
-    it('should fetch a single week', async () => {
+    it('fetches a single week by id', async () => {
       const id = '1';
       const mockData = { id: '1', name: 'Week 1', user_id: 'user1', week_days: [] };
       mockApi.onGet(`/weeks/${id}`).reply(200, mockData);
 
-      const options = getWeekQuery(id);
-      // @ts-ignore
+      const options = getWeekQuery(id) as any;
       const result = await options.query();
-
       expect(result).toEqual(mockData);
     });
   });
@@ -88,171 +78,176 @@ describe('weeks api', () => {
   describe('addWeekMutation', () => {
     const payload: WeekPayload = { name: 'New Week' };
 
-    it('should call POST /weeks', async () => {
+    it('posts to /weeks and returns the created week', async () => {
       const mockResponse = { id: 'new-id', ...payload, user_id: 'user1' };
       mockApi.onPost('/weeks', payload).reply(201, mockResponse);
 
-      const mutation = addWeekMutation();
-      const result = await mutation.mutation(payload);
-
+      const config = addWeekMutation() as any;
+      const result = await config.mutation(payload);
       expect(result).toEqual(mockResponse);
     });
 
-    it('should perform optimistic update in onMutate', async () => {
-      const mutation = addWeekMutation();
-      const previousWeeks = [{ id: '1', name: 'Existing' }];
-      mockQueryCache.getQueryData.mockReturnValue(previousWeeks);
+    describe('onMutate', () => {
+      it('cancels in-flight queries and optimistically appends the new week', async () => {
+        const previousWeeks = [{ id: '1', name: 'Existing', user_id: 'u' }];
+        mockQueryCache.getQueryData.mockReturnValue(previousWeeks);
 
-      const context = await mutation.onMutate(payload);
+        const config = addWeekMutation() as any;
+        const context = await config.onMutate(payload);
 
-      expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        expect.any(Function),
-      );
-      expect(context).toEqual({ previousWeeks });
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+        expect(context).toEqual({ previousWeeks });
 
-      // Test the updater function passed to setQueryData
-      const updater = mockQueryCache.setQueryData.mock.calls[0][1];
-      const updated = updater(previousWeeks);
-      expect(updated).toHaveLength(2);
-      expect(updated[1]).toMatchObject({ ...payload, isPending: true });
+        const updater = mockQueryCache.setQueryData.mock.calls[0][1];
+        const updated = updater(previousWeeks);
+        expect(updated).toHaveLength(2);
+        expect(updated[1]).toMatchObject({ ...payload, isPending: true });
+      });
+
+      it('treats missing cache data as an empty list', async () => {
+        mockQueryCache.getQueryData.mockReturnValue(null);
+
+        const config = addWeekMutation() as any;
+        await config.onMutate(payload);
+
+        const updater = mockQueryCache.setQueryData.mock.calls[0][1];
+        const updated = updater(undefined);
+        expect(updated).toHaveLength(1);
+      });
     });
 
-    it('should handle error and restore cache in onError', () => {
-      const mutation = addWeekMutation();
-      const error = new Error('Failed');
-      const context = { previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }] };
+    describe('onError', () => {
+      it('restores the previous cache when context is available', () => {
+        const context = { previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }] };
 
-      (mutation as any).onError(error, payload, context);
+        const config = addWeekMutation() as any;
+        config.onError(new Error('Failed'), payload, context);
 
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        context.previousWeeks,
-      );
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          WEEK_KEYS.all(),
+          context.previousWeeks,
+        );
+      });
+
+      it('does nothing when context is missing', () => {
+        const config = addWeekMutation() as any;
+        config.onError(new Error('Failed'), payload, {});
+        expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+      });
     });
 
-    it('should handle error when previousWeeks is missing in onError', () => {
-      const mutation = addWeekMutation();
-      const error = new Error('Failed');
-
-      (mutation as any).onError(error, payload, {});
-
-      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
-    });
-
-    it('should handle empty old data in updater function for onMutate', async () => {
-      const mutation = addWeekMutation();
-      mockQueryCache.getQueryData.mockReturnValue(null);
-
-      await mutation.onMutate(payload);
-
-      const updater = mockQueryCache.setQueryData.mock.calls[0][1];
-      const updated = updater(); // Call with undefined
-      expect(updated).toHaveLength(1);
-    });
-
-    it('should invalidate queries in onSettled', () => {
-      const mutation = addWeekMutation();
-      mutation.onSettled();
-      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+    describe('onSettled', () => {
+      it('invalidates the weeks list', () => {
+        const config = addWeekMutation() as any;
+        config.onSettled();
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+      });
     });
   });
 
   describe('editWeekMutation', () => {
     const vars: EditWeek = { id: '1', payload: { name: 'Updated' } };
 
-    it('should call PATCH /weeks/:id', async () => {
+    it('patches /weeks/:id and returns the updated week', async () => {
       mockApi.onPatch(`/weeks/${vars.id}`, vars.payload).reply(200, { ...vars.payload });
 
-      const mutation = editWeekMutation();
-      const result = await mutation.mutation(vars);
-
+      const config = editWeekMutation() as any;
+      const result = await config.mutation(vars);
       expect(result).toEqual({ ...vars.payload });
     });
 
-    it('should perform optimistic updates in onMutate', async () => {
-      const mutation = editWeekMutation();
-      const previousWeek = { id: '1', name: 'Old' };
-      const previousWeeks = [
-        { id: '1', name: 'Old' },
-        { id: '2', name: 'Other' },
-      ];
+    describe('onMutate', () => {
+      it('optimistically updates both the detail and list caches', async () => {
+        const previousWeek = { id: '1', name: 'Old', user_id: 'u', week_days: [] };
+        const previousWeeks = [
+          { id: '1', name: 'Old', user_id: 'u' },
+          { id: '2', name: 'Other', user_id: 'u' },
+        ];
+        mockQueryCache.getQueryData
+          .mockReturnValueOnce(previousWeek)
+          .mockReturnValueOnce(previousWeeks);
 
-      mockQueryCache.getQueryData
-        .mockReturnValueOnce(previousWeek) // for detail
-        .mockReturnValueOnce(previousWeeks); // for list
+        const config = editWeekMutation() as any;
+        const context = await config.onMutate(vars);
 
-      const context = await mutation.onMutate(vars);
-
-      expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.detail(vars.id) });
-      expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-
-      // Check detail update
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(WEEK_KEYS.detail(vars.id), {
-        ...previousWeek,
-        ...vars.payload,
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({
+          key: WEEK_KEYS.detail(vars.id),
+        });
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(WEEK_KEYS.detail(vars.id), {
+          ...previousWeek,
+          ...vars.payload,
+        });
+        expect(context).toEqual({ previous: previousWeek, previousWeeks });
       });
 
-      // Check list update
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        expect.any(Function),
-      );
-      const listUpdater = mockQueryCache.setQueryData.mock.calls.find(
-        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
-      )?.[1];
-      const updatedList = listUpdater(previousWeeks);
-      expect(updatedList[0].name).toBe('Updated');
+      it('maps updated name into the list', async () => {
+        const previousWeeks = [
+          { id: '1', name: 'Old', user_id: 'u' },
+          { id: '2', name: 'Other', user_id: 'u' },
+        ];
+        mockQueryCache.getQueryData.mockReturnValue(previousWeeks);
 
-      expect(context).toEqual({ previous: previousWeek, previousWeeks });
+        const config = editWeekMutation() as any;
+        await config.onMutate(vars);
+
+        const listUpdater = mockQueryCache.setQueryData.mock.calls.find(
+          (call: any[]) => call[0].join(',') === WEEK_KEYS.all().join(','),
+        )?.[1];
+        const updatedList = listUpdater(previousWeeks);
+        expect(updatedList[0].name).toBe('Updated');
+        expect(updatedList[1].name).toBe('Other');
+      });
+
+      it('treats missing list cache as an empty array', async () => {
+        mockQueryCache.getQueryData.mockReturnValue(null);
+
+        const config = editWeekMutation() as any;
+        await config.onMutate(vars);
+
+        const listUpdater = mockQueryCache.setQueryData.mock.calls.find(
+          (call: any[]) => call[0].join(',') === WEEK_KEYS.all().join(','),
+        )?.[1];
+        expect(listUpdater(undefined)).toEqual([]);
+      });
     });
 
-    it('should restore cache on error in onError', () => {
-      const mutation = editWeekMutation();
-      const context = {
-        previous: { id: '1', name: 'W', user_id: 'u', week_days: [] },
-        previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }],
-      };
+    describe('onError', () => {
+      it('restores both caches when context is available', () => {
+        const context = {
+          previous: { id: '1', name: 'W', user_id: 'u', week_days: [] },
+          previousWeeks: [{ id: '1', name: 'W', user_id: 'u' }],
+        };
 
-      (mutation as any).onError(new Error('Fail'), vars, context);
+        const config = editWeekMutation() as any;
+        config.onError(new Error('Fail'), vars, context);
 
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.detail(vars.id),
-        context.previous,
-      );
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        context.previousWeeks,
-      );
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          WEEK_KEYS.detail(vars.id),
+          context.previous,
+        );
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          WEEK_KEYS.all(),
+          context.previousWeeks,
+        );
+      });
+
+      it('does nothing when context is missing', () => {
+        const config = editWeekMutation() as any;
+        config.onError(new Error('Fail'), vars, {});
+        expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+      });
     });
 
-    it('should handle missing context in onError', () => {
-      const mutation = editWeekMutation();
-      mutation.onError(new Error('Fail'), vars, {});
+    describe('onSettled', () => {
+      it('invalidates both the list and the week detail', () => {
+        const config = editWeekMutation() as any;
+        config.onSettled(undefined, undefined, vars, {});
 
-      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
-    });
-
-    it('should handle empty old data in updater function for list in onMutate', async () => {
-      const mutation = editWeekMutation();
-      mockQueryCache.getQueryData.mockReturnValue(null);
-
-      await mutation.onMutate(vars);
-
-      const listUpdaterCall = mockQueryCache.setQueryData.mock.calls.find(
-        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
-      );
-      const updatedList = listUpdaterCall?.[1](); // Call with undefined
-      expect(updatedList).toEqual([]);
-    });
-
-    it('should invalidate queries in onSettled', () => {
-      const mutation = editWeekMutation();
-      (mutation as any).onSettled(undefined, undefined, vars, {});
-      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
-        key: WEEK_KEYS.detail(vars.id),
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: WEEK_KEYS.detail(vars.id),
+        });
       });
     });
   });
@@ -260,86 +255,77 @@ describe('weeks api', () => {
   describe('deleteWeekMutation', () => {
     const id = '123';
 
-    it('should call DELETE /weeks/:id', async () => {
-      mockApi.onDelete(`/weeks/${id}`).reply(200, null);
+    it('sends DELETE /weeks/:id', async () => {
+      mockApi.onDelete(`/weeks/${id}`).reply(204, null);
 
-      const mutation = deleteWeekMutation();
-      const result = await mutation.mutation(id);
-
+      const config = deleteWeekMutation() as any;
+      const result = await config.mutation(id);
       expect(result).toBeUndefined();
     });
 
-    it('should perform optimistic update in onMutate', async () => {
-      const mutation = deleteWeekMutation();
-      const previousWeeks = [
-        { id: '123', name: 'To Delete' },
-        { id: '456', name: 'Keep' },
-      ];
-      mockQueryCache.getQueryData.mockReturnValue(previousWeeks);
+    describe('onMutate', () => {
+      it('optimistically removes the week from the list', async () => {
+        const previousWeeks = [
+          { id: '123', name: 'To Delete', user_id: 'u' },
+          { id: '456', name: 'Keep', user_id: 'u' },
+        ];
+        mockQueryCache.getQueryData.mockReturnValue(previousWeeks);
 
-      const context = await mutation.onMutate(id);
+        const config = deleteWeekMutation() as any;
+        const context = await config.onMutate(id);
 
-      expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        expect.any(Function),
-      );
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+        expect(context).toEqual({ previousWeeks });
 
-      // Test the updater function
-      const updater = mockQueryCache.setQueryData.mock.calls.find(
-        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
-      )?.[1];
-      const updated = updater(previousWeeks);
-      expect(updated).toEqual([{ id: '456', name: 'Keep' }]);
+        const updater = mockQueryCache.setQueryData.mock.calls.find(
+          (call: any[]) => call[0].join(',') === WEEK_KEYS.all().join(','),
+        )?.[1];
+        expect(updater(previousWeeks)).toEqual([{ id: '456', name: 'Keep', user_id: 'u' }]);
+      });
 
-      expect(context).toEqual({ previousWeeks });
+      it('treats missing cache data as an empty list', async () => {
+        mockQueryCache.getQueryData.mockReturnValue(null);
+
+        const config = deleteWeekMutation() as any;
+        await config.onMutate(id);
+
+        const updater = mockQueryCache.setQueryData.mock.calls.find(
+          (call: any[]) => call[0].join(',') === WEEK_KEYS.all().join(','),
+        )?.[1];
+        expect(updater(undefined)).toEqual([]);
+      });
     });
 
-    it('should restore cache on error in onError', () => {
-      const mutation = deleteWeekMutation();
-      const context = { previousWeeks: [{ id: '123', name: 'W', user_id: 'u' }] };
+    describe('onError', () => {
+      it('restores the previous cache when context is available', () => {
+        const context = { previousWeeks: [{ id: '123', name: 'W', user_id: 'u' }] };
 
-      (mutation as any).onError(new Error('Fail'), id, context);
+        const config = deleteWeekMutation() as any;
+        config.onError(new Error('Fail'), id, context);
 
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        context.previousWeeks,
-      );
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          WEEK_KEYS.all(),
+          context.previousWeeks,
+        );
+      });
+
+      it('does nothing when context is missing', () => {
+        const config = deleteWeekMutation() as any;
+        config.onError(new Error('Fail'), id, {});
+        expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+      });
     });
 
-    it('should handle missing context in onError', () => {
-      const mutation = deleteWeekMutation();
-      mutation.onError(new Error('Fail'), id, {});
+    describe('onSettled', () => {
+      it('invalidates both the list and the deleted week detail', () => {
+        const config = deleteWeekMutation() as any;
+        config.onSettled(undefined, undefined, id, {});
 
-      expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
-    });
-
-    it('should handle empty old data in onMutate', async () => {
-      const mutation = deleteWeekMutation();
-      mockQueryCache.getQueryData.mockReturnValue(null);
-
-      await mutation.onMutate(id);
-
-      expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-        WEEK_KEYS.all(),
-        expect.any(Function),
-      );
-
-      // Test the updater function
-      const updater = mockQueryCache.setQueryData.mock.calls.find(
-        (call) => call[0].join(',') === WEEK_KEYS.all().join(','),
-      )?.[1];
-      const updated = updater();
-      expect(updated).toEqual([]);
-    });
-
-    it('should invalidate queries in onSettled', () => {
-      const mutation = deleteWeekMutation();
-
-      (mutation as any).onSettled(undefined, undefined, id, {});
-
-      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
-      expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.detail(id) });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: WEEK_KEYS.all() });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: WEEK_KEYS.detail(id),
+        });
+      });
     });
   });
 });

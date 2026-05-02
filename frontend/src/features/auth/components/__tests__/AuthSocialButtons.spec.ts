@@ -1,21 +1,41 @@
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
 import AuthSocialButtons from '../AuthSocialButtons.vue';
+import { useMutation } from '@pinia/colada';
+import { useGoogleAuth } from '@/features/auth/composables/useGoogleAuth';
+import { toast } from 'vue-sonner';
+
+vi.mock('@/features/auth/composables/useGoogleAuth', () => ({
+  useGoogleAuth: vi.fn(),
+}));
+
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn(),
+}));
+
+vi.mock('@/api/auth', () => ({
+  googleAuthMutation: vi.fn(),
+}));
+
+vi.mock('vue-sonner', () => ({
+  toast: { error: vi.fn() },
+}));
 
 describe('AuthSocialButtons', () => {
-  const mountComponent = () => {
-    return mount(AuthSocialButtons, {
-      global: {
-        stubs: {
-          Button: {
-            template:
-              '<button :disabled="disabled" variant="outline" class="w-full"><slot /></button>',
-            props: ['disabled', 'variant'],
-          },
-        },
-      },
-    });
-  };
+  const requestCode = vi.fn();
+  const createCodeClient = vi.fn();
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    requestCode.mockReset();
+    createCodeClient.mockResolvedValue({ requestCode });
+    vi.mocked(useGoogleAuth).mockReturnValue({ createCodeClient } as any);
+    vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn() } as any);
+  });
+
+  const mountComponent = () => mount(AuthSocialButtons);
 
   it('renders the OAuth container', () => {
     const wrapper = mountComponent();
@@ -31,7 +51,7 @@ describe('AuthSocialButtons', () => {
     expect(buttons[1].text()).toContain('Facebook');
   });
 
-  it('disables both OAuth buttons', () => {
+  it('renders Google disabled before mount resolves and Facebook always disabled', () => {
     const wrapper = mountComponent();
     const buttons = wrapper.findAll('button');
 
@@ -39,12 +59,45 @@ describe('AuthSocialButtons', () => {
     expect(buttons[1].attributes('disabled')).toBeDefined();
   });
 
-  it('applies correct styling classes', () => {
+  it('enables the Google button after the code client initialises', async () => {
     const wrapper = mountComponent();
-    const container = wrapper.find('#oauth-container');
+    await flushPromises();
 
-    expect(container.classes()).toContain('flex');
-    expect(container.classes()).toContain('flex-col');
-    expect(container.classes()).toContain('gap-3');
+    const buttons = wrapper.findAll('button');
+    expect(buttons[0].attributes('disabled')).toBeUndefined();
+    expect(buttons[1].attributes('disabled')).toBeDefined();
+  });
+
+  it('keeps the Google button disabled and shows an error toast when the GSI script fails to load', async () => {
+    createCodeClient.mockRejectedValue(new Error('network error'));
+    const wrapper = mountComponent();
+    await flushPromises();
+
+    expect(wrapper.findAll('button')[0].attributes('disabled')).toBeDefined();
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      'No social OAuth available. Try again later.',
+    );
+  });
+
+  it('initializes the code client on mount with a callback that calls googleAuth', async () => {
+    const googleAuth = vi.fn();
+    vi.mocked(useMutation).mockReturnValue({ mutate: googleAuth } as any);
+    mountComponent();
+    await flushPromises();
+
+    expect(createCodeClient).toHaveBeenCalledOnce();
+    const callback = createCodeClient.mock.calls[0][0];
+    callback({ code: 'auth-code-123' });
+    expect(googleAuth).toHaveBeenCalledWith('auth-code-123');
+  });
+
+  it('calls requestCode on the code client when the Google button is clicked', async () => {
+    const wrapper = mountComponent();
+    await flushPromises();
+
+    const googleButton = wrapper.find('button:not([disabled])');
+    await googleButton.trigger('click');
+
+    expect(requestCode).toHaveBeenCalledOnce();
   });
 });

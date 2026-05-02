@@ -3,62 +3,68 @@ import { mount } from '@vue/test-utils';
 import RecipesGrid from '../RecipesGrid.vue';
 import type { RecipePreview } from '@/api/recipes';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { useMutation } from '@pinia/colada';
+import { createRouter, createMemoryHistory } from 'vue-router';
 
-const mockPush = vi.fn();
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+vi.mock('@pinia/colada', () => ({
+  useMutation: vi.fn(),
 }));
 
+vi.mock('@/api/recipes', () => ({
+  toggleFavoriteMutation: vi.fn(),
+}));
+
+const mockPush = vi.fn();
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('vue-router')>();
+  return { ...actual, useRouter: () => ({ push: mockPush }) };
+});
+
 describe('RecipesGrid', () => {
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/', name: 'home', component: { template: '<div></div>' } },
+      { path: '/recipe/:id', name: 'recipe', component: { template: '<div></div>' } },
+    ],
+  });
+
+  beforeEach(() => {
+    vi.mocked(useMutation).mockReturnValue({ mutate: vi.fn() } as any);
+  });
+
   afterEach(() => {
     mockPush.mockClear();
   });
 
   const recipes: RecipePreview[] = [
-    { id: '1', name: 'Recipe 1', author: 'me' },
-    { id: '2', name: 'Recipe 2', author: 'me' },
+    { id: '1', name: 'Recipe 1', author: 'me', is_favorite: false, image_url: null },
+    { id: '2', name: 'Recipe 2', author: 'me', is_favorite: false, image_url: null },
   ];
 
-  const mountComponent = (props = {}) => {
-    return mount(RecipesGrid, {
-      props: {
-        recipes,
-        ...props,
-      },
-      global: {
-        stubs: {
-          RecipePreviewCard: {
-            template:
-              '<div class="recipe-preview" @toggle-favorite="$emit(\'toggle-favorite\')"></div>',
-            emits: ['toggle-favorite'],
-          },
-          AppAddCard: {
-            template: '<div class="app-add-card" @create="$emit(\'create\')"></div>',
-            emits: ['create'],
-          },
-        },
-      },
+  const mountComponent = (props = {}) =>
+    mount(RecipesGrid, {
+      props: { recipes, ...props },
+      global: { plugins: [router] },
     });
-  };
 
-  it('renders correct number of RecipePreviewCard components', () => {
+  it('renders a RecipePreviewCard for each recipe', () => {
     const wrapper = mountComponent();
-    const previews = wrapper.findAll('.recipe-preview');
-    expect(previews).toHaveLength(2);
+    expect(wrapper.text()).toContain('Recipe 1');
+    expect(wrapper.text()).toContain('Recipe 2');
   });
 
-  it('renders empty state when no recipes are provided', async () => {
-    const wrapper = mountComponent({ recipes: [] });
+  describe('empty state', () => {
+    it('shows the empty state message when no recipes are provided', () => {
+      const wrapper = mountComponent({ recipes: [] });
+      expect(wrapper.text()).toContain('Nothing here yet');
+      expect(wrapper.text()).toContain('Browse our recipe collection to start planning!');
+    });
 
-    expect(wrapper.text()).toContain('Nothing here yet');
-    expect(wrapper.text()).toContain('Browse our recipe collection to start planning!');
-
-    const button = wrapper.findComponent({ name: 'Button' });
-    expect(button.exists()).toBe(true);
-
-    await button.trigger('click');
-    expect(mockPush).toHaveBeenCalledWith({ name: ROUTE_NAMES.RECIPES });
+    it('navigates to the recipes page when the empty-state button is clicked', async () => {
+      const wrapper = mountComponent({ recipes: [] });
+      await wrapper.find('[data-slot="button"]').trigger('click');
+      expect(mockPush).toHaveBeenCalledWith({ name: ROUTE_NAMES.RECIPES });
+    });
   });
 });

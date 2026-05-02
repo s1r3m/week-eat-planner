@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import AuthCard from '../AuthCard.vue';
 
 describe('AuthCard', () => {
-  it('renders props correctly', () => {
+  it('renders title, description and default slot content', () => {
     const wrapper = mount(AuthCard, {
       props: {
         title: 'Welcome back',
@@ -16,11 +16,10 @@ describe('AuthCard', () => {
 
     expect(wrapper.text()).toContain('Welcome back');
     expect(wrapper.text()).toContain('Login to your account');
-    expect(wrapper.find('.test-slot').exists()).toBe(true);
     expect(wrapper.find('.test-slot').text()).toBe('Slot Content');
   });
 
-  it('renders slots correctly', () => {
+  it('renders both default and footer slots', () => {
     const wrapper = mount(AuthCard, {
       props: {
         title: 'test',

@@ -6,10 +6,7 @@ import * as navigationMenuModule from '@/components/ui/navigation-menu';
 
 vi.mock('@/components/ui/navigation-menu', async () => {
   const actual = await vi.importActual('@/components/ui/navigation-menu');
-  return {
-    ...actual,
-    navigationMenuTriggerStyle: vi.fn(() => 'nav-trigger-style'),
-  };
+  return { ...actual, navigationMenuTriggerStyle: vi.fn(() => 'nav-trigger-style') };
 });
 
 describe('GuestNavigation', () => {
@@ -19,114 +16,63 @@ describe('GuestNavigation', () => {
     vi.clearAllMocks();
   });
 
-  const mountComponent = (links: NavLink[]) => {
-    const wrapper = mount(GuestNavigation, {
-      global: {
-        stubs: {
-          RouterLink: RouterLinkStub,
-        },
-      },
-      props: {
-        links: links,
-      },
+  const mountComponent = (links: NavLink[]) =>
+    mount(GuestNavigation, {
+      props: { links },
+      global: { stubs: { RouterLink: RouterLinkStub } },
     });
 
-    return wrapper;
-  };
-
-  describe('Rendering', () => {
-    it('renders with an empty links array', () => {
-      const wrapper = mountComponent([]);
-      expect(wrapper.findAllComponents(RouterLinkStub)).toHaveLength(0);
+  describe('rendering', () => {
+    it('renders no links when the array is empty', () => {
+      expect(mountComponent([]).findAllComponents(RouterLinkStub)).toHaveLength(0);
     });
 
-    it('renders navigation links with one link', () => {
-      const wrapper = mountComponent([{ label: 'test', to: '/' }]);
-      const navLinks = wrapper.findAllComponents(RouterLinkStub);
-
-      expect(navLinks).toHaveLength(1);
-      expect(navLinks[0].props().to).toBe('/');
-    });
-
-    it('renders multiple navigation links in correct order', () => {
+    it('renders a link for each item in the array', () => {
       const links: NavLink[] = [
-        { label: 'Home', to: '/' },
-        { label: 'About', to: '/about' },
-        { label: 'Contact', to: '/contact' },
+        { label: 'Home', to: { name: 'home' } },
+        { label: 'About', to: { name: 'about' } },
+        { label: 'Contact', to: { name: 'contact' } },
       ];
-      const wrapper = mountComponent(links);
-      const navLinks = wrapper.findAllComponents(RouterLinkStub);
-
+      const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
       expect(navLinks).toHaveLength(3);
-      expect(navLinks[0].props('to')).toBe('/');
-      expect(navLinks[1].props('to')).toBe('/about');
-      expect(navLinks[2].props('to')).toBe('/contact');
+      expect(navLinks[0].props('to')).toEqual({ name: 'home' });
+      expect(navLinks[1].props('to')).toEqual({ name: 'about' });
+      expect(navLinks[2].props('to')).toEqual({ name: 'contact' });
+    });
+
+    it('renders the correct label text for each link', () => {
+      const links: NavLink[] = [
+        { label: 'Features', to: { name: 'features' } },
+        { label: 'Pricing', to: { name: 'pricing' } },
+      ];
+      const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
+      navLinks.forEach((link, i) => expect(link.text()).toContain(links[i].label));
+    });
+
+    it('renders links with optional params and hash', () => {
+      const links: NavLink[] = [
+        { label: 'Simple', to: { name: 'home' } },
+        { label: 'With hash', to: { name: 'docs', hash: '#section' } },
+        { label: 'With params', to: { name: 'recipe', params: { id: '42' } } },
+      ];
+      const navLinks = mountComponent(links).findAllComponents(RouterLinkStub);
+      expect(navLinks[0].props('to')).toEqual({ name: 'home' });
+      expect(navLinks[1].props('to')).toEqual({ name: 'docs', hash: '#section' });
+      expect(navLinks[2].props('to')).toEqual({ name: 'recipe', params: { id: '42' } });
     });
   });
 
-  describe('Link Properties', () => {
-    it('passes correct to prop to router-link', () => {
-      const links: NavLink[] = [
-        { label: 'Dashboard', to: '/dashboard' },
-        { label: 'Settings', to: '/settings' },
-      ];
-      const wrapper = mountComponent(links);
-      const navLinks = wrapper.findAllComponents(RouterLinkStub);
-
-      navLinks.forEach((link, index) => {
-        expect(link.props('to')).toBe(links[index].to);
-      });
-    });
-
-    it('renders correct label text for each link', () => {
-      const links: NavLink[] = [
-        { label: 'Features', to: '/features' },
-        { label: 'Pricing', to: '/pricing' },
-        { label: 'Docs', to: '/docs' },
-      ];
-      const wrapper = mountComponent(links);
-      const navLinks = wrapper.findAllComponents(RouterLinkStub);
-
-      navLinks.forEach((link, index) => {
-        expect(link.text()).toContain(links[index].label);
-      });
-    });
-
-    it('renders links with different URL formats', () => {
-      const links: NavLink[] = [
-        { label: 'Absolute', to: '/home' },
-        { label: 'Hash', to: '#section' },
-        { label: 'External', to: 'https://example.com' },
-      ];
-      const wrapper = mountComponent(links);
-      const navLinks = wrapper.findAllComponents(RouterLinkStub);
-
-      expect(navLinks[0].props('to')).toBe('/home');
-      expect(navLinks[1].props('to')).toBe('#section');
-      expect(navLinks[2].props('to')).toBe('https://example.com');
-    });
-  });
-
-  describe('Function Calls', () => {
-    it('calls navigationMenuTriggerStyle for each link', () => {
-      const links: NavLink[] = [
-        { label: 'Link 1', to: '/1' },
-        { label: 'Link 2', to: '/2' },
-      ];
-      mountComponent(links);
-
+  describe('navigationMenuTriggerStyle calls', () => {
+    it('calls navigationMenuTriggerStyle once per link', () => {
+      mountComponent([
+        { label: 'Link 1', to: { name: 'link1' } },
+        { label: 'Link 2', to: { name: 'link2' } },
+      ]);
       expect(mockNavigationMenuTriggerStyle).toHaveBeenCalledTimes(2);
     });
 
-    it('calls navigationMenuTriggerStyle once for single link', () => {
-      mountComponent([{ label: 'Single', to: '/' }]);
-
-      expect(mockNavigationMenuTriggerStyle).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not call navigationMenuTriggerStyle when links array is empty', () => {
+    it('does not call navigationMenuTriggerStyle when the links array is empty', () => {
       mountComponent([]);
-
       expect(mockNavigationMenuTriggerStyle).not.toHaveBeenCalled();
     });
   });

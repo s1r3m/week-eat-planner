@@ -12,22 +12,21 @@ vi.mock('@/api/weeks', () => ({
   deleteWeekMutation: vi.fn(),
 }));
 
-const mockPush = vi.fn();
 vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 describe('WeekDeleteDialog', () => {
   const mockWeek = { id: 'week_id', name: 'Week 1', user_id: 'user_id', week_days: [] };
   const mockMutate = vi.fn();
+  const mockIsLoading = ref(false);
 
-  const stubs = {
+  const dialogStubs = {
     Dialog: {
+      name: 'Dialog',
       template: '<div><slot /></div>',
-      props: ['modelValue', 'open'], // WeekDeleteDialog uses v-model:open="isOpen"
-      emits: ['update:modelValue', 'update:open'],
+      props: ['open'],
+      emits: ['update:open'],
     },
     DialogContent: { template: '<div><slot /></div>' },
     DialogHeader: { template: '<div><slot /></div>' },
@@ -35,125 +34,72 @@ describe('WeekDeleteDialog', () => {
     DialogDescription: { template: '<div><slot /></div>' },
     DialogFooter: { template: '<div><slot /></div>' },
     DialogClose: { template: '<div><slot /></div>' },
-    Spinner: true,
-    Button: {
-      template: '<button :disabled="disabled"><slot /></button>',
-      props: ['disabled'],
-    },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useMutation as any).mockReturnValue({
-      mutate: mockMutate,
-      isLoading: ref(false),
-    });
+    mockIsLoading.value = false;
+    vi.mocked(useMutation).mockReturnValue({ mutate: mockMutate, isLoading: mockIsLoading } as any);
   });
 
-  it('renders correctly with week name', () => {
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
+  const mountComponent = (modelValue = mockWeek) =>
+    mount(WeekDeleteDialog, {
+      props: { modelValue },
+      global: { stubs: dialogStubs },
     });
 
+  it('renders week name and confirmation message', () => {
+    const wrapper = mountComponent();
     expect(wrapper.text()).toContain('Delete Week 1?');
     expect(wrapper.text()).toContain('Are you sure you want to delete Week 1?');
   });
 
-  it('updates modelValue when Dialog emits update:open', async () => {
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const dialog = wrapper.findComponent(stubs.Dialog);
-    await dialog.vm.$emit('update:open', false);
-
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
-  });
-
-  it('does nothing when Dialog emits update:open with true', async () => {
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const dialog = wrapper.findComponent(stubs.Dialog);
-    await dialog.vm.$emit('update:open', true);
-
-    expect(wrapper.emitted('update:modelValue')).toBeFalsy();
-  });
-
-  it('calls removeWeek and closes dialog when Yes button is clicked', async () => {
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
-    });
-
-    const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Yes'));
+  it('calls remove mutation and closes dialog when Yes is clicked', async () => {
+    const wrapper = mountComponent();
+    const yesButton = wrapper.findAll('[data-slot="button"]').find((b) => b.text().includes('Yes'));
     expect(yesButton).toBeDefined();
     await yesButton!.trigger('click');
 
     expect(mockMutate).toHaveBeenCalledWith(mockWeek.id);
-    expect(wrapper.emitted('update:modelValue')).toBeTruthy();
-    expect(wrapper.emitted('update:modelValue')!.some((e) => e[0] === null)).toBe(true);
+    expect(wrapper.emitted('update:modelValue')?.some((e) => e[0] === null)).toBe(true);
   });
 
-  it('does nothing when Yes button is clicked and week is null', async () => {
+  it('does not call mutation when Yes is clicked and week is null', async () => {
     const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs,
-      },
-      props: {
-        modelValue: mockWeek,
-      },
+      props: { modelValue: mockWeek },
+      global: { stubs: dialogStubs },
     });
-
-    const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Yes'));
+    const yesButton = wrapper.findAll('[data-slot="button"]').find((b) => b.text().includes('Yes'));
     await wrapper.setProps({ modelValue: null });
     await yesButton?.trigger('click');
-
     expect(mockMutate).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('shows loading state and disables button during deletion', async () => {
-    (useMutation as any).mockReturnValue({
-      mutate: mockMutate,
-      isLoading: true,
+  it('shows loading spinner and disables the Yes button while deleting', () => {
+    mockIsLoading.value = true;
+    const wrapper = mountComponent();
+
+    expect(wrapper.find('[role="status"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Deleting...');
+    const deletingBtn = wrapper
+      .findAll('[data-slot="button"]')
+      .find((b) => b.text().includes('Deleting...'));
+    expect(deletingBtn?.attributes('disabled')).toBeDefined();
+  });
+
+  describe('dialog open/close', () => {
+    it('emits update:modelValue with null when dialog closes', async () => {
+      const wrapper = mountComponent();
+      await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', false);
+
+      expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+      expect(wrapper.emitted('update:modelValue')![0]).toEqual([null]);
     });
 
-    const wrapper = mount(WeekDeleteDialog, {
-      global: {
-        stubs: {
-          ...stubs,
-          Spinner: { template: '<div class="spinner"></div>' },
-        },
-      },
-      props: {
-        modelValue: mockWeek,
-      },
+    it('does not emit when dialog open event fires with true', async () => {
+      const wrapper = mountComponent();
+      await wrapper.findComponent({ name: 'Dialog' }).vm.$emit('update:open', true);
+      expect(wrapper.emitted('update:modelValue')).toBeFalsy();
     });
-
-    const yesButton = wrapper.findAll('button').find((b) => b.text().includes('Deleting...'));
-    expect(yesButton?.exists()).toBe(true);
-    expect((yesButton?.element as HTMLButtonElement).disabled).toBe(true);
   });
 });

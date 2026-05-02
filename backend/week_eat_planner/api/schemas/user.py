@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from week_eat_planner.api.schemas.common import RecordId
+from week_eat_planner.constants import OAuthProvider
 
 
 class Email(BaseModel):
@@ -13,7 +14,7 @@ class UserCreate(Email):
     """Schema for creating a new user."""
 
     password: str
-    username: str | None = None
+    username: str = Field(min_length=1)
 
 
 class UserRead(Email, RecordId):
@@ -23,7 +24,31 @@ class UserRead(Email, RecordId):
     """
 
     is_active: bool
-    username: str | None
+    username: str
     avatar_url: str | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserFilter(BaseModel):
+    """Filter for querying users by OAuth credentials or email."""
+
+    oauth_provider: OAuthProvider | None = None
+    oauth_id: str | None = None
+    email: str | None = None
+
+
+class GoogleCode(BaseModel):
+    """Request body carrying the one-time authorization code from the Google OAuth consent screen."""
+
+    code: str = Field(min_length=1)
+
+
+class OAuthUserData(BaseModel):
+    """Verified identity data extracted from a Google ID token after a successful OAuth exchange."""
+
+    oauth_provider: OAuthProvider
+    oauth_id: str
+    email: str
+    username: str
+    avatar_url: str | None

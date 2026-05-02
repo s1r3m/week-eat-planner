@@ -39,11 +39,9 @@ describe('GuestMobileMenu', () => {
     mockFullPath.value = '/';
   });
 
-  const mountComponent = (links: NavLink[]): VueWrapper<GuestMobileMenuInstance> => {
-    return mount(GuestMobileMenu, {
-      props: {
-        links: links,
-      },
+  const mountComponent = (links: NavLink[]): VueWrapper<GuestMobileMenuInstance> =>
+    mount(GuestMobileMenu, {
+      props: { links },
       global: {
         plugins: [i18n],
         stubs: {
@@ -52,14 +50,9 @@ describe('GuestMobileMenu', () => {
             emits: ['click'],
             name: 'Button',
           },
-          Menu: {
-            template: '<svg class="menu-icon" data-testid="menu-icon"><slot /></svg>',
-            name: 'Menu',
-          },
+          Menu: { template: '<svg class="menu-icon" />', name: 'Menu' },
           Sheet: {
-            template: `<div class="sheet">
-              <slot />
-            </div>`,
+            template: '<div class="sheet"><slot /></div>',
             props: ['open'],
             emits: ['update:open'],
             name: 'Sheet',
@@ -77,10 +70,7 @@ describe('GuestMobileMenu', () => {
             template: '<div class="sheet-footer"><slot /></div>',
             name: 'SheetFooter',
           },
-          SheetTitle: {
-            template: '<div class="sheet-title"><slot /></div>',
-            name: 'SheetTitle',
-          },
+          SheetTitle: { template: '<div class="sheet-title"><slot /></div>', name: 'SheetTitle' },
           SheetDescription: {
             template: '<div class="sheet-description"><slot /></div>',
             name: 'SheetDescription',
@@ -90,10 +80,7 @@ describe('GuestMobileMenu', () => {
             props: ['links'],
             name: 'GuestNavigation',
           },
-          AppBrand: {
-            template: '<div class="app-brand" />',
-            name: 'AppBrand',
-          },
+          AppBrand: { template: '<div class="app-brand" />', name: 'AppBrand' },
           GuestAuthActions: {
             template: '<div class="guest-auth-actions" />',
             name: 'GuestAuthActions',
@@ -101,224 +88,145 @@ describe('GuestMobileMenu', () => {
         },
       },
     }) as unknown as VueWrapper<GuestMobileMenuInstance>;
-  };
 
-  describe('State Management', () => {
+  describe('open/close state', () => {
     it('initializes with open as false', () => {
-      const wrapper = mountComponent([]);
-      expect(wrapper.vm.open).toBe(false);
+      expect(mountComponent([]).vm.open).toBe(false);
     });
 
-    it('flips open on toggle from false to true', async () => {
+    it('toggle flips open from false to true', async () => {
       const wrapper = mountComponent([]);
-      expect(wrapper.vm.open).toBe(false);
-
       wrapper.vm.toggle();
       await nextTick();
-
       expect(wrapper.vm.open).toBe(true);
     });
 
-    it('flips open on toggle from true to false', async () => {
+    it('toggle flips open from true to false', async () => {
       const wrapper = mountComponent([]);
       wrapper.vm.open = true;
       await nextTick();
-
       wrapper.vm.toggle();
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
 
-    it('close() sets open to false', async () => {
+    it('close sets open to false', async () => {
       const wrapper = mountComponent([]);
       wrapper.vm.open = true;
       await nextTick();
-
       wrapper.vm.close();
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
 
-    it('close() is idempotent when already false', async () => {
+    it('close is idempotent when already false', async () => {
       const wrapper = mountComponent([]);
-      expect(wrapper.vm.open).toBe(false);
-
       wrapper.vm.close();
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
   });
 
-  describe('User Interactions', () => {
-    it('button click calls toggle function', async () => {
+  describe('toggle button', () => {
+    it('clicking the button calls toggle', async () => {
       const wrapper = mountComponent([]);
-      const button = wrapper.findComponent({ name: 'Button' });
-
-      expect(wrapper.vm.open).toBe(false);
-
-      await button.trigger('click');
+      await wrapper.findComponent({ name: 'Button' }).trigger('click');
       await nextTick();
-
       expect(wrapper.vm.open).toBe(true);
     });
 
-    it('button has aria-controls attribute', () => {
-      const wrapper = mountComponent([]);
-      const button = wrapper.find('button');
-
-      expect(button.attributes('aria-controls')).toBe('mobile-menu');
+    it('has aria-controls="mobile-menu"', () => {
+      expect(mountComponent([]).find('button').attributes('aria-controls')).toBe('mobile-menu');
     });
 
-    it('button has sr-only span for accessibility', () => {
-      const wrapper = mountComponent([]);
-      const srOnlyText = wrapper.text();
-
-      expect(srOnlyText).toContain('Toggle mobile menu');
+    it('has a screen reader label', () => {
+      expect(mountComponent([]).text()).toContain('Toggle mobile menu');
     });
   });
 
-  describe('Sheet Component', () => {
-    it('Sheet component receives v-model:open binding', () => {
-      const wrapper = mountComponent([]);
-      const sheet = wrapper.findComponent({ name: 'Sheet' });
-
+  describe('Sheet component', () => {
+    it('receives the open value as a prop', () => {
+      const sheet = mountComponent([]).findComponent({ name: 'Sheet' });
       expect(sheet.exists()).toBe(true);
       expect(sheet.props('open')).toBe(false);
     });
 
-    it('Sheet updates open ref when update:open is emitted', async () => {
+    it('updates open when Sheet emits update:open', async () => {
       const wrapper = mountComponent([]);
-      const sheet = wrapper.findComponent({ name: 'Sheet' });
-
-      expect(wrapper.vm.open).toBe(false);
-
-      await sheet.vm.$emit('update:open', true);
+      await wrapper.findComponent({ name: 'Sheet' }).vm.$emit('update:open', true);
       await nextTick();
-
       expect(wrapper.vm.open).toBe(true);
     });
 
-    it('SheetContent has side prop set to top', () => {
-      const wrapper = mountComponent([]);
-      const sheetContent = wrapper.findComponent({ name: 'SheetContent' });
-
-      expect(sheetContent.props('side')).toBe('top');
+    it('SheetContent has side set to top', () => {
+      expect(mountComponent([]).findComponent({ name: 'SheetContent' }).props('side')).toBe('top');
     });
   });
 
-  describe('Route Watcher', () => {
-    it('closes menu when route fullPath changes', async () => {
+  describe('route watcher', () => {
+    it('closes the menu when the route fullPath changes', async () => {
       const wrapper = mountComponent([]);
       wrapper.vm.open = true;
       await nextTick();
-
-      expect(wrapper.vm.open).toBe(true);
-
       mockFullPath.value = '/about';
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
 
-    it('watcher responds to fullPath changes including query params', async () => {
+    it('closes the menu on route changes with query params', async () => {
       const wrapper = mountComponent([]);
       wrapper.vm.open = true;
       await nextTick();
-
       mockFullPath.value = '/weeks?week=5';
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
 
-    it('does not close menu when already closed on route change', async () => {
+    it('remains closed on route change when already closed', async () => {
       const wrapper = mountComponent([]);
-      expect(wrapper.vm.open).toBe(false);
-
       mockFullPath.value = '/recipes';
       await nextTick();
-
       expect(wrapper.vm.open).toBe(false);
     });
   });
 
-  describe('Props Forwarding', () => {
-    it('passes links prop to GuestNavigation', () => {
+  describe('props forwarding', () => {
+    it('passes the links prop to GuestNavigation', () => {
       const links: NavLink[] = [
         { label: 'Home', to: { name: 'home' } },
         { label: 'About', to: { name: 'about' } },
       ];
-      const wrapper = mountComponent(links);
-      const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });
-
-      expect(guestNav.props('links')).toEqual(links);
+      const nav = mountComponent(links).findComponent({ name: 'GuestNavigation' });
+      expect(nav.props('links')).toEqual(links);
     });
 
-    it('handles empty links array', () => {
-      const wrapper = mountComponent([]);
-      const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });
-
-      expect(guestNav.props('links')).toEqual([]);
-    });
-
-    it('handles multiple navigation links', () => {
-      const links: NavLink[] = [
-        { label: 'Features', to: { name: 'features' } },
-        { label: 'Pricing', to: { name: 'pricing' } },
-        { label: 'Docs', to: { name: 'docs' } },
-      ];
-      const wrapper = mountComponent(links);
-      const guestNav = wrapper.findComponent({ name: 'GuestNavigation' });
-
-      expect(guestNav.props('links')).toEqual(links);
+    it('handles an empty links array', () => {
+      expect(mountComponent([]).findComponent({ name: 'GuestNavigation' }).props('links')).toEqual(
+        [],
+      );
     });
   });
 
-  describe('Component Structure', () => {
-    it('renders Button component', () => {
+  describe('component structure', () => {
+    it('renders Button, Sheet, SheetContent, SheetHeader and SheetFooter', () => {
       const wrapper = mountComponent([]);
-      expect(wrapper.findComponent({ name: 'Button' }).exists()).toBe(true);
-    });
-
-    it('renders Sheet component', () => {
-      const wrapper = mountComponent([]);
-      expect(wrapper.findComponent({ name: 'Sheet' }).exists()).toBe(true);
-    });
-
-    it('renders SheetHeader with AppBrand', () => {
-      const wrapper = mountComponent([]);
-      const header = wrapper.findComponent({ name: 'SheetHeader' });
-      const brand = wrapper.findComponent({ name: 'AppBrand' });
-
-      expect(header.exists()).toBe(true);
-      expect(brand.exists()).toBe(true);
-    });
-
-    it('renders GuestNavigation in sheet content', () => {
-      const wrapper = mountComponent([]);
-      expect(wrapper.findComponent({ name: 'GuestNavigation' }).exists()).toBe(true);
-    });
-
-    it('renders GuestAuthActions in SheetFooter', () => {
-      const wrapper = mountComponent([]);
-      const footer = wrapper.findComponent({ name: 'SheetFooter' });
-      const authActions = wrapper.findComponent({ name: 'GuestAuthActions' });
-
-      expect(footer.exists()).toBe(true);
-      expect(authActions.exists()).toBe(true);
-    });
-
-    it('component has correct component hierarchy', () => {
-      const wrapper = mountComponent([]);
-
       expect(wrapper.findComponent({ name: 'Button' }).exists()).toBe(true);
       expect(wrapper.findComponent({ name: 'Sheet' }).exists()).toBe(true);
       expect(wrapper.findComponent({ name: 'SheetContent' }).exists()).toBe(true);
       expect(wrapper.findComponent({ name: 'SheetHeader' }).exists()).toBe(true);
       expect(wrapper.findComponent({ name: 'SheetFooter' }).exists()).toBe(true);
+    });
+
+    it('renders AppBrand in SheetHeader', () => {
+      expect(mountComponent([]).findComponent({ name: 'AppBrand' }).exists()).toBe(true);
+    });
+
+    it('renders GuestNavigation in sheet content', () => {
+      expect(mountComponent([]).findComponent({ name: 'GuestNavigation' }).exists()).toBe(true);
+    });
+
+    it('renders GuestAuthActions in SheetFooter', () => {
+      expect(mountComponent([]).findComponent({ name: 'GuestAuthActions' }).exists()).toBe(true);
     });
   });
 });

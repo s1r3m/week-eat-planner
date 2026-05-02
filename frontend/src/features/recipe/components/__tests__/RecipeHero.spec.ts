@@ -5,7 +5,7 @@ import RecipeIngredients from '../RecipeIngredients.vue';
 import RecipeCover from '../RecipeCover.vue';
 
 describe('RecipeHero', () => {
-  it('passes correct props to subcomponents', () => {
+  it('passes ingredients and cover props to child components', () => {
     const recipe = {
       id: '1',
       name: 'Pasta',
@@ -13,17 +13,12 @@ describe('RecipeHero', () => {
       ingredients: [{ name: 'Pasta', amount: 500, unit: 'g' }],
       steps: [],
     };
-    const wrapper = mount(RecipeHero, {
-      props: {
-        recipe: recipe as any,
-      },
-    });
+    const wrapper = mount(RecipeHero, { props: { recipe: recipe as any } });
 
-    const ingredientsComp = wrapper.getComponent(RecipeIngredients);
-    expect(ingredientsComp.props('ingredients')).toEqual(recipe.ingredients);
-
-    const coverComp = wrapper.getComponent(RecipeCover);
-    expect(coverComp.props('src')).toBe(recipe.image_url);
-    expect(coverComp.props('alt')).toBe(recipe.name);
+    expect(wrapper.getComponent(RecipeIngredients).props('ingredients')).toEqual(
+      recipe.ingredients,
+    );
+    expect(wrapper.getComponent(RecipeCover).props('src')).toBe(recipe.image_url);
+    expect(wrapper.getComponent(RecipeCover).props('alt')).toBe(recipe.name);
   });
 });

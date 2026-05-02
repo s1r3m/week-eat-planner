@@ -6,24 +6,15 @@ import { createPinia, setActivePinia } from 'pinia';
 import { reactive, ref } from 'vue';
 import { useQuery } from '@pinia/colada';
 
-vi.mock('vue-router', () => ({
-  useRoute: vi.fn(),
-}));
+vi.mock('vue-router', () => ({ useRoute: vi.fn() }));
 
 vi.mock('@pinia/colada', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@pinia/colada')>();
-  return {
-    ...actual,
-    useQuery: vi.fn(),
-  };
+  return { ...actual, useQuery: vi.fn() };
 });
 
 describe('useBreadcrumbs', () => {
-  const mockRoute = reactive({
-    name: '',
-    params: {} as Record<string, string>,
-  });
-
+  const mockRoute = reactive({ name: '', params: {} as Record<string, string> });
   const weekData = ref<{ name: string } | null>(null);
   const recipeData = ref<{ name: string } | null>(null);
 
@@ -32,15 +23,10 @@ describe('useBreadcrumbs', () => {
     vi.mocked(useRoute).mockReturnValue(mockRoute as any);
     vi.mocked(useQuery).mockImplementation((options: any) => {
       const opt = typeof options === 'function' ? options() : options;
-      if (opt.key[0] === 'weeks' && opt.key[1] === 'detail') {
-        return { data: weekData } as any;
-      }
-      if (opt.key[0] === 'recipes' && opt.key[1] === 'detail') {
-        return { data: recipeData } as any;
-      }
+      if (opt.key[0] === 'weeks' && opt.key[1] === 'detail') return { data: weekData } as any;
+      if (opt.key[0] === 'recipes' && opt.key[1] === 'detail') return { data: recipeData } as any;
       return { data: ref(null) } as any;
     });
-
     mockRoute.name = '';
     mockRoute.params = {};
     weekData.value = null;
@@ -51,100 +37,80 @@ describe('useBreadcrumbs', () => {
     vi.clearAllMocks();
   });
 
-  it('should return empty breadcrumbs for unknown route', () => {
+  it('returns empty breadcrumbs for an unknown route', () => {
     mockRoute.name = 'UNKNOWN_ROUTE';
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([]);
+    expect(useBreadcrumbs().value).toEqual([]);
   });
 
-  it('should return breadcrumbs for WEEKS route', () => {
+  it('returns [My weeks] for the WEEKS route', () => {
     mockRoute.name = ROUTE_NAMES.WEEKS;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([{ label: 'My weeks' }]);
+    expect(useBreadcrumbs().value).toEqual([{ label: 'My weeks' }]);
   });
 
-  it('should return breadcrumbs for WEEK route', () => {
+  it('returns [My weeks → week name] for the WEEK route', () => {
     mockRoute.name = ROUTE_NAMES.WEEK;
     mockRoute.params = { id: 'week-1' };
     weekData.value = { name: 'Week Name' };
-
-    const breadcrumbs = useBreadcrumbs();
-
-    expect(breadcrumbs.value).toEqual([
+    expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.WEEKS }, label: 'My weeks' },
       { label: 'Week Name' },
     ]);
   });
 
-  it('should return "" for WEEK route if week name is not loaded', () => {
+  it('uses an empty label for the WEEK route when the week name has not loaded', () => {
     mockRoute.name = ROUTE_NAMES.WEEK;
     mockRoute.params = { id: 'week-1' };
-    weekData.value = null;
-
-    const breadcrumbs = useBreadcrumbs();
-
-    expect(breadcrumbs.value[1].label).toBe('');
+    expect(useBreadcrumbs().value[1].label).toBe('');
   });
 
-  it('should return breadcrumbs for RECIPES route', () => {
+  it('returns [Recipes] for the RECIPES route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([{ label: 'Recipes' }]);
+    expect(useBreadcrumbs().value).toEqual([{ label: 'Recipes' }]);
   });
 
-  it('should return "" for RECIPE route if recipe name is not loaded', () => {
-    mockRoute.name = ROUTE_NAMES.RECIPE;
-    mockRoute.params = { id: 'recipe-1' };
-    recipeData.value = null;
-
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value[1].label).toBe('');
-  });
-
-  it('should return breadcrumbs for RECIPE route', () => {
+  it('returns [Recipes → recipe name] for the RECIPE route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPE;
     mockRoute.params = { id: 'recipe-1' };
     recipeData.value = { name: 'Recipe Name' };
-
-    const breadcrumbs = useBreadcrumbs();
-
-    expect(breadcrumbs.value).toEqual([
+    expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { label: 'Recipe Name' },
     ]);
   });
 
-  it('should return breadcrumbs for RECIPES_MY route', () => {
+  it('uses an empty label for the RECIPE route when the recipe name has not loaded', () => {
+    mockRoute.name = ROUTE_NAMES.RECIPE;
+    mockRoute.params = { id: 'recipe-1' };
+    expect(useBreadcrumbs().value[1].label).toBe('');
+  });
+
+  it('returns [Recipes → My recipes] for the RECIPES_MY route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES_MY;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([
+    expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { label: 'My recipes' },
     ]);
   });
 
-  it('should return breadcrumbs for RECIPES_CREATE route', () => {
+  it('returns [Recipes → My recipes → Create] for the RECIPES_CREATE route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES_CREATE;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([
+    expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { label: 'Create' },
     ]);
   });
 
-  it('should return breadcrumbs for RECIPES_FAVORITES route', () => {
+  it('returns [Recipes → Favorites] for the RECIPES_FAVORITES route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES_FAVORITES;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([
+    expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { label: 'Favorites' },
     ]);
   });
 
-  it('should return breadcrumbs for PROFILE route', () => {
+  it('returns [Profile] for the PROFILE route', () => {
     mockRoute.name = ROUTE_NAMES.PROFILE;
-    const breadcrumbs = useBreadcrumbs();
-    expect(breadcrumbs.value).toEqual([{ label: 'Profile' }]);
+    expect(useBreadcrumbs().value).toEqual([{ label: 'Profile' }]);
   });
 });

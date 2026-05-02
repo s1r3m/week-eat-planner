@@ -9,7 +9,7 @@ import GuestMobileMenu from '../GuestMobileMenu.vue';
 import GuestAuthActions from '../GuestAuthActions.vue';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
-describe('GuestHeader', () => {
+describe('GuestAppHeader', () => {
   const mountComponent = () =>
     mount(GuestAppHeader, {
       global: {
@@ -27,61 +27,45 @@ describe('GuestHeader', () => {
       },
     });
 
-  describe('Rendering', () => {
-    it('renders the component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.exists()).toBe(true);
-    });
-
-    it('renders the logo component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(AppBrand).exists()).toBe(true);
-    });
-
-    it('renders ModeToggle component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(ModeToggle).exists()).toBe(true);
-    });
-
-    it('renders navigation menu', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(GuestNavigation).exists()).toBe(true);
-    });
-
-    it('renders mobile menu', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(GuestMobileMenu).exists()).toBe(true);
-    });
-
-    it('renders GuestAuthActions component', () => {
-      const wrapper = mountComponent();
-      expect(wrapper.findComponent(GuestAuthActions).exists()).toBe(true);
-    });
+  it('renders the component', () => {
+    expect(mountComponent().exists()).toBe(true);
   });
 
-  describe('Navigation Links', () => {
-    it('passes default navigation links to GuestNavigation', () => {
-      const wrapper = mountComponent();
+  it('renders AppBrand', () => {
+    expect(mountComponent().findComponent(AppBrand).exists()).toBe(true);
+  });
 
-      const navigation = wrapper.findComponent(GuestNavigation);
+  it('renders ModeToggle', () => {
+    expect(mountComponent().findComponent(ModeToggle).exists()).toBe(true);
+  });
 
-      expect(navigation.props('links')).toEqual([
-        { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
-        { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
-        { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
-      ]);
-    });
+  it('renders GuestNavigation', () => {
+    expect(mountComponent().findComponent(GuestNavigation).exists()).toBe(true);
+  });
 
-    it('passes default navigation links to GuestMobileMenu', () => {
-      const wrapper = mountComponent();
+  it('renders GuestMobileMenu', () => {
+    expect(mountComponent().findComponent(GuestMobileMenu).exists()).toBe(true);
+  });
 
-      const mobileMenu = wrapper.findComponent(GuestMobileMenu);
+  it('renders GuestAuthActions', () => {
+    expect(mountComponent().findComponent(GuestAuthActions).exists()).toBe(true);
+  });
 
-      expect(mobileMenu.props('links')).toEqual([
-        { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
-        { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
-        { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
-      ]);
-    });
+  it('passes navigation links to GuestNavigation', () => {
+    const nav = mountComponent().findComponent(GuestNavigation);
+    expect(nav.props('links')).toEqual([
+      { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
+      { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
+      { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
+    ]);
+  });
+
+  it('passes navigation links to GuestMobileMenu', () => {
+    const menu = mountComponent().findComponent(GuestMobileMenu);
+    expect(menu.props('links')).toEqual([
+      { to: { name: ROUTE_NAMES.HOME, hash: '#use-cases' }, label: 'Use Cases' },
+      { to: { name: ROUTE_NAMES.HOME, hash: '#get-started' }, label: 'Get Started' },
+      { to: { name: ROUTE_NAMES.WEEKS }, label: 'Start Planning' },
+    ]);
   });
 });

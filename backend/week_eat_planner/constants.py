@@ -8,6 +8,7 @@ REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 class AppUrl(StrEnum):
     """Enumeration of API endpoint URLs."""
 
+    AUTH_GOOGLE_EXCHANGE = '/auth/google/exchange'
     AUTH_LOGIN = '/auth/login'
     AUTH_LOGOUT = '/auth/logout'
     AUTH_REFRESH = '/auth/refresh'
@@ -30,6 +31,8 @@ class AppUrl(StrEnum):
 
 
 class StorageBucket(StrEnum):
+    """Enumeration of object storage bucket names."""
+
     RECIPES = 'recipes'
     USERS = 'users'
     WEEKS = 'weeks'
@@ -42,10 +45,18 @@ class TokenType(StrEnum):
 
 
 class Unit(StrEnum):
+    """Enumeration of supported measurement units for recipe ingredients."""
+
     CANS = 'cans'
     GRAM = 'g'
     MILILITERS = 'ml'
     PIECES = 'pcs'
+
+
+class OAuthProvider(StrEnum):
+    """Enumeration of supported OAuth identity providers."""
+
+    GOOGLE = 'GOOGLE'
 
 
 MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
