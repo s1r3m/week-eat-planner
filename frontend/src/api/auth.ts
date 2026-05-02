@@ -12,7 +12,7 @@ export interface UserData {
   user_id: string;
   email: string;
   is_active: boolean;
-  username?: string;
+  username: string;
   avatar_url?: string;
 }
 

@@ -70,7 +70,9 @@ class GoogleAuthClient:
                 },
             )
             token_response.raise_for_status()
-            id_token = token_response.json().get('id_token')
+            token_data = token_response.json()
+            id_token = token_data.get('id_token')
+            access_token = token_data.get('access_token')
             if id_token is None:
                 logger.error('Google token response is missing the id_token field.')
                 raise OAuthProviderException()
@@ -87,6 +89,7 @@ class GoogleAuthClient:
                 algorithms=['RS256'],
                 audience=settings.GOOGLE_CLIENT_ID,
                 issuer=GOOGLE_ISSUER,
+                access_token=access_token,
             )
             missing_claims = [key for key in ('sub', 'email', 'name') if key not in data]
             if missing_claims:
