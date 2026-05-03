@@ -40,13 +40,23 @@ async def test_update_user__username_changed__updated_user_in_response(auth_clie
     }
 
 
-async def test_update_user__empty_payload__422_returned(auth_client_for_created_user):
-    response = await auth_client_for_created_user.patch(AppUrl.USER, json={})
-
+async def test_update_user__empty_username__422_returned(auth_client_for_created_user):
+    response = await auth_client_for_created_user.patch(AppUrl.USER, json={'username': ''})
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_update_user__no_auth__401_returned(logout_client_for_created_user):
-    response = await logout_client_for_created_user.patch(AppUrl.USER, json={'username': 'new_username'})
+async def test_update_user__invalid_email__422_returned(auth_client_for_created_user):
+    response = await auth_client_for_created_user.patch(AppUrl.USER, json={'email': 'not-an-email'})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_update_user__empty_payload__422_returned(auth_client_for_created_user):
+    response = await auth_client_for_created_user.patch(AppUrl.USER, json={})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_update_user__no_auth__401_returned(client):
+    response = await client.patch(AppUrl.USER, json={'username': 'new_username'})
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json() == {'detail': 'Not authenticated'}
