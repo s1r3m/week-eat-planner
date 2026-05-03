@@ -4,6 +4,8 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import Email
+from week_eat_planner.api.schemas.common import RecordId
+from week_eat_planner.api.schemas.user import UserRead, UserUpdate
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models.user import User
 from week_eat_planner.exceptions import InvalidCredentialsException
@@ -29,11 +31,17 @@ class UserService:
             InvalidCredentialsException: If the user is not found or is not active.
         """
         email = get_email_from_token(token)
-        logger.info(f'Retrieving user for email={email}.')
+        logger.info(f'Retrieving user for email={email}')
         user = await self._user_dao.find_one_or_none(Email(email=email))
         if not user or not user.is_active:
-            logger.error(f'User not found for email={email}.')
+            logger.error(f'User not found for email={email}')
             raise InvalidCredentialsException()
 
         logger.info(f'Retrieved User(id={user.id}) from DB')
         return user
+
+    async def update_user(self, user: UserRead, values: UserUpdate) -> User:
+        logger.debug(f'Updating user {user.id} with {values}')
+        updated_user = await self._user_dao.update(RecordId(id=user.id), values)
+        logger.debug(f'User {user.id} was successfully updated')
+        return updated_user

@@ -53,9 +53,6 @@ class User(Base):
     recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list['UserFavorite']] = relationship(back_populates='user', cascade='all, delete-orphan')
 
-    def __repr__(self) -> str:
-        return f'User({self.id=}, {self.email=}, {self.is_active=}'
-
 
 class RefreshToken(Base):
     """Represents a JWT refresh token stored in the database.
@@ -79,6 +76,3 @@ class RefreshToken(Base):
     replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
 
     user: Mapped['User'] = relationship(lazy='selectin')
-
-    def __repr__(self) -> str:
-        return f'RefreshToken({self.id=}, {self.user_id=}, {self.expires_at=}, {self.revoked=}, {self.replaced_by=})'

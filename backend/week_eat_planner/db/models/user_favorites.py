@@ -22,6 +22,3 @@ class UserFavorite(Base):
 
     user: Mapped['User'] = relationship(back_populates='favorites')
     recipe: Mapped['Recipe'] = relationship(back_populates='favorites', lazy='selectin')
-
-    def __repr__(self) -> str:
-        return f'UserFavorite({self.id=}, {self.user_id=}, {self.recipe_id=})'

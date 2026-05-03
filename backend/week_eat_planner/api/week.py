@@ -41,7 +41,7 @@ async def create_week(
     Returns:
         The created week object.
     """
-    logger.info(f'Request POST /weeks for {user}.')
+    logger.info(f'Got POST {AppUrl.WEEKS} request for user {user.id}')
     week = await WeekService(session).create_week_with_slots(user, week_data)
     return WeekReadMinimal.model_validate(week)
 
@@ -60,7 +60,7 @@ async def get_user_weeks(
     Returns:
         A list of weeks belonging to the user.
     """
-    logger.info(f'Request GET /weeks for {user}.')
+    logger.info(f'Got GET {AppUrl.WEEKS} request for user {user.id}')
     weeks = await WeekService(session).get_weeks(user)
     return [WeekReadMinimal.model_validate(week) for week in weeks]
 
@@ -83,7 +83,7 @@ async def get_week(
     Returns:
         The requested week object.
     """
-    logger.info(f'Request GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}.')
+    logger.info(f'Got GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user)
     return WeekRead.model_validate(week)
 
@@ -108,7 +108,7 @@ async def update_week(
     Returns:
         The updated week object.
     """
-    logger.info(f'Request PATCH {AppUrl.WEEKS_TPL.format(week_id=week_id)} with {new_data=}.')
+    logger.info(f'Got PATCH {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week_service = WeekService(session)
     week = await week_service.get_week_for_edit(week_id, user)
     updated_week = await week_service.update_week(week, new_data)
@@ -130,7 +130,7 @@ async def delete_week(
         user: The authenticated user.
         session: The database session.
     """
-    logger.info(f'Request DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} by {user}.')
+    logger.info(f'Got DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} for user {user.id}')
     week_service = WeekService(session)
     week = await week_service.get_week_for_edit(week_id, user)
     await week_service.delete_week(week)
@@ -154,7 +154,9 @@ async def assign_recipe_to_meal_slot(
     Returns:
         A list of updated meal slot objects.
     """
-    logger.info(f'Request PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {slots_data=} by {user}.')
+    logger.info(
+        f'Got PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {len(slots_data)} slots for user {user.id}'
+    )
     week_service = WeekService(session)
     week = await week_service.get_week_for_edit(week_id, user)
     updated_slots = await week_service.assign_recipes_to_meal_slots(week, *slots_data)

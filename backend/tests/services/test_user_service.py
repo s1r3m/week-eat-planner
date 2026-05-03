@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import status
 
+from week_eat_planner.api.schemas.user import UserUpdate
 from week_eat_planner.exceptions import InvalidCredentialsException
 from week_eat_planner.security.token_provider import TokenProvider
 from week_eat_planner.services.user_service import UserService
@@ -45,3 +46,12 @@ async def test_get_user__not_active_user__error_raised(mocked_user_dao, mocked_s
 
     assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc.value.detail == 'Could not validate credentials'
+
+
+async def test_update_user__values_provided__updated_user_returned(mocked_user_dao, mocked_session, user_read, db_user):
+    mocked_user_dao.update.return_value = db_user
+
+    result = await UserService(mocked_session).update_user(user_read, UserUpdate(username='new_name'))
+
+    assert result == db_user
+    mocked_user_dao.update.assert_called_once()

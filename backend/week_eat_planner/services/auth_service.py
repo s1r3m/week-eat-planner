@@ -52,10 +52,10 @@ class AuthService:
         Raises:
             UserAlreadyExistsException: If a user with the same email is already registered.
         """
-        logger.info(f'New user registration attempt for {user_data.email=}.')
+        logger.info(f'New user registration attempt for {user_data.email=}')
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
         if existing_user:
-            logger.error(f'User with {user_data.email=} already exists.')
+            logger.error(f'User with {user_data.email=} already exists')
             raise UserAlreadyExistsException()
 
         user = User(
@@ -64,7 +64,7 @@ class AuthService:
             hashed_password=get_password_hash(user_data.password),
         )
         created_user = await self._user_dao.add(user)
-        logger.info(f'User {user_data.email=} registered successfully.')
+        logger.info(f'User {user_data.email=} registered successfully')
 
         return created_user
 
@@ -84,7 +84,7 @@ class AuthService:
             InvalidEmailException: If the email format is invalid.
             InvalidCredentialsException: If the user is not registered or the password is incorrect.
         """
-        logger.info(f'Login attempt for user: {username}.')
+        logger.info(f'Login attempt for user: {username}')
         try:
             email = Email(email=username)
         except ValidationError as exc:
@@ -93,15 +93,15 @@ class AuthService:
 
         db_user = await self._user_dao.find_one_or_none(email)
         if db_user and not db_user.hashed_password:
-            logger.error(f'OAuth account attempted password login for {get_email_token(username)}.')
+            logger.error(f'OAuth account attempted password login for {get_email_token(username)}')
             raise OAuthAccountException()
         if not (db_user and verify_password(password, str(db_user.hashed_password))):
-            logger.error(f'Invalid credentials for {email}!')
+            logger.error(f'Invalid credentials for {email}')
             raise InvalidCredentialsException()
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
-        logger.info(f'User {email} logged in successfully.')
+        logger.info(f'User {email} logged in successfully')
         return access_token, refresh_token
 
     async def login_with_google(self, data: GoogleCode, httpx_client: AsyncClient) -> tuple[str, str]:
@@ -125,7 +125,7 @@ class AuthService:
             OAuthInvalidCodeException: If Google rejects the authorization code.
             OAuthProviderException: If the Google token exchange or JWT verification fails.
         """
-        logger.info('Google OAuth login attempt started.')
+        logger.info('Google OAuth login attempt started')
         client = GoogleAuthClient(httpx_client)
         user_data = await client.get_oauth_user(data.code)
         db_user = await self._user_dao.find_one_or_none(
@@ -136,16 +136,16 @@ class AuthService:
             if email_user:
                 email_token = get_email_token(user_data.email)
                 if email_user.hashed_password:
-                    logger.error(f'Email token={email_token} already has a password account.')
+                    logger.error(f'Email token={email_token} already has a password account')
                     raise PasswordAccountException()
-                logger.error(f'Email token={email_token} is already registered via OAuth.')
+                logger.error(f'Email token={email_token} is already registered via OAuth')
                 raise OAuthAccountException()
 
             user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
-            logger.info(f'Created new user via Google OAuth (token={get_email_token(user_data.email)}).')
+            logger.info(f'Created new user via Google OAuth (token={get_email_token(user_data.email)})')
         else:
-            logger.info(f'Existing Google OAuth user logged in (token={get_email_token(user_data.email)}).')
+            logger.info(f'Existing Google OAuth user logged in (token={get_email_token(user_data.email)})')
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token
@@ -163,17 +163,17 @@ class AuthService:
             RefreshTokenRevokedException: If the provided token is invalid or revoked.
             TokenExpiredException: If the provided token has expired.
         """
-        logger.info(f'Attempting to refresh tokens from {old_refresh_token}.')
+        logger.info('Attempting to refresh tokens')
         old_token = RefreshTokenFromDB(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(old_token)
 
         if not db_refresh_token or db_refresh_token.revoked:
-            logger.error('Token is revoked.')
+            logger.error('Token is revoked')
             raise RefreshTokenRevokedException()
 
         now = datetime.now(UTC)
         if db_refresh_token.expires_at <= now:
-            logger.error('Refresh token expired.')
+            logger.error('Refresh token expired')
             raise TokenExpiredException()
 
         db_user = db_refresh_token.user
@@ -184,7 +184,7 @@ class AuthService:
             access_token = TokenProvider.create_access_token(db_user.email)
             refresh_token = old_refresh_token
 
-        logger.info(f'Tokens for {db_user.email} refreshed successfully.')
+        logger.info(f'Tokens for {db_user.email} refreshed successfully')
         return access_token, refresh_token
 
     async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:
@@ -222,7 +222,7 @@ class AuthService:
             TokenForbidden: If the refresh token does not belong to the user.
             TokenRevokedException: If the refresh token has already been revoked.
         """
-        logger.info(f'Logout attempt for {user}.')
+        logger.info(f'Logout attempt for user {user.id}')
         refresh_token = RefreshTokenFromDB(
             token_hash=TokenProvider.hash_refresh_token(raw_token),
             user_id=user.id,
@@ -230,20 +230,20 @@ class AuthService:
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(refresh_token)
 
         if not db_refresh_token:
-            logger.warning(f'Attempted logout with a non-existent refresh token for {user}.')
+            logger.warning(f'Attempted logout with a non-existent refresh token for user {user.id}')
             raise RefreshTokenNotFoundException()
 
         if db_refresh_token.expires_at <= datetime.now(UTC):
-            logger.warning(f'Attempted logout with expired refresh token for {user}.')
+            logger.warning(f'Attempted logout with expired refresh token for user {user.id}')
             raise TokenExpiredException()
 
         if db_refresh_token.user_id != user.id:
-            logger.warning(f'Attempted logout with refresh token that does not belong to user {user}.')
+            logger.warning(f'Attempted logout with refresh token that does not belong to user {user.id}')
             raise TokenForbidden()
 
         if db_refresh_token.revoked:
-            logger.warning(f'Attempted logout with an already revoked token for user {user}.')
+            logger.warning(f'Attempted logout with an already revoked token for user {user.id}')
             raise TokenRevokedException()
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
-        logger.info(f'{user} logged out successfully.')
+        logger.info(f'User {user.id} logged out successfully')
