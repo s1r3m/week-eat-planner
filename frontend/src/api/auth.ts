@@ -6,17 +6,6 @@ import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { toast } from 'vue-sonner';
 
 /**
- * Publicly visible information about a user.
- */
-export interface UserData {
-  user_id: string;
-  email: string;
-  is_active: boolean;
-  username: string;
-  avatar_url?: string;
-}
-
-/**
  * Token information returned upon successful login.
  */
 export interface LoginInfo {
@@ -56,15 +45,6 @@ const AUTH_KEYS = {
   root: ['auth'] as const,
   user: () => [...AUTH_KEYS.root, 'user'] as const,
 };
-
-/**
- * Query options for fetching the current authenticated user's profile.
- */
-export const getUserQuery = defineQueryOptions(() => ({
-  key: AUTH_KEYS.user(),
-  query: () => apiClient.get<UserData>('/user').then((res) => res.data),
-  staleTime: 60_000,
-}));
 
 /**
  * Mutation for logging in a user.

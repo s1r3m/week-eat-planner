@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   accessToken,
   isAuthenticated,
-  getUserQuery,
   loginMutation,
   signupMutation,
   logoutMutation,
@@ -59,15 +58,6 @@ describe('auth api', () => {
     expect(isAuthenticated.value).toBe(false);
     accessToken.value = 'token';
     expect(isAuthenticated.value).toBe(true);
-  });
-
-  it('getUserQuery fetches and returns the current user', async () => {
-    const user = { user_id: '1', email: 'test@example.com', is_active: true };
-    mockApi.onGet('/user').reply(200, user);
-
-    const query = getUserQuery() as any;
-    const result = await query.query();
-    expect(result).toEqual(user);
   });
 
   describe('loginMutation', () => {

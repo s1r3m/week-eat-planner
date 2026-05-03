@@ -2,13 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ProfilePage from '../ProfilePage.vue';
 import { useQuery } from '@pinia/colada';
-import { getUserQuery } from '@/api/auth';
 import { ref } from 'vue';
-
-// Mock API
-vi.mock('@/api/auth', () => ({
-  getUserQuery: vi.fn(),
-}));
 
 // Mock Pinia Colada
 vi.mock('@pinia/colada', () => ({
@@ -26,21 +20,6 @@ describe('ProfilePage', () => {
         stubs: {
           PageTitle: true,
           ErrorRetryCard: { template: '<div class="error-retry" />' },
-          Card: { template: '<div class="card"><slot name="header" /><slot /></div>' },
-          CardHeader: { template: '<div class="card-header"><slot /></div>' },
-          CardContent: { template: '<div class="card-content"><slot /></div>' },
-          FieldSet: { template: '<fieldset><slot /></fieldset>' },
-          FieldGroup: { template: '<div><slot /></div>' },
-          Field: { template: '<div><slot /></div>' },
-          FieldLabel: { template: '<label><slot /></label>' },
-          FieldSeparator: { template: '<hr />' },
-          Input: {
-            template:
-              '<input :id="id" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue', 'id'],
-          },
-          Checkbox: true,
-          Label: true,
           TheLoadingPageState: { template: '<div class="loading" />' },
         },
       },

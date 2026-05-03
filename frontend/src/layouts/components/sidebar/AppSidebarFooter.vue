@@ -63,7 +63,8 @@ import { UserIdentity } from '@/features/auth';
 import type { NavLink } from '@/layouts/components/header/types/navigation';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { useMutation, useQuery } from '@pinia/colada';
-import { getUserQuery, logoutMutation } from '@/api/auth';
+import { logoutMutation } from '@/api/auth';
+import { getUserQuery } from '@/api/user';
 
 const { isMobile, setOpenMobile } = useSidebar();
 const { mutate: logout } = useMutation(logoutMutation());
