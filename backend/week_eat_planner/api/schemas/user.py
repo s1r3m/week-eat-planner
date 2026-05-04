@@ -55,6 +55,8 @@ class OAuthUserData(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    """Schema for updating user profile fields. At least one field must be provided."""
+
     email: EmailStr | None = None
     username: str | None = Field(default=None, min_length=1)
 

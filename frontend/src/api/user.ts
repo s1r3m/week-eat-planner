@@ -2,21 +2,24 @@ import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada
 import { apiClient } from './client';
 import { toast } from 'vue-sonner';
 
-const USER_KEYS = {
+/** Cache keys for user-related queries. */
+export const USER_KEYS = {
   root: 'user' as const,
   profile: () => [USER_KEYS.root, 'profile'],
 };
+
 /**
  * Publicly visible information about a user.
  */
 export interface UserData {
-  user_id: string;
+  id: string;
   email: string;
   is_active: boolean;
   username: string;
   avatar_url?: string;
 }
 
+/** Payload for updating user profile fields. */
 export interface UserPayload {
   email?: string;
   username?: string;
@@ -32,7 +35,8 @@ export const getUserQuery = defineQueryOptions(() => ({
 }));
 
 /**
- * Mutatiion for updating user data.
+ * Mutation for updating user data.
+ * Optimistically applies changes to the profile cache and rolls back on error.
  */
 export const updateUserMutation = defineMutation(() => {
   const queryCache = useQueryCache();

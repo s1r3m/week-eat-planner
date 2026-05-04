@@ -45,7 +45,7 @@ describe('ProfilePage', () => {
 
   it('shows the edit form once user data has loaded', () => {
     (useQuery as any).mockReturnValue({
-      data: ref({ user_id: '1', email: 'test@example.com', username: 'testuser', is_active: true }),
+      data: ref({ id: '1', email: 'test@example.com', username: 'testuser', is_active: true }),
       isLoading: ref(false),
       error: ref(null),
       refetch: vi.fn(),
@@ -57,7 +57,7 @@ describe('ProfilePage', () => {
   });
 
   it('updates the bound user when the edit form emits a new value', async () => {
-    const userData = { user_id: '1', email: 'test@example.com', username: 'testuser', is_active: true };
+    const userData = { id: '1', email: 'test@example.com', username: 'testuser', is_active: true };
     (useQuery as any).mockReturnValue({
       data: ref(userData),
       isLoading: ref(false),

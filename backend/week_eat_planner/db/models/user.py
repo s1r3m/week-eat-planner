@@ -21,10 +21,14 @@ class User(Base):
         email: The user's unique email address.
         username: The user's chosen display name.
         avatar_url: The URL to the user's avatar image.
+        avatar_key: The storage key for the user's avatar (used for deletion/replacement).
+        oauth_provider: The OAuth provider name (e.g. 'google'), or None for local accounts.
+        oauth_id: The provider-scoped user identifier, or None for local accounts.
         hashed_password: The hashed version of the user's password.
         is_active: A flag indicating if the user account is active.
         weeks: The SQLAlchemy relationship to the user's weeks.
         recipes: The SQLAlchemy relationship to the user's recipes.
+        favorites: The SQLAlchemy relationship to the user's favourite recipes.
     """
 
     __tablename__ = 'users'
@@ -52,9 +56,6 @@ class User(Base):
     weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list['UserFavorite']] = relationship(back_populates='user', cascade='all, delete-orphan')
-
-    def __repr__(self) -> str:
-        return f'<User> {self.id=} {self.email=} {self.username=}'
 
 
 class RefreshToken(Base):

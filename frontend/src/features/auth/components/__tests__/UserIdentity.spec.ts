@@ -7,7 +7,7 @@ describe('UserIdentity', () => {
   const user: UserData = {
     email: 'test@email.com',
     username: 'user',
-    user_id: 'testId',
+    id: 'testId',
     is_active: true,
   };
 

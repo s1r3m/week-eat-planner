@@ -15,7 +15,7 @@ vi.mock('@/api/user', () => ({
 
 describe('UserEditForm', () => {
   const user: UserData = {
-    user_id: '1',
+    id: '1',
     email: 'test@example.com',
     username: 'testuser',
     is_active: true,
@@ -53,7 +53,9 @@ describe('UserEditForm', () => {
 
     await wrapper.find('form#profile-form').trigger('submit');
 
-    expect(mutateMock).toHaveBeenCalledWith(expect.objectContaining({ email: user.email, username: user.username }));
+    expect(mutateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: user.email, username: user.username }),
+    );
   });
 
   it('re-populates the form when the user model changes', async () => {
@@ -72,14 +74,16 @@ describe('UserEditForm', () => {
     await wrapper.find('input#email').setValue('changed@example.com');
     await wrapper.find('input#username').setValue('changeduser');
 
-    expect((wrapper.find('input#email').element as HTMLInputElement).value).toBe('changed@example.com');
+    expect((wrapper.find('input#email').element as HTMLInputElement).value).toBe(
+      'changed@example.com',
+    );
     expect((wrapper.find('input#username').element as HTMLInputElement).value).toBe('changeduser');
   });
 
-  it('does not call mutate when the form is submitted with no user model bound', async () => {
+  it('does not call mutate when Save is clicked with no user model bound', async () => {
     const wrapper = mount(UserEditForm);
 
-    await wrapper.find('#profle-form-container').trigger('submit');
+    await wrapper.find('button').trigger('click');
 
     expect(mutateMock).not.toHaveBeenCalled();
   });
