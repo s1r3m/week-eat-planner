@@ -99,10 +99,7 @@ describe('user api', () => {
         const config = updateUserMutation() as any;
         config.onMutate(payload);
 
-        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(USER_KEYS.profile(), {
-          undefined,
-          ...payload,
-        });
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(USER_KEYS.profile(), payload);
       });
     });
 
