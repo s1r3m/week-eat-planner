@@ -25,15 +25,16 @@ async def test_get_user__no_auth_user__user_in_response(logout_client_for_create
     assert response.json() == {'detail': 'Not authenticated'}
 
 
-async def test_update_user__username_changed__updated_user_in_response(auth_client_for_created_user, created_user):
+async def test_update_user__data_changed__updated_user_in_response(auth_client_for_created_user, created_user):
     new_name = 'new_username'
+    new_email = 'new@email.com'
 
-    response = await auth_client_for_created_user.patch(AppUrl.USER, json={'username': new_name})
+    response = await auth_client_for_created_user.patch(AppUrl.USER, json={'username': new_name, 'email': new_email})
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
         'id': str(created_user.id),
-        'email': created_user.email,
+        'email': new_email,
         'username': new_name,
         'is_active': created_user.is_active,
         'avatar_url': None,

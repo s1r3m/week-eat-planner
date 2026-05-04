@@ -53,6 +53,9 @@ class User(Base):
     recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list['UserFavorite']] = relationship(back_populates='user', cascade='all, delete-orphan')
 
+    def __repr__(self) -> str:
+        return f'<User> {self.id=} {self.email=} {self.username=}'
+
 
 class RefreshToken(Base):
     """Represents a JWT refresh token stored in the database.

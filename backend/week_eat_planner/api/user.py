@@ -34,7 +34,7 @@ async def get_user(user: Annotated[UserRead, Depends(get_current_active_user)]) 
 async def update_user(
     new_data: UserUpdate,
     user: Annotated[UserRead, Depends(get_current_active_user)],
-    session: Annotated[AsyncSession, Depends(db.get_db)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> UserRead:
     logger.info(f'Got PATCH {AppUrl.USER} request for user {user.id}')
     updated_user = await UserService(session).update_user(user, new_data)

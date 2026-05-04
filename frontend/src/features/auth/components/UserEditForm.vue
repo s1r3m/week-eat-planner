@@ -5,7 +5,7 @@
         <FieldGroup>
           <Field>
             <FieldLabel for="email">Email</FieldLabel>
-            <Input id="email" v-model="form.email" type="email" :disabled="isLoading" required />
+            <Input id="email" v-model="form.email" type="email" disabled required />
           </Field>
           <Field>
             <FieldLabel for="username">Username</FieldLabel>
@@ -16,11 +16,11 @@
         <FieldGroup>
           <Field>
             <FieldLabel for="old_pwd">Current password</FieldLabel>
-            <Input id="old_pwd" type="password" :disabled="isLoading" />
+            <Input id="old_pwd" type="password" disabled />
           </Field>
           <Field>
             <FieldLabel for="new_pwd">New password</FieldLabel>
-            <Input id="new_pwd" type="password" :disabled="isLoading" />
+            <Input id="new_pwd" type="password" disabled />
           </Field>
         </FieldGroup>
         <FieldSeparator />
@@ -32,6 +32,7 @@
         </FieldGroup>
       </FieldSet>
     </form>
+    <Button @click.prevent="onSubmit"> Save changes </Button>
   </div>
 </template>
 
@@ -44,6 +45,7 @@ import { Input } from '@/components/ui/input';
 import { Field, FieldGroup, FieldLabel, FieldSeparator, FieldSet } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { useMutation } from '@pinia/colada';
+import Button from '@/components/ui/button/Button.vue';
 
 const user = defineModel<UserData>();
 const form = ref<UserData>();

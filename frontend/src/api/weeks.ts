@@ -143,7 +143,7 @@ export const editWeekMutation = defineMutation(() => {
       return { previous, previousWeeks };
     },
     onError: (
-      err: Error,
+      _err: Error,
       vars: EditWeek,
       context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {

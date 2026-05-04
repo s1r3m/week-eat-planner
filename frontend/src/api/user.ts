@@ -1,9 +1,10 @@
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
-import { apiClient, authClient } from './client';
+import { apiClient } from './client';
+import { toast } from 'vue-sonner';
 
 const USER_KEYS = {
   root: 'user' as const,
-  profile: () => [...USER_KEYS.root, 'profile'],
+  profile: () => [USER_KEYS.root, 'profile'],
 };
 /**
  * Publicly visible information about a user.
@@ -14,6 +15,11 @@ export interface UserData {
   is_active: boolean;
   username: string;
   avatar_url?: string;
+}
+
+export interface UserPayload {
+  email?: string;
+  username?: string;
 }
 
 /**
@@ -31,6 +37,22 @@ export const getUserQuery = defineQueryOptions(() => ({
 export const updateUserMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   return {
-    mutation: (data: UserData) => apiClient.post<UserData>('/users', data).then((res) => res.data),
+    mutation: (data: UserPayload) =>
+      apiClient.patch<UserData>('/user', data).then((res) => res.data),
+    onMutate: (data: UserPayload) => {
+      queryCache.cancelQueries({ key: USER_KEYS.profile() });
+      const previous = queryCache.getQueryData<UserData>(USER_KEYS.profile());
+      queryCache.setQueryData(USER_KEYS.profile(), { ...previous, ...data });
+      return { previous };
+    },
+    onError: (_err: Error, _data: UserPayload, context?: { previous?: UserData }) => {
+      if (context?.previous) queryCache.setQueryData(USER_KEYS.profile(), context.previous);
+    },
+    onSuccess: (_resp: UserData, _data: UserPayload, _context?: { previous?: UserData }) => {
+      toast.success('Profile updated');
+    },
+    onSettled: () => {
+      queryCache.invalidateQueries({ key: USER_KEYS.profile() });
+    },
   };
 });
