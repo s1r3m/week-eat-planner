@@ -21,7 +21,6 @@ export interface UserData {
 
 /** Payload for updating user profile fields. */
 export interface UserPayload {
-  email?: string;
   username?: string;
 }
 

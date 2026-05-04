@@ -41,6 +41,15 @@ class UserService:
         return user
 
     async def update_user(self, user: UserRead, values: UserUpdate) -> User:
+        """Updates a user's profile with the provided values.
+
+        Args:
+            user: The current user schema (used for ID lookup).
+            values: The fields to update.
+
+        Returns:
+            The updated User model.
+        """
         logger.debug(f'Updating user {user.id} with {values}')
         updated_user = await self._user_dao.update(RecordId(id=user.id), values)
         logger.debug(f'User {user.id} was successfully updated')

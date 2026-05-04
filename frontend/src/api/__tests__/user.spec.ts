@@ -61,10 +61,10 @@ describe('user api', () => {
   });
 
   describe('updateUserMutation', () => {
-    const payload: UserPayload = { username: 'newname', email: 'new@example.com' };
+    const payload: UserPayload = { username: 'newname' };
     const existing: UserData = {
       id: '1',
-      email: 'old@example.com',
+      email: 'user@example.com',
       username: 'oldname',
       is_active: true,
     };

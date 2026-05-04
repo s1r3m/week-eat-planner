@@ -1,5 +1,5 @@
 <template>
-  <div id="profle-form-container">
+  <div id="profile-form-container">
     <form v-if="form" id="profile-form" @submit.prevent="onSubmit">
       <FieldSet>
         <FieldGroup>
@@ -32,13 +32,14 @@
         </FieldGroup>
       </FieldSet>
     </form>
-    <Button @click.prevent="onSubmit"> Save changes </Button>
+    <Button :disabled="!payload" @click.prevent="onSubmit"> Save changes </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { updateUserMutation, type UserData } from '@/api/user';
+import { computed, ref, watch } from 'vue';
+import { updateUserMutation } from '@/api/user';
+import type { UserData, UserPayload } from '@/api/user';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -49,12 +50,18 @@ import Button from '@/components/ui/button/Button.vue';
 
 const user = defineModel<UserData>();
 const form = ref<UserData>();
+const payload = computed(() => {
+  if (form.value?.username !== user.value?.username) {
+    return { username: form.value?.username } as UserPayload;
+  }
+  return {};
+});
 
 const { mutate: update, isLoading } = useMutation(updateUserMutation());
 
 const copy = (data: any) => JSON.parse(JSON.stringify(data));
 const onSubmit = () => {
-  if (form.value) update(form.value);
+  if (payload.value) update(payload.value);
 };
 
 watch(
