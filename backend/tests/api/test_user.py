@@ -45,7 +45,6 @@ async def test_update_user__empty_username__422_returned(auth_client_for_created
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-
 async def test_update_user__empty_payload__422_returned(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(AppUrl.USER, json={})
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

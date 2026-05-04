@@ -54,7 +54,7 @@ const payload = computed(() => {
   if (form.value?.username !== user.value?.username) {
     return { username: form.value?.username } as UserPayload;
   }
-  return {};
+  return null;
 });
 
 const { mutate: update, isLoading } = useMutation(updateUserMutation());
