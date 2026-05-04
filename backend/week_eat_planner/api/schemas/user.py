@@ -59,9 +59,8 @@ class UserUpdate(BaseModel):
 
     username: str | None = Field(default=None, min_length=1)
 
-    @model_validator(mode='before')
-    @classmethod
-    def at_least_one(cls, values: dict) -> dict:
-        if all([value is None for value in values.values()]):
+    @model_validator(mode='after')
+    def at_least_one(self) -> 'UserUpdate':
+        if self.username is None:
             raise ValueError('At least one value must be set!')
-        return values
+        return self

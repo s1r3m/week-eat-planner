@@ -39,7 +39,7 @@ async def update_user(
     """Update the current user's profile.
 
     Args:
-        new_data: Fields to update (email and/or username).
+        new_data: Fields to update (username).
         user: The current authenticated user.
         session: Database session with auto-commit.
 

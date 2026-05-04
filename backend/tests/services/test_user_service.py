@@ -59,25 +59,3 @@ async def test_update_user__username_provided__updated_user_returned(
 
     assert result == db_user
     mocked_user_dao.update.assert_awaited_once_with(RecordId(id=user_read.id), user_update)
-
-
-async def test_update_user__email_provided__updated_user_returned(mocked_user_dao, mocked_session, user_read, db_user):
-    user_update = UserUpdate(email='new@example.com')
-    mocked_user_dao.update.return_value = db_user
-
-    result = await UserService(mocked_session).update_user(user_read, user_update)
-
-    assert result == db_user
-    mocked_user_dao.update.assert_awaited_once_with(RecordId(id=user_read.id), user_update)
-
-
-async def test_update_user__both_fields_provided__updated_user_returned(
-    mocked_user_dao, mocked_session, user_read, db_user
-):
-    user_update = UserUpdate(username='new_name', email='new@example.com')
-    mocked_user_dao.update.return_value = db_user
-
-    result = await UserService(mocked_session).update_user(user_read, user_update)
-
-    assert result == db_user
-    mocked_user_dao.update.assert_awaited_once_with(RecordId(id=user_read.id), user_update)
