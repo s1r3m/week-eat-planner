@@ -1,6 +1,7 @@
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
 import { apiClient } from './client';
 import { toast } from 'vue-sonner';
+import type { LoginInfo } from './auth';
 
 /** Cache keys for user-related queries. */
 export const USER_KEYS = {
@@ -16,12 +17,19 @@ export interface UserData {
   email: string;
   is_active: boolean;
   username: string;
-  avatar_url?: string;
+  avatar_url: string | null;
+  oauth_provider: string | null;
 }
 
 /** Payload for updating user profile fields. */
 export interface UserPayload {
-  username?: string;
+  username: string;
+}
+
+/** Payload for updating user password. */
+export interface UserPassPayload {
+  current_password: string;
+  new_password: string;
 }
 
 /**
@@ -56,6 +64,20 @@ export const updateUserMutation = defineMutation(() => {
     },
     onSettled: () => {
       queryCache.invalidateQueries({ key: USER_KEYS.profile() });
+    },
+  };
+});
+
+/**
+ * Mutation for updating user password.
+ * No optimistic updates.
+ */
+export const changePasswordMutation = defineMutation(() => {
+  return {
+    mutation: (data: UserPassPayload) =>
+      apiClient.patch<LoginInfo>('/user/password', data).then((res) => res.data),
+    onSuccess: () => {
+      toast.success('Password was changed');
     },
   };
 });

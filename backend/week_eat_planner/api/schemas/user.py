@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, model_validator
 
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.constants import OAuthProvider
@@ -26,6 +26,7 @@ class UserRead(Email, RecordId):
     is_active: bool
     username: str
     avatar_url: str | None
+    oauth_provider: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -61,6 +62,6 @@ class UserUpdate(BaseModel):
 
     @model_validator(mode='after')
     def at_least_one(self) -> 'UserUpdate':
-        if self.username is None:
+        if all([v is None for v in self]):
             raise ValueError('At least one value must be set!')
         return self
