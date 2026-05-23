@@ -2,15 +2,17 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
-from week_eat_planner.api.schemas import UserRead
-from week_eat_planner.api.schemas.user import UserUpdate
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.api.schemas import Token, UserRead
+from week_eat_planner.api.schemas.user import UserChangePassword, UserUpdate
+from week_eat_planner.constants import AppUrl, TokenType
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.helpers import set_refresh_cookie
+from week_eat_planner.services.auth_service import AuthService
 from week_eat_planner.services.user_service import UserService
 
 router = APIRouter(tags=['User'])
@@ -50,3 +52,20 @@ async def update_user(
     updated_user = await UserService(session).update_user(user, new_data)
     logger.info(f'User {user.id} updated successfully')
     return UserRead.model_validate(updated_user)
+
+
+@router.patch(AppUrl.USER_PASSWORD)
+async def change_password(
+    data: UserChangePassword,
+    user: Annotated[UserRead, Depends(get_current_active_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+    response: Response,
+) -> Token:
+    """Changes user's password."""
+    logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user.id}')
+    updated_user = await UserService(session).change_password(user, data.old_password, data.new_password)
+    access_token, refresh_token = await AuthService(session).login(updated_user.email, data.new_password)
+
+    logger.info('Login successful')
+    set_refresh_cookie(response, refresh_token)
+    return Token(access_token=access_token, token_type=TokenType.BEARER)

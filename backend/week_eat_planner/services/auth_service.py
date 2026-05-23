@@ -25,7 +25,6 @@ from week_eat_planner.exceptions import (
     TokenRevokedException,
     UserAlreadyExistsException,
 )
-from week_eat_planner.helpers import get_email_token
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider
 
@@ -93,15 +92,15 @@ class AuthService:
 
         db_user = await self._user_dao.find_one_or_none(email)
         if db_user and not db_user.hashed_password:
-            logger.error(f'OAuth account attempted password login for {get_email_token(username)}')
+            logger.error('OAuth account attempted password login')
             raise OAuthAccountException()
         if not (db_user and verify_password(password, str(db_user.hashed_password))):
-            logger.error(f'Invalid credentials for {email}')
+            logger.error('Invalid credentials')
             raise InvalidCredentialsException()
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
 
-        logger.info(f'User {email} logged in successfully')
+        logger.info('User logged in successfully')
         return access_token, refresh_token
 
     async def login_with_google(self, data: GoogleCode, httpx_client: AsyncClient) -> tuple[str, str]:
@@ -134,18 +133,17 @@ class AuthService:
         if not db_user:
             email_user = await self._user_dao.find_one_or_none(UserFilter(email=user_data.email))
             if email_user:
-                email_token = get_email_token(user_data.email)
                 if email_user.hashed_password:
-                    logger.error(f'Email token={email_token} already has a password account')
+                    logger.error('Email already has a password account')
                     raise PasswordAccountException()
-                logger.error(f'Email token={email_token} is already registered via OAuth')
+                logger.error('Email is already registered via OAuth')
                 raise OAuthAccountException()
 
             user = User(**user_data.model_dump())
             db_user = await self._user_dao.add(user)
-            logger.info(f'Created new user via Google OAuth (token={get_email_token(user_data.email)})')
+            logger.info('Created new user via Google OAuth')
         else:
-            logger.info(f'Existing Google OAuth user logged in (token={get_email_token(user_data.email)})')
+            logger.info('Existing Google OAuth user logged in')
 
         access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token
@@ -184,7 +182,7 @@ class AuthService:
             access_token = TokenProvider.create_access_token(db_user.email)
             refresh_token = old_refresh_token
 
-        logger.info(f'Tokens for {db_user.email} refreshed successfully')
+        logger.info('Tokens refreshed successfully')
         return access_token, refresh_token
 
     async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:

@@ -2,6 +2,8 @@
 
 from enum import StrEnum
 
+MIN_PASSWORD_LENGTH = 8
+
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
 
 
@@ -28,6 +30,7 @@ class AppUrl(StrEnum):
     WEEK_SLOTS_TPL = '/weeks/{week_id}/slots'
 
     USER = '/user'
+    USER_PASSWORD = '/user/password'
 
 
 class StorageBucket(StrEnum):

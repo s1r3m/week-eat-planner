@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from week_eat_planner.api.schemas.common import RecordId
-from week_eat_planner.constants import OAuthProvider
+from week_eat_planner.constants import MIN_PASSWORD_LENGTH, OAuthProvider
 
 
 class Email(BaseModel):
@@ -13,7 +13,7 @@ class Email(BaseModel):
 class UserCreate(Email):
     """Schema for creating a new user."""
 
-    password: str
+    password: str = Field(min_length=MIN_PASSWORD_LENGTH)
     username: str = Field(min_length=1)
 
 
@@ -56,12 +56,33 @@ class OAuthUserData(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    """Schema for updating a user's username. Username must be non-empty if provided."""
+    """Schema for updating a user's profile."""
 
-    username: str | None = Field(default=None, min_length=1)
+    username: str = Field(min_length=1)
+
+
+class UserChangePassword(BaseModel):
+    """Schema for updating a user's password."""
+
+    old_password: str = Field(min_length=MIN_PASSWORD_LENGTH)
+    new_password: str = Field(min_length=MIN_PASSWORD_LENGTH)
 
     @model_validator(mode='after')
-    def at_least_one(self) -> 'UserUpdate':
-        if all([v is None for v in self]):
-            raise ValueError('At least one value must be set!')
+    def passwords_dont_match(self) -> 'UserChangePassword':
+        """Checks that new_password is not the same as old_password.
+
+        Raises:
+            ValueError: if new_password matches old_password.
+
+        Returns:
+            UserChangePassword model.
+        """
+        if self.old_password == self.new_password:
+            raise ValueError('Passwords are the same')
         return self
+
+
+class HashedPassword(BaseModel):
+    """Schema for updating user's password."""
+
+    hashed_password: str

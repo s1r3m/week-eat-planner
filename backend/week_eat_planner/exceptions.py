@@ -73,6 +73,11 @@ class UserAlreadyExistsException(LogicException):
         super().__init__(detail='User already exists')
 
 
+class UserRemovedException(LogicException):
+    def __init__(self, detail: str) -> None:
+        super().__init__(detail)
+
+
 class MealSlotAssignException(LogicException):
     def __init__(self, errors: list[dict]) -> None:
         super().__init__(detail=f'Error during assigning meal_slots: {errors}')
@@ -144,8 +149,8 @@ class WeekForbiddenException(AccessForbiddenException):
 
 
 class InvalidCredentialsException(HTTPException):
-    def __init__(self) -> None:
-        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+    def __init__(self, detail: str = 'Could not validate credentials') -> None:
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
 class OAuthAccountException(LogicException):
