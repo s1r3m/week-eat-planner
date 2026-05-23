@@ -35,9 +35,9 @@
           </Field>
           <FieldError>{{ errors.new_password }}</FieldError>
           <Field>
-            <FieldLabel for="confirn_pwd">confirn password</FieldLabel>
+            <FieldLabel for="confirm_pwd">confirm password</FieldLabel>
             <Input
-              id="confirn_pwd"
+              id="confirm_pwd"
               v-model="confirm_password"
               type="password"
               :class="{

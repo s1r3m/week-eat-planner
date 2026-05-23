@@ -60,7 +60,7 @@ class UserService:
         """Changes User's password if old_password matches the hash. Sets the new_password.
 
         Args:
-            user: The current user schema (used for ID lookup).
+            user_read: The current user schema (used for ID lookup).
             old_password: The current password of the user.
             new_password: The new desired password.
 

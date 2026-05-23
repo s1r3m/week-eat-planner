@@ -51,7 +51,7 @@ describe('PasswordChangeForm', () => {
     expect(wrapper.text()).toContain('The password is managed by google');
     expect((wrapper.find('input#old_pwd').element as HTMLInputElement).disabled).toBe(true);
     expect((wrapper.find('input#new_pwd').element as HTMLInputElement).disabled).toBe(true);
-    expect((wrapper.find('input#confirn_pwd').element as HTMLInputElement).disabled).toBe(true);
+    expect((wrapper.find('input#confirm_pwd').element as HTMLInputElement).disabled).toBe(true);
   });
 
   it('calls mutate with passwords when submitted with valid data', async () => {
@@ -59,7 +59,7 @@ describe('PasswordChangeForm', () => {
 
     await wrapper.find('input#old_pwd').setValue('oldpassword');
     await wrapper.find('input#new_pwd').setValue('newpassword');
-    await wrapper.find('input#confirn_pwd').setValue('newpassword');
+    await wrapper.find('input#confirm_pwd').setValue('newpassword');
 
     await flushPromises();
     await wrapper.find('form#profile-form').trigger('submit');
@@ -77,7 +77,7 @@ describe('PasswordChangeForm', () => {
 
     await wrapper.find('input#old_pwd').setValue('oldpassword');
     await wrapper.find('input#new_pwd').setValue('newpassword');
-    await wrapper.find('input#confirn_pwd').setValue('differentpwd');
+    await wrapper.find('input#confirm_pwd').setValue('differentpwd');
 
     await flushPromises();
     await wrapper.find('form#profile-form').trigger('submit');
