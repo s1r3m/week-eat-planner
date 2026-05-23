@@ -51,7 +51,7 @@ class UserService:
         Returns:
             The updated User model.
         """
-        logger.debug(f'Updating user {user.id} with {values}')
+        logger.debug(f'Updating user {user.id}')
         updated_user = await self._user_dao.update(RecordId(id=user.id), values)
         logger.debug(f'User {user.id} was successfully updated')
         return updated_user

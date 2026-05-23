@@ -297,5 +297,5 @@ class OAuthInvalidCodeException(ValidationException):
 class OAuthProviderException(HTTPException):
     """Exception raised when an error occurs while communicating with an OAuth provider."""
 
-    def __init__(self) -> None:
-        super().__init__(status_code=status.HTTP_502_BAD_GATEWAY, detail='OAuth provider error')
+    def __init__(self, detail: str = 'OAuth provider error') -> None:
+        super().__init__(status_code=status.HTTP_502_BAD_GATEWAY, detail=detail)

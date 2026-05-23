@@ -54,7 +54,7 @@ class AuthService:
         logger.info(f'New user registration attempt for {user_data.email=}')
         existing_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
         if existing_user:
-            logger.error(f'User with {user_data.email=} already exists')
+            logger.error('User with that email already exists')
             raise UserAlreadyExistsException()
 
         user = User(
@@ -63,7 +63,7 @@ class AuthService:
             hashed_password=get_password_hash(user_data.password),
         )
         created_user = await self._user_dao.add(user)
-        logger.info(f'User {user_data.email=} registered successfully')
+        logger.info('User registered successfully')
 
         return created_user
 

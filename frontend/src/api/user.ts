@@ -53,7 +53,7 @@ export const updateUserMutation = defineMutation(() => {
     onMutate: (data: UserPayload) => {
       queryCache.cancelQueries({ key: USER_KEYS.profile() });
       const previous = queryCache.getQueryData<UserData>(USER_KEYS.profile());
-      queryCache.setQueryData(USER_KEYS.profile(), { ...previous, ...data });
+      if (previous) queryCache.setQueryData(USER_KEYS.profile(), { ...previous, ...data });
       return { previous };
     },
     onError: (_err: Error, _data: UserPayload, context?: { previous?: UserData }) => {

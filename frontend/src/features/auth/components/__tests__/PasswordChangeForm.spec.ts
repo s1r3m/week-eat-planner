@@ -62,7 +62,7 @@ describe('PasswordChangeForm', () => {
     await wrapper.find('input#confirm_pwd').setValue('newpassword');
 
     await flushPromises();
-    await wrapper.find('form#profile-form').trigger('submit');
+    await wrapper.find('form#change-password-form').trigger('submit');
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -80,9 +80,9 @@ describe('PasswordChangeForm', () => {
     await wrapper.find('input#confirm_pwd').setValue('differentpwd');
 
     await flushPromises();
-    await wrapper.find('form#profile-form').trigger('submit');
+    await wrapper.find('form#change-password-form').trigger('submit');
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await flushPromises();
 
     expect(mutateMock).not.toHaveBeenCalled();
   });

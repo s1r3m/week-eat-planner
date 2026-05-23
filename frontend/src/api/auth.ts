@@ -1,9 +1,10 @@
 import { ref, computed } from 'vue';
-import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
+import { defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient, authClient } from './client';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { toast } from 'vue-sonner';
+import { USER_KEYS } from './user';
 
 /**
  * Token information returned upon successful login.
@@ -39,14 +40,6 @@ export const accessToken = ref<string | null>(null);
 export const isAuthenticated = computed(() => !!accessToken.value);
 
 /**
- * Cache keys for authentication-related queries.
- */
-const AUTH_KEYS = {
-  root: ['auth'] as const,
-  user: () => [...AUTH_KEYS.root, 'user'] as const,
-};
-
-/**
  * Mutation for logging in a user.
  * Stores the received access token and invalidates user data cache.
  */
@@ -62,7 +55,7 @@ export const loginMutation = defineMutation(() => {
     onSuccess: (data: LoginInfo) => {
       toast.success('Logged in successfully!');
       accessToken.value = data.access_token;
-      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      queryCache.invalidateQueries({ key: USER_KEYS.profile() });
       router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
@@ -81,7 +74,7 @@ export const signupMutation = defineMutation(() => {
     onSuccess: async (data: LoginInfo) => {
       toast.success('Registration complete!');
       accessToken.value = data.access_token;
-      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      queryCache.invalidateQueries({ key: USER_KEYS.profile() });
       await router.push({ name: ROUTE_NAMES.WEEKS });
     },
   };
@@ -102,7 +95,7 @@ export const logoutMutation = defineMutation(() => {
       accessToken.value = null;
     },
     onSettled: () => {
-      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      queryCache.invalidateQueries({ key: USER_KEYS.profile() });
     },
   };
 });
@@ -162,7 +155,7 @@ export const googleAuthMutation = defineMutation(() => {
       toast.error(`Request failed: ${err.message}`);
     },
     onSettled: () => {
-      queryCache.invalidateQueries({ key: AUTH_KEYS.user() });
+      queryCache.invalidateQueries({ key: USER_KEYS.profile() });
     },
   };
 });

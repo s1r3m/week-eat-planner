@@ -74,12 +74,16 @@ class GoogleAuthClient:
             token_response.raise_for_status()
             token_data = token_response.json()
             id_token = token_data.get('id_token')
-            access_token = token_data.get('access_token')
             if id_token is None:
                 logger.error('Google token response is missing the id_token field.')
-                raise OAuthProviderException()
-            logger.debug('Received ID token from Google token endpoint.')
+                raise OAuthProviderException('No id_token in response')
 
+            access_token = token_data.get('access_token')
+            if access_token is None:
+                logger.error('Google token response is missing the access_token field.')
+                raise OAuthProviderException('No access_token in response')
+
+            logger.debug('Received ID token from Google token endpoint.')
             jwks_response = await self._client.get(GoogleUrl.JWKS)
             jwks_response.raise_for_status()
             jwks = jwks_response.json()

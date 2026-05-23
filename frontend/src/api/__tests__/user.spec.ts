@@ -98,13 +98,13 @@ describe('user api', () => {
         expect(context).toEqual({ previous: existing });
       });
 
-      it('applies the update even when there is no existing cache entry', () => {
+      it('does not apply the update when there is no existing cache entry', () => {
         mockQueryCache.getQueryData.mockReturnValue(undefined);
 
         const config = updateUserMutation() as any;
         config.onMutate(payload);
 
-        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(USER_KEYS.profile(), payload);
+        expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
       });
     });
 

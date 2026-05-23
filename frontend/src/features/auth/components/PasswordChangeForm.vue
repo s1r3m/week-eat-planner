@@ -3,7 +3,7 @@
     <p v-if="user.oauth_provider" class="mb-3">
       The password is managed by {{ user.oauth_provider }}
     </p>
-    <form id="profile-form" @submit.prevent="onSubmit">
+    <form id="change-password-form" @submit.prevent="onSubmit">
       <FieldSet>
         <FieldGroup>
           <Field>
@@ -49,7 +49,7 @@
           </Field>
           <FieldError>{{ errors.confirm_password }}</FieldError>
         </FieldGroup>
-        <Button variant="outline" :disabled="!meta.valid" @click.prevent="onSubmit">
+        <Button variant="outline" :disabled="isLoading || !meta.valid" @click.prevent="onSubmit">
           Change password
         </Button>
       </FieldSet>
@@ -92,7 +92,7 @@ const schema = zod
     path: ['confirm_password'],
   });
 type FormValues = zod.infer<typeof schema>;
-const { handleSubmit, errors, meta } = useForm({
+const { handleSubmit, errors, meta, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     current_password: '',
@@ -104,9 +104,10 @@ const { handleSubmit, errors, meta } = useForm({
 const { value: current_password } = useField<FormValues['current_password']>('current_password');
 const { value: new_password } = useField<FormValues['new_password']>('new_password');
 const { value: confirm_password } = useField<FormValues['confirm_password']>('confirm_password');
-const { mutate: changePassword } = useMutation(changePasswordMutation());
+const { mutate: changePassword, isLoading } = useMutation(changePasswordMutation());
 
-const onSubmit = handleSubmit((values: FormValues) =>
-  changePassword({ old_password: values.current_password, new_password: values.new_password }),
-);
+const onSubmit = handleSubmit((values: FormValues) => {
+  changePassword({ old_password: values.current_password, new_password: values.new_password });
+  resetForm();
+});
 </script>
