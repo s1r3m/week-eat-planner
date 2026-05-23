@@ -10,13 +10,21 @@ if TYPE_CHECKING:
 
 
 class MealSlotUpdate(BaseModel):
-    """Schema for updating an existing meal slot's recipe reference."""
+    """Schema for updating an existing meal slot's recipe reference.
+
+    Attributes:
+        recipe_id: The ID of the recipe to assign, or None to clear the slot.
+    """
 
     recipe_id: str | None
 
 
 class MealSlotAssign(MealSlotUpdate):
-    """Schema for assigning a recipe to a meal slot."""
+    """Schema for assigning a recipe to a meal slot.
+
+    Attributes:
+        slot_id: The ID of the meal slot to update.
+    """
 
     slot_id: str
 
@@ -28,7 +36,13 @@ class MealSlotId(RecordId):
 
 
 class MealSlotRead(MealSlotId):
-    """Schema for a meal slot representation."""
+    """Schema for a meal slot representation.
+
+    Attributes:
+        day_of_week: The day of the week for this slot.
+        meal_type: The type of meal (breakfast, lunch, dinner).
+        recipe: The recipe assigned to this slot, or None.
+    """
 
     day_of_week: DayOfWeek
     meal_type: MealType

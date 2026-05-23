@@ -14,6 +14,14 @@ from week_eat_planner.db.session_maker import db
 
 @asynccontextmanager
 async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None, None]:
+    """Manages the application lifespan.
+
+    Initializes the database connection pool on startup and closes it, along with
+    any other global resources like the HTTP client, on shutdown.
+
+    Args:
+        fast_app: The FastAPI application instance.
+    """
     await db.init()
 
     yield
@@ -23,6 +31,13 @@ async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def create_app() -> FastAPI:
+    """Creates and configures the FastAPI application.
+
+    Includes all API routers and adds CORS middleware.
+
+    Returns:
+        The configured FastAPI application instance.
+    """
     fast_app = FastAPI(title='Week-Eat-Planner', lifespan=lifespan)
 
     fast_app.include_router(auth.router)
@@ -51,5 +66,9 @@ app.add_middleware(
 
 
 def start_app() -> None:
+    """Starts the application using uvicorn.
+
+    This function is used as an entry point for the application.
+    """
     fast_app = create_app()
     uvicorn.run(fast_app, host='0.0.0.0', port=8000)

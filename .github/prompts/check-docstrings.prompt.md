@@ -2,7 +2,7 @@
 description: "Check docstrings for style and quality. Backend: Google style. Frontend: TSDoc style (excluding .vue files)."
 name: "Check Docstrings"
 argument-hint: "Specify a file path or folder to check"
-agent: "Explore"
+agent: "agent"
 ---
 
 Review the docstrings in the specified files to ensure they follow the project's documentation standards and provide meaningful information.

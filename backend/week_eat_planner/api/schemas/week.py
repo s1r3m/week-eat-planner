@@ -9,7 +9,11 @@ from week_eat_planner.db.models.week import Week
 
 
 class WeekBase(BaseModel):
-    """Base schema for week data."""
+    """Base schema for week data.
+
+    Attributes:
+        name: The name or label for the week.
+    """
 
     name: str
 
@@ -33,7 +37,11 @@ class WeekReadMinimal(WeekBase, OwnerId, RecordId):
 
 
 class WeekRead(WeekReadMinimal):
-    """Schema for a detailed representation of a week, including meal slots."""
+    """Schema for a detailed representation of a week, including meal slots.
+
+    Attributes:
+        week_days: A structured list of days, each containing its assigned meal slots.
+    """
 
     week_days: list[dict[str, DayOfWeek | list[MealSlotRead]]]
 

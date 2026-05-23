@@ -1,3 +1,5 @@
+"""Client for Google OAuth 2.0 authentication."""
+
 from enum import StrEnum
 
 from fastapi import status
