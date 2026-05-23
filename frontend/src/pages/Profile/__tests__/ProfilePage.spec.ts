@@ -26,6 +26,7 @@ describe('ProfilePage', () => {
           ErrorRetryCard: { template: '<div class="error-retry" />' },
           TheLoadingPageState: { template: '<div class="loading" />' },
           UserEditForm: { template: '<div class="user-edit-form" />' },
+          PasswordChangeForm: { template: '<div class="password-change-form" />' },
         },
       },
     });
@@ -43,7 +44,7 @@ describe('ProfilePage', () => {
     expect(wrapper.find('.loading').exists()).toBe(true);
   });
 
-  it('shows the edit form once user data has loaded', () => {
+  it('shows the edit form and password change form once user data has loaded', () => {
     (useQuery as any).mockReturnValue({
       data: ref({ id: '1', email: 'test@example.com', username: 'testuser', is_active: true }),
       isLoading: ref(false),
@@ -54,6 +55,7 @@ describe('ProfilePage', () => {
     const wrapper = mountComponent();
 
     expect(wrapper.find('.user-edit-form').exists()).toBe(true);
+    expect(wrapper.find('.password-change-form').exists()).toBe(true);
   });
 
   it('updates the bound user when the edit form emits a new value', async () => {

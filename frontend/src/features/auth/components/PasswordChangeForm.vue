@@ -10,8 +10,8 @@
             <FieldLabel for="old_pwd">Current password</FieldLabel>
             <Input
               id="old_pwd"
-              type="password"
               v-model="current_password"
+              type="password"
               :class="{
                 'border-destructive': errors.current_password,
                 'focus-visible:border-destructive': errors.current_password,
@@ -24,8 +24,8 @@
             <FieldLabel for="new_pwd">New password</FieldLabel>
             <Input
               id="new_pwd"
-              type="password"
               v-model="new_password"
+              type="password"
               :class="{
                 'border-destructive': errors.new_password,
                 'focus-visible:border-destructive': errors.new_password,
@@ -35,19 +35,19 @@
           </Field>
           <FieldError>{{ errors.new_password }}</FieldError>
           <Field>
-            <FieldLabel for="comfirm_pwd">Comfirm password</FieldLabel>
+            <FieldLabel for="confirn_pwd">confirn password</FieldLabel>
             <Input
-              id="comfirm_pwd"
+              id="confirn_pwd"
+              v-model="confirm_password"
               type="password"
-              v-model="comfirm_password"
               :class="{
-                'border-destructive': errors.comfirm_password,
-                'focus-visible:border-destructive': errors.comfirm_password,
+                'border-destructive': errors.confirm_password,
+                'focus-visible:border-destructive': errors.confirm_password,
               }"
               :disabled="!!user.oauth_provider"
             />
           </Field>
-          <FieldError>{{ errors.comfirm_password }}</FieldError>
+          <FieldError>{{ errors.confirm_password }}</FieldError>
         </FieldGroup>
         <Button variant="outline" :disabled="!meta.valid" @click.prevent="onSubmit">
           Change password
@@ -82,14 +82,14 @@ const schema = zod
       .string()
       .min(1, { error: 'This is required' })
       .min(8, { error: 'At least 8 symbols' }),
-    comfirm_password: zod
+    confirm_password: zod
       .string()
       .min(1, { error: 'This is required' })
       .min(8, { error: 'At least 8 symbols' }),
   })
-  .refine((data) => data.new_password === data.comfirm_password, {
+  .refine((data) => data.new_password === data.confirm_password, {
     error: 'Passwords do not match',
-    path: ['comfirm_password'],
+    path: ['confirm_password'],
   });
 type FormValues = zod.infer<typeof schema>;
 const { handleSubmit, errors, meta } = useForm({
@@ -97,13 +97,16 @@ const { handleSubmit, errors, meta } = useForm({
   initialValues: {
     current_password: '',
     new_password: '',
+    confirm_password: '',
   },
 });
 
 const { value: current_password } = useField<FormValues['current_password']>('current_password');
 const { value: new_password } = useField<FormValues['new_password']>('new_password');
-const { value: comfirm_password } = useField<FormValues['comfirm_password']>('comfirm_password');
+const { value: confirm_password } = useField<FormValues['confirm_password']>('confirm_password');
 const { mutate: changePassword } = useMutation(changePasswordMutation());
 
-const onSubmit = () => handleSubmit((values: FormValues) => changePassword(values));
+const onSubmit = handleSubmit((values: FormValues) =>
+  changePassword({ old_password: values.current_password, new_password: values.new_password }),
+);
 </script>
