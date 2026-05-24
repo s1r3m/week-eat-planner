@@ -24,7 +24,7 @@ FAKE_JWKS = {'keys': [{'kid': 'key1', 'kty': 'RSA'}]}
 def mock_httpx_client() -> AsyncMock:
     client = AsyncMock()
     mock_token_response = MagicMock()
-    mock_token_response.json.return_value = {'id_token': 'fake.jwt.token'}
+    mock_token_response.json.return_value = {'id_token': 'fake.jwt.token', 'access_token': 'fake.access.token'}
     mock_jwks_response = MagicMock()
     mock_jwks_response.json.return_value = FAKE_JWKS
     client.post.return_value = mock_token_response
@@ -67,6 +67,7 @@ async def test_get_oauth_user__jwks_fetched_and_decoded_with_correct_params(mock
     assert call_kwargs.kwargs['algorithms'] == ['RS256']
     assert call_kwargs.kwargs['audience'] == settings.GOOGLE_CLIENT_ID
     assert call_kwargs.kwargs['issuer'] == GOOGLE_ISSUER
+    assert call_kwargs.kwargs['access_token'] == 'fake.access.token'
 
 
 @pytest.mark.parametrize(
@@ -148,7 +149,19 @@ async def test_get_oauth_user__missing_id_token__provider_error_raised(mock_http
 
     error = OAuthProviderException()
     assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
+    assert exc.value.detail == 'No id_token in response'
+
+
+async def test_get_oauth_user__missing_access_token__provider_error_raised(mock_httpx_client):
+    mock_httpx_client.post.return_value.json.return_value = {'id_token': 'some_token'}
+    client = GoogleAuthClient(mock_httpx_client)
+
+    with pytest.raises(OAuthProviderException) as exc:
+        await client.get_oauth_user('auth_code')
+
+    error = OAuthProviderException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == 'No access_token in response'
 
 
 @pytest.mark.parametrize(

@@ -41,13 +41,13 @@ class WeekService:
         Returns:
             The newly created Week object, with its slots attached.
         """
-        logger.info(f'Creating a new week named "{week_data.name}" for user {user.id}.')
+        logger.info(f'Creating a new week named "{week_data.name}" for user {user.id}')
         new_week = Week(user_id=user.id, name=week_data.name)
         new_week.meal_slots = [
             MealSlot(day_of_week=day, meal_type=meal_type) for day in DayOfWeek for meal_type in MealType
         ]
         week = await self._week_dao.add(new_week)
-        logger.info(f'Successfully created week {week.id} and initialized its meal slots.')
+        logger.info(f'Successfully created week {week.id} and initialized its meal slots')
         return week
 
     async def get_visible_week(self, week_id: str, user: UserRead) -> Week:
@@ -67,7 +67,7 @@ class WeekService:
         week = await self._get_week(week_id, for_update=False)
 
         if user.id != week.user_id:
-            logger.error(f'The user {user} cannot access the week {week.id}')
+            logger.error(f'User {user.id} cannot access week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
@@ -90,7 +90,7 @@ class WeekService:
         """
         week = await self._get_week(week_id, for_update=True)
         if week.user_id != user.id:
-            logger.error(f'The user {user} cannot edit the week {week.id}')
+            logger.error(f'User {user.id} cannot edit week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
@@ -108,7 +108,7 @@ class WeekService:
         Raises:
             WeekNotFoundException: If the week does not exist or the ID is invalid.
         """
-        logger.info(f'Retrieving week {week_id} {for_update=}.')
+        logger.info(f'Retrieving week {week_id} for_update={for_update}')
         try:
             week_uuid = UUID(week_id)
         except ValueError as exc:
@@ -117,7 +117,7 @@ class WeekService:
 
         week = await self._week_dao.find_one_or_none_by_id(week_uuid, for_update=for_update)
         if not week:
-            logger.error(f'Week {week_uuid} does not exist.')
+            logger.error(f'Week {week_uuid} does not exist')
             raise WeekNotFoundException(week_uuid)
 
         return week
@@ -131,9 +131,9 @@ class WeekService:
         Returns:
             A list of the user's weeks.
         """
-        logger.info(f'Retrieving all weeks for user {user.id}.')
+        logger.info(f'Retrieving all weeks for user {user.id}')
         weeks = await self._week_dao.find_all(OwnerId(user_id=user.id))
-        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}.')
+        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}')
 
         return weeks
 
@@ -148,7 +148,7 @@ class WeekService:
             The updated Week object.
         """
         updated_week = await self._week_dao.update(RecordId(id=week.id), new_data)
-        logger.info(f'Successfully updated {updated_week.id}.')
+        logger.info(f'Successfully updated week {updated_week.id}')
         return updated_week
 
     async def delete_week(self, week: Week) -> None:
@@ -157,9 +157,9 @@ class WeekService:
         Args:
             week: The week object to delete.
         """
-        logger.info(f'Deleting {week} for user {week.user_id}.')
+        logger.info(f'Deleting week {week.id} for user {week.user_id}')
         await self._week_dao.delete(RecordId(id=week.id))
-        logger.info(f'Successfully deleted {week}.')
+        logger.info(f'Successfully deleted week {week.id}')
 
     async def assign_recipes_to_meal_slots(self, week: Week, *slots_data: MealSlotAssign) -> list[MealSlot]:
         """Assigns recipes to meal slots in a single transaction.
@@ -182,13 +182,13 @@ class WeekService:
                 of all the issues found.
         """
         valid_assignments = await self._validate_slot_and_recipe_data(week, *slots_data)
-        logger.info(f'Updating {len(slots_data)} slots for week {week.id}.')
+        logger.info(f'Updating {len(slots_data)} slots for week {week.id}')
         updated_slots = [
             await self._meal_slot_dao.update(assignment.meal_slot, assignment.recipe)
             for assignment in valid_assignments
         ]
-        logger.debug(f'Updated meal_slots {updated_slots}')
-        logger.info(f'Successfully updated {len(slots_data)} slots for week {week.id}.')
+        logger.debug(f'Updated meal_slots {[s.id for s in updated_slots]}')
+        logger.info(f'Successfully updated {len(slots_data)} slots for week {week.id}')
         return updated_slots
 
     async def _validate_slot_and_recipe_data(
@@ -209,7 +209,7 @@ class WeekService:
         slot_errors = []
         valid_assignments = []
 
-        logger.info(f'Starting validation for {len(slots_data)} slot assignments for week {week.id}.')
+        logger.info(f'Starting validation for {len(slots_data)} slot assignments for week {week.id}')
         slot_uuids = []
         recipe_uuids = []
         for data in slots_data:
@@ -229,10 +229,10 @@ class WeekService:
                     continue
 
         if slot_errors:
-            logger.error(f'There were errors during validation: {slot_errors}.')
+            logger.error(f'There were errors during validation: {slot_errors}')
             raise MealSlotAssignException(slot_errors)
 
-        logger.info('UUIDs validation complete!')
+        logger.info('UUIDs validation complete')
         db_meal_slots = await self._meal_slot_dao.find_many_by_ids(slot_uuids, for_update=True)
         db_recipes = await self._recipe_dao.find_many_by_ids(recipe_uuids, for_update=False)
 
@@ -267,8 +267,8 @@ class WeekService:
             )
 
         if slot_errors:
-            logger.error(f'There were errors during validation: {slot_errors}.')
+            logger.error(f'There were errors during validation: {slot_errors}')
             raise MealSlotAssignException(slot_errors)
 
-        logger.info('Validation complete!')
+        logger.info('Validation complete')
         return valid_assignments

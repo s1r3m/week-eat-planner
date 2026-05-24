@@ -65,16 +65,16 @@ class BaseDAO(Generic[T]):
         Raises:
             SQLAlchemyError: If a database error occurs.
         """
-        logger.debug(f'Adding {self.model.__name__}: {instance}.')
+        logger.debug(f'Adding {self.model.__name__}: {instance.id}')
         try:
             self._session.add(instance)
             await self._session.flush()
             await self._session.refresh(instance)
         except SQLAlchemyError as exc:
-            logger.error(f'Error while inserting {self.model.__name__} {instance}: {exc}.')
+            logger.error(f'Error while inserting {self.model.__name__} {instance.id}: {exc}')
             raise exc
 
-        logger.debug(f'{self.model.__name__} {instance} has been successfully inserted.')
+        logger.debug(f'{self.model.__name__} {instance.id} has been successfully inserted')
         return instance
 
     async def find_one_or_none_by_id(self, obj_id: UUID, for_update: bool = False) -> T | None:
@@ -90,7 +90,7 @@ class BaseDAO(Generic[T]):
         Raises:
             SQLAlchemyError: If a database error occurs during the query execution.
         """
-        logger.debug(f'Getting {self.model.__name__} by ID={obj_id}.')
+        logger.debug(f'Getting {self.model.__name__} by ID={obj_id}')
         try:
             query = select(self.model).filter_by(id=obj_id)
 
@@ -100,11 +100,11 @@ class BaseDAO(Generic[T]):
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:
-                logger.debug(f'{self.model.__name__} by ID={obj_id} has been successfully found.')
+                logger.debug(f'{self.model.__name__} by ID={obj_id} has been successfully found')
             else:
-                logger.warning(f'{self.model.__name__} by ID={obj_id} was not found.')
+                logger.debug(f'{self.model.__name__} by ID={obj_id} was not found')
         except SQLAlchemyError as exc:
-            logger.error(f'Error while getting {self.model.__name__} by ID={obj_id}: {exc}.')
+            logger.error(f'Error while getting {self.model.__name__} by ID={obj_id}: {exc}')
             raise exc
 
         return record
@@ -120,7 +120,7 @@ class BaseDAO(Generic[T]):
             A list of found model instances. Returns an empty list if no IDs
             are provided or none are found.
         """
-        logger.debug(f'Getting {self.model.__name__} by IDs={obj_ids}.')
+        logger.debug(f'Getting {self.model.__name__} by IDs={obj_ids}')
         if not obj_ids:
             return []
 
@@ -132,7 +132,7 @@ class BaseDAO(Generic[T]):
             result = await self._session.execute(query)
             records = result.scalars().all()
         except SQLAlchemyError as exc:
-            logger.error(f'Error while getting {self.model.__name__} by IDs={obj_ids}: {exc}.')
+            logger.error(f'Error while getting {self.model.__name__} by IDs={obj_ids}: {exc}')
             raise exc
 
         return list(records)
@@ -150,17 +150,17 @@ class BaseDAO(Generic[T]):
             SQLAlchemyError: If a database error occurs during the query execution.
         """
         filter_by = filters.model_dump(exclude_unset=True)
-        logger.debug(f'Getting {self.model.__name__} with {filter_by}.')
+        logger.debug(f'Getting {self.model.__name__} with {filter_by}')
         try:
             query = select(self.model).filter_by(**filter_by)
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:
-                logger.debug(f'{self.model.__name__} with {filter_by} has been successfully found.')
+                logger.debug(f'{self.model.__name__} with {filter_by} has been successfully found')
             else:
-                logger.warning(f'{self.model.__name__} with {filter_by} was not found.')
+                logger.debug(f'{self.model.__name__} with {filter_by} was not found')
         except SQLAlchemyError as exc:
-            logger.error(f'Error while getting {self.model.__name__} with {filter_by}: {exc}.')
+            logger.error(f'Error while getting {self.model.__name__} with {filter_by}: {exc}')
             raise exc
 
         return record
@@ -182,14 +182,14 @@ class BaseDAO(Generic[T]):
         """
         filter_by = filters.model_dump(exclude_unset=True) if filters else {}
         options = options or []
-        logger.debug(f'Querying for {self.model.__name__} records with {filter_by}.')
+        logger.debug(f'Querying for {self.model.__name__} records with {filter_by}')
         try:
             query = select(self.model).filter_by(**filter_by).options(*options)
             result = await self._session.execute(query)
             records = result.scalars().all()
-            logger.debug(f'Found {len(records)} {self.model.__name__} records with {filter_by}.')
+            logger.debug(f'Found {len(records)} {self.model.__name__} records with {filter_by}')
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while getting {self.model.__name__} records with {filter_by}: {exc}.')
+            logger.exception(f'Error while getting {self.model.__name__} records with {filter_by}: {exc}')
             raise exc
 
         return list(records)
@@ -209,7 +209,7 @@ class BaseDAO(Generic[T]):
         """
         filter_by = filters.model_dump(exclude_unset=True)
         values_dict = values.model_dump(exclude_unset=True)
-        logger.debug(f'Updating {self.model.__name__} by {filters} with {values}.')
+        logger.debug(f'Updating {self.model.__name__} by {filter_by} with {values_dict}')
         try:
             query = sql_update(self.model).filter_by(**filter_by).values(**values_dict).returning(self.model)
             result = await self._session.execute(query)
@@ -217,7 +217,7 @@ class BaseDAO(Generic[T]):
             updated_db_obj = result.scalar_one()
             await self._session.refresh(updated_db_obj)
         except SQLAlchemyError as exc:
-            logger.exception(f'Error while updating {self.model.__name__}by {filters} with {values}: {exc}')
+            logger.exception(f'Error while updating {self.model.__name__} by {filter_by} with {values_dict}: {exc}')
             raise exc
 
         return updated_db_obj
@@ -235,7 +235,7 @@ class BaseDAO(Generic[T]):
             SQLAlchemyError: If a database error occurs.
         """
         filter_by = filters.model_dump(exclude_unset=True)
-        logger.debug(f'Deleting {self.model.__name__} record by {filter_by}.')
+        logger.debug(f'Deleting {self.model.__name__} record by {filter_by}')
         try:
             query = sql_delete(self.model).filter_by(**filter_by)
             result = await self._session.execute(query)

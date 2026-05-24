@@ -48,9 +48,9 @@ async def create_user(
         SignUpWithAuthException: If the request contains an Authorization header.
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request with {user_data}.')
+    logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request for {user_data.email}')
     if request.headers.get('Authorization'):
-        logger.warning('Authorization header should not be set for sign up requests.')
+        logger.warning('Authorization header should not be set for sign up requests')
         raise SignUpWithAuthException()
 
     auth_service = AuthService(session)
@@ -83,9 +83,9 @@ async def login(
         LoginWithAuthException: If the request contains an Authorization header.
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}.')
+    logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}')
     if request.headers.get('Authorization'):
-        logger.warning('Authorization header should not be set for login requests.')
+        logger.warning('Authorization header should not be set for login requests')
         raise LoginWithAuthException()
 
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
@@ -112,10 +112,10 @@ async def refresh_tokens(
     Raises:
         HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request.')
+    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request')
     cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not cookie_token:
-        logger.error('No refresh token in request cookies.')
+        logger.error('No refresh token in request cookies')
         raise RefreshTokenMissingException()
 
     access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
@@ -142,10 +142,10 @@ async def logout(
     Returns:
         None. A 204 No Content status code is returned on success.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for {user}.')
+    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for user {user.id}')
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for {user}.')
+        logger.warning(f'No refresh token in request cookies for user {user.id}')
         return
 
     try:
@@ -153,7 +153,7 @@ async def logout(
     except (TokenExpiredException, TokenForbidden, RefreshTokenNotFoundException, TokenRevokedException) as exc:
         # If the token was already expired, revoked, or not found, the user
         # is effectively logged out, so we can return a success response.
-        logger.warning(f'Logout attempted for {user.email} with already invalid refresh token: {exc.detail}')
+        logger.warning(f'Logout attempted for user {user.id} with already invalid refresh token: {exc.detail}')
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path='/')
     return
@@ -184,7 +184,7 @@ async def google_auth(
         OAuthInvalidCodeException: If Google rejects the authorization code.
         OAuthProviderException: If the Google token exchange or JWT verification fails.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_GOOGLE_EXCHANGE} request.')
+    logger.info(f'Got POST {AppUrl.AUTH_GOOGLE_EXCHANGE} request')
     access_token, refresh_token = await AuthService(session).login_with_google(data, httpx_client)
 
     set_refresh_cookie(response, refresh_token)

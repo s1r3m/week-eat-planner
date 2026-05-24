@@ -77,7 +77,14 @@ def user_read(db_user: User) -> UserRead:
 
 @pytest.fixture
 def user_read_2() -> UserRead:
-    return UserRead(id=generate_uuid7(), email='user2@tests.com', is_active=True, username='user2', avatar_url=None)
+    return UserRead(
+        id=generate_uuid7(),
+        email='user2@tests.com',
+        is_active=True,
+        username='user2',
+        avatar_url=None,
+        oauth_provider=None,
+    )
 
 
 @pytest.fixture

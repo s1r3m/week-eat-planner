@@ -34,9 +34,9 @@ async def create_recipe(
     Returns:
         The newly created recipe.
     """
-    logger.info(f'Got POST {AppUrl.RECIPES} request for {user}.')
+    logger.info(f'Got POST {AppUrl.RECIPES} request for user {user.id}')
     recipe = await RecipeService(session).create_recipe(recipe_data, user)
-    logger.info(f'Recipe "{recipe_data.name}" has been created!')
+    logger.info(f'Recipe "{recipe_data.name}" created')
 
     return RecipeRead.model_validate(recipe)
 
@@ -55,9 +55,9 @@ async def get_my_recipes(
     Returns:
         A list of recipes belonging to the user.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES_MY} request for {user}.')
+    logger.info(f'Got GET {AppUrl.RECIPES_MY} request for user {user.id}')
     recipes = await RecipeService(session).get_all_user_recipes(user)
-    logger.info(f'Successfully retrieved {len(recipes)} recipes for User {user.email}')
+    logger.info(f'Successfully retrieved {len(recipes)} recipes for user {user.id}')
 
     return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
 
@@ -76,9 +76,9 @@ async def get_favorites(
     Returns:
         A list of the user's favorite recipes.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES_FAVORITES} for {user}')
+    logger.info(f'Got GET {AppUrl.RECIPES_FAVORITES} for user {user.id}')
     favorites = await RecipeService(session).get_user_favorite_recipes(user)
-    logger.info(f'Successfully retrieved {len(favorites)} for {user}')
+    logger.info(f'Successfully retrieved {len(favorites)} favorites for user {user.id}')
 
     return [RecipeReadMinimal.model_validate(recipe) for recipe in favorites]
 
@@ -101,7 +101,7 @@ async def get_recipe(
     Returns:
         The requested recipe.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for {user}.')
+    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user.id if user else None}')
     recipe = await RecipeService(session).get_visible_recipe(recipe_id, user)
     return RecipeRead.model_validate(recipe)
 
@@ -126,7 +126,7 @@ async def update_recipe(
     Returns:
         The updated recipe.
     """
-    logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for {recipe_id}')
+    logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for recipe {recipe_id}')
     recipe_service = RecipeService(session)
     recipe = await recipe_service.get_recipe_for_edit(recipe_id, user)
     updated_recipe = await recipe_service.update_recipe(recipe, new_data)
@@ -153,7 +153,7 @@ async def delete_recipe(
     Returns:
         None. A 204 No Content status code is returned on success.
     """
-    logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for {recipe_id}')
+    logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for recipe {recipe_id}')
     recipe_service = RecipeService(session)
     recipe = await recipe_service.get_recipe_for_edit(recipe_id, user)
     result = await recipe_service.delete_recipe(recipe)
@@ -182,7 +182,7 @@ async def upload_image(
     Returns:
         The updated recipe containing the new image URL.
     """
-    logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for {recipe_id} with {image.filename}')
+    logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for recipe {recipe_id} with {image.filename}')
 
     await check_image_suitable(image)
 
@@ -211,9 +211,9 @@ async def create_favorite(
     Returns:
         The favorited recipe.
     """
-    logger.info(f'Got {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for {user}')
+    logger.info(f'Got POST {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for user {user.id}')
     recipe = await RecipeService(session).add_favorite(recipe_id, user)
-    logger.info(f'Recipe {recipe_id} successfully marked favorite for {user}')
+    logger.info(f'Recipe {recipe_id} successfully marked favorite for user {user.id}')
 
     return RecipeReadMinimal.model_validate(recipe)
 
@@ -234,6 +234,6 @@ async def remove_favorite(
     Returns:
         None.
     """
-    logger.info(f'Got {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for {user}')
+    logger.info(f'Got DELETE {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for user {user.id}')
     await RecipeService(session).delete_favorite(recipe_id, user)
-    logger.info(f'Recipe {recipe_id} successfully removed from favorites for {user}')
+    logger.info(f'Recipe {recipe_id} successfully removed from favorites for user {user.id}')

@@ -1,11 +1,13 @@
+"""Async HTTP client management."""
+
 import httpx
 
 
 class HttpClientManager:
-    """Manages the lifecycle of a single httpx.AsyncClient instance."""
+    """Manages the lifecycle of a shared httpx.AsyncClient instance."""
 
     def __init__(self) -> None:
-        """Initializes the HttpClientManager."""
+        """Initializes the manager with no active client."""
         self._client: httpx.AsyncClient | None = None
 
     @property

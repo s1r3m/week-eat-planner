@@ -1,3 +1,5 @@
+"""Client for Google OAuth 2.0 authentication."""
+
 from enum import StrEnum
 
 from fastapi import status
@@ -70,12 +72,18 @@ class GoogleAuthClient:
                 },
             )
             token_response.raise_for_status()
-            id_token = token_response.json().get('id_token')
+            token_data = token_response.json()
+            id_token = token_data.get('id_token')
             if id_token is None:
                 logger.error('Google token response is missing the id_token field.')
-                raise OAuthProviderException()
-            logger.debug('Received ID token from Google token endpoint.')
+                raise OAuthProviderException('No id_token in response')
 
+            access_token = token_data.get('access_token')
+            if access_token is None:
+                logger.error('Google token response is missing the access_token field.')
+                raise OAuthProviderException('No access_token in response')
+
+            logger.debug('Received ID token from Google token endpoint.')
             jwks_response = await self._client.get(GoogleUrl.JWKS)
             jwks_response.raise_for_status()
             jwks = jwks_response.json()
@@ -87,6 +95,7 @@ class GoogleAuthClient:
                 algorithms=['RS256'],
                 audience=settings.GOOGLE_CLIENT_ID,
                 issuer=GOOGLE_ISSUER,
+                access_token=access_token,
             )
             missing_claims = [key for key in ('sub', 'email', 'name') if key not in data]
             if missing_claims:

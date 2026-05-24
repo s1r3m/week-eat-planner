@@ -20,8 +20,11 @@ vi.mock('@pinia/colada', () => ({
 }));
 
 vi.mock('@/api/auth', () => ({
-  getUserQuery: vi.fn(),
   logoutMutation: vi.fn(),
+}));
+
+vi.mock('@/api/user', () => ({
+  getUserQuery: vi.fn(),
 }));
 
 describe('AppSidebarFooter', () => {

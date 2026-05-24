@@ -44,9 +44,6 @@ class Recipe(Base):
 
     is_favorite: bool = False
 
-    def __repr__(self) -> str:
-        return f'Recipe({self.id=}, {self.name=}, {self.is_public=}, {self.user_id=})'
-
     @property
     def author(self) -> str:
         """The author of the recipe, prioritizing username over email.

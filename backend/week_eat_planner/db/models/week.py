@@ -31,6 +31,3 @@ class Week(Base):
     meal_slots: Mapped[list['MealSlot']] = relationship(
         back_populates='week', cascade='all, delete-orphan', lazy='selectin'
     )
-
-    def __repr__(self) -> str:
-        return f'Week({self.id=}, {self.name=}, {self.user_id=})'

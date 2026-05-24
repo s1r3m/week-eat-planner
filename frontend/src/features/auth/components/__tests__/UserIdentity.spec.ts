@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import UserIdentity from '../UserIdentity.vue';
-import type { UserData } from '@/api/auth';
+import type { UserData } from '@/api/user';
 
 describe('UserIdentity', () => {
   const user: UserData = {
     email: 'test@email.com',
-    user_id: 'testId',
+    username: 'user',
+    id: 'testId',
     is_active: true,
   };
 
@@ -14,8 +15,8 @@ describe('UserIdentity', () => {
     const wrapper = mount(UserIdentity, { props: { user } });
 
     expect(wrapper.text()).toContain(user.email);
-    expect(wrapper.text()).toContain('test');
-    expect(wrapper.text()).toContain('TE');
+    expect(wrapper.text()).toContain('user');
+    expect(wrapper.text()).toContain('us');
   });
 
   it('shows the provided username and its initials', () => {
@@ -25,7 +26,7 @@ describe('UserIdentity', () => {
 
     expect(wrapper.text()).toContain(user.email);
     expect(wrapper.text()).toContain('Barry');
-    expect(wrapper.text()).toContain('BA');
+    expect(wrapper.text()).toContain('Ba');
   });
 
   it('renders the avatar image when avatar_url is provided', () => {

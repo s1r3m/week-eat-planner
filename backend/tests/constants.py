@@ -3,8 +3,8 @@ from week_eat_planner.constants import Unit
 from week_eat_planner.helpers import generate_uuid7
 
 EMAIL = 'ya@ya.eu'
-PASSWORD = '123456'
-HASHED_PASSWORD = '$2b$12$LWMbERKL6XH7CzFNXR4tOO8wsxOCYzQBLpqH4qoTlZvy1s4riAVNu'
+PASSWORD = '12345678'
+HASHED_PASSWORD = '$2b$12$kZ/3TY5QSO0QRg8rMvo1d.9WaJDwqM9354IFiOLCSjGl7Gts9Y/B.'
 USER_ID = generate_uuid7()
 USERNAME = 'yaya'
 
