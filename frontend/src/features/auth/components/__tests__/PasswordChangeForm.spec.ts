@@ -31,8 +31,8 @@ describe('PasswordChangeForm', () => {
   let mutateMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mutateMock = vi.fn();
-    (useMutation as any).mockReturnValue({ mutate: mutateMock, isLoading: ref(false) });
+    mutateMock = vi.fn().mockResolvedValue({});
+    (useMutation as any).mockReturnValue({ mutateAsync: mutateMock, isLoading: ref(false) });
   });
 
   const mountComponent = (modelValue: UserData = user) =>

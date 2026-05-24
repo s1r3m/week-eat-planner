@@ -104,10 +104,13 @@ const { handleSubmit, errors, meta, resetForm } = useForm({
 const { value: current_password } = useField<FormValues['current_password']>('current_password');
 const { value: new_password } = useField<FormValues['new_password']>('new_password');
 const { value: confirm_password } = useField<FormValues['confirm_password']>('confirm_password');
-const { mutate: changePassword, isLoading } = useMutation(changePasswordMutation());
+const { mutateAsync: changePassword, isLoading } = useMutation(changePasswordMutation());
 
-const onSubmit = handleSubmit((values: FormValues) => {
-  changePassword({ old_password: values.current_password, new_password: values.new_password });
+const onSubmit = handleSubmit(async (values: FormValues) => {
+  await changePassword({
+    old_password: values.current_password,
+    new_password: values.new_password,
+  });
   resetForm();
 });
 </script>
