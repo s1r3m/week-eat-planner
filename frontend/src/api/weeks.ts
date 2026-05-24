@@ -72,8 +72,18 @@ export interface EditWeek {
  * Cache keys for week-related queries.
  */
 export const WEEK_KEYS = {
+  /** Base key for all weeks. */
   root: ['weeks'] as const,
+  /**
+   * Key for the list of all weeks.
+   * @returns Hierarchical cache key.
+   */
   all: () => [...WEEK_KEYS.root, 'list'] as const,
+  /**
+   * Key for a specific week detail.
+   * @param id - The unique identifier of the week.
+   * @returns Hierarchical cache key.
+   */
   detail: (id: string) => [...WEEK_KEYS.root, 'detail', id] as const,
 };
 

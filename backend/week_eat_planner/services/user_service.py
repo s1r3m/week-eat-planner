@@ -57,7 +57,7 @@ class UserService:
         return updated_user
 
     async def change_password(self, user_read: UserRead, old_password: str, new_password: str) -> User:
-        """Changes User's password if old_password matches the hash. Sets the new_password.
+        """Changes User's password if old_password matches the hash.
 
         Args:
             user_read: The current user schema (used for ID lookup).
@@ -66,6 +66,11 @@ class UserService:
 
         Returns:
             The updated User model.
+
+        Raises:
+            UserRemovedException: If the user record is missing in the database.
+            OAuthAccountException: If the user is an OAuth account and has no password.
+            InvalidCredentialsException: If the old password does not match.
         """
         logger.debug(f'Changing password for user {user_read.id}')
         user = await self._user_dao.find_one_or_none_by_id(user_read.id)

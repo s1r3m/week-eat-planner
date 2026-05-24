@@ -3,9 +3,16 @@ import { apiClient } from './client';
 import { toast } from 'vue-sonner';
 import { accessToken, type LoginInfo } from './auth';
 
-/** Cache keys for user-related queries. */
+/**
+ * Cache keys for user-related queries.
+ */
 export const USER_KEYS = {
+  /** Base key for all user-related data. */
   root: 'user' as const,
+  /**
+   * Key for the current user's profile.
+   * @returns Hierarchical cache key.
+   */
   profile: () => [USER_KEYS.root, 'profile'],
 };
 
@@ -21,14 +28,21 @@ export interface UserData {
   oauth_provider: string | null;
 }
 
-/** Payload for updating user profile fields. */
+/**
+ * Payload for updating user profile fields.
+ */
 export interface UserPayload {
+  /** The new username to set. */
   username: string;
 }
 
-/** Payload for updating user password. */
+/**
+ * Payload for updating user password.
+ */
 export interface UserPassPayload {
+  /** The user's current password for verification. */
   old_password: string;
+  /** The new password to set. */
   new_password: string;
 }
 
@@ -76,6 +90,9 @@ export const changePasswordMutation = defineMutation(() => {
   return {
     mutation: (data: UserPassPayload) =>
       apiClient.patch<LoginInfo>('/user/password', data).then((res) => res.data),
+    onError: (err: Error) => {
+      toast.error(`An error during the request: ${err.message}`);
+    },
     onSuccess: (data: LoginInfo) => {
       accessToken.value = data.access_token;
       toast.success('Password was changed');

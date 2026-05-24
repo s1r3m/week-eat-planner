@@ -35,7 +35,7 @@
           </Field>
           <FieldError>{{ errors.new_password }}</FieldError>
           <Field>
-            <FieldLabel for="confirm_pwd">confirm password</FieldLabel>
+            <FieldLabel for="confirm_pwd">Confirm password</FieldLabel>
             <Input
               id="confirm_pwd"
               v-model="confirm_password"

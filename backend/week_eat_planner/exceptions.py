@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 class NotFoundException(HTTPException):
     """Base exception for resources not found in the database.
 
-    Attributes:
+    Args:
         detail: A description of the error.
     """
 
@@ -43,7 +43,7 @@ class WeekNotFoundException(NotFoundException):
 class TokenException(HTTPException):
     """Base exception for authentication token-related errors.
 
-    Attributes:
+    Args:
         detail: A description of the error.
     """
 
@@ -104,7 +104,7 @@ class TokenRevokedException(TokenException):
 class LogicException(HTTPException):
     """Base exception for business logic errors.
 
-    Attributes:
+    Args:
         detail: A description of the error.
     """
 
@@ -163,7 +163,7 @@ class SignUpWithAuthException(LogicException):
 class AccessForbiddenException(HTTPException):
     """Base exception for access denial errors.
 
-    Attributes:
+    Args:
         detail: A description of the error.
     """
 
@@ -193,7 +193,7 @@ class TokenForbidden(AccessForbiddenException):
 class ValidationException(HTTPException):
     """Base exception for data validation errors.
 
-    Attributes:
+    Args:
         detail: A description of the error.
     """
 
@@ -295,7 +295,11 @@ class OAuthInvalidCodeException(ValidationException):
 
 
 class OAuthProviderException(HTTPException):
-    """Exception raised when an error occurs while communicating with an OAuth provider."""
+    """Exception raised when an error occurs while communicating with an OAuth provider.
+
+    Args:
+        detail: A description of the error.
+    """
 
     def __init__(self, detail: str = 'OAuth provider error') -> None:
         super().__init__(status_code=status.HTTP_502_BAD_GATEWAY, detail=detail)

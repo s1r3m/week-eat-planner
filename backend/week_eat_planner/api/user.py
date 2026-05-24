@@ -61,7 +61,21 @@ async def change_password(
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
 ) -> Token:
-    """Changes user's password."""
+    """Changes the current user's password.
+
+    Validates the old password before setting the new one. On success,
+    it re-authenticates the user and returns a new access token while
+    setting a new refresh token cookie.
+
+    Args:
+        data: Schema containing old and new passwords.
+        user: The currently authenticated user.
+        session: Database session.
+        response: FastAPI response object for setting cookies.
+
+    Returns:
+        A new access token for the user.
+    """
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user.id}')
     updated_user = await UserService(session).change_password(user, data.old_password, data.new_password)
     access_token, refresh_token = await AuthService(session).login(updated_user.email, data.new_password)

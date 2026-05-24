@@ -79,9 +79,23 @@ export interface FavoritePayload {
  * Cache keys for recipe-related queries.
  */
 export const RECIPE_KEYS = {
+  /** Base key for all recipes. */
   root: ['recipes'] as const,
+  /**
+   * Key for the current user's recipes.
+   * @returns Hierarchical cache key.
+   */
   my: () => [...RECIPE_KEYS.root, 'mine'] as const,
+  /**
+   * Key for the user's favorite recipes.
+   * @returns Hierarchical cache key.
+   */
   favorites: () => [...RECIPE_KEYS.root, 'favorites'] as const,
+  /**
+   * Key for a specific recipe detail.
+   * @param id - The recipe ID.
+   * @returns Hierarchical cache key.
+   */
   detail: (id: string) => [...RECIPE_KEYS.root, 'detail', id] as const,
 };
 
