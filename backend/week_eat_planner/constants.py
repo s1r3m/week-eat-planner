@@ -32,9 +32,9 @@ class AppUrl(StrEnum):
 
 
 ACCESS_TOKEN_COOKIE_NAME = 'access_token'
-ACCESS_TOKEN_COOIKE_PATH = '/api'
+ACCESS_TOKEN_COOIKE_PATH = '/'
 REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
-REFRESH_TOKEN_COOKIE_PATH = f'/api/{AppUrl.AUTH_REFRESH}'
+REFRESH_TOKEN_COOKIE_PATH = '/auth'
 
 
 class StorageBucket(StrEnum):

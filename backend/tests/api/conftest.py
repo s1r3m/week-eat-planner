@@ -79,13 +79,9 @@ async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
 @pytest.fixture
 def auth_client_factory(client: AsyncClient) -> Callable:
     async def _factory(user: UserRead, password: str) -> AsyncClient:
-        client.headers['Authorization'] = ''
         token_data = {'username': user.email, 'password': password}
         response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
         assert response.status_code == HTTPStatus.OK, f'{response.status_code}: {response.text}'
-        body = response.json()
-        token = body['access_token']
-        client.headers['Authorization'] = f'Bearer {token}'
         return client
 
     return _factory
@@ -95,14 +91,13 @@ def auth_client_factory(client: AsyncClient) -> Callable:
 async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
     auth_client = await auth_client_factory(created_user, PASSWORD)
     await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
-    auth_client.headers['Authorization'] = ''
     return auth_client
 
 
 @pytest.fixture
 def created_week_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user: UserRead, week_data: WeekCreate) -> Week:
-        week = await WeekService(db_session).create_week_with_slots(user, week_data)
+        week = await WeekService(db_session).create_week_with_slots(user.id, week_data)
         await db_session.flush()
         return week
 
@@ -122,7 +117,7 @@ def user_factory(db_session: AsyncSession) -> Callable:
 @pytest.fixture
 def created_recipe_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user: UserRead, recipe_data: RecipeCreate) -> Recipe:
-        recipe = await RecipeService(db_session).create_recipe(recipe_data, user)
+        recipe = await RecipeService(db_session).create_recipe(recipe_data, user.id)
         await db_session.flush()
         return recipe
 

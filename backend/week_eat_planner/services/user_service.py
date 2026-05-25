@@ -1,13 +1,15 @@
 """Service layer for user-related business logic."""
 
+from uuid import UUID
+
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas.common import RecordId
-from week_eat_planner.api.schemas.user import HashedPassword, UserRead, UserUpdate
+from week_eat_planner.api.schemas.user import HashedPassword, UserUpdate
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models.user import User
-from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserRemovedException
+from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFound
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import get_user_id_from_token
 
@@ -40,7 +42,7 @@ class UserService:
         logger.info(f'Retrieved User(id={user.id}) from DB')
         return user
 
-    async def update_user(self, user: UserRead, values: UserUpdate) -> User:
+    async def update_user(self, user_id: UUID, values: UserUpdate) -> User:
         """Updates a user's profile with the provided values.
 
         Args:
@@ -50,12 +52,18 @@ class UserService:
         Returns:
             The updated User model.
         """
-        logger.debug(f'Updating user {user.id}')
-        updated_user = await self._user_dao.update(RecordId(id=user.id), values)
+        logger.debug(f'Updating user {user_id}')
+        user = await self._user_dao.find_one_or_none_by_id(user_id)
+        if not user:
+            msg = f'User {user_id} was not found!'
+            logger.error(msg)
+            raise UserNotFound(msg)
+
+        updated_user = await self._user_dao.update(RecordId(id=user_id), values)
         logger.debug(f'User {user.id} was successfully updated')
         return updated_user
 
-    async def change_password(self, user_read: UserRead, old_password: str, new_password: str) -> User:
+    async def change_password(self, user_id: UUID, old_password: str, new_password: str) -> User:
         """Changes User's password if old_password matches the hash.
 
         Args:
@@ -71,12 +79,12 @@ class UserService:
             OAuthAccountException: If the user is an OAuth account and has no password.
             InvalidCredentialsException: If the old password does not match.
         """
-        logger.debug(f'Changing password for user {user_read.id}')
-        user = await self._user_dao.find_one_or_none_by_id(user_read.id)
+        logger.debug(f'Changing password for user {user_id}')
+        user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user:
-            msg = f'User {user_read.id} was removed somehow!'
+            msg = f'User {user_id} was not found!'
             logger.error(msg)
-            raise UserRemovedException(msg)
+            raise UserNotFound(msg)
 
         if not user.hashed_password:
             logger.error(f'User {user.id} was registered with {user.oauth_provider}')

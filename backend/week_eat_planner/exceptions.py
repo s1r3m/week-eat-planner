@@ -119,7 +119,7 @@ class UserAlreadyExistsException(LogicException):
         super().__init__(detail='User already exists')
 
 
-class UserRemovedException(LogicException):
+class UserNotFound(LogicException):
     """Exception raised when an operation is attempted on a removed user.
 
     Args:
@@ -271,6 +271,11 @@ class InvalidCredentialsException(HTTPException):
 
     def __init__(self, detail: str = 'Could not validate credentials') -> None:
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
+
+
+class NoAccessTokenException(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='No access token in request')
 
 
 class OAuthAccountException(LogicException):

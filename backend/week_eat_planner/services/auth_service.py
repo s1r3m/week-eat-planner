@@ -1,13 +1,14 @@
 """Service layer for authentication and user registration logic."""
 
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from httpx import AsyncClient
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, RefreshTokenFilter, TokenUpdate, UserCreate, UserRead
+from week_eat_planner.api.schemas import Email, RefreshTokenFilter, TokenUpdate, UserCreate
 from week_eat_planner.api.schemas.user import GoogleCode, UserFilter
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.config import settings
@@ -208,7 +209,7 @@ class AuthService:
 
         return access_token, refresh_token
 
-    async def logout(self, user: UserRead, raw_token: str) -> None:
+    async def logout(self, user_id: UUID, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.
 
         Args:
@@ -221,28 +222,28 @@ class AuthService:
             TokenForbidden: If the refresh token does not belong to the user.
             TokenRevokedException: If the refresh token has already been revoked.
         """
-        logger.info(f'Logout attempt for user {user.id}')
+        logger.info(f'Logout attempt for user {user_id}')
         refresh_token = RefreshTokenFilter(
             token_hash=TokenProvider.hash_refresh_token(raw_token),
-            user_id=user.id,
+            user_id=user_id,
         )
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(refresh_token)
 
         if not db_refresh_token:
-            logger.warning(f'Attempted logout with a non-existent refresh token for user {user.id}')
+            logger.warning(f'Attempted logout with a non-existent refresh token for user {user_id}')
             raise RefreshTokenNotFoundException()
 
         if db_refresh_token.expires_at <= datetime.now(UTC):
-            logger.warning(f'Attempted logout with expired refresh token for user {user.id}')
+            logger.warning(f'Attempted logout with expired refresh token for user {user_id}')
             raise TokenExpiredException()
 
-        if db_refresh_token.user_id != user.id:
-            logger.warning(f'Attempted logout with refresh token that does not belong to user {user.id}')
+        if db_refresh_token.user_id != user_id:
+            logger.warning(f'Attempted logout with refresh token that does not belong to user {user_id}')
             raise TokenForbidden()
 
         if db_refresh_token.revoked:
-            logger.warning(f'Attempted logout with an already revoked token for user {user.id}')
+            logger.warning(f'Attempted logout with an already revoked token for user {user_id}')
             raise TokenRevokedException()
 
         await self._refresh_token_dao.update(refresh_token, TokenUpdate(revoked=True, replaced_by=None))
-        logger.info(f'User {user.id} logged out successfully')
+        logger.info(f'User {user_id} logged out successfully')

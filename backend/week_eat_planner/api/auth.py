@@ -1,6 +1,7 @@
 """API router for authentication-related endpoints."""
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -8,7 +9,7 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.auth_deps import get_active_user_id
 from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
 from week_eat_planner.api.schemas import UserCreate, UserRead
 from week_eat_planner.api.schemas.user import GoogleCode
@@ -21,10 +22,8 @@ from week_eat_planner.constants import (
 )
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
-    LoginWithAuthException,
     RefreshTokenMissingException,
     RefreshTokenNotFoundException,
-    SignUpWithAuthException,
     TokenExpiredException,
     TokenForbidden,
     TokenRevokedException,
@@ -39,7 +38,6 @@ router = APIRouter(tags=['Auth'])
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-    request: Request,
     response: Response,
 ) -> UserRead:
     """Registers a new user and authenticates them.
@@ -55,10 +53,6 @@ async def create_user(
         HTTPException: 409 Conflict if a user with the same email already exists.
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request for {user_data.email}')
-    if request.headers.get('Authorization'):
-        logger.warning('Authorization header should not be set for sign up requests')
-        raise SignUpWithAuthException()
-
     auth_service = AuthService(session)
     created_user = await auth_service.register_user(user_data)
     access_token, refresh_token = await auth_service.login(created_user.email, user_data.password)
@@ -72,7 +66,6 @@ async def create_user(
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-    request: Request,
     response: Response,
 ) -> None:
     """Authenticates a user and returns an access token.
@@ -91,10 +84,6 @@ async def login(
         HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}')
-    if request.headers.get('Authorization'):
-        logger.warning('Authorization header should not be set for login requests')
-        raise LoginWithAuthException()
-
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
@@ -133,7 +122,7 @@ async def refresh_tokens(
 async def logout(
     request: Request,
     response: Response,
-    user: Annotated[UserRead, Depends(get_current_active_user)],
+    user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Logs out the current user by invalidating their session.
@@ -147,18 +136,18 @@ async def logout(
     Returns:
         None. A 204 No Content status code is returned on success.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for user {user.id}')
+    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for user {user_id}')
     refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for user {user.id}')
+        logger.warning(f'No refresh token in request cookies for user {user_id}')
         return
 
     try:
-        await AuthService(session).logout(user, refresh_token)
+        await AuthService(session).logout(user_id, refresh_token)
     except (TokenExpiredException, TokenForbidden, RefreshTokenNotFoundException, TokenRevokedException) as exc:
         # If the token was already expired, revoked, or not found, the user
         # is effectively logged out, so we can return a success response.
-        logger.warning(f'Logout attempted for user {user.id} with already invalid refresh token: {exc.detail}')
+        logger.warning(f'Logout attempted for user {user_id} with already invalid refresh token: {exc.detail}')
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path=REFRESH_TOKEN_COOKIE_PATH)
     response.delete_cookie(key=ACCESS_TOKEN_COOKIE_NAME, path=ACCESS_TOKEN_COOIKE_PATH)

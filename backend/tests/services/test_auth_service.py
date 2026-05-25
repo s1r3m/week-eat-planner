@@ -296,7 +296,7 @@ async def test_logout__valid_token__token_revoked(
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
 
-    await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
+    await AuthService(mocked_session).logout(user_read.id, REFRESH_TOKEN)
 
     refresh_token = RefreshTokenFilter(
         token_hash=TokenProvider.hash_refresh_token(REFRESH_TOKEN),
@@ -309,7 +309,7 @@ async def test_logout__not_existing_token__error_raised(mocked_refresh_token_dao
     mocked_refresh_token_dao.find_one_or_none.return_value = None
 
     with pytest.raises(RefreshTokenNotFoundException) as exc:
-        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read.id, REFRESH_TOKEN)
 
     error = RefreshTokenNotFoundException()
     assert exc.value.status_code == error.status_code
@@ -322,7 +322,7 @@ async def test_logout__expired_token__error_raised(
     mocked_refresh_token_dao.find_one_or_none.return_value = expired_db_refresh_token
 
     with pytest.raises(TokenExpiredException) as exc:
-        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read.id, REFRESH_TOKEN)
 
     error = TokenExpiredException()
     assert exc.value.status_code == error.status_code
@@ -336,7 +336,7 @@ async def test_logout__belong_to_other_user_token__error_raised(
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
 
     with pytest.raises(TokenForbidden) as exc:
-        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read.id, REFRESH_TOKEN)
 
     error = TokenForbidden()
     assert exc.value.status_code == error.status_code
@@ -349,7 +349,7 @@ async def test_logout__revoked_token__error_raised(
     mocked_refresh_token_dao.find_one_or_none.return_value = revoked_db_refresh_token
 
     with pytest.raises(TokenRevokedException) as exc:
-        await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
+        await AuthService(mocked_session).logout(user_read.id, REFRESH_TOKEN)
 
     error = TokenRevokedException()
     assert exc.value.status_code == error.status_code

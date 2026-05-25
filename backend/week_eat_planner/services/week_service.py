@@ -50,7 +50,7 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots')
         return week
 
-    async def get_visible_week(self, week_id: str, user_id: UUID) -> Week:
+    async def get_visible_week(self, week_id: str, user_id: UUID | None) -> Week:
         """Retrieves a single week by its ID.
 
         Args:
