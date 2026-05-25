@@ -15,6 +15,7 @@ from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.exceptions import (
     ImageContentTypeMissingException,
     ImageTooLargeException,
+    NoAccessTokenException,
     RecipeForbiddenException,
     RecipeNotFoundException,
     UnsupportedImageTypeException,
@@ -181,8 +182,9 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
 async def test_get_my_recipes__no_auth__error_in_response(client):
     response = await client.get(AppUrl.RECIPES_MY)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_recipe__new_data__updated_recipe_in_response(auth_client_for_created_user, created_recipe):
@@ -225,8 +227,9 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
         f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_for_created_user):
@@ -251,8 +254,9 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
 async def test_delete_recipe__no_auth__error_in_response(client, created_recipe):
     response = await client.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_recipe__user_without_recipe__error_in_response(auth_client_for_created_user):
@@ -342,8 +346,9 @@ async def test_upload_image__unauthenticated__returns_401(client, created_recipe
         files=files,
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_upload_image__not_owner__returns_403(auth_client_for_created_user, public_created_recipe):
@@ -496,5 +501,6 @@ async def test_get_user_favorites__some_recipes__recipes_in_response(
 async def test_get_user_favorites__no_auth__error_in_response(client):
     response = await client.get(AppUrl.RECIPES_FAVORITES)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}

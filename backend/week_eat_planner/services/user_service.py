@@ -20,6 +20,15 @@ class UserService:
     def __init__(self, session: AsyncSession) -> None:
         self._user_dao = UserDAO(session)
 
+    async def get_user(self, user_id: UUID) -> User:
+        logger.debug(f'Retrieving user with {user_id=}')
+        user = await self._user_dao.find_one_or_none_by_id(user_id)
+        if not user or not user.is_active:
+            logger.error(f'User not found with {user_id=}')
+            raise UserNotFound(f'User {user_id} was not found!')
+
+        return user
+
     async def get_user_by_token(self, token: str) -> User:
         """Retrieves a user based on their authentication token.
 

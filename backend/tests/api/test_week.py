@@ -5,7 +5,12 @@ from tests.test_security import PASSWORD
 from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
 from week_eat_planner.api.schemas.week import WeekRead
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
+from week_eat_planner.exceptions import (
+    MealSlotAssignException,
+    NoAccessTokenException,
+    WeekForbiddenException,
+    WeekNotFoundException,
+)
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -37,8 +42,9 @@ async def test_get_weeks__week_exists__week_in_response(auth_client_for_created_
 async def test_get_weeks__no_auth__error_in_response(client):
     response = await client.get(AppUrl.WEEKS)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_get_week__user_with_week__week_in_response(auth_client_for_created_user, created_week):
@@ -62,8 +68,9 @@ async def test_get_week__week_not_exist__error_in_response(auth_client_for_creat
 async def test_get_week__no_auth__error_in_response(client, created_week):
     response = await client.get(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = WeekForbiddenException(week_id=created_week.id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_week__new_name__week_in_response(auth_client_for_created_user, created_week):
@@ -85,8 +92,9 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
 async def test_update_week__no_auth__error_in_response(client, created_week):
     response = await client.patch(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': 'new_name'})
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_week__user_without_week__error_in_response(auth_client_for_created_user):
@@ -105,8 +113,9 @@ async def test_update_week__user_without_week__error_in_response(auth_client_for
 async def test_delete_week__no_auth__error_in_response(client, created_week):
     response = await client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_delete_week__user_without_week__error_in_response(auth_client_for_created_user):

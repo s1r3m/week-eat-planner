@@ -28,13 +28,29 @@ def other_encoded_token() -> str:
     return TokenProvider.create_access_token(generate_uuid7())
 
 
-async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_session, encoded_token, db_user):
+async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_session, db_user):
+    mocked_user_dao.find_one_or_none_by_id.return_value = db_user
+    user = await UserService(mocked_session).get_user(db_user.id)
+    assert user == db_user
+
+
+async def test_get_user__user_not_found__error_raised(mocked_user_dao, mocked_session, user_read):
+    mocked_user_dao.find_one_or_none_by_id.return_value = None
+
+    with pytest.raises(UserNotFound) as exc:
+        await UserService(mocked_session).get_user(user_read.id)
+
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'User {user_read.id} was not found!'
+
+
+async def test_get_user_by_token__user_exists__user_returned(mocked_user_dao, mocked_session, encoded_token, db_user):
     mocked_user_dao.find_one_or_none.return_value = db_user
     user = await UserService(mocked_session).get_user_by_token(encoded_token)
     assert user == db_user
 
 
-async def test_get_user__user_not_exist__none_returned(mocked_user_dao, mocked_session, encoded_token):
+async def test_get_user_by_token__user_not_exist__none_returned(mocked_user_dao, mocked_session, encoded_token):
     mocked_user_dao.find_one_or_none.return_value = None
 
     with pytest.raises(InvalidCredentialsException) as exc:
@@ -44,7 +60,9 @@ async def test_get_user__user_not_exist__none_returned(mocked_user_dao, mocked_s
     assert exc.value.detail == 'Could not validate credentials'
 
 
-async def test_get_user__not_active_user__error_raised(mocked_user_dao, mocked_session, encoded_token, db_user):
+async def test_get_user_by_token__not_active_user__error_raised(
+    mocked_user_dao, mocked_session, encoded_token, db_user
+):
     db_user.is_active = False
     mocked_user_dao.find_one_or_none.return_value = db_user
 
@@ -59,12 +77,24 @@ async def test_update_user__username_provided__updated_user_returned(
     mocked_user_dao, mocked_session, user_read, db_user
 ):
     user_update = UserUpdate(username='new_name')
+    mocked_user_dao.find_one_or_none_by_id.return_value = db_user
     mocked_user_dao.update.return_value = db_user
 
     result = await UserService(mocked_session).update_user(user_read.id, user_update)
 
     assert result == db_user
     mocked_user_dao.update.assert_awaited_once_with(RecordId(id=user_read.id), user_update)
+
+
+async def test_update_user__user_not_found__error_raised(mocked_user_dao, mocked_session, user_read):
+    user_update = UserUpdate(username='new_name')
+    mocked_user_dao.find_one_or_none_by_id.return_value = None
+
+    with pytest.raises(UserNotFound) as exc:
+        await UserService(mocked_session).update_user(user_read.id, user_update)
+
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
+    assert exc.value.detail == f'User {user_read.id} was not found!'
 
 
 async def test_change_password__user_removed__error_raised(mocked_user_dao, mocked_session, user_read):

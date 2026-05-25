@@ -20,7 +20,10 @@ router = APIRouter(tags=['User'])
 
 
 @router.get(AppUrl.USER, response_model=UserRead)
-async def get_user(user_id: Annotated[UUID, Depends(get_active_user_id)]) -> None:
+async def get_user(
+    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    session: Annotated[AsyncSession, Depends(db.get_db)],
+) -> UserRead:
     """Get the current user profile.
 
     Args:
@@ -30,7 +33,8 @@ async def get_user(user_id: Annotated[UUID, Depends(get_active_user_id)]) -> Non
         The current user's profile.
     """
     logger.info(f'Got GET {AppUrl.USER} request for user {user_id}')
-    # TODO: implement the method
+    user = await UserService(session).get_user(user_id)
+    return UserRead.model_validate(user)
 
 
 @router.patch(AppUrl.USER, response_model=UserRead)

@@ -1,7 +1,11 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
+from jose import jwt
 
 from tests.constants import HASHED_PASSWORD, PASSWORD, USER_ID
-from week_eat_planner.exceptions import InvalidJwtTokenException, TokenExpiredException
+from week_eat_planner.config import settings
+from week_eat_planner.exceptions import InvalidJwtTokenException, NoSubInTokenException, TokenExpiredException
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import TokenProvider, get_user_id_from_token
 
@@ -80,3 +84,16 @@ def test_hash_refresh_token__other_token__other_hash():
     hash_token_2 = TokenProvider.hash_refresh_token(token_2)
 
     assert hash_token_1 != hash_token_2
+
+
+def test_get_user_id_from_token__no_sub_claim__error_raised():
+    payload = {
+        'iat': int(datetime.now(UTC).timestamp()),
+        'exp': int((datetime.now(UTC) + timedelta(minutes=30)).timestamp()),
+        'aud': settings.JWT_AUDIENCE,
+        'iss': settings.JWT_ISSUER,
+    }
+    token = jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+    with pytest.raises(NoSubInTokenException):
+        get_user_id_from_token(token)

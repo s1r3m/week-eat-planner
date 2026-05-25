@@ -3,6 +3,7 @@ from fastapi import status
 
 from tests.constants import PASSWORD
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.exceptions import NoAccessTokenException
 
 NEW_PASSWORD = 'new_password'
 
@@ -25,8 +26,9 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
 async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
     response = await logout_client_for_created_user.get(AppUrl.WEEKS)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_user__data_changed__updated_user_in_response(auth_client_for_created_user, created_user):
@@ -58,8 +60,9 @@ async def test_update_user__empty_payload__422_returned(auth_client_for_created_
 async def test_update_user__no_auth__401_returned(client):
     response = await client.patch(AppUrl.USER, json={'username': 'new_username'})
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_change_password__valid_new_password__token_in_response(auth_client_for_created_user):

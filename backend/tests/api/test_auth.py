@@ -203,6 +203,16 @@ async def test_logout__no_cookie_in_request__no_error_raised(auth_client_for_cre
     assert response.json() == {'detail': error.detail}
 
 
+async def test_logout__no_refresh_token_in_request__no_error_raised(auth_client_for_created_user):
+    auth_client_for_created_user.cookies.pop(REFRESH_TOKEN_COOKIE_NAME)
+
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text
+    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+
+
 async def test_logout__revoked_refresh_token__no_error_raised(auth_client_for_created_user, revoked_refresh_token_user):
     response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
 
