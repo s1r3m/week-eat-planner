@@ -4,8 +4,6 @@ from enum import StrEnum
 
 MIN_PASSWORD_LENGTH = 8
 
-REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
-
 
 class AppUrl(StrEnum):
     """Enumeration of API endpoint URLs."""
@@ -31,6 +29,12 @@ class AppUrl(StrEnum):
 
     USER = '/user'
     USER_PASSWORD = '/user/password'
+
+
+ACCESS_TOKEN_COOKIE_NAME = 'access_token'
+ACCESS_TOKEN_COOIKE_PATH = '/api'
+REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
+REFRESH_TOKEN_COOKIE_PATH = f'/api/{AppUrl.AUTH_REFRESH}'
 
 
 class StorageBucket(StrEnum):

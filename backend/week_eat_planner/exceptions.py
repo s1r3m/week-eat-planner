@@ -65,11 +65,11 @@ class RefreshTokenRevokedException(TokenException):
         super().__init__(detail='Refresh token revoked')
 
 
-class NoEmailInTokenException(TokenException):
-    """Exception raised when a JWT token does not contain a 'sub' (email) claim."""
+class NoSubInTokenException(TokenException):
+    """Exception raised when a JWT token does not contain a 'sub' (user_id) claim."""
 
     def __init__(self) -> None:
-        super().__init__(detail='No email in JWT token')
+        super().__init__(detail='No sub in JWT token')
 
 
 class RefreshTokenMissingException(TokenException):

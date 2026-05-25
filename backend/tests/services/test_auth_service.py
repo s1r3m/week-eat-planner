@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 from tests.constants import HASHED_REFRESH_TOKEN, PASSWORD, REFRESH_TOKEN
 
-from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserCreate
+from week_eat_planner.api.schemas import RefreshTokenFilter, TokenUpdate, UserCreate
 from week_eat_planner.api.schemas.user import GoogleCode, OAuthUserData
 from week_eat_planner.config import settings
 from week_eat_planner.constants import OAuthProvider
@@ -229,7 +229,7 @@ async def test_login_with_google__email_registered_other_oauth__error_raised(
     assert exc.value.detail == error.detail
 
 
-async def test_refresh_tokens__valid_old_token__new_access_token_returned(
+async def test_refresh_tokens__valid_old_token__new_tokens_returned(
     mocked_refresh_token_dao, mocked_session, db_refresh_token, new_db_refresh_token
 ):
     mocked_refresh_token_dao.find_one_or_none.return_value = db_refresh_token
@@ -238,7 +238,7 @@ async def test_refresh_tokens__valid_old_token__new_access_token_returned(
     access_token, refresh_token = await AuthService(mocked_session).refresh_tokens(REFRESH_TOKEN)
 
     assert access_token
-    assert refresh_token == REFRESH_TOKEN
+    assert refresh_token != REFRESH_TOKEN
 
 
 async def test_refresh_tokens__old_about_to_expire__new_refresh_token_returned(
@@ -298,7 +298,7 @@ async def test_logout__valid_token__token_revoked(
 
     await AuthService(mocked_session).logout(user_read, REFRESH_TOKEN)
 
-    refresh_token = RefreshTokenFromDB(
+    refresh_token = RefreshTokenFilter(
         token_hash=TokenProvider.hash_refresh_token(REFRESH_TOKEN),
         user_id=user_read.id,
     )

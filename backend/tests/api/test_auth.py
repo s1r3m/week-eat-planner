@@ -8,7 +8,7 @@ from freezegun import freeze_time
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
-from week_eat_planner.api.schemas import RefreshTokenFromDB, TokenUpdate, UserRead
+from week_eat_planner.api.schemas import RefreshTokenFilter, TokenUpdate, UserRead
 from week_eat_planner.api.schemas.user import OAuthUserData
 from week_eat_planner.config import settings
 from week_eat_planner.constants import AppUrl, OAuthProvider, REFRESH_TOKEN_COOKIE_NAME, TokenType
@@ -31,9 +31,9 @@ from week_eat_planner.exceptions import (
 
 @pytest_asyncio.fixture
 async def expired_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFromDB(user_id=created_user.id))
+    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFilter(user_id=created_user.id))
     new_expires_at = datetime.now(UTC) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
-    token = RefreshTokenFromDB.model_validate(db_token)
+    token = RefreshTokenFilter.model_validate(db_token)
     await RefreshTokenDAO(db_session).update(token, TokenUpdate(expires_at=new_expires_at))
     await db_session.flush()
     return created_user
@@ -41,8 +41,8 @@ async def expired_refresh_token_user(db_session: AsyncSession, created_user: Use
 
 @pytest_asyncio.fixture
 async def revoked_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFromDB(user_id=created_user.id))
-    token = RefreshTokenFromDB.model_validate(db_token)
+    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFilter(user_id=created_user.id))
+    token = RefreshTokenFilter.model_validate(db_token)
     await RefreshTokenDAO(db_session).update(token, TokenUpdate(revoked=True))
     await db_session.flush()
     return created_user

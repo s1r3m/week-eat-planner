@@ -3,14 +3,13 @@
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.api.schemas.user import HashedPassword, UserRead, UserUpdate
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models.user import User
 from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserRemovedException
 from week_eat_planner.security.hashing import get_password_hash, verify_password
-from week_eat_planner.security.token_provider import get_email_from_token
+from week_eat_planner.security.token_provider import get_user_id_from_token
 
 
 class UserService:
@@ -31,11 +30,11 @@ class UserService:
         Raises:
             InvalidCredentialsException: If the user is not found or is not active.
         """
-        email = get_email_from_token(token)
-        logger.info(f'Retrieving user for email={email}')
-        user = await self._user_dao.find_one_or_none(Email(email=email))
+        user_id = get_user_id_from_token(token)
+        logger.info(f'Retrieving user for {user_id=}')
+        user = await self._user_dao.find_one_or_none(RecordId(id=user_id))
         if not user or not user.is_active:
-            logger.error(f'User not found for email={email}')
+            logger.error(f'User not found for {user_id=}')
             raise InvalidCredentialsException()
 
         logger.info(f'Retrieved User(id={user.id}) from DB')

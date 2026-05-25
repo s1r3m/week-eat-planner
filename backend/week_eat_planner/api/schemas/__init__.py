@@ -1,7 +1,7 @@
 from .common import OwnerId, RecordId
 from .meal_slot import MealSlotAssign, MealSlotRead
 from .recipe import RecipeCreate, RecipeFavoriteFilter, RecipeRead, RecipeReadMinimal, RecipeUpdate
-from .token import RefreshTokenFromDB, Token, TokenUpdate
+from .token import RefreshTokenFilter, Token, TokenUpdate
 from .user import Email, UserCreate, UserRead
 from .week import WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 
@@ -16,7 +16,7 @@ __all__ = [
     'RecipeReadMinimal',
     'RecipeUpdate',
     'RecordId',
-    'RefreshTokenFromDB',
+    'RefreshTokenFilter',
     'Token',
     'TokenUpdate',
     'UserCreate',

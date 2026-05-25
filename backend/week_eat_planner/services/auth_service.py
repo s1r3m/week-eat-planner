@@ -7,7 +7,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, RefreshTokenFromDB, TokenUpdate, UserCreate, UserRead
+from week_eat_planner.api.schemas import Email, RefreshTokenFilter, TokenUpdate, UserCreate, UserRead
 from week_eat_planner.api.schemas.user import GoogleCode, UserFilter
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.config import settings
@@ -98,7 +98,7 @@ class AuthService:
             logger.error('Invalid credentials')
             raise InvalidCredentialsException()
 
-        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
+        access_token, refresh_token = await self._generate_tokens_for_user(db_user)
 
         logger.info('User logged in successfully')
         return access_token, refresh_token
@@ -145,7 +145,7 @@ class AuthService:
         else:
             logger.info('Existing Google OAuth user logged in')
 
-        access_token, refresh_token, _ = await self._generate_tokens_for_user(db_user)
+        access_token, refresh_token = await self._generate_tokens_for_user(db_user)
         return access_token, refresh_token
 
     async def refresh_tokens(self, old_refresh_token: str) -> tuple[str, str]:
@@ -162,7 +162,7 @@ class AuthService:
             TokenExpiredException: If the provided token has expired.
         """
         logger.info('Attempting to refresh tokens')
-        old_token = RefreshTokenFromDB(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
+        old_token = RefreshTokenFilter(token_hash=TokenProvider.hash_refresh_token(old_refresh_token))
         db_refresh_token = await self._refresh_token_dao.find_one_or_none(old_token)
 
         if not db_refresh_token or db_refresh_token.revoked:
@@ -175,17 +175,14 @@ class AuthService:
             raise TokenExpiredException()
 
         db_user = db_refresh_token.user
-        if db_refresh_token.expires_at <= now + timedelta(minutes=settings.ROTATE_TOKEN_EXPIRE_DELTA):
-            access_token, refresh_token, new_db_token = await self._generate_tokens_for_user(db_user)
-            await self._refresh_token_dao.update(old_token, TokenUpdate(revoked=True, replaced_by=new_db_token.id))
-        else:
-            access_token = TokenProvider.create_access_token(db_user.email)
-            refresh_token = old_refresh_token
+        access_token, refresh_token = await self._generate_tokens_for_user(db_user, old_token)
 
         logger.info('Tokens refreshed successfully')
         return access_token, refresh_token
 
-    async def _generate_tokens_for_user(self, db_user: User) -> tuple[str, str, RefreshToken]:
+    async def _generate_tokens_for_user(
+        self, db_user: User, old_refresh: RefreshTokenFilter | None = None
+    ) -> tuple[str, str]:
         """Generates access and refresh tokens for a given user.
 
         Args:
@@ -194,7 +191,7 @@ class AuthService:
         Returns:
             A tuple containing the access and refresh tokens, and the DB refresh token instance.
         """
-        access_token = TokenProvider.create_access_token(db_user.email)
+        access_token = TokenProvider.create_access_token(db_user.id)
         refresh_token = TokenProvider.create_refresh_token()
         now = datetime.now(UTC)
         db_refresh_token = RefreshToken(
@@ -204,8 +201,12 @@ class AuthService:
             revoked=False,
         )
         await self._refresh_token_dao.add(db_refresh_token)
+        if old_refresh:
+            await self._refresh_token_dao.update(
+                old_refresh, TokenUpdate(revoked=True, replaced_by=db_refresh_token.id)
+            )
 
-        return access_token, refresh_token, db_refresh_token
+        return access_token, refresh_token
 
     async def logout(self, user: UserRead, raw_token: str) -> None:
         """Logs out a user by revoking their refresh token.
@@ -221,7 +222,7 @@ class AuthService:
             TokenRevokedException: If the refresh token has already been revoked.
         """
         logger.info(f'Logout attempt for user {user.id}')
-        refresh_token = RefreshTokenFromDB(
+        refresh_token = RefreshTokenFilter(
             token_hash=TokenProvider.hash_refresh_token(raw_token),
             user_id=user.id,
         )

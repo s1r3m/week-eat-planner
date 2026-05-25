@@ -16,8 +16,8 @@ class Token(BaseModel):
     token_type: str
 
 
-class RefreshTokenFromDB(BaseModel):
-    """Schema for a refresh token as stored in the database.
+class RefreshTokenFilter(BaseModel):
+    """Schema for a refresh token lookup in database.
 
     Attributes:
         token_hash: The hash of the refresh token.

@@ -7,6 +7,7 @@ from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.api.schemas.user import UserUpdate
 from week_eat_planner.constants import OAuthProvider
 from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserRemovedException
+from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.hashing import get_password_hash
 from week_eat_planner.security.token_provider import TokenProvider
 from week_eat_planner.services.user_service import UserService
@@ -24,7 +25,7 @@ def mocked_user_dao(mocker) -> AsyncMock:
 
 @pytest.fixture
 def other_encoded_token() -> str:
-    return TokenProvider.create_access_token('other_email@test.com')
+    return TokenProvider.create_access_token(generate_uuid7())
 
 
 async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_session, encoded_token, db_user):
