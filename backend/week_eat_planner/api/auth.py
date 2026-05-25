@@ -14,8 +14,8 @@ from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
 from week_eat_planner.api.schemas import UserCreate, UserRead
 from week_eat_planner.api.schemas.user import GoogleCode
 from week_eat_planner.constants import (
-    ACCESS_TOKEN_COOIKE_PATH,
     ACCESS_TOKEN_COOKIE_NAME,
+    ACCESS_TOKEN_COOKIE_PATH,
     AppUrl,
     REFRESH_TOKEN_COOKIE_NAME,
     REFRESH_TOKEN_COOKIE_PATH,
@@ -150,7 +150,7 @@ async def logout(
         logger.warning(f'Logout attempted for user {user_id} with already invalid refresh token: {exc.detail}')
 
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path=REFRESH_TOKEN_COOKIE_PATH)
-    response.delete_cookie(key=ACCESS_TOKEN_COOKIE_NAME, path=ACCESS_TOKEN_COOIKE_PATH)
+    response.delete_cookie(key=ACCESS_TOKEN_COOKIE_NAME, path=ACCESS_TOKEN_COOKIE_PATH)
     return
 
 

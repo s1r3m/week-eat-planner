@@ -7,8 +7,8 @@ from uuid_utils import uuid7
 
 from week_eat_planner.config import settings
 from week_eat_planner.constants import (
-    ACCESS_TOKEN_COOIKE_PATH,
     ACCESS_TOKEN_COOKIE_NAME,
+    ACCESS_TOKEN_COOKIE_PATH,
     ALLOWED_IMAGE_TYPES,
     MAX_IMAGE_SIZE_BYTES,
     REFRESH_TOKEN_COOKIE_NAME,
@@ -82,7 +82,7 @@ def set_access_cookies(response: Response, access_token: str) -> None:
 
     Args:
         response: The FastAPI response object to set the cookie on.
-        access_token: The refresh token value to store in the cookie.
+        access_token: The access token value to store in the cookie.
     """
     response.set_cookie(
         key=ACCESS_TOKEN_COOKIE_NAME,
@@ -91,5 +91,5 @@ def set_access_cookies(response: Response, access_token: str) -> None:
         secure=not settings.IS_DEBUG,
         samesite='lax' if settings.IS_DEBUG else 'strict',
         max_age=settings.ACCESS_TOKEN_TTL * 60,
-        path=ACCESS_TOKEN_COOIKE_PATH,
+        path=ACCESS_TOKEN_COOKIE_PATH,
     )
