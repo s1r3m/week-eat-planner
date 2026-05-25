@@ -8,11 +8,11 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_active_user_id
-from week_eat_planner.api.schemas import Token, UserRead
+from week_eat_planner.api.schemas import UserRead
 from week_eat_planner.api.schemas.user import UserChangePassword, UserUpdate
-from week_eat_planner.constants import AppUrl, TokenType
+from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.helpers import set_refresh_cookie
+from week_eat_planner.helpers import set_access_cookies, set_refresh_cookie
 from week_eat_planner.services.auth_service import AuthService
 from week_eat_planner.services.user_service import UserService
 
@@ -65,7 +65,7 @@ async def change_password(
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> Token:
+) -> None:
     """Changes the current user's password.
 
     Validates the old password before setting the new one. On success,
@@ -79,7 +79,7 @@ async def change_password(
         response: FastAPI response object for setting cookies.
 
     Returns:
-        A new access token for the user.
+        None.
     """
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user_id}')
     updated_user = await UserService(session).change_password(user_id, data.old_password, data.new_password)
@@ -87,4 +87,4 @@ async def change_password(
 
     logger.info('Login successful')
     set_refresh_cookie(response, refresh_token)
-    return Token(access_token=access_token, token_type=TokenType.BEARER)
+    set_access_cookies(response, access_token)

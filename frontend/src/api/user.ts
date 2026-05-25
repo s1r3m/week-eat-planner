@@ -1,7 +1,7 @@
 import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada';
 import { apiClient } from './client';
 import { toast } from 'vue-sonner';
-import { accessToken, type LoginInfo } from './auth';
+import { isAuthenticated } from './auth';
 
 /**
  * Cache keys for user-related queries.
@@ -89,12 +89,12 @@ export const updateUserMutation = defineMutation(() => {
 export const changePasswordMutation = defineMutation(() => {
   return {
     mutation: (data: UserPassPayload) =>
-      apiClient.patch<LoginInfo>('/user/password', data).then((res) => res.data),
+      apiClient.patch<void>('/user/password', data).then((res) => res.data),
     onError: (err: Error) => {
       toast.error(`An error during the request: ${err.message}`);
     },
-    onSuccess: (data: LoginInfo) => {
-      accessToken.value = data.access_token;
+    onSuccess: () => {
+      isAuthenticated.value = true;
       toast.success('Password was changed');
     },
   };

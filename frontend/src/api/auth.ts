@@ -1,18 +1,10 @@
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient, authClient } from './client';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { toast } from 'vue-sonner';
 import { USER_KEYS } from './user';
-
-/**
- * Token information returned upon successful login.
- */
-export interface LoginInfo {
-  access_token: string;
-  token_type: string;
-}
 
 /**
  * Payload to login a user.
@@ -30,18 +22,14 @@ export interface SignUpPayload extends LoginPayload {
 }
 
 /**
- * Reactive reference to the current JWT access token.
+ * Reactive reference indicating whether the user is currently authenticated.
+ * Initialized synchronously from a localStorage hint flag.
  */
-export const accessToken = ref<string | null>(null);
-
-/**
- * Computed property indicating whether the user is currently authenticated.
- */
-export const isAuthenticated = computed(() => !!accessToken.value);
+export const isAuthenticated = ref<boolean>(localStorage.getItem('isLogged') === 'true');
 
 /**
  * Mutation for logging in a user.
- * Stores the received access token and invalidates user data cache.
+ * Invalidates user data cache on success.
  */
 export const loginMutation = defineMutation(() => {
   const router = useRouter();
@@ -50,11 +38,12 @@ export const loginMutation = defineMutation(() => {
   return {
     mutation: (payload: LoginPayload) => {
       const params = new URLSearchParams({ username: payload.email, password: payload.password });
-      return apiClient.post<LoginInfo>('/auth/login', params).then((res) => res.data);
+      return apiClient.post<void>('/auth/login', params).then((res) => res.data);
     },
-    onSuccess: (data: LoginInfo) => {
+    onSuccess: () => {
       toast.success('Logged in successfully!');
-      accessToken.value = data.access_token;
+      isAuthenticated.value = true;
+      localStorage.setItem('isLogged', 'true');
       queryCache.invalidateQueries({ key: USER_KEYS.profile() });
       router.push({ name: ROUTE_NAMES.WEEKS });
     },
@@ -70,10 +59,11 @@ export const signupMutation = defineMutation(() => {
 
   return {
     mutation: (payload: SignUpPayload) =>
-      apiClient.post<LoginInfo>('/auth/signup', payload).then((res) => res.data),
-    onSuccess: async (data: LoginInfo) => {
+      apiClient.post<void>('/auth/signup', payload).then((res) => res.data),
+    onSuccess: async () => {
       toast.success('Registration complete!');
-      accessToken.value = data.access_token;
+      isAuthenticated.value = true;
+      localStorage.setItem('isLogged', 'true');
       queryCache.invalidateQueries({ key: USER_KEYS.profile() });
       await router.push({ name: ROUTE_NAMES.WEEKS });
     },
@@ -88,34 +78,33 @@ export const logoutMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   return {
     mutation: () => apiClient.post<void>('/auth/logout').then(() => undefined),
-    onSuccess: () => {
-      accessToken.value = null;
-    },
-    onError: (_err: Error) => {
-      accessToken.value = null;
-    },
     onSettled: () => {
       queryCache.invalidateQueries({ key: USER_KEYS.profile() });
+      isAuthenticated.value = false;
+      localStorage.removeItem('isLogged');
     },
   };
 });
 
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<void> | null = null;
 
 /**
  * Attempts to refresh the JWT access token using the HTTP-only refresh cookie.
  * Ensures only one refresh request is in flight at a time.
- *
- * @returns A promise that resolves to the new access token.
  */
 export const refreshToken = async () => {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = authClient
-    .post<LoginInfo>('/auth/refresh')
-    .then((res) => {
-      accessToken.value = res.data.access_token;
-      return accessToken.value;
+    .post<void>('/auth/refresh')
+    .then(() => {
+      isAuthenticated.value = true;
+      localStorage.setItem('isLogged', 'true');
+    })
+    .catch((err) => {
+      isAuthenticated.value = false;
+      localStorage.removeItem('isLogged');
+      throw err;
     })
     .finally(() => {
       refreshPromise = null;
@@ -131,7 +120,8 @@ export const initAuth = async () => {
   try {
     await refreshToken();
   } catch (err: unknown) {
-    accessToken.value = null;
+    isAuthenticated.value = false;
+    localStorage.removeItem('isLogged');
   }
 };
 
@@ -145,10 +135,11 @@ export const googleAuthMutation = defineMutation(() => {
 
   return {
     mutation: (code: string) =>
-      apiClient.post<LoginInfo>('/auth/google/exchange', { code }).then((res) => res.data),
-    onSuccess: (response: LoginInfo) => {
+      apiClient.post<void>('/auth/google/exchange', { code }).then((res) => res.data),
+    onSuccess: () => {
       toast.success('Logged in successfully!');
-      accessToken.value = response.access_token;
+      isAuthenticated.value = true;
+      localStorage.setItem('isLogged', 'true');
       router.push({ name: ROUTE_NAMES.WEEKS });
     },
     onError: (err: Error) => {

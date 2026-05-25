@@ -2,7 +2,7 @@ import pytest
 from fastapi import status
 
 from tests.constants import PASSWORD
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, REFRESH_TOKEN_COOKIE_NAME
 from week_eat_planner.exceptions import NoAccessTokenException
 
 NEW_PASSWORD = 'new_password'
@@ -65,13 +65,14 @@ async def test_update_user__no_auth__401_returned(client):
     assert response.json() == {'detail': error.detail}
 
 
-async def test_change_password__valid_new_password__token_in_response(auth_client_for_created_user):
+async def test_change_password__valid_new_password__token_in_cookies(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(
         AppUrl.USER_PASSWORD, json={'old_password': PASSWORD, 'new_password': NEW_PASSWORD}
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert 'access_token' in response.json()
+    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
 
 
 @pytest.mark.parametrize(

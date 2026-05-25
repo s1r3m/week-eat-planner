@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGuestAuthActions } from '../useGuestAuthActions';
-import { accessToken } from '@/api/auth';
+import { isAuthenticated } from '@/api/auth';
 import { useRoute } from 'vue-router';
 
 vi.mock('vue-router', () => ({
@@ -8,13 +8,13 @@ vi.mock('vue-router', () => ({
 }));
 
 vi.mock('@/api/auth', () => ({
-  accessToken: { value: null },
+  isAuthenticated: { value: false },
 }));
 
 describe('useGuestAuthActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (accessToken as any).value = null;
+    (isAuthenticated as any).value = false;
   });
 
   it('shows login and signup on a regular route', () => {
@@ -45,9 +45,9 @@ describe('useGuestAuthActions', () => {
     expect(showSignup.value).toBe(false);
   });
 
-  it('reports isLogged as true when accessToken is present', () => {
+  it('reports isLogged as true when isAuthenticated is true', () => {
     vi.mocked(useRoute).mockReturnValue({ name: 'home' } as any);
-    (accessToken as any).value = 'token';
+    (isAuthenticated as any).value = true;
 
     const { isLogged } = useGuestAuthActions();
 

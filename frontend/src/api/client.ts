@@ -1,9 +1,5 @@
-import axios, {
-  type AxiosError,
-  type AxiosRequestConfig,
-  type InternalAxiosRequestConfig,
-} from 'axios';
-import { accessToken, refreshToken } from './auth';
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
+import { isAuthenticated, refreshToken } from './auth';
 
 /**
  * Default timeout for API requests in milliseconds.
@@ -17,6 +13,7 @@ const DEFAULT_TIMEOUT = 5000;
 export const apiClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
+  withCredentials: true,
 });
 
 /**
@@ -28,16 +25,6 @@ export const authClient = axios.create({
   timeout: DEFAULT_TIMEOUT,
   withCredentials: true,
 });
-
-// Add Auth header.
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    if (accessToken.value && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${accessToken.value}`;
-    }
-    return config;
-  },
-);
 
 /**
  * API paths excluded from automatic 401 token-refresh handling.
@@ -76,13 +63,10 @@ apiClient.interceptors.response.use(
     originalConfig._retry = true;
 
     try {
-      const newToken = await refreshToken();
-      if (!newToken.trim()) throw new Error('Refresh returned empty token');
-      originalConfig.headers = originalConfig.headers || {};
-      originalConfig.headers.Authorization = `Bearer ${newToken}`;
+      await refreshToken();
       return apiClient.request(originalConfig);
     } catch (err: unknown) {
-      accessToken.value = null;
+      isAuthenticated.value = false;
       return Promise.reject(err);
     }
   },

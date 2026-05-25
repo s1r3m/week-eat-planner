@@ -9,7 +9,7 @@ import AuthLayout from '@/layouts/TheAuthLayout.vue';
 import PromoPage from '@/pages/PromoPage.vue';
 
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { accessToken, initAuth } from '@/api/auth';
+import { isAuthenticated, initAuth } from '@/api/auth';
 
 const routes = [
   {
@@ -113,13 +113,13 @@ router.beforeEach(async (to, from) => {
       await initAuth();
     } catch (err: unknown) {
       console.error('Auth initialization failed:', err);
-      accessToken.value = null;
+      isAuthenticated.value = false;
     } finally {
       isInitialized = true;
     }
   }
 
-  if (!accessToken.value && to.meta.requiresAuth) {
+  if (!isAuthenticated.value && to.meta.requiresAuth) {
     return {
       name: ROUTE_NAMES.LOGIN,
       query: { redirect: to.fullPath },
@@ -128,7 +128,7 @@ router.beforeEach(async (to, from) => {
 
   if (
     !to.meta?.requiresAuth &&
-    accessToken.value &&
+    isAuthenticated.value &&
     to.name !== ROUTE_NAMES.HOME &&
     to.name !== ROUTE_NAMES.NOT_FOUND
   ) {

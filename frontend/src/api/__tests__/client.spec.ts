@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiClient, authClient, AUTH_EXCLUDED_PATHS } from '../client';
-import { accessToken, refreshToken } from '../auth';
+import { isAuthenticated, refreshToken } from '../auth';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 
 vi.mock('../auth', () => ({
-  accessToken: { value: null },
+  isAuthenticated: { value: false },
   refreshToken: vi.fn(),
 }));
 
@@ -16,8 +16,8 @@ describe('apiClient', () => {
   beforeEach(() => {
     mockApi = new MockAdapter(apiClient);
     mockAuth = new MockAdapter(authClient);
-    accessToken.value = 'old-token';
-    vi.mocked(refreshToken).mockResolvedValue('new-token');
+    isAuthenticated.value = true;
+    vi.mocked(refreshToken).mockResolvedValue(undefined as void);
   });
 
   afterEach(() => {
@@ -26,18 +26,9 @@ describe('apiClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('request interceptor', () => {
-    it('adds Authorization header when accessToken is set', async () => {
-      mockApi.onGet('/test').reply(200, { success: true });
-      const response = await apiClient.get('/test');
-      expect(response.config.headers?.Authorization).toBe('Bearer old-token');
-    });
-
-    it('omits Authorization header when accessToken is null', async () => {
-      accessToken.value = null;
-      mockApi.onGet('/test').reply(200, { success: true });
-      const response = await apiClient.get('/test');
-      expect(response.config.headers?.Authorization).toBeUndefined();
+  describe('request setup', () => {
+    it('sets withCredentials correctly', () => {
+      expect(apiClient.defaults.withCredentials).toBe(true);
     });
   });
 
@@ -76,22 +67,20 @@ describe('apiClient', () => {
 
       expect(response.data).toEqual({ data: 'ok' });
       expect(refreshToken).toHaveBeenCalled();
-      expect(response.config.headers?.Authorization).toBe('Bearer new-token');
     });
 
     it('coalesces concurrent 401s into a single refresh call', async () => {
       mockApi.onGet('/test1').replyOnce(401).onGet('/test1').reply(200, { data: 'ok1' });
       mockApi.onGet('/test2').replyOnce(401).onGet('/test2').reply(200, { data: 'ok2' });
 
-      let sharedPromise: Promise<string> | null = null;
+      let sharedPromise: Promise<void> | null = null;
       const underlyingRefresh = vi.fn().mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
-        return 'new-token';
       });
 
       vi.mocked(refreshToken).mockImplementation(() => {
         if (!sharedPromise) sharedPromise = underlyingRefresh();
-        return sharedPromise as Promise<string>;
+        return sharedPromise as Promise<void>;
       });
 
       const [res1, res2] = await Promise.all([apiClient.get('/test1'), apiClient.get('/test2')]);
@@ -100,26 +89,6 @@ describe('apiClient', () => {
       expect(res2.data).toEqual({ data: 'ok2' });
       expect(refreshToken).toHaveBeenCalledTimes(2);
       expect(underlyingRefresh).toHaveBeenCalledTimes(1);
-    });
-
-    it('rejects when refresh returns an empty token', async () => {
-      mockApi.onGet('/test1').replyOnce(401);
-      vi.mocked(refreshToken).mockResolvedValue('');
-      await expect(apiClient.get('/test1')).rejects.toThrow();
-    });
-
-    it('sets Authorization header even when original config had no headers', async () => {
-      mockApi
-        .onGet('/test-no-headers')
-        .replyOnce((config) => {
-          config.headers = undefined as any;
-          return [401];
-        })
-        .onGet('/test-no-headers')
-        .reply(200, { data: 'ok' });
-
-      const response = await apiClient.get('/test-no-headers');
-      expect(response.config.headers?.Authorization).toBe('Bearer new-token');
     });
 
     it('rejects when refresh itself fails', async () => {
