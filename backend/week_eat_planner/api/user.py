@@ -79,7 +79,7 @@ async def change_password(
         response: FastAPI response object for setting cookies.
 
     Returns:
-        None.
+        A SuccessResponse indicating successful password change.
     """
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user_id}')
     updated_user = await UserService(session).change_password(user_id, data.old_password, data.new_password)
