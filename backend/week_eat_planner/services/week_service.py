@@ -52,6 +52,7 @@ class WeekService:
 
     async def get_visible_week(self, week_id: str, user_id: UUID | None) -> Week:
         """Retrieves a single week by its ID.
+        Now weeks are only private.
 
         Args:
             week_id: The ID of the week to retrieve.

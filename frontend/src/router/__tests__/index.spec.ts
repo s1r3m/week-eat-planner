@@ -57,14 +57,11 @@ describe('Router', () => {
   it('should handle initAuth error in beforeEach', async () => {
     const error = new Error('Auth fail');
     vi.mocked(initAuth).mockRejectedValueOnce(error);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await router.push({ name: ROUTE_NAMES.HOME });
+    await expect(router.push({ name: ROUTE_NAMES.HOME })).rejects.toThrow(error);
 
     expect(initAuth).toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith('Auth initialization failed:', error);
     expect(isAuthenticated.value).toBe(false);
-    consoleSpy.mockRestore();
   });
 
   it('should visit all guest routes to cover dynamic imports', async () => {

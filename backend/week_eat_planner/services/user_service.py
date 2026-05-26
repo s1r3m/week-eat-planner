@@ -9,7 +9,7 @@ from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.api.schemas.user import HashedPassword, UserUpdate
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models.user import User
-from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFound
+from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFoundException
 from week_eat_planner.security.hashing import get_password_hash, verify_password
 from week_eat_planner.security.token_provider import get_user_id_from_token
 
@@ -25,7 +25,7 @@ class UserService:
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
             logger.error(f'User not found with {user_id=}')
-            raise UserNotFound(f'User {user_id} was not found!')
+            raise UserNotFoundException(f'User {user_id} was not found!')
 
         return user
 
@@ -61,13 +61,16 @@ class UserService:
 
         Returns:
             The updated User model.
+
+        Raises:
+            UserNotFoundException: If the user record is missing in the database.
         """
         logger.debug(f'Updating user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
             msg = f'User {user_id} was not found!'
             logger.error(msg)
-            raise UserNotFound(msg)
+            raise UserNotFoundException(msg)
 
         updated_user = await self._user_dao.update(RecordId(id=user_id), values)
         logger.debug(f'User {user.id} was successfully updated')
@@ -85,7 +88,7 @@ class UserService:
             The updated User model.
 
         Raises:
-            UserRemovedException: If the user record is missing in the database.
+            UserNotFoundException: If the user record is missing in the database.
             OAuthAccountException: If the user is an OAuth account and has no password.
             InvalidCredentialsException: If the old password does not match.
         """
@@ -94,7 +97,7 @@ class UserService:
         if not user or not user.is_active:
             msg = f'User {user_id} was not found!'
             logger.error(msg)
-            raise UserNotFound(msg)
+            raise UserNotFoundException(msg)
 
         if not user.hashed_password:
             logger.error(f'User {user.id} was registered with {user.oauth_provider}')

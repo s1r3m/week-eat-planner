@@ -119,7 +119,7 @@ class UserAlreadyExistsException(LogicException):
         super().__init__(detail='User already exists')
 
 
-class UserNotFound(LogicException):
+class UserNotFoundException(LogicException):
     """Exception raised when an operation is attempted on a removed user.
 
     Args:

@@ -6,7 +6,7 @@ from fastapi import status
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.api.schemas.user import UserUpdate
 from week_eat_planner.constants import OAuthProvider
-from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFound
+from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.hashing import get_password_hash
 from week_eat_planner.security.token_provider import TokenProvider
@@ -37,7 +37,7 @@ async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_sess
 async def test_get_user__user_not_found__error_raised(mocked_user_dao, mocked_session, user_read):
     mocked_user_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(UserNotFound) as exc:
+    with pytest.raises(UserNotFoundException) as exc:
         await UserService(mocked_session).get_user(user_read.id)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT
@@ -90,7 +90,7 @@ async def test_update_user__user_not_found__error_raised(mocked_user_dao, mocked
     user_update = UserUpdate(username='new_name')
     mocked_user_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(UserNotFound) as exc:
+    with pytest.raises(UserNotFoundException) as exc:
         await UserService(mocked_session).update_user(user_read.id, user_update)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT
@@ -100,7 +100,7 @@ async def test_update_user__user_not_found__error_raised(mocked_user_dao, mocked
 async def test_change_password__user_removed__error_raised(mocked_user_dao, mocked_session, user_read):
     mocked_user_dao.find_one_or_none_by_id.return_value = None
 
-    with pytest.raises(UserNotFound) as exc:
+    with pytest.raises(UserNotFoundException) as exc:
         await UserService(mocked_session).change_password(user_read.id, OLD_PASSWORD, NEW_PASSWORD)
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT

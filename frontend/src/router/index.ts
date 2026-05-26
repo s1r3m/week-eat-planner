@@ -107,7 +107,7 @@ export const _resetRouterState = () => {
 };
 
 router.beforeEach(async (to, from) => {
-  if (!isAuthenticated) {
+  if (!isInitialized) {
     await initAuth();
     isInitialized = true;
   }

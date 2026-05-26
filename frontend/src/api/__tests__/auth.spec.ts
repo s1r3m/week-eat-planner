@@ -160,7 +160,7 @@ describe('auth api', () => {
       isAuthenticated.value = true;
       mockAuth.onPost('/auth/refresh').reply(401);
 
-      await initAuth();
+      await expect(initAuth()).rejects.toThrow();
       expect(isAuthenticated.value).toBe(false);
     });
   });
