@@ -46,7 +46,7 @@ async def create_user(
         user_data: The user's email and password.
 
     Returns:
-        A Token object containing the access token and token type.
+        UserRead object with created user info.
 
     Raises:
         SignUpWithAuthException: If the request contains an Authorization header.

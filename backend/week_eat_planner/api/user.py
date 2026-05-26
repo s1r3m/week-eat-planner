@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_active_user_id
 from week_eat_planner.api.schemas import UserRead
+from week_eat_planner.api.schemas.common import SuccessResponse
 from week_eat_planner.api.schemas.user import UserChangePassword, UserUpdate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.session_maker import db
@@ -59,18 +60,17 @@ async def update_user(
     return UserRead.model_validate(updated_user)
 
 
-@router.patch(AppUrl.USER_PASSWORD)
+@router.patch(AppUrl.USER_PASSWORD, response_model=SuccessResponse)
 async def change_password(
     data: UserChangePassword,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> None:
+) -> SuccessResponse:
     """Changes the current user's password.
 
     Validates the old password before setting the new one. On success,
-    it re-authenticates the user and returns a new access token while
-    setting a new refresh token cookie.
+    it re-authenticates the user and sets new access and refresh token cookies.
 
     Args:
         data: Schema containing old and new passwords.
@@ -88,3 +88,5 @@ async def change_password(
     logger.info('Login successful')
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
+
+    return SuccessResponse()

@@ -31,7 +31,7 @@ class UserService:
 
     async def get_user_by_token(self, token: str) -> User:
         """Retrieves a user based on their authentication token.
-        DEPRICATED as no longer used anywhere in the app.
+        DEPRECATED as no longer used anywhere in the app.
 
         Args:
             token: The JWT access token.

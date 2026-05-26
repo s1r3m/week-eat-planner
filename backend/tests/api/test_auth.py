@@ -146,7 +146,7 @@ async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_fo
     assert response.json() == {'detail': error.detail}
 
 
-async def test_refresh_token__refresh_token_far_from_expire__same_token_in_cookies(auth_client_for_created_user):
+async def test_refresh_token__refresh_token_far_from_expire__new_token_in_cookies(auth_client_for_created_user):
     old_token = auth_client_for_created_user.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
@@ -197,7 +197,7 @@ async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created
     assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
 
 
-async def test_logout__no_cookie_in_request__no_error_raised(auth_client_for_created_user):
+async def test_logout__no_cookie_in_request__error_raised(auth_client_for_created_user):
     auth_client_for_created_user.cookies = []
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
