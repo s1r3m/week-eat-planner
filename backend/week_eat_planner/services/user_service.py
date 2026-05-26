@@ -31,6 +31,7 @@ class UserService:
 
     async def get_user_by_token(self, token: str) -> User:
         """Retrieves a user based on their authentication token.
+        DEPRICATED as no longer used anywhere in the app.
 
         Args:
             token: The JWT access token.
@@ -63,7 +64,7 @@ class UserService:
         """
         logger.debug(f'Updating user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user:
+        if not user or not user.is_active:
             msg = f'User {user_id} was not found!'
             logger.error(msg)
             raise UserNotFound(msg)
@@ -90,7 +91,7 @@ class UserService:
         """
         logger.debug(f'Changing password for user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user:
+        if not user or not user.is_active:
             msg = f'User {user_id} was not found!'
             logger.error(msg)
             raise UserNotFound(msg)

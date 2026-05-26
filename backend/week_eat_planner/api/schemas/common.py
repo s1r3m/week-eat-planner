@@ -21,3 +21,13 @@ class RecordId(BaseModel):
     """
 
     id: UUID
+
+
+class SuccessResponse(BaseModel):
+    """A generic success response model.
+
+    Attributes:
+        status: The status message, typically "success".
+    """
+
+    status: str = 'success'

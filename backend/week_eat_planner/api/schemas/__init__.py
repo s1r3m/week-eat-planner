@@ -1,4 +1,4 @@
-from .common import OwnerId, RecordId
+from .common import OwnerId, RecordId, SuccessResponse
 from .meal_slot import MealSlotAssign, MealSlotRead
 from .recipe import RecipeCreate, RecipeFavoriteFilter, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from .token import RefreshTokenFilter, Token, TokenUpdate
@@ -17,6 +17,7 @@ __all__ = [
     'RecipeUpdate',
     'RecordId',
     'RefreshTokenFilter',
+    'SuccessResponse',
     'Token',
     'TokenUpdate',
     'UserCreate',

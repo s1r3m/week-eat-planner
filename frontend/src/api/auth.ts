@@ -22,6 +22,13 @@ export interface SignUpPayload extends LoginPayload {
 }
 
 /**
+ * Standard generic response for successful auth requests.
+ */
+export interface SuccessResponse {
+  status: string;
+}
+
+/**
  * Reactive reference indicating whether the user is currently authenticated.
  * Initialized synchronously from a localStorage hint flag.
  */
@@ -38,7 +45,7 @@ export const loginMutation = defineMutation(() => {
   return {
     mutation: (payload: LoginPayload) => {
       const params = new URLSearchParams({ username: payload.email, password: payload.password });
-      return apiClient.post<void>('/auth/login', params).then((res) => res.data);
+      return apiClient.post<SuccessResponse>('/auth/login', params).then((res) => res.data);
     },
     onSuccess: () => {
       toast.success('Logged in successfully!');
@@ -86,7 +93,7 @@ export const logoutMutation = defineMutation(() => {
   };
 });
 
-let refreshPromise: Promise<void> | null = null;
+let refreshPromise: Promise<SuccessResponse> | null = null;
 
 /**
  * Attempts to refresh the JWT access token using the HTTP-only refresh cookie.
@@ -96,10 +103,11 @@ export const refreshToken = async () => {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = authClient
-    .post<void>('/auth/refresh')
-    .then(() => {
+    .post<SuccessResponse>('/auth/refresh')
+    .then((res) => {
       isAuthenticated.value = true;
       localStorage.setItem('isLogged', 'true');
+      return res.data;
     })
     .catch((err) => {
       isAuthenticated.value = false;
@@ -135,7 +143,7 @@ export const googleAuthMutation = defineMutation(() => {
 
   return {
     mutation: (code: string) =>
-      apiClient.post<void>('/auth/google/exchange', { code }).then((res) => res.data),
+      apiClient.post<SuccessResponse>('/auth/google/exchange', { code }).then((res) => res.data),
     onSuccess: () => {
       toast.success('Logged in successfully!');
       isAuthenticated.value = true;

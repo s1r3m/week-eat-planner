@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_active_user_id
 from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
-from week_eat_planner.api.schemas import UserCreate, UserRead
+from week_eat_planner.api.schemas import SuccessResponse, UserCreate, UserRead
 from week_eat_planner.api.schemas.user import GoogleCode
 from week_eat_planner.constants import (
     ACCESS_TOKEN_COOKIE_NAME,
@@ -62,12 +62,12 @@ async def create_user(
     return UserRead.model_validate(created_user)
 
 
-@router.post(AppUrl.AUTH_LOGIN)
+@router.post(AppUrl.AUTH_LOGIN, response_model=SuccessResponse)
 async def login(
     user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> None:
+) -> SuccessResponse:
     """Authenticates a user and returns an access token.
 
     On successful authentication, an access token is returned in the response body,
@@ -77,7 +77,7 @@ async def login(
         user_data: The user's login credentials (username and password).
 
     Returns:
-        TBD
+        A SuccessResponse indicating successful authentication.
 
     Raises:
         LoginWithAuthException: If the request contains an Authorization header.
@@ -87,14 +87,15 @@ async def login(
     access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
+    return SuccessResponse()
 
 
-@router.post(AppUrl.AUTH_REFRESH)
+@router.post(AppUrl.AUTH_REFRESH, response_model=SuccessResponse)
 async def refresh_tokens(
     request: Request,
     response: Response,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> None:
+) -> SuccessResponse:
     """Generates a new access token using a refresh token.
 
     This endpoint requires a valid refresh token to be present in an HTTP-only cookie.
@@ -102,7 +103,7 @@ async def refresh_tokens(
     refresh token is set in the cookie.
 
     Returns:
-        TBD
+        A SuccessResponse indicating successful token refresh.
 
     Raises:
         HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
@@ -116,6 +117,7 @@ async def refresh_tokens(
     access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
+    return SuccessResponse()
 
 
 @router.post(AppUrl.AUTH_LOGOUT, status_code=status.HTTP_204_NO_CONTENT)
@@ -154,13 +156,13 @@ async def logout(
     return
 
 
-@router.post(AppUrl.AUTH_GOOGLE_EXCHANGE)
+@router.post(AppUrl.AUTH_GOOGLE_EXCHANGE, response_model=SuccessResponse)
 async def google_auth(
     data: GoogleCode,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     httpx_client: Annotated[AsyncClient, Depends(get_httpx_client)],
     response: Response,
-) -> None:
+) -> SuccessResponse:
     """Authenticates a user via the Google OAuth 2.0 authorization code flow.
 
     Accepts the one-time authorization code from the frontend, exchanges it
@@ -171,7 +173,7 @@ async def google_auth(
         data: The authorization code payload received from the Google consent screen.
 
     Returns:
-        TBD
+        A SuccessResponse indicating successful authentication.
 
     Raises:
         PasswordAccountException: If the Google email is already registered with
@@ -184,3 +186,4 @@ async def google_auth(
 
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
+    return SuccessResponse()

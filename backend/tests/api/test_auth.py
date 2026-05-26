@@ -91,6 +91,7 @@ async def test_login__valid_credentials__token_returned(client, created_user):
     response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'status': 'success'}
     assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
 
@@ -130,6 +131,7 @@ async def test_refresh_token__valid_user__new_token_returned(auth_client_for_cre
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'status': 'success'}
     assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
 
@@ -149,6 +151,7 @@ async def test_refresh_token__refresh_token_far_from_expire__same_token_in_cooki
     response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'status': 'success'}
     assert old_token != response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
 
 
@@ -162,6 +165,7 @@ async def test_refresh_token__refresh_token_about_to_expire__new_token_in_cookie
         response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'status': 'success'}
     assert old_token != response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
 
 
@@ -267,6 +271,7 @@ async def test_google_auth__valid_code__tokens_returned(mocker, client):
     response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'test_auth_code'})
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'status': 'success'}
     assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
 
