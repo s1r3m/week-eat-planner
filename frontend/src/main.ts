@@ -16,6 +16,13 @@ const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedState);
 
+/**
+ * Global error handler for Axios and application-level errors.
+ * Displays appropriate toast notifications based on the error type and context,
+ * while ignoring silent failures like background token refreshes.
+ *
+ * @param error - The error object to handle.
+ */
 export const handleGlobalError = (error: unknown) => {
   if (!axios.isAxiosError(error)) {
     toast.error(error instanceof Error ? error.message : 'An error occurred');

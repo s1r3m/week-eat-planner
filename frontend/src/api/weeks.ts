@@ -89,6 +89,8 @@ export const WEEK_KEYS = {
 
 /**
  * Query options for fetching the list of all planned weeks for the current user.
+ *
+ * @returns Colada query options for the weeks list.
  */
 export const getWeeksQuery = defineQueryOptions(() => ({
   key: WEEK_KEYS.all(),
@@ -99,6 +101,7 @@ export const getWeeksQuery = defineQueryOptions(() => ({
  * Query options for fetching the full details of a specific week, including all days and meal slots.
  *
  * @param id - The unique identifier of the week.
+ * @returns Colada query options for a specific week's details.
  */
 export const getWeekQuery = defineQueryOptions((id: string) => ({
   key: WEEK_KEYS.detail(id),

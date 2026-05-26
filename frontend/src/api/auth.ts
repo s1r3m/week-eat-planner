@@ -98,6 +98,9 @@ let refreshPromise: Promise<SuccessResponse> | null = null;
 /**
  * Attempts to refresh the JWT access token using the HTTP-only refresh cookie.
  * Ensures only one refresh request is in flight at a time.
+ *
+ * @returns A promise that resolves with the success response if refreshed, or rejects on failure.
+ * @throws {AxiosError} If the refresh request fails.
  */
 export const refreshToken = async () => {
   if (refreshPromise) return refreshPromise;
@@ -123,6 +126,9 @@ export const refreshToken = async () => {
 
 /**
  * Initializes the authentication state by attempting to refresh the token.
+ * This should be called once when the application starts to restore the session.
+ *
+ * @returns A promise that resolves when initialization is complete.
  */
 export const initAuth = async () => {
   try {

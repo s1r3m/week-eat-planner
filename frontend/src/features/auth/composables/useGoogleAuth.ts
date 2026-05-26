@@ -38,6 +38,10 @@ export const useGoogleAuth = () => {
   /**
    * Initializes the OAuth2 Code Client for a custom button flow.
    * This flow returns an authorization code that can be exchanged for tokens on the backend.
+   *
+   * @param callback - Function to handle the Google OAuth2 code response.
+   * @returns A promise that resolves to the initialized Google CodeClient.
+   * @throws {Error} If VITE_GOOGLE_CLIENT_ID is not configured in the environment.
    */
   const createCodeClient = async (
     callback: (response: google.accounts.oauth2.CodeResponse) => void,

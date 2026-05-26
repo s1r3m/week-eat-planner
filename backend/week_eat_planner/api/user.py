@@ -27,7 +27,7 @@ async def get_user(
     """Get the current user profile.
 
     Args:
-        user: The current authenticated user.
+        user_id: The ID of the current authenticated user.
 
     Returns:
         The current user's profile.
@@ -47,7 +47,7 @@ async def update_user(
 
     Args:
         new_data: Fields to update (username).
-        user: The current authenticated user.
+        user_id: The ID of the current authenticated user.
         session: Database session with auto-commit.
 
     Returns:
@@ -74,7 +74,7 @@ async def change_password(
 
     Args:
         data: Schema containing old and new passwords.
-        user: The currently authenticated user.
+        user_id: The ID of the currently authenticated user.
         session: Database session.
         response: FastAPI response object for setting cookies.
 

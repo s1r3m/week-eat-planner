@@ -35,7 +35,7 @@ class WeekService:
         relying on the relationship's cascade behavior.
 
         Args:
-            user: The user for whom to create the week.
+            user_id: The ID of the user for whom to create the week.
             week_data: The data for the new week.
 
         Returns:
@@ -55,7 +55,7 @@ class WeekService:
 
         Args:
             week_id: The ID of the week to retrieve.
-            user: The user for whom to retrieve the week.
+            user_id: The ID of the user for whom to retrieve the week.
 
         Returns:
             The Week object if found.
@@ -79,7 +79,7 @@ class WeekService:
 
         Args:
             week_id: The ID of the week to retrieve.
-            user: The user requesting the week for edit.
+            user_id: The ID of the user requesting the week for edit.
 
         Returns:
             The requested Week object.
@@ -126,7 +126,7 @@ class WeekService:
         """Retrieves all weeks for a specific user.
 
         Args:
-            user: The user whose weeks to retrieve.
+            user_id: The ID of the user whose weeks to retrieve.
 
         Returns:
             A list of the user's weeks.

@@ -31,6 +31,13 @@ export const authClient = axios.create({
  */
 export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
 
+/**
+ * Checks if a given URL is excluded from automatic 401 token refresh handling.
+ * Prevents infinite refresh loops for auth-specific endpoints.
+ *
+ * @param url - The URL to check.
+ * @returns True if the URL is in the exclusion list, false otherwise.
+ */
 const isAuthExcluded = (url: string | undefined): boolean => {
   if (!url) {
     return false;

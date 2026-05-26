@@ -213,7 +213,7 @@ class AuthService:
         """Logs out a user by revoking their refresh token.
 
         Args:
-            user: The user who is logging out.
+            user_id: The ID of the user who is logging out.
             raw_token: The raw (unhashed) refresh token to revoke.
 
         Raises:

@@ -27,7 +27,7 @@ class RecipeService:
 
         Args:
             recipe: The data for the new recipe.
-            user: The user creating the recipe.
+            user_id: The ID of the user creating the recipe.
 
         Returns:
             The created recipe.
@@ -44,7 +44,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to retrieve.
-            user: The user requesting the recipe.
+            user_id: The ID of the user requesting the recipe.
 
         Returns:
             The requested recipe object.
@@ -75,7 +75,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to retrieve.
-            user: The user requesting the recipe for edit.
+            user_id: The ID of the user requesting the recipe for edit.
 
         Returns:
             The requested recipe object.
@@ -122,7 +122,7 @@ class RecipeService:
         """Retrieves all recipes for a given user.
 
         Args:
-            user: The user whose recipes to retrieve.
+            user_id: The ID of the user whose recipes to retrieve.
 
         Returns:
             A list of the user's recipes.
@@ -177,7 +177,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to favorite.
-            user: The user who is favoriting the recipe.
+            user_id: The ID of the user who is favoriting the recipe.
 
         Returns:
             The recipe object with is_favorite=True.
@@ -212,7 +212,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to remove from favorites.
-            user: The user who is removing the favorite.
+            user_id: The ID of the user who is removing the favorite.
 
         Returns:
             The number of deleted favorite records (0 or 1).
@@ -235,7 +235,7 @@ class RecipeService:
         """Retrieves all recipes favorited by a user.
 
         Args:
-            user: The user whose favorites to retrieve.
+            user_id: The ID of the user whose favorites to retrieve.
 
         Returns:
             A list of favorited recipes.

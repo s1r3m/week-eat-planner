@@ -56,7 +56,7 @@ class UserService:
         """Updates a user's profile with the provided values.
 
         Args:
-            user: The current user schema (used for ID lookup).
+            user_id: The ID of the current user.
             values: The fields to update.
 
         Returns:
@@ -77,7 +77,7 @@ class UserService:
         """Changes User's password if old_password matches the hash.
 
         Args:
-            user_read: The current user schema (used for ID lookup).
+            user_id: The ID of the current user.
             old_password: The current password of the user.
             new_password: The new desired password.
 

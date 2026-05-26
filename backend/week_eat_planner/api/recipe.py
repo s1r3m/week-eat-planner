@@ -29,7 +29,7 @@ async def create_recipe(
 
     Args:
         recipe_data: The data for the new recipe.
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         session: The database session.
 
     Returns:
@@ -50,7 +50,7 @@ async def get_my_recipes(
     """Retrieves all recipes created by the current user.
 
     Args:
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         session: The database session.
 
     Returns:
@@ -71,7 +71,7 @@ async def get_favorites(
     """Retrieves all favorite recipes for the current user.
 
     Args:
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         session: The database session.
 
     Returns:
@@ -96,7 +96,7 @@ async def get_recipe(
 
     Args:
         recipe_id: ID of the recipe to get.
-        user: The authenticated user or None, injected by dependency.
+        user_id: The ID of the authenticated user or None, injected by dependency.
         session: The database session.
 
     Returns:
@@ -121,7 +121,7 @@ async def update_recipe(
     Args:
         new_data: The new data to update the recipe with.
         recipe_id: ID of the recipe to update.
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         session: The database session.
 
     Returns:
@@ -147,7 +147,7 @@ async def delete_recipe(
 
     Args:
         recipe_id: ID of the recipe to delete.
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         storage: The storage client for deleting the recipe's image.
         session: The database session.
 
@@ -175,7 +175,7 @@ async def upload_image(
 
     Args:
         recipe_id: The recipe_id to update.
-        user: The authenticated user, injected by dependency.
+        user_id: The ID of the authenticated user, injected by dependency.
         session: The database session.
         storage: The storage client, injected by dependency.
         image: The image file to upload.
@@ -206,7 +206,7 @@ async def create_favorite(
 
     Args:
         recipe_id: The ID of the recipe to favorite.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:
@@ -229,7 +229,7 @@ async def remove_favorite(
 
     Args:
         recipe_id: The ID of the recipe to unfavorite.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:

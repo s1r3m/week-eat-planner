@@ -35,7 +35,7 @@ async def create_week(
 
     Args:
         week_data: Data to create a new week, primarily the week's name.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:
@@ -54,7 +54,7 @@ async def get_user_weeks(
     """Retrieves all weeks for the current user.
 
     Args:
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:
@@ -77,7 +77,7 @@ async def get_week(
 
     Args:
         week_id: The ID of the week to retrieve.
-        user: The authenticated user or None for public access (TODO).
+        user_id: The ID of the authenticated user or None for public access (TODO).
         session: The database session.
 
     Returns:
@@ -102,7 +102,7 @@ async def update_week(
     Args:
         new_data: The new data for the week.
         week_id: The ID of the week to update.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:
@@ -127,7 +127,7 @@ async def delete_week(
 
     Args:
         week_id: The ID of the week to delete.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
     """
     logger.info(f'Got DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} for user {user_id}')
@@ -148,7 +148,7 @@ async def assign_recipe_to_meal_slot(
     Args:
         week_id: The ID of the week containing the slots.
         slots_data: A list of slot assignments, each containing a slot ID and an optional recipe ID.
-        user: The authenticated user.
+        user_id: The ID of the authenticated user.
         session: The database session.
 
     Returns:
