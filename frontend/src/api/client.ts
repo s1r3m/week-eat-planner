@@ -73,7 +73,6 @@ apiClient.interceptors.response.use(
       await refreshToken();
       return apiClient.request(originalConfig);
     } catch (err: unknown) {
-      isAuthenticated.value = false;
       return Promise.reject(err);
     }
   },

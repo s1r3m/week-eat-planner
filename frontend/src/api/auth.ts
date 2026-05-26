@@ -130,14 +130,7 @@ export const refreshToken = async () => {
  *
  * @returns A promise that resolves when initialization is complete.
  */
-export const initAuth = async () => {
-  try {
-    await refreshToken();
-  } catch (err: unknown) {
-    isAuthenticated.value = false;
-    localStorage.removeItem('isLogged');
-  }
-};
+export const initAuth = async () => await refreshToken();
 
 /**
  * Mutation for authenticating a user via Google OAuth.

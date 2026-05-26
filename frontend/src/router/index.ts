@@ -97,26 +97,19 @@ const router = createRouter({
 
 export default router;
 
-let isInitialized = false;
-
 /**
  * Reset the initialization state of the router.
  * Used for testing purposes only.
  */
+let isInitialized = false;
 export const _resetRouterState = () => {
   isInitialized = false;
 };
 
 router.beforeEach(async (to, from) => {
-  if (!isInitialized) {
-    try {
-      await initAuth();
-    } catch (err: unknown) {
-      console.error('Auth initialization failed:', err);
-      isAuthenticated.value = false;
-    } finally {
-      isInitialized = true;
-    }
+  if (!isAuthenticated) {
+    await initAuth();
+    isInitialized = true;
   }
 
   if (!isAuthenticated.value && to.meta.requiresAuth) {
