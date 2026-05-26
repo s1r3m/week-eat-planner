@@ -1,6 +1,6 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { accessToken } from '@/api/auth';
+import { isAuthenticated } from '@/api/auth';
 
 /**
  * Composable for managing guest-specific authentication actions and visibility states.
@@ -11,7 +11,7 @@ export const useGuestAuthActions = () => {
 
   const showLogin = computed(() => route.name !== 'login');
   const showSignup = computed(() => route.name !== 'signup');
-  const isLogged = computed(() => !!accessToken.value);
+  const isLogged = computed(() => isAuthenticated.value);
 
   return {
     showLogin,

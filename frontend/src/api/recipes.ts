@@ -102,6 +102,8 @@ export const RECIPE_KEYS = {
 /**
  * Query options for fetching the current user's recipe collection.
  * Uses `@pinia/colada` for caching and state management.
+ *
+ * @returns Colada query options for the user's recipes list.
  */
 export const getMyRecipesQuery = defineQueryOptions(() => ({
   key: RECIPE_KEYS.my(),
@@ -112,6 +114,7 @@ export const getMyRecipesQuery = defineQueryOptions(() => ({
  * Query options for fetching full details of a specific recipe.
  *
  * @param id - Unique identifier of the recipe.
+ * @returns Colada query options for the recipe details.
  */
 export const getRecipeQuery = defineQueryOptions((id: string) => ({
   key: RECIPE_KEYS.detail(id),

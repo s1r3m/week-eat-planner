@@ -6,7 +6,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import MealSlotAssign, OwnerId, RecordId, UserRead, WeekCreate, WeekUpdate
+from week_eat_planner.api.schemas import MealSlotAssign, OwnerId, RecordId, WeekCreate, WeekUpdate
 from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotUpdate
 from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
 from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
@@ -28,21 +28,21 @@ class WeekService:
         self._recipe_dao = RecipeDAO(session)
         self._week_dao = WeekDAO(session)
 
-    async def create_week_with_slots(self, user: UserRead, week_data: WeekCreate) -> Week:
+    async def create_week_with_slots(self, user_id: UUID, week_data: WeekCreate) -> Week:
         """Creates a new week with its initial meal slots for a user.
 
         This now builds the object graph in memory and persists it in one go,
         relying on the relationship's cascade behavior.
 
         Args:
-            user: The user for whom to create the week.
+            user_id: The ID of the user for whom to create the week.
             week_data: The data for the new week.
 
         Returns:
             The newly created Week object, with its slots attached.
         """
-        logger.info(f'Creating a new week named "{week_data.name}" for user {user.id}')
-        new_week = Week(user_id=user.id, name=week_data.name)
+        logger.info(f'Creating a new week named "{week_data.name}" for user {user_id}')
+        new_week = Week(user_id=user_id, name=week_data.name)
         new_week.meal_slots = [
             MealSlot(day_of_week=day, meal_type=meal_type) for day in DayOfWeek for meal_type in MealType
         ]
@@ -50,12 +50,13 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots')
         return week
 
-    async def get_visible_week(self, week_id: str, user: UserRead) -> Week:
+    async def get_visible_week(self, week_id: str, user_id: UUID | None) -> Week:
         """Retrieves a single week by its ID.
+        Now weeks are only private.
 
         Args:
             week_id: The ID of the week to retrieve.
-            user: The user for whom to retrieve the week.
+            user_id: The ID of the user for whom to retrieve the week.
 
         Returns:
             The Week object if found.
@@ -66,20 +67,20 @@ class WeekService:
         """
         week = await self._get_week(week_id, for_update=False)
 
-        if user.id != week.user_id:
-            logger.error(f'User {user.id} cannot access week {week.id}')
+        if user_id != week.user_id:
+            logger.error(f'User {user_id} cannot access week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
 
-    async def get_week_for_edit(self, week_id: str, user: UserRead) -> Week:
+    async def get_week_for_edit(self, week_id: str, user_id: UUID) -> Week:
         """Retrieves a week for editing.
 
         Ensures the user owns the week and locks it for update.
 
         Args:
             week_id: The ID of the week to retrieve.
-            user: The user requesting the week for edit.
+            user_id: The ID of the user requesting the week for edit.
 
         Returns:
             The requested Week object.
@@ -89,8 +90,8 @@ class WeekService:
             WeekForbiddenException: If the user does not own the week.
         """
         week = await self._get_week(week_id, for_update=True)
-        if week.user_id != user.id:
-            logger.error(f'User {user.id} cannot edit week {week.id}')
+        if week.user_id != user_id:
+            logger.error(f'User {user_id} cannot edit week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
@@ -122,18 +123,18 @@ class WeekService:
 
         return week
 
-    async def get_weeks(self, user: UserRead) -> list[Week]:
+    async def get_weeks(self, user_id: UUID) -> list[Week]:
         """Retrieves all weeks for a specific user.
 
         Args:
-            user: The user whose weeks to retrieve.
+            user_id: The ID of the user whose weeks to retrieve.
 
         Returns:
             A list of the user's weeks.
         """
-        logger.info(f'Retrieving all weeks for user {user.id}')
-        weeks = await self._week_dao.find_all(OwnerId(user_id=user.id))
-        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}')
+        logger.info(f'Retrieving all weeks for user {user_id}')
+        weeks = await self._week_dao.find_all(OwnerId(user_id=user_id))
+        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user_id}')
 
         return weeks
 

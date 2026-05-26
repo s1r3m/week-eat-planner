@@ -31,7 +31,7 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 
 @pytest.fixture
 def encoded_token() -> str:
-    return TokenProvider.create_access_token(EMAIL)
+    return TokenProvider.create_access_token(USER_ID)
 
 
 @pytest.fixture

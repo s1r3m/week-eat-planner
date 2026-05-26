@@ -9,7 +9,7 @@ import AuthLayout from '@/layouts/TheAuthLayout.vue';
 import PromoPage from '@/pages/PromoPage.vue';
 
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { accessToken, initAuth } from '@/api/auth';
+import { isAuthenticated, initAuth } from '@/api/auth';
 
 const routes = [
   {
@@ -97,29 +97,22 @@ const router = createRouter({
 
 export default router;
 
-let isInitialized = false;
-
 /**
  * Reset the initialization state of the router.
  * Used for testing purposes only.
  */
+let isInitialized = false;
 export const _resetRouterState = () => {
   isInitialized = false;
 };
 
 router.beforeEach(async (to, from) => {
   if (!isInitialized) {
-    try {
-      await initAuth();
-    } catch (err: unknown) {
-      console.error('Auth initialization failed:', err);
-      accessToken.value = null;
-    } finally {
-      isInitialized = true;
-    }
+    await initAuth();
+    isInitialized = true;
   }
 
-  if (!accessToken.value && to.meta.requiresAuth) {
+  if (!isAuthenticated.value && to.meta.requiresAuth) {
     return {
       name: ROUTE_NAMES.LOGIN,
       query: { redirect: to.fullPath },
@@ -128,7 +121,7 @@ router.beforeEach(async (to, from) => {
 
   if (
     !to.meta?.requiresAuth &&
-    accessToken.value &&
+    isAuthenticated.value &&
     to.name !== ROUTE_NAMES.HOME &&
     to.name !== ROUTE_NAMES.NOT_FOUND
   ) {

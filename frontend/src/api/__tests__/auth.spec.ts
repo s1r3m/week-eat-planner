@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-  accessToken,
   isAuthenticated,
   loginMutation,
   signupMutation,
@@ -39,7 +38,7 @@ describe('auth api', () => {
     setActivePinia(createPinia());
     mockApi = new MockAdapter(apiClient);
     mockAuth = new MockAdapter(authClient);
-    accessToken.value = null;
+    isAuthenticated.value = false;
     console.error = vi.fn();
     console.debug = vi.fn();
     vi.mocked(useQueryCache).mockReturnValue({
@@ -54,32 +53,28 @@ describe('auth api', () => {
     vi.restoreAllMocks();
   });
 
-  it('isAuthenticated is true when accessToken has a value', () => {
+  it('isAuthenticated is false initially', () => {
     expect(isAuthenticated.value).toBe(false);
-    accessToken.value = 'token';
-    expect(isAuthenticated.value).toBe(true);
   });
 
   describe('loginMutation', () => {
     it('posts credentials and returns token data', async () => {
-      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
-      mockApi.onPost('/auth/login').reply(200, loginInfo);
+      mockApi.onPost('/auth/login').reply(200);
 
       const config = loginMutation() as any;
       const data = await config.mutation(new URLSearchParams());
-      expect(data).toEqual(loginInfo);
+      expect(data).toBeUndefined();
     });
 
-    it('sets accessToken, shows toast, and redirects to weeks on success', async () => {
+    it('sets isAuthenticated, shows toast, and redirects to weeks on success', async () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
       const cache = useQueryCache();
 
       const config = loginMutation() as any;
-      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
-      await config.onSuccess(loginInfo);
+      await config.onSuccess();
 
-      expect(accessToken.value).toBe('new-token');
+      expect(isAuthenticated.value).toBe(true);
       expect(cache.invalidateQueries).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
       expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
@@ -89,23 +84,21 @@ describe('auth api', () => {
   describe('signupMutation', () => {
     it('posts registration payload and returns token data', async () => {
       const payload = { email: 'test@example.com', username: 'test', password: 'password' };
-      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
-      mockApi.onPost('/auth/signup').reply(201, loginInfo);
+      mockApi.onPost('/auth/signup').reply(201);
 
       const config = signupMutation() as any;
       const result = await config.mutation(payload);
-      expect(result).toEqual(loginInfo);
+      expect(result).toBeUndefined();
     });
 
-    it('sets accessToken, shows toast, and redirects to weeks on success', async () => {
+    it('sets isAuthenticated, shows toast, and redirects to weeks on success', async () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
       const config = signupMutation() as any;
-      const loginInfo = { access_token: 'new-token', token_type: 'bearer' };
-      await config.onSuccess(loginInfo);
+      await config.onSuccess();
 
-      expect(accessToken.value).toBe('new-token');
+      expect(isAuthenticated.value).toBe(true);
       expect(toast.success).toHaveBeenCalledWith('Registration complete!');
       expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
     });
@@ -121,18 +114,11 @@ describe('auth api', () => {
       expect(mockApi.history.post.length).toBe(1);
     });
 
-    it('clears accessToken on success', () => {
-      accessToken.value = 'token';
+    it('clears isAuthenticated on settled', () => {
+      isAuthenticated.value = true;
       const config = logoutMutation() as any;
-      config.onSuccess();
-      expect(accessToken.value).toBeNull();
-    });
-
-    it('clears accessToken on error', () => {
-      accessToken.value = 'token';
-      const config = logoutMutation() as any;
-      config.onError(new Error('fail'));
-      expect(accessToken.value).toBeNull();
+      config.onSettled();
+      expect(isAuthenticated.value).toBe(false);
     });
 
     it('invalidates user query on settled', () => {
@@ -144,69 +130,58 @@ describe('auth api', () => {
   });
 
   describe('refreshToken', () => {
-    it('fetches a new token and sets accessToken', async () => {
-      const loginInfo = { access_token: 'refresh-token', token_type: 'bearer' };
-      mockAuth.onPost('/auth/refresh').reply(200, loginInfo);
+    it('fetches a new token and sets isAuthenticated', async () => {
+      mockAuth.onPost('/auth/refresh').reply(200);
 
-      const token = await refreshToken();
-      expect(token).toBe('refresh-token');
-      expect(accessToken.value).toBe('refresh-token');
+      await refreshToken();
+      expect(isAuthenticated.value).toBe(true);
     });
 
     it('returns the same promise if called concurrently', async () => {
       mockAuth
         .onPost('/auth/refresh')
-        .reply(
-          () =>
-            new Promise((resolve) =>
-              setTimeout(() => resolve([200, { access_token: 'refresh-token' }]), 50),
-            ),
-        );
+        .reply(() => new Promise((resolve) => setTimeout(() => resolve([200]), 50)));
 
-      const [token1, token2] = await Promise.all([refreshToken(), refreshToken()]);
-      expect(token1).toBe('refresh-token');
-      expect(token2).toBe('refresh-token');
+      await Promise.all([refreshToken(), refreshToken()]);
+      expect(isAuthenticated.value).toBe(true);
       expect(mockAuth.history.post.length).toBe(1);
     });
   });
 
   describe('initAuth', () => {
-    it('sets accessToken when refresh succeeds', async () => {
-      mockAuth
-        .onPost('/auth/refresh')
-        .reply(200, { access_token: 'init-token', token_type: 'bearer' });
+    it('sets isAuthenticated when refresh succeeds', async () => {
+      mockAuth.onPost('/auth/refresh').reply(200);
 
       await initAuth();
-      expect(accessToken.value).toBe('init-token');
+      expect(isAuthenticated.value).toBe(true);
     });
 
-    it('sets accessToken to null when refresh fails', async () => {
-      accessToken.value = 'some-token';
+    it('sets isAuthenticated to false when refresh fails', async () => {
+      isAuthenticated.value = true;
       mockAuth.onPost('/auth/refresh').reply(401);
 
-      await initAuth();
-      expect(accessToken.value).toBeNull();
+      await expect(initAuth()).rejects.toThrow();
+      expect(isAuthenticated.value).toBe(false);
     });
   });
 
   describe('googleAuthMutation', () => {
     it('sends code to exchange endpoint and returns token data', async () => {
-      const loginInfo = { access_token: 'google-token', token_type: 'bearer' };
-      mockApi.onPost('/auth/google/exchange', { code: 'auth-code' }).reply(200, loginInfo);
+      mockApi.onPost('/auth/google/exchange', { code: 'auth-code' }).reply(200);
 
       const config = googleAuthMutation() as any;
       const result = await config.mutation('auth-code');
-      expect(result).toEqual(loginInfo);
+      expect(result).toBeUndefined();
     });
 
-    it('sets accessToken, shows toast, and redirects to weeks on success', () => {
+    it('sets isAuthenticated, shows toast, and redirects to weeks on success', () => {
       const pushMock = vi.fn();
       vi.mocked(useRouter).mockReturnValue({ push: pushMock } as any);
 
       const config = googleAuthMutation() as any;
-      config.onSuccess({ access_token: 'google-token', token_type: 'bearer' });
+      config.onSuccess();
 
-      expect(accessToken.value).toBe('google-token');
+      expect(isAuthenticated.value).toBe(true);
       expect(toast.success).toHaveBeenCalledWith('Logged in successfully!');
       expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_NAMES.WEEKS });
     });

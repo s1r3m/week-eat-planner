@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import router, { _resetRouterState } from '../index';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
-import { accessToken, initAuth } from '@/api/auth';
+import { isAuthenticated, initAuth } from '@/api/auth';
 
 vi.mock('@/api/auth', () => ({
-  accessToken: { value: null },
+  isAuthenticated: { value: false },
   initAuth: vi.fn(),
 }));
 
@@ -16,7 +16,7 @@ describe('Router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
-    (accessToken as any).value = null;
+    (isAuthenticated as any).value = false;
     _resetRouterState();
   });
 
@@ -27,19 +27,19 @@ describe('Router', () => {
   });
 
   it('should allow access to protected route when authenticated', async () => {
-    (accessToken as any).value = 'valid-token';
+    (isAuthenticated as any).value = true;
     await router.push({ name: ROUTE_NAMES.RECIPES });
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.RECIPES);
   });
 
   it('should allow access to guest routes when not authenticated', async () => {
-    (accessToken as any).value = null;
+    (isAuthenticated as any).value = false;
     await router.push({ name: ROUTE_NAMES.LOGIN });
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.LOGIN);
   });
 
   it('should redirect authenticated users away from guest routes to weeks', async () => {
-    (accessToken as any).value = 'valid-token';
+    (isAuthenticated as any).value = true;
     await router.push({ name: ROUTE_NAMES.SIGNUP });
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.WEEKS);
   });
@@ -57,18 +57,15 @@ describe('Router', () => {
   it('should handle initAuth error in beforeEach', async () => {
     const error = new Error('Auth fail');
     vi.mocked(initAuth).mockRejectedValueOnce(error);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await router.push({ name: ROUTE_NAMES.HOME });
+    await expect(router.push({ name: ROUTE_NAMES.HOME })).rejects.toThrow(error);
 
     expect(initAuth).toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith('Auth initialization failed:', error);
-    expect(accessToken.value).toBeNull();
-    consoleSpy.mockRestore();
+    expect(isAuthenticated.value).toBe(false);
   });
 
   it('should visit all guest routes to cover dynamic imports', async () => {
-    (accessToken as any).value = null;
+    (isAuthenticated as any).value = false;
     const guestRoutes = [ROUTE_NAMES.SIGNUP, ROUTE_NAMES.FORGOT_PASSWORD];
     for (const name of guestRoutes) {
       await router.push({ name });
@@ -77,7 +74,7 @@ describe('Router', () => {
   });
 
   it('should visit all auth routes to cover dynamic imports', async () => {
-    (accessToken as any).value = 'valid-token';
+    (isAuthenticated as any).value = true;
     const routeNames = [
       ROUTE_NAMES.WEEKS,
       ROUTE_NAMES.WEEK,

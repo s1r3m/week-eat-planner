@@ -5,7 +5,7 @@ import { toast } from 'vue-sonner';
 import { apiClient } from '../client';
 import { getUserQuery, updateUserMutation, changePasswordMutation, USER_KEYS } from '../user';
 import type { UserData, UserPayload, UserPassPayload } from '../user';
-import { accessToken } from '../auth';
+import { isAuthenticated } from '../auth';
 
 const mockQueryCache = {
   cancelQueries: vi.fn(),
@@ -147,28 +147,35 @@ describe('user api', () => {
       old_password: 'oldPassword123',
       new_password: 'newPassword123',
     };
-    const mockLoginInfo = {
-      access_token: 'new-access-token',
-      token_type: 'bearer',
-    };
 
-    it('patches /user/password and returns login info', async () => {
-      mockApi.onPatch('/user/password', payload).reply(200, mockLoginInfo);
+    it('patches /user/password without returning data', async () => {
+      mockApi.onPatch('/user/password', payload).reply(200);
 
       const config = changePasswordMutation() as any;
       const result = await config.mutation(payload);
-      expect(result).toEqual(mockLoginInfo);
+      expect(result).toBeUndefined();
     });
 
     describe('onSuccess', () => {
-      it('updates the access token and shows a success toast', () => {
-        accessToken.value = 'old-access-token';
+      it('updates isAuthenticated and shows a success toast', () => {
+        isAuthenticated.value = false;
         const config = changePasswordMutation() as any;
 
-        config.onSuccess(mockLoginInfo);
+        config.onSuccess();
 
-        expect(accessToken.value).toBe('new-access-token');
+        expect(isAuthenticated.value).toBe(true);
         expect(toast.success).toHaveBeenCalledWith('Password was changed');
+      });
+    });
+
+    describe('onError', () => {
+      it('shows an error toast', () => {
+        const config = changePasswordMutation() as any;
+        const error = new Error('Test error message');
+
+        config.onError(error);
+
+        expect(toast.error).toHaveBeenCalledWith('An error during the request: Test error message');
       });
     });
   });

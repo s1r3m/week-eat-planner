@@ -1,9 +1,5 @@
-import axios, {
-  type AxiosError,
-  type AxiosRequestConfig,
-  type InternalAxiosRequestConfig,
-} from 'axios';
-import { accessToken, refreshToken } from './auth';
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
+import { isAuthenticated, refreshToken } from './auth';
 
 /**
  * Default timeout for API requests in milliseconds.
@@ -17,6 +13,7 @@ const DEFAULT_TIMEOUT = 5000;
 export const apiClient = axios.create({
   baseURL: '/api',
   timeout: DEFAULT_TIMEOUT,
+  withCredentials: true,
 });
 
 /**
@@ -29,21 +26,18 @@ export const authClient = axios.create({
   withCredentials: true,
 });
 
-// Add Auth header.
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    if (accessToken.value && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${accessToken.value}`;
-    }
-    return config;
-  },
-);
-
 /**
  * API paths excluded from automatic 401 token-refresh handling.
  */
 export const AUTH_EXCLUDED_PATHS = ['/auth/login', '/auth/refresh', '/auth/signup', '/auth/logout'];
 
+/**
+ * Checks if a given URL is excluded from automatic 401 token refresh handling.
+ * Prevents infinite refresh loops for auth-specific endpoints.
+ *
+ * @param url - The URL to check.
+ * @returns True if the URL is in the exclusion list, false otherwise.
+ */
 const isAuthExcluded = (url: string | undefined): boolean => {
   if (!url) {
     return false;
@@ -76,13 +70,9 @@ apiClient.interceptors.response.use(
     originalConfig._retry = true;
 
     try {
-      const newToken = await refreshToken();
-      if (!newToken.trim()) throw new Error('Refresh returned empty token');
-      originalConfig.headers = originalConfig.headers || {};
-      originalConfig.headers.Authorization = `Bearer ${newToken}`;
+      await refreshToken();
       return apiClient.request(originalConfig);
     } catch (err: unknown) {
-      accessToken.value = null;
       return Promise.reject(err);
     }
   },

@@ -2,7 +2,8 @@ import pytest
 from fastapi import status
 
 from tests.constants import PASSWORD
-from week_eat_planner.constants import AppUrl
+from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, REFRESH_TOKEN_COOKIE_NAME
+from week_eat_planner.exceptions import NoAccessTokenException
 
 NEW_PASSWORD = 'new_password'
 
@@ -23,10 +24,11 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
 
 @pytest.mark.usefixtures('created_user')
 async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
-    response = await logout_client_for_created_user.get(AppUrl.WEEKS)
+    response = await logout_client_for_created_user.get(AppUrl.USER)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
 async def test_update_user__data_changed__updated_user_in_response(auth_client_for_created_user, created_user):
@@ -58,17 +60,20 @@ async def test_update_user__empty_payload__422_returned(auth_client_for_created_
 async def test_update_user__no_auth__401_returned(client):
     response = await client.patch(AppUrl.USER, json={'username': 'new_username'})
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json() == {'detail': 'Not authenticated'}
+    error = NoAccessTokenException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
 
 
-async def test_change_password__valid_new_password__token_in_response(auth_client_for_created_user):
+async def test_change_password__valid_new_password__token_in_cookies(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(
         AppUrl.USER_PASSWORD, json={'old_password': PASSWORD, 'new_password': NEW_PASSWORD}
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert 'access_token' in response.json()
+    assert response.json() == {'status': 'success'}
+    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
 
 
 @pytest.mark.parametrize(

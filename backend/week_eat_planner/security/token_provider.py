@@ -3,22 +3,23 @@
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from jose import ExpiredSignatureError, JWTError, jwt
 
 from week_eat_planner.config import settings
-from week_eat_planner.exceptions import InvalidJwtTokenException, NoEmailInTokenException, TokenExpiredException
+from week_eat_planner.exceptions import InvalidJwtTokenException, NoSubInTokenException, TokenExpiredException
 
 
 class TokenProvider:
     """Factory for creating and hashing JWT access tokens and opaque refresh tokens."""
 
     @classmethod
-    def create_access_token(cls, email: str) -> str:
+    def create_access_token(cls, user_id: UUID) -> str:
         """Creates a new JWT access token for a user.
 
         Args:
-            email: The email address to use as the token's subject.
+            user_id: The user_id to use as the token's subject.
 
         Returns:
             The encoded JWT access token.
@@ -26,7 +27,7 @@ class TokenProvider:
         now = datetime.now(UTC)
         expire = now + timedelta(minutes=settings.ACCESS_TOKEN_TTL)
         to_encode = {
-            'sub': email,
+            'sub': str(user_id),
             'iat': int(now.timestamp()),
             'exp': int(expire.timestamp()),
             'aud': settings.JWT_AUDIENCE,
@@ -59,8 +60,8 @@ class TokenProvider:
         return digest
 
 
-def get_email_from_token(token: str) -> str:
-    """Decodes a JWT token to extract the user's email address.
+def get_user_id_from_token(token: str) -> UUID:
+    """Decodes a JWT token to extract the user's ID.
 
     Validates the token's signature, expiration, issuer, and audience.
 
@@ -68,10 +69,10 @@ def get_email_from_token(token: str) -> str:
         token: The JWT token to decode.
 
     Returns:
-        The email address from the token's 'sub' claim.
+        user_id from the token's 'sub' claim.
 
     Raises:
-        NoEmailInTokenException: If the 'sub' claim is missing or not a string.
+        NoSubInTokenException: If the 'sub' claim is missing or empty.
         TokenExpiredException: If the token has expired.
         InvalidJwtTokenException: If the token is invalid for any other reason.
     """
@@ -84,12 +85,11 @@ def get_email_from_token(token: str) -> str:
             audience=settings.JWT_AUDIENCE,
             issuer=settings.JWT_ISSUER,
         )
-        email: str | None = payload.get('sub')
-        if not email or not isinstance(email, str):
-            raise NoEmailInTokenException()
+        user_id: str | None = payload.get('sub')
+        if not user_id:
+            raise NoSubInTokenException()
+        return UUID(user_id)
     except ExpiredSignatureError as exc:
         raise TokenExpiredException() from exc
-    except JWTError as exc:
+    except (JWTError, ValueError) as exc:
         raise InvalidJwtTokenException() from exc
-
-    return email
