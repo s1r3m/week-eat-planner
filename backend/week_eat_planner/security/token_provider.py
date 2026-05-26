@@ -72,7 +72,7 @@ def get_user_id_from_token(token: str) -> UUID:
         user_id from the token's 'sub' claim.
 
     Raises:
-        NoEmailInTokenException: If the 'sub' claim is missing or not a string.
+        NoSubInTokenException: If the 'sub' claim is missing or empty.
         TokenExpiredException: If the token has expired.
         InvalidJwtTokenException: If the token is invalid for any other reason.
     """
@@ -88,9 +88,8 @@ def get_user_id_from_token(token: str) -> UUID:
         user_id: str | None = payload.get('sub')
         if not user_id:
             raise NoSubInTokenException()
+        return UUID(user_id)
     except ExpiredSignatureError as exc:
         raise TokenExpiredException() from exc
-    except JWTError as exc:
+    except (JWTError, ValueError) as exc:
         raise InvalidJwtTokenException() from exc
-
-    return UUID(user_id)

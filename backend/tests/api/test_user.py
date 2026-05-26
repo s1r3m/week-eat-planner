@@ -24,7 +24,7 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
 
 @pytest.mark.usefixtures('created_user')
 async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
-    response = await logout_client_for_created_user.get(AppUrl.WEEKS)
+    response = await logout_client_for_created_user.get(AppUrl.USER)
 
     error = NoAccessTokenException()
     assert response.status_code == error.status_code
