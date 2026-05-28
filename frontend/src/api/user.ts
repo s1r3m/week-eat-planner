@@ -13,7 +13,7 @@ export const USER_KEYS = {
    * Key for the current user's profile.
    * @returns Hierarchical cache key.
    */
-  profile: () => [USER_KEYS.root, 'profile'],
+  profile: () => [...USER_KEYS.root, 'profile'],
 };
 
 /**

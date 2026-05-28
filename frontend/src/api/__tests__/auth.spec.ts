@@ -56,6 +56,7 @@ describe('auth api', () => {
 
   it('isAuthenticated is false initially', () => {
     expect(isAuthenticated.value).toBe(false);
+    expect(localStorage.getItem('isLogged')).toBeNull();
   });
 
   describe('loginMutation', () => {
@@ -152,12 +153,14 @@ describe('auth api', () => {
   describe('initAuth', () => {
     it('sets isAuthenticated and seeds cache when profile fetch succeeds', async () => {
       const mockData = { id: '1' };
+      localStorage.setItem('isLogged', 'true');
       vi.mocked(useQuery).mockReturnValue({
         refresh: vi.fn().mockResolvedValue({ status: 'success', data: mockData }),
       } as any);
 
       await initAuth();
       expect(isAuthenticated.value).toBe(true);
+      expect(localStorage.getItem('isLogged')).toBe('true');
       expect(useQuery).toHaveBeenCalled();
     });
 
@@ -169,6 +172,7 @@ describe('auth api', () => {
 
       await initAuth();
       expect(isAuthenticated.value).toBe(false);
+      expect(localStorage.getItem('isLogged')).toBeNull();
     });
   });
 
