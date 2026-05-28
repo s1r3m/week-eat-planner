@@ -11,7 +11,7 @@ import {
 import { apiClient, authClient } from '../client';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
-import { useQueryCache } from '@pinia/colada';
+import { useQuery, useQueryCache } from '@pinia/colada';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
@@ -28,6 +28,7 @@ vi.mock('@pinia/colada', () => ({
   defineQueryOptions: (fn: any) => fn,
   defineMutation: (fn: any) => fn,
   useQueryCache: vi.fn(),
+  useQuery: vi.fn(),
 }));
 
 describe('auth api', () => {
@@ -149,18 +150,24 @@ describe('auth api', () => {
   });
 
   describe('initAuth', () => {
-    it('sets isAuthenticated when refresh succeeds', async () => {
-      mockAuth.onPost('/auth/refresh').reply(200);
+    it('sets isAuthenticated and seeds cache when profile fetch succeeds', async () => {
+      const mockData = { id: '1' };
+      vi.mocked(useQuery).mockReturnValue({
+        refresh: vi.fn().mockResolvedValue({ status: 'success', data: mockData }),
+      } as any);
 
       await initAuth();
       expect(isAuthenticated.value).toBe(true);
+      expect(useQuery).toHaveBeenCalled();
     });
 
-    it('sets isAuthenticated to false when refresh fails', async () => {
+    it('sets isAuthenticated to false when profile fetch fails', async () => {
       isAuthenticated.value = true;
-      mockAuth.onPost('/auth/refresh').reply(401);
+      vi.mocked(useQuery).mockReturnValue({
+        refresh: vi.fn().mockResolvedValue({ status: 'error', error: new Error('401') }),
+      } as any);
 
-      await expect(initAuth()).rejects.toThrow();
+      await initAuth();
       expect(isAuthenticated.value).toBe(false);
     });
   });

@@ -8,7 +8,7 @@ import { isAuthenticated } from './auth';
  */
 export const USER_KEYS = {
   /** Base key for all user-related data. */
-  root: 'user' as const,
+  root: ['user'] as const,
   /**
    * Key for the current user's profile.
    * @returns Hierarchical cache key.
