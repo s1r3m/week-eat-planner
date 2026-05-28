@@ -47,11 +47,17 @@ export interface UserPassPayload {
 }
 
 /**
+ * Fetches the current authenticated user's profile.
+ * @returns A promise that resolves with the user data.
+ */
+export const getUserProfile = () => apiClient.get<UserData>('/user').then((res) => res.data);
+
+/**
  * Query options for fetching the current authenticated user's profile.
  */
 export const getUserQuery = defineQueryOptions(() => ({
   key: USER_KEYS.profile(),
-  query: () => apiClient.get<UserData>('/user').then((res) => res.data),
+  query: getUserProfile,
   staleTime: 60_000,
 }));
 

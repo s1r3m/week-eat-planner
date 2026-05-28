@@ -4,7 +4,7 @@ import { apiClient, authClient } from './client';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { toast } from 'vue-sonner';
-import { USER_KEYS, getUserQuery } from './user';
+import { USER_KEYS, getUserQuery, getUserProfile } from './user';
 
 /**
  * Payload to login a user.
@@ -131,14 +131,14 @@ export const refreshToken = async () => {
  * @returns A promise that resolves when initialization is complete.
  */
 export const initAuth = async () => {
-  const { refresh } = useQuery(getUserQuery());
+  const queryCache = useQueryCache();
 
-  const state = await refresh();
-
-  if (state.status === 'success') {
+  try {
+    const profile = await getUserProfile();
     isAuthenticated.value = true;
     localStorage.setItem('isLogged', 'true');
-  } else {
+    queryCache.setQueryData(USER_KEYS.profile(), profile);
+  } catch (err) {
     isAuthenticated.value = false;
     localStorage.removeItem('isLogged');
   }

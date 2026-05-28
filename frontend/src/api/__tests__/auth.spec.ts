@@ -15,6 +15,7 @@ import { useQuery, useQueryCache } from '@pinia/colada';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { USER_KEYS } from '../user';
 
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -153,22 +154,19 @@ describe('auth api', () => {
   describe('initAuth', () => {
     it('sets isAuthenticated and seeds cache when profile fetch succeeds', async () => {
       const mockData = { id: '1' };
+      mockApi.onGet('/user').reply(200, mockData);
       localStorage.setItem('isLogged', 'true');
-      vi.mocked(useQuery).mockReturnValue({
-        refresh: vi.fn().mockResolvedValue({ status: 'success', data: mockData }),
-      } as any);
+      const queryCache = useQueryCache();
 
       await initAuth();
       expect(isAuthenticated.value).toBe(true);
       expect(localStorage.getItem('isLogged')).toBe('true');
-      expect(useQuery).toHaveBeenCalled();
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(USER_KEYS.profile(), mockData);
     });
 
     it('sets isAuthenticated to false when profile fetch fails', async () => {
       isAuthenticated.value = true;
-      vi.mocked(useQuery).mockReturnValue({
-        refresh: vi.fn().mockResolvedValue({ status: 'error', error: new Error('401') }),
-      } as any);
+      mockApi.onGet('/user').reply(401);
 
       await initAuth();
       expect(isAuthenticated.value).toBe(false);
