@@ -11,10 +11,11 @@ import {
 import { apiClient, authClient } from '../client';
 import MockAdapter from 'axios-mock-adapter';
 import { createPinia, setActivePinia } from 'pinia';
-import { useQueryCache } from '@pinia/colada';
+import { useQuery, useQueryCache } from '@pinia/colada';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { USER_KEYS } from '../user';
 
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -28,6 +29,7 @@ vi.mock('@pinia/colada', () => ({
   defineQueryOptions: (fn: any) => fn,
   defineMutation: (fn: any) => fn,
   useQueryCache: vi.fn(),
+  useQuery: vi.fn(),
 }));
 
 describe('auth api', () => {
@@ -55,6 +57,7 @@ describe('auth api', () => {
 
   it('isAuthenticated is false initially', () => {
     expect(isAuthenticated.value).toBe(false);
+    expect(localStorage.getItem('isLogged')).toBeNull();
   });
 
   describe('loginMutation', () => {
@@ -149,19 +152,27 @@ describe('auth api', () => {
   });
 
   describe('initAuth', () => {
-    it('sets isAuthenticated when refresh succeeds', async () => {
-      mockAuth.onPost('/auth/refresh').reply(200);
+    it('sets isAuthenticated and seeds cache when profile fetch succeeds', async () => {
+      const mockData = { id: '1' };
+      mockApi.onGet('/user').reply(200, mockData);
+      localStorage.setItem('isLogged', 'true');
+      const queryCache = useQueryCache();
 
       await initAuth();
       expect(isAuthenticated.value).toBe(true);
+      expect(localStorage.getItem('isLogged')).toBe('true');
+      expect(queryCache.setQueryData).toHaveBeenCalledWith(USER_KEYS.profile(), mockData);
     });
 
-    it('sets isAuthenticated to false when refresh fails', async () => {
+    it('sets isAuthenticated to false when profile fetch fails', async () => {
       isAuthenticated.value = true;
-      mockAuth.onPost('/auth/refresh').reply(401);
+      mockApi.onGet('/user').reply(401);
+      const queryCache = useQueryCache();
 
-      await expect(initAuth()).rejects.toThrow();
+      await initAuth();
       expect(isAuthenticated.value).toBe(false);
+      expect(localStorage.getItem('isLogged')).toBeNull();
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: USER_KEYS.profile() });
     });
   });
 

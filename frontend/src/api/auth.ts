@@ -1,10 +1,10 @@
 import { ref } from 'vue';
-import { defineMutation, useQueryCache } from '@pinia/colada';
+import { defineMutation, useQuery, useQueryCache } from '@pinia/colada';
 import { apiClient, authClient } from './client';
 import { useRouter } from 'vue-router';
 import { ROUTE_NAMES } from '@/domain/router/routeNames';
 import { toast } from 'vue-sonner';
-import { USER_KEYS } from './user';
+import { USER_KEYS, getUserQuery, getUserProfile } from './user';
 
 /**
  * Payload to login a user.
@@ -125,12 +125,25 @@ export const refreshToken = async () => {
 };
 
 /**
- * Initializes the authentication state by attempting to refresh the token.
+ * Initializes the authentication state by attempting to fetch the user profile.
  * This should be called once when the application starts to restore the session.
  *
  * @returns A promise that resolves when initialization is complete.
  */
-export const initAuth = async () => await refreshToken();
+export const initAuth = async () => {
+  const queryCache = useQueryCache();
+
+  try {
+    const profile = await getUserProfile();
+    isAuthenticated.value = true;
+    localStorage.setItem('isLogged', 'true');
+    queryCache.setQueryData(USER_KEYS.profile(), profile);
+  } catch (err) {
+    isAuthenticated.value = false;
+    localStorage.removeItem('isLogged');
+    queryCache.invalidateQueries({ key: USER_KEYS.profile() });
+  }
+};
 
 /**
  * Mutation for authenticating a user via Google OAuth.
