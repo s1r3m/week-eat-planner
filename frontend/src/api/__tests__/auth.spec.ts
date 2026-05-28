@@ -167,10 +167,12 @@ describe('auth api', () => {
     it('sets isAuthenticated to false when profile fetch fails', async () => {
       isAuthenticated.value = true;
       mockApi.onGet('/user').reply(401);
+      const queryCache = useQueryCache();
 
       await initAuth();
       expect(isAuthenticated.value).toBe(false);
       expect(localStorage.getItem('isLogged')).toBeNull();
+      expect(queryCache.invalidateQueries).toHaveBeenCalledWith({ key: USER_KEYS.profile() });
     });
   });
 

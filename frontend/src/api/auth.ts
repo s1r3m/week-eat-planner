@@ -141,6 +141,7 @@ export const initAuth = async () => {
   } catch (err) {
     isAuthenticated.value = false;
     localStorage.removeItem('isLogged');
+    queryCache.invalidateQueries({ key: USER_KEYS.profile() });
   }
 };
 
