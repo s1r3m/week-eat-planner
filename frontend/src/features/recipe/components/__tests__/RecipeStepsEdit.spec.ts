@@ -11,15 +11,16 @@ describe('RecipeStepsEdit', () => {
     expect(wrapper.findAll('li')).toHaveLength(1);
   });
 
-  it('adds a step when the add button is clicked', async () => {
+  it('adds a step automatically when the last one is filled', async () => {
     const wrapper = mount(RecipeStepsEdit, {
       props: {
         steps: [...defaultSteps],
         'onUpdate:steps': (e: any) => wrapper.setProps({ steps: e }),
       },
     });
-    const addButton = wrapper.findAll('button').find((b) => b.text().includes('Add'));
-    await addButton?.trigger('click');
+    expect(wrapper.findAll('li')).toHaveLength(1);
+    const input = wrapper.find('input');
+    await input.setValue('Wash vegetables');
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 
@@ -30,13 +31,13 @@ describe('RecipeStepsEdit', () => {
         'onUpdate:steps': (e: any) => wrapper.setProps({ steps: e }),
       },
     });
-    const addButton = wrapper.findAll('button').find((b) => b.text().includes('Add'));
-    await addButton?.trigger('click');
-    await addButton?.trigger('click');
+    // Add steps by filling them
+    await wrapper.findAll('input')[0].setValue('Step 1');
+    await wrapper.findAll('input')[1].setValue('Step 2');
     expect(wrapper.findAll('li')).toHaveLength(3);
 
     const removeButtons = wrapper.findAll('button.text-destructive');
-    await removeButtons[1].trigger('click');
+    await removeButtons[0].trigger('click');
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 

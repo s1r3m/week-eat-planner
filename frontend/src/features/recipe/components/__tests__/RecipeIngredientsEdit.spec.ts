@@ -27,18 +27,16 @@ describe('RecipeIngredientsEdit', () => {
     expect(wrapper.findAll('li')).toHaveLength(1);
   });
 
-  it('adds an ingredient when the add button is clicked', async () => {
+  it('adds an ingredient automatically when the last one is filled', async () => {
     const wrapper = mount(RecipeIngredientsEdit, {
       props: {
         ingredients: [...defaultIngredients],
         'onUpdate:ingredients': (e: any) => wrapper.setProps({ ingredients: e }),
       },
     });
-    const addButton = wrapper
-      .findAll('[data-slot="button"]')
-      .find((b) => b.text().includes('Add an ingredient'));
-    expect(addButton).toBeDefined();
-    await addButton!.trigger('click');
+    expect(wrapper.findAll('li')).toHaveLength(1);
+    const nameInput = wrapper.find('input[type="text"]');
+    await nameInput.setValue('Flour');
     expect(wrapper.findAll('li')).toHaveLength(2);
   });
 
@@ -49,12 +47,11 @@ describe('RecipeIngredientsEdit', () => {
         'onUpdate:ingredients': (e: any) => wrapper.setProps({ ingredients: e }),
       },
     });
-    const addButton = wrapper
-      .findAll('[data-slot="button"]')
-      .find((b) => b.text().includes('Add an ingredient'));
-    await addButton?.trigger('click');
+    // Add an ingredient by filling the first one
+    await wrapper.find('input[type="text"]').setValue('Flour');
     expect(wrapper.findAll('li')).toHaveLength(2);
 
+    // The first one should have a delete button now because it's not the last one
     await wrapper.find('button.text-destructive').trigger('click');
     expect(wrapper.findAll('li')).toHaveLength(1);
   });

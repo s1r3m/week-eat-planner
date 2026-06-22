@@ -33,12 +33,14 @@ describe('RecipeCreateForm', () => {
     await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:name', 'New Recipe');
     const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
     await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:cover', mockFile);
-    await wrapper
-      .getComponent(RecipeIngredientsEdit)
-      .vm.$emit('update:ingredients', [{ name: 'Tomato', amount: 2, unit: 'pcs' }]);
-    await wrapper
-      .getComponent(RecipeStepsEdit)
-      .vm.$emit('update:steps', [{ order: 0, step: 'Wash tomato' }]);
+    await wrapper.getComponent(RecipeIngredientsEdit).vm.$emit('update:ingredients', [
+      { name: 'Tomato', amount: 2, unit: 'pcs' },
+      { name: '', amount: 0, unit: 'g' },
+    ]);
+    await wrapper.getComponent(RecipeStepsEdit).vm.$emit('update:steps', [
+      { order: 0, step: 'Wash tomato' },
+      { order: 1, step: '' },
+    ]);
 
     const createBtn = wrapper
       .findAll('[data-slot="button"]')
