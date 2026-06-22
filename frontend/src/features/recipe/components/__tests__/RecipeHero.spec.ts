@@ -21,4 +21,17 @@ describe('RecipeHero', () => {
     expect(wrapper.getComponent(RecipeCover).props('src')).toBe(recipe.image_url);
     expect(wrapper.getComponent(RecipeCover).props('alt')).toBe(recipe.name);
   });
+
+  it('handles null image_url by passing empty string to RecipeCover', () => {
+    const recipe = {
+      id: '1',
+      name: 'Pasta',
+      image_url: null,
+      ingredients: [],
+      steps: [],
+    };
+    const wrapper = mount(RecipeHero, { props: { recipe: recipe as any } });
+
+    expect(wrapper.getComponent(RecipeCover).props('src')).toBe('');
+  });
 });

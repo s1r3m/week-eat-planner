@@ -20,7 +20,7 @@ vi.mock('@/components/ui/select', () => ({
 
 const TestWrapper = defineComponent({
   components: { RecipeIngredientsEdit },
-  props: ['initialValues'],
+  props: { initialValues: { type: Object, required: true } },
   setup(props) {
     const form = useForm({ initialValues: props.initialValues });
     return { form };
@@ -98,5 +98,18 @@ describe('RecipeIngredientsEdit', () => {
     expect(wrapper.text()).toContain('ml');
     expect(wrapper.text()).toContain('pcs');
     expect(wrapper.text()).toContain('cans');
+  });
+
+  it('triggers v-model update when child emits update:ingredient', async () => {
+    const wrapper = mount(TestWrapper, { props: { initialValues } });
+    await flushPromises();
+
+    const ingredientInput = wrapper.findComponent({ name: 'RecipeIngredientInput' });
+    const newIngredient = { name: 'Water', amount: 100, unit: 'ml' };
+
+    await ingredientInput.vm.$emit('update:ingredient', newIngredient);
+    await flushPromises();
+
+    expect((wrapper.vm as any).form.values.ingredients[0]).toEqual(newIngredient);
   });
 });

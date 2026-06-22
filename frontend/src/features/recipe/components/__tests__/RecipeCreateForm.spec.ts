@@ -78,6 +78,27 @@ describe('RecipeCreateForm', () => {
     expect(image).toBe(mockFile);
   });
 
+  it('emits create with null image if no image is selected', async () => {
+    const wrapper = mount(RecipeCreateForm);
+
+    await wrapper.find('#recipe-name').setValue('No Image Recipe');
+    const ingredientInputs = wrapper.findAll('input[placeholder="Ingredient"]');
+    await ingredientInputs[0].setValue('Water');
+    const stepInputs = wrapper.findAll('input[placeholder="Do the..."]');
+    await stepInputs[0].setValue('Boil water');
+
+    await flushPromises();
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const createEmissions = wrapper.emitted('create');
+    expect(createEmissions).toBeDefined();
+    const [, image] = createEmissions![0] as [any, any];
+    expect(image).toBeNull();
+  });
+
   it('emits cancel when the cancel button is clicked', async () => {
     const wrapper = mount(RecipeCreateForm);
     const cancelBtn = wrapper

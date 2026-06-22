@@ -6,7 +6,7 @@ import { defineComponent } from 'vue';
 
 const TestWrapper = defineComponent({
   components: { RecipeStepsEdit },
-  props: ['initialValues'],
+  props: { initialValues: { type: Object, required: true } },
   setup(props) {
     useForm({ initialValues: props.initialValues });
     return {};
