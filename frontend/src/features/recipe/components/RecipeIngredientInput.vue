@@ -3,7 +3,7 @@
     <Input v-model="ingredient.name" class="flex-5" type="text" placeholder="Ingredient" />
     <Input v-model="ingredient.amount" class="flex-1" type="number" min="0" placeholder="qty" />
     <Select v-model="ingredient.unit" default-value="g">
-      <SelectTrigger class="w-18 h-12">
+      <SelectTrigger class="w-18" size="lg">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -15,9 +15,10 @@
       </SelectContent>
     </Select>
     <Button
-      v-if="showDelete"
       variant="ghost"
-      class="text-destructive w-4"
+      class="text-destructive w-4 h-12 rounded-sm"
+      :class="{ invisible: !showDelete }"
+      :disabled="!showDelete"
       aria-label="Remove ingredient"
       @click="$emit('remove')"
       ><X

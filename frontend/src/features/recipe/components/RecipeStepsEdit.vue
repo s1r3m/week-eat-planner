@@ -7,9 +7,10 @@
           <div class="flex gap-1">
             <Input v-model="step.step" placeholder="Do the..." />
             <Button
-              v-if="idx !== steps.length - 1"
               variant="ghost"
-              class="text-destructive w-4"
+              class="text-destructive w-4 h-12 rounded-sm"
+              :class="{ invisible: idx === steps.length - 1 }"
+              :disabled="idx === steps.length - 1"
               @click="onRemove(idx)"
               ><X
             /></Button>
