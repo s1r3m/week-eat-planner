@@ -1,7 +1,7 @@
 <template>
   <div class="weeks-page-container">
     <div class="space-y-6 m-6">
-      <PageTitle header="My Weeks" description="Manage your weekly meal plans here">
+      <PageTitle header="My Weeks">
         <template #controls>
           <div class="flex items-center gap-3">
             <Loader2 v-if="isLoading" class="animate-spin text-muted-foreground" :size="20" />

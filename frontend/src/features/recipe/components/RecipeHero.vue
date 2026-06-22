@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col-reverse md:flex-row md:items-start gap-12">
     <RecipeIngredients :ingredients="recipe.ingredients" />
-    <RecipeCover :src="recipe.image_url" :alt="recipe.name" />
+    <RecipeCover :src="recipe.image_url ?? ''" :alt="recipe.name" />
   </div>
 </template>
 <script setup lang="ts">

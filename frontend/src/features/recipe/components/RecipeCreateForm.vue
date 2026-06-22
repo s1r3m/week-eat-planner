@@ -8,7 +8,21 @@
       <RecipeStepsEdit v-model:steps="steps" />
       <div class="flex gap-3 justify-end-safe">
         <Button variant="outline" @click="$emit('cancel')"> Cancel </Button>
-        <Button @click="$emit('create', { name, ingredients, steps, is_public: true }, image)">
+        <Button
+          :disabled="!name.trim() || ingredients.length < 2 || steps.length < 2"
+          @click="
+            $emit(
+              'create',
+              {
+                name,
+                ingredients: ingredients.slice(0, -1),
+                steps: steps.slice(0, -1),
+                is_public: true,
+              },
+              image,
+            )
+          "
+        >
           Create recipe
         </Button>
       </div>
@@ -26,8 +40,8 @@ import { FieldSeparator } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 
 const name = ref('');
-const steps = ref<CookingStep[]>([{ order: 0, step: '' }]);
-const ingredients = ref<Ingredient[]>([{ name: '', amount: 0, unit: 'g' }]);
+const steps = ref<CookingStep[]>([]);
+const ingredients = ref<Ingredient[]>([]);
 const image = ref<File | null>(null);
 
 defineEmits<{
