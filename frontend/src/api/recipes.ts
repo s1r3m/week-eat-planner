@@ -2,6 +2,7 @@ import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada
 import type { EntryKey } from '@pinia/colada';
 import { apiClient } from './client';
 import { toast } from 'vue-sonner';
+import { date } from 'zod';
 
 /**
  * Supported measurement units for recipe ingredients.
@@ -57,6 +58,14 @@ export interface RecipePayload {
   steps: CookingStep[];
   ingredients: Ingredient[];
   is_public: boolean;
+}
+
+/**
+ * Variables required to update a recipe.
+ */
+export interface UpdateRecipeVars {
+  id: string;
+  payload: RecipePayload;
 }
 
 /**
@@ -130,39 +139,51 @@ export const addRecipeMutation = defineMutation(() => {
   return {
     mutation: (payload: RecipePayload) =>
       apiClient.post<RecipePreview>('/recipes', payload).then((res) => res.data),
-    onMutate: (payload: RecipePayload) => {
+    onSuccess: (created: RecipePreview) =>
+      toast.success(`Recipe ${created.name} created successfully`),
+    onError: (err: Error, payload: RecipePayload) =>
+      toast.error(`An error occurred while creating recipe ${payload.name}: ${err.message}`),
+    onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
+  };
+});
+
+/**
+ * Mutation for uploading or updating a recipe's cover image.
+ * Uses `FormData` to send the image file to the backend.
+ */
+export const editRecipeMutation = defineMutation(() => {
+  const queryCache = useQueryCache();
+  return {
+    mutation: ({ id, payload }: UpdateRecipeVars) =>
+      apiClient.patch<RecipeFull>(`/recipes/${id}`, payload).then((res) => res.data),
+    onMutate: ({ id, payload }: UpdateRecipeVars) => {
+      queryCache.cancelQueries({ key: RECIPE_KEYS.detail(id) });
       queryCache.cancelQueries({ key: RECIPE_KEYS.my() });
-      const previousRecipes = queryCache.getQueryData<RecipePreview[]>(RECIPE_KEYS.my()) || [];
-      queryCache.setQueryData(RECIPE_KEYS.my(), (old: RecipePreview[] = []) => [
-        ...old,
-        {
-          id: `temp-id-${Date.now()}`,
-          ...payload,
-          is_favorite: false,
-          author: 'me',
-          image_url: null,
-        },
-      ]);
-      return { previousRecipes };
+      queryCache.cancelQueries({ key: RECIPE_KEYS.favorites() });
+      const previousRecipe = queryCache.getQueryData<RecipeFull>(RECIPE_KEYS.detail(id));
+      queryCache.setQueryData(RECIPE_KEYS.detail(id), { ...previousRecipe, ...payload });
+      return { previousRecipe };
     },
     onSuccess: (
-      created: RecipePreview,
-      _payload: RecipePayload,
-      _context?: { previousRecipes?: RecipePreview[] },
+      data: RecipeFull,
+      _vars: UpdateRecipeVars,
+      _context?: { previousRecipe?: RecipeFull },
     ) => {
-      toast.success(`Recipe ${created.name} created successfully`);
+      toast.success(`Recipe ${data.name} updated successfully`);
     },
     onError: (
       err: Error,
-      payload: RecipePayload,
-      context?: { previousRecipes?: RecipePreview[] },
+      { id, payload }: UpdateRecipeVars,
+      context?: { previousRecipe?: RecipeFull },
     ) => {
       toast.error(`An error occurred while creating recipe ${payload.name}: ${err.message}`);
-      if (context && context.previousRecipes) {
-        queryCache.setQueryData(RECIPE_KEYS.my(), context.previousRecipes);
+      if (context?.previousRecipe) {
+        queryCache.setQueryData(RECIPE_KEYS.detail(id), context.previousRecipe);
+        queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });
+        queryCache.invalidateQueries({ key: RECIPE_KEYS.my() });
+        queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
       }
     },
-    onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
   };
 });
 
@@ -173,11 +194,11 @@ export const addRecipeMutation = defineMutation(() => {
 export const addImageMutation = defineMutation(() => {
   const queryCache = useQueryCache();
   return {
-    mutation: (payload: ImagePayload) => {
+    mutation: ({ id, image }: ImagePayload) => {
       const formData = new FormData();
-      formData.append('image', payload.image);
+      formData.append('image', image);
       return apiClient
-        .patch<RecipePreview>(`/recipes/${payload.id}/image`, formData)
+        .patch<RecipePreview>(`/recipes/${id}/image`, formData)
         .then((res) => res.data);
     },
     onSuccess: (data: RecipePreview) => {
@@ -190,7 +211,10 @@ export const addImageMutation = defineMutation(() => {
     onError: (err: Error, _payload: ImagePayload) => {
       toast.error(`Upload has failed: ${err.message}`);
     },
-    onSettled: () => queryCache.invalidateQueries({ key: RECIPE_KEYS.my() }),
+    onSettled: (data: RecipePreview | undefined, _err: Error | undefined, { id }: ImagePayload) => {
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.my() });
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });
+    },
   };
 });
 

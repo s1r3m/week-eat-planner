@@ -48,17 +48,21 @@ export const useBreadcrumbs = () => {
     ],
     [ROUTE_NAMES.RECIPES]: () => [{ label: 'Recipes' }],
     [ROUTE_NAMES.RECIPE]: () => [
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { label: recipe.value?.name || '' },
     ],
-    [ROUTE_NAMES.RECIPES_MY]: () => [
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
-      { label: 'My recipes' },
-    ],
+    [ROUTE_NAMES.RECIPES_MY]: () => [{ label: 'My recipes' }],
     [ROUTE_NAMES.RECIPES_CREATE]: () => [
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { label: 'Create' },
+    ],
+    [ROUTE_NAMES.RECIPE_EDIT]: () => [
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
+      {
+        to: { name: ROUTE_NAMES.RECIPE, params: { id: recipe.value?.id } },
+        label: recipe.value?.name || '',
+      },
+      { label: 'Edit' },
     ],
     [ROUTE_NAMES.RECIPES_FAVORITES]: () => [
       { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },

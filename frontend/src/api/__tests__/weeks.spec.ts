@@ -10,7 +10,7 @@ import {
   deleteWeekMutation,
   WEEK_KEYS,
 } from '../weeks';
-import type { WeekPayload, EditWeek } from '../weeks';
+import type { WeekPayload, EditWeekVars } from '../weeks';
 
 const mockQueryCache = {
   cancelQueries: vi.fn(),
@@ -146,7 +146,7 @@ describe('weeks api', () => {
   });
 
   describe('editWeekMutation', () => {
-    const vars: EditWeek = { id: '1', payload: { name: 'Updated' } };
+    const vars: EditWeekVars = { id: '1', payload: { name: 'Updated' } };
 
     it('patches /weeks/:id and returns the updated week', async () => {
       mockApi.onPatch(`/weeks/${vars.id}`, vars.payload).reply(200, { ...vars.payload });
