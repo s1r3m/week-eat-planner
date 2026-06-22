@@ -16,19 +16,21 @@
           </div>
         </li>
       </ol>
+      <FieldError>{{ error }}</FieldError>
     </FieldContent>
   </FieldGroup>
 </template>
 
 <script setup lang="ts">
 import type { CookingStep } from '@/api/recipes';
-import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
+import { FieldContent, FieldGroup, FieldTitle, FieldError } from '@/components/ui/field';
 import { X } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { watch } from 'vue';
+import { useField } from 'vee-validate';
 
-const steps = defineModel<CookingStep[]>('steps', { required: true });
+const { value: steps, errorMessage: error } = useField<CookingStep[]>('steps');
 
 const onRemove = (index: number) => {
   steps.value.splice(index, 1);

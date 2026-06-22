@@ -11,18 +11,21 @@
           />
         </li>
       </ul>
+      <FieldError>{{ error }}</FieldError>
     </FieldContent>
   </FieldGroup>
 </template>
 
 <script setup lang="ts">
-import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
-import type { Ingredient } from '@/api/recipes';
-
-import RecipeIngredientInput from './RecipeIngredientInput.vue';
 import { watch } from 'vue';
 
-const ingredients = defineModel<Ingredient[]>('ingredients', { required: true });
+import { useField } from 'vee-validate';
+
+import { FieldContent, FieldGroup, FieldTitle, FieldError } from '@/components/ui/field';
+import RecipeIngredientInput from './RecipeIngredientInput.vue';
+import { type Ingredient } from '@/api/recipes';
+
+const { value: ingredients, errorMessage: error } = useField<Ingredient[]>('ingredients');
 
 watch(
   ingredients,
