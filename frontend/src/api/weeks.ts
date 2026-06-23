@@ -1,6 +1,7 @@
 import { defineQueryOptions, defineMutation, useQueryCache } from '@pinia/colada';
 import { apiClient } from './client';
 import type { RecipePreview } from './recipes';
+import { toast } from 'vue-sonner';
 
 /**
  * Days of the week used for meal planning.
@@ -63,7 +64,7 @@ export interface WeekPayload {
 /**
  * Parameters for editing an existing week.
  */
-export interface EditWeek {
+export interface EditWeekVars {
   id: string;
   payload: WeekPayload;
 }
@@ -127,9 +128,11 @@ export const addWeekMutation = defineMutation(() => {
       ]);
       return { previousWeeks };
     },
-    onError: (err: Error, _payload: WeekPayload, context: { previousWeeks?: WeekPreview[] }) => {
+    onError: (err: Error, payload: WeekPayload, context: { previousWeeks?: WeekPreview[] }) => {
+      toast.error(`An error occurred while creating new week ${payload.name}: ${err.message}`);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
+    onSuccess: (week: WeekPreview) => toast.success(`Week ${week.name} created successfully`),
     onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
   };
 });
@@ -142,9 +145,10 @@ export const editWeekMutation = defineMutation(() => {
   const queryCache = useQueryCache();
 
   return {
-    mutation: (vars: EditWeek) =>
-      apiClient.patch(`/weeks/${vars.id}`, vars.payload).then((res) => res.data),
-    onMutate: (vars: EditWeek) => {
+    mutation: ({ id, payload }: EditWeekVars) =>
+      apiClient.patch(`/weeks/${id}`, payload).then((res) => res.data),
+    onMutate: (vars: EditWeekVars) => {
+      // TODO: Remove all weeks cache.
       queryCache.cancelQueries({ key: WEEK_KEYS.detail(vars.id) });
       queryCache.cancelQueries({ key: WEEK_KEYS.all() });
       const previous = queryCache.getQueryData<WeekFull>(WEEK_KEYS.detail(vars.id));
@@ -156,21 +160,23 @@ export const editWeekMutation = defineMutation(() => {
       return { previous, previousWeeks };
     },
     onError: (
-      _err: Error,
-      vars: EditWeek,
+      err: Error,
+      { id }: EditWeekVars,
       context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {
-      if (context?.previous) queryCache.setQueryData(WEEK_KEYS.detail(vars.id), context.previous);
+      if (context?.previous) queryCache.setQueryData(WEEK_KEYS.detail(id), context.previous);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
+      toast.error(`Failed to update week: ${err.message}`);
     },
+    onSuccess: (week: WeekPreview) => toast.success(`Week ${week.name} updated successfully`),
     onSettled: (
       _updatedWeek: WeekPreview,
       _error: Error | undefined,
-      vars: EditWeek,
+      { id }: EditWeekVars,
       _context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {
       queryCache.invalidateQueries({ key: WEEK_KEYS.all() });
-      queryCache.invalidateQueries({ key: WEEK_KEYS.detail(vars.id) });
+      queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) });
     },
   };
 });

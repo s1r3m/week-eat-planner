@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import RecipeCreateForm from '../RecipeCreateForm.vue';
 import RecipeInfoEdit from '../RecipeInfoEdit.vue';
 import RecipeIngredientsEdit from '../RecipeIngredientsEdit.vue';
@@ -30,31 +30,73 @@ describe('RecipeCreateForm', () => {
   it('collects values from all sections and emits create on submit', async () => {
     const wrapper = mount(RecipeCreateForm);
 
-    await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:name', 'New Recipe');
+    // Set values by interacting with inputs since we no longer use v-model props
+    await wrapper.find('#recipe-name').setValue('New Recipe');
+
+    // For file input, we trigger change event
     const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
-    await wrapper.getComponent(RecipeInfoEdit).vm.$emit('update:cover', mockFile);
-    await wrapper
-      .getComponent(RecipeIngredientsEdit)
-      .vm.$emit('update:ingredients', [{ name: 'Tomato', amount: 2, unit: 'pcs' }]);
-    await wrapper
-      .getComponent(RecipeStepsEdit)
-      .vm.$emit('update:steps', [{ order: 0, step: 'Wash tomato' }]);
+    const fileInput = wrapper.find('#recipe-cover');
+    Object.defineProperty(fileInput.element, 'files', {
+      value: [mockFile],
+      writable: false,
+    });
+    await fileInput.trigger('change');
+
+    // For ingredients and steps, we need to find the inputs and set their values
+    const ingredientInputs = wrapper.findAll('input[placeholder="Ingredient"]');
+    await ingredientInputs[0].setValue('Tomato');
+    const amountInputs = wrapper.findAll('input[placeholder="qty"]');
+    await amountInputs[0].setValue('2');
+
+    // We might need to wait for the automatic addition of new rows
+    await flushPromises();
+
+    const stepInputs = wrapper.findAll('input[placeholder="Do the..."]');
+    await stepInputs[0].setValue('Wash tomato');
+
+    await flushPromises();
 
     const createBtn = wrapper
       .findAll('[data-slot="button"]')
       .find((b) => b.text().includes('Create recipe'));
     expect(createBtn).toBeDefined();
-    await createBtn!.trigger('click');
 
-    const emitted = wrapper.emitted('create');
-    expect(emitted).toBeTruthy();
-    expect(emitted?.[0][0]).toEqual({
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const createEmissions = wrapper.emitted('create');
+    expect(createEmissions).toBeDefined();
+
+    const [payload, image] = createEmissions![0] as [any, any];
+    expect(payload).toEqual({
       name: 'New Recipe',
-      ingredients: [{ name: 'Tomato', amount: 2, unit: 'pcs' }],
-      steps: [{ order: 0, step: 'Wash tomato' }],
+      ingredients: [{ name: 'Tomato', amount: 2, unit: 'g' }],
+      steps: [{ order: 1, step: 'Wash tomato' }],
       is_public: true,
     });
-    expect(emitted?.[0][1]).toBe(mockFile);
+    expect(image).toBe(mockFile);
+  });
+
+  it('emits create with null image if no image is selected', async () => {
+    const wrapper = mount(RecipeCreateForm);
+
+    await wrapper.find('#recipe-name').setValue('No Image Recipe');
+    const ingredientInputs = wrapper.findAll('input[placeholder="Ingredient"]');
+    await ingredientInputs[0].setValue('Water');
+    const stepInputs = wrapper.findAll('input[placeholder="Do the..."]');
+    await stepInputs[0].setValue('Boil water');
+
+    await flushPromises();
+
+    await wrapper.find('form').trigger('submit');
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const createEmissions = wrapper.emitted('create');
+    expect(createEmissions).toBeDefined();
+    const [, image] = createEmissions![0] as [any, any];
+    expect(image).toBeNull();
   });
 
   it('emits cancel when the cancel button is clicked', async () => {

@@ -1,6 +1,5 @@
 <template>
   <FieldGroup>
-    <FieldTitle class="font-semibold text-lg text-primary">Recipe Info</FieldTitle>
     <FieldContent class="space-y-3">
       <FieldLabel for="recipe-name"> Name </FieldLabel>
       <Input
@@ -10,6 +9,7 @@
         placeholder="e.g Pasta Carbonara"
         autocomplete="off"
       />
+      <FieldError> {{ error }}</FieldError>
 
       <FieldLabel for="recipe-cover"> Recipe Cover </FieldLabel>
       <Input
@@ -31,17 +31,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, watch } from 'vue';
+
+import { useField } from 'vee-validate';
+import type * as zod from 'zod';
+import { recipeInfoSchema } from '../schemas';
+
 import { Input } from '@/components/ui/input';
 import RecipeCover from './RecipeCover.vue';
-import { FieldContent, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 
-const name = defineModel<string>('name', { required: true });
-const cover = defineModel<File | null>('cover', { default: null });
-const img = ref('');
+const props = defineProps<{
+  initialImage?: string | null;
+}>();
+
+const img = ref(props.initialImage || '');
+
+watch(
+  () => props.initialImage,
+  (newVal) => {
+    if (newVal && !cover.value) {
+      img.value = newVal;
+    }
+  },
+);
+
+type FormValues = zod.infer<typeof recipeInfoSchema>;
+
+const { value: name, errorMessage: error } = useField<FormValues['name']>('name');
+const { value: cover } = useField<FormValues['image']>('image');
 
 onUnmounted(() => {
-  if (img.value) URL.revokeObjectURL(img.value);
+  if (img.value && img.value.startsWith('blob:')) {
+    URL.revokeObjectURL(img.value);
+  }
 });
 
 const onFileChange = (e: Event) => {
@@ -50,7 +73,9 @@ const onFileChange = (e: Event) => {
   if (!file) return;
 
   cover.value = file;
-  if (img.value) URL.revokeObjectURL(img.value);
+  if (img.value && img.value.startsWith('blob:')) {
+    URL.revokeObjectURL(img.value);
+  }
   img.value = URL.createObjectURL(file);
 };
 </script>

@@ -3,55 +3,38 @@
     <FieldTitle class="font-semibold text-lg text-primary"> Ingredients: </FieldTitle>
     <FieldContent class="flex flex-col">
       <ul class="list-disc marker:text-primary marker:text-xl">
-        <li v-for="(ingredient, idx) in ingredients" :key="idx" class="ml-4 mb-3">
-          <div class="flex gap-1">
-            <Input v-model="ingredient.name" class="flex-5" type="text" placeholder="Ingredient" />
-            <Input
-              v-model="ingredient.amount"
-              class="flex-1"
-              type="number"
-              min="0"
-              placeholder="qty"
-            />
-            <Select v-model="ingredient.unit" default-value="g">
-              <SelectTrigger class="w-18">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem v-for="unit in UNITS" :key="unit" :value="unit">
-                    {{ unit }}
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Button variant="ghost" class="text-destructive" @click="ingredients.splice(idx, 1)"
-              ><X
-            /></Button>
-          </div>
+        <li v-for="(_, idx) in ingredients" :key="idx" class="ml-4 mb-3">
+          <RecipeIngredientInput
+            v-model:ingredient="ingredients[idx]"
+            :show-delete="idx !== ingredients.length - 1"
+            @remove="ingredients.splice(idx, 1)"
+          />
         </li>
       </ul>
-      <Button variant="outline" @click="ingredients.push({ name: '', amount: 0, unit: 'g' })"
-        >Add an ingredient</Button
-      >
+      <FieldError>{{ error }}</FieldError>
     </FieldContent>
   </FieldGroup>
 </template>
 
 <script setup lang="ts">
-import { FieldContent, FieldGroup, FieldTitle } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-vue-next';
-import { UNITS, type Ingredient } from '@/api/recipes';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { watch } from 'vue';
 
-const ingredients = defineModel<Ingredient[]>('ingredients', { required: true });
+import { useField } from 'vee-validate';
+
+import { FieldContent, FieldGroup, FieldTitle, FieldError } from '@/components/ui/field';
+import RecipeIngredientInput from './RecipeIngredientInput.vue';
+import { type Ingredient } from '@/api/recipes';
+
+const { value: ingredients, errorMessage: error } = useField<Ingredient[]>('ingredients');
+
+watch(
+  ingredients,
+  (newIngredients) => {
+    const lastItem = newIngredients[newIngredients.length - 1];
+    if (!lastItem || lastItem.name.trim()) {
+      ingredients.value.push({ name: '', amount: 0, unit: 'g' });
+    }
+  },
+  { deep: true, immediate: true },
+);
 </script>

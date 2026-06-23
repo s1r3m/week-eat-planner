@@ -10,7 +10,8 @@ import {
   deleteWeekMutation,
   WEEK_KEYS,
 } from '../weeks';
-import type { WeekPayload, EditWeek } from '../weeks';
+import type { WeekPayload, EditWeekVars } from '../weeks';
+import { toast } from 'vue-sonner';
 
 const mockQueryCache = {
   cancelQueries: vi.fn(),
@@ -23,6 +24,10 @@ vi.mock('@pinia/colada', () => ({
   defineQueryOptions: (fn: any) => fn,
   defineMutation: (fn: any) => fn,
   useQueryCache: () => mockQueryCache,
+}));
+
+vi.mock('vue-sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
 describe('weeks api', () => {
@@ -136,6 +141,14 @@ describe('weeks api', () => {
       });
     });
 
+    describe('onSuccess', () => {
+      it('shows a success toast', () => {
+        const config = addWeekMutation() as any;
+        config.onSuccess({ name: 'New Week' });
+        expect(toast.success).toHaveBeenCalledWith('Week New Week created successfully');
+      });
+    });
+
     describe('onSettled', () => {
       it('invalidates the weeks list', () => {
         const config = addWeekMutation() as any;
@@ -146,7 +159,7 @@ describe('weeks api', () => {
   });
 
   describe('editWeekMutation', () => {
-    const vars: EditWeek = { id: '1', payload: { name: 'Updated' } };
+    const vars: EditWeekVars = { id: '1', payload: { name: 'Updated' } };
 
     it('patches /weeks/:id and returns the updated week', async () => {
       mockApi.onPatch(`/weeks/${vars.id}`, vars.payload).reply(200, { ...vars.payload });
@@ -236,6 +249,14 @@ describe('weeks api', () => {
         const config = editWeekMutation() as any;
         config.onError(new Error('Fail'), vars, {});
         expect(mockQueryCache.setQueryData).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('onSuccess', () => {
+      it('shows a success toast', () => {
+        const config = editWeekMutation() as any;
+        config.onSuccess({ name: 'Updated Week' });
+        expect(toast.success).toHaveBeenCalledWith('Week Updated Week updated successfully');
       });
     });
 

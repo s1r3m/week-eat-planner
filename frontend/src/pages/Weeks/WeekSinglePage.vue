@@ -1,6 +1,6 @@
 <template>
   <div id="week-container" class="space-y-6 m-6">
-    <PageTitle :header="week?.name" description="Plan your meal to each day">
+    <PageTitle :header="week?.name">
       <template v-if="!isLoading" #controls>
         <Button
           v-if="week"

@@ -16,6 +16,7 @@ export const ROUTE_NAMES = {
   RECIPES: 'recipes',
   RECIPE: 'recipe',
   RECIPES_CREATE: 'recipes-create',
+  RECIPE_EDIT: 'recipe-edit',
   RECIPES_MY: 'recipes-my',
   RECIPES_FAVORITES: 'recipes-favorites',
 

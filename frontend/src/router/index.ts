@@ -65,6 +65,11 @@ const routes = [
         component: () => import('@/pages/Recipes/RecipesCreatePage.vue'),
       },
       {
+        path: 'recipes/:id/edit',
+        name: ROUTE_NAMES.RECIPE_EDIT,
+        component: () => import('@/pages/Recipes/RecipeEditPage.vue'),
+      },
+      {
         path: 'recipes/my_recipes',
         name: ROUTE_NAMES.RECIPES_MY,
         component: () => import('@/pages/Recipes/MyRecipesPage.vue'),

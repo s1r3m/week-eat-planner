@@ -11,6 +11,7 @@ from loguru import logger
 
 from week_eat_planner.config import settings
 from week_eat_planner.constants import StorageBucket
+from week_eat_planner.helpers import generate_uuid7
 
 
 class StorageClient:
@@ -48,7 +49,7 @@ class StorageClient:
             raise ValueError('Uploaded file has no name')
 
         file_suffix = Path(upload_file.filename).suffix.lower()
-        file_key = f'{obj_id}{file_suffix}'
+        file_key = f'{generate_uuid7()}{file_suffix}'
         _client = self._get_client()
 
         def _upload() -> None:

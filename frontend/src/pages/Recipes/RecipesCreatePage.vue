@@ -1,6 +1,6 @@
 <template>
   <div id="createRecipePage" class="space-y-6 m-6">
-    <PageTitle header="Create a recipe" description="Fill the fields to create a recipe" />
+    <PageTitle header="Create a recipe" />
     <RecipeCreateForm @create="onCreate" @cancel="onCancel" />
   </div>
 </template>
@@ -18,11 +18,11 @@ import RecipeCreateForm from '@/features/recipe/components/RecipeCreateForm.vue'
 const router = useRouter();
 
 const { mutateAsync: create } = useMutation(addRecipeMutation());
-const { mutate: upload } = useMutation(addImageMutation());
+const { mutateAsync: upload } = useMutation(addImageMutation());
 
 const onCreate = async (payload: RecipePayload, image: File | null) => {
   const createdRecipe = await create(payload);
-  if (image) upload({ id: createdRecipe.id, image });
+  if (image) await upload({ id: createdRecipe.id, image });
   router.push({ name: ROUTE_NAMES.RECIPES_MY });
 };
 

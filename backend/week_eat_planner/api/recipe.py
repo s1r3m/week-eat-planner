@@ -189,9 +189,17 @@ async def upload_image(
 
     recipe_service = RecipeService(session)
     recipe = await recipe_service.get_recipe_for_edit(recipe_id, user_id)
+    old_image_key = recipe.image_key
     image_key = await storage.upload_image(image, StorageBucket.RECIPES, recipe.id)
+
     new_data = RecipeUpdate(image_key=image_key)
     updated_recipe = await recipe_service.update_recipe(recipe, new_data)
+    if old_image_key:
+        logger.info(f'Cleaning the old image image_key={old_image_key}')
+        try:
+            await storage.delete_file(old_image_key)
+        except Exception as exc:
+            logger.exception(f'Failed to delete old image {old_image_key}: {exc}')
 
     return RecipeReadMinimal.model_validate(updated_recipe)
 

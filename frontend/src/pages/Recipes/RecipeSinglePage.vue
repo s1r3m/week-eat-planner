@@ -20,6 +20,8 @@
           size="default"
           class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Edit recipe"
+          :disabled="!recipe"
+          @click="router.push({ name: ROUTE_NAMES.RECIPE_EDIT, params: { id: recipe?.id } })"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
         <Button
@@ -51,7 +53,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useMutation, useQuery } from '@pinia/colada';
 import { getRecipeQuery, toggleFavoriteMutation } from '@/api/recipes';
 import type { RecipePreview } from '@/api/recipes';
@@ -65,8 +67,10 @@ import { Button } from '@/components/ui/button';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
 import RecipeDeleteDialog from '@/features/recipe/components/RecipeDeleteDialog.vue';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const route = useRoute();
+const router = useRouter();
 
 const description = computed(() => (recipe.value?.author ? `By ${recipe.value?.author}` : ''));
 

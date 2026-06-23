@@ -5,7 +5,7 @@
     as-child
   >
     <router-link :to="item.to" :aria-label="item.label" @click="handleNavigation">
-      <component :is="item.icon" v-if="item.icon" class="size-6" />
+      <component :is="item.icon" v-if="item.icon" class="size-6 text-primary" />
       <span class="group-data-[collapsible=icon]:sr-only"> {{ item.label }} </span>
     </router-link>
   </component>
