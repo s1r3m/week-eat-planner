@@ -132,7 +132,7 @@ export const addWeekMutation = defineMutation(() => {
       toast.error(`An error occurred while creating new week ${payload.name}: ${err.message}`);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
     },
-    onSuccess: (week: WeekPreview) => toast.success(`Recipe ${week.name} updated successfully`),
+    onSuccess: (week: WeekPreview) => toast.success(`Week ${week.name} created successfully`),
     onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
   };
 });
@@ -160,13 +160,15 @@ export const editWeekMutation = defineMutation(() => {
       return { previous, previousWeeks };
     },
     onError: (
-      _err: Error,
+      err: Error,
       { id }: EditWeekVars,
       context: { previous?: WeekFull; previousWeeks?: WeekPreview[] },
     ) => {
       if (context?.previous) queryCache.setQueryData(WEEK_KEYS.detail(id), context.previous);
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
+      toast.error(`Failed to update week: ${err.message}`);
     },
+    onSuccess: (week: WeekPreview) => toast.success(`Week ${week.name} updated successfully`),
     onSettled: (
       _updatedWeek: WeekPreview,
       _error: Error | undefined,

@@ -2,7 +2,6 @@ import { defineMutation, defineQueryOptions, useQueryCache } from '@pinia/colada
 import type { EntryKey } from '@pinia/colada';
 import { apiClient } from './client';
 import { toast } from 'vue-sonner';
-import { date } from 'zod';
 
 /**
  * Supported measurement units for recipe ingredients.
@@ -148,8 +147,8 @@ export const addRecipeMutation = defineMutation(() => {
 });
 
 /**
- * Mutation for uploading or updating a recipe's cover image.
- * Uses `FormData` to send the image file to the backend.
+ * Mutation for updating a recipe's details.
+ * Optimistically merges the payload into the cached recipe detail.
  */
 export const editRecipeMutation = defineMutation(() => {
   const queryCache = useQueryCache();
@@ -176,7 +175,7 @@ export const editRecipeMutation = defineMutation(() => {
       { id, payload }: UpdateRecipeVars,
       context?: { previousRecipe?: RecipeFull },
     ) => {
-      toast.error(`An error occurred while creating recipe ${payload.name}: ${err.message}`);
+      toast.error(`An error occurred while updating recipe ${payload.name}: ${err.message}`);
       if (context?.previousRecipe) {
         queryCache.setQueryData(RECIPE_KEYS.detail(id), context.previousRecipe);
         queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });

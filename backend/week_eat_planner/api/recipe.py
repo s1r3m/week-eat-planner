@@ -196,7 +196,10 @@ async def upload_image(
     updated_recipe = await recipe_service.update_recipe(recipe, new_data)
     if old_image_key:
         logger.info(f'Cleaning the old image image_key={old_image_key}')
-        await storage.delete_file(old_image_key)
+        try:
+            await storage.delete_file(old_image_key)
+        except Exception as exc:
+            logger.error(f'Failed to delete old image {old_image_key}: {exc}')
 
     return RecipeReadMinimal.model_validate(updated_recipe)
 
