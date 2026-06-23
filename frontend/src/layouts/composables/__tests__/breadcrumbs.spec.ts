@@ -73,7 +73,7 @@ describe('useBreadcrumbs', () => {
     mockRoute.params = { id: 'recipe-1' };
     recipeData.value = { name: 'Recipe Name' };
     expect(useBreadcrumbs().value).toEqual([
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { label: 'Recipe Name' },
     ]);
   });
@@ -86,18 +86,25 @@ describe('useBreadcrumbs', () => {
 
   it('returns [Recipes → My recipes] for the RECIPES_MY route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES_MY;
-    expect(useBreadcrumbs().value).toEqual([
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
-      { label: 'My recipes' },
-    ]);
+    expect(useBreadcrumbs().value).toEqual([{ label: 'My recipes' }]);
   });
 
   it('returns [Recipes → My recipes → Create] for the RECIPES_CREATE route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES_CREATE;
     expect(useBreadcrumbs().value).toEqual([
-      { to: { name: ROUTE_NAMES.RECIPES }, label: 'Recipes' },
       { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { label: 'Create' },
+    ]);
+  });
+
+  it('returns [Recipes → My recipes → recipe name → Edit] for the RECIPE_EDIT route', () => {
+    mockRoute.name = ROUTE_NAMES.RECIPE_EDIT;
+    mockRoute.params = { id: 'recipe-1' };
+    recipeData.value = { id: 'recipe-1', name: 'Recipe Name' } as any;
+    expect(useBreadcrumbs().value).toEqual([
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
+      { to: { name: ROUTE_NAMES.RECIPE, params: { id: 'recipe-1' } }, label: 'Recipe Name' },
+      { label: 'Edit' },
     ]);
   });
 

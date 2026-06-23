@@ -8,11 +8,13 @@ import {
   getRecipeQuery,
   RECIPE_KEYS,
   addRecipeMutation,
+  editRecipeMutation,
   addImageMutation,
   deleteRecipeMutation,
   toggleFavoriteMutation,
   getFavoritesQuery,
 } from '../recipes';
+import type { UpdateRecipeVars } from '../recipes';
 import { toast } from 'vue-sonner';
 
 vi.mock('@pinia/colada', () => ({
@@ -96,36 +98,6 @@ describe('recipes api', () => {
       expect(result).toEqual(mockData);
     });
 
-    describe('onMutate', () => {
-      it('cancels in-flight queries and optimistically appends the new recipe', () => {
-        const previousRecipes = [{ id: '1', name: 'Existing' }];
-        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(previousRecipes);
-
-        const config = addRecipeMutation() as any;
-        const context = config.onMutate(payload);
-
-        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
-        expect(context).toEqual({ previousRecipes });
-
-        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
-        const updated = updater(previousRecipes);
-        expect(updated).toHaveLength(2);
-        expect(updated[1]).toMatchObject({ ...payload, author: 'me' });
-        expect(updated[1].id).toMatch(/^temp-id-/);
-      });
-
-      it('treats missing cache as an empty list', () => {
-        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(null);
-
-        const config = addRecipeMutation() as any;
-        const context = config.onMutate(payload);
-
-        expect(context.previousRecipes).toEqual([]);
-        const updater = vi.mocked(mockQueryCache.setQueryData).mock.calls[0][1] as Function;
-        expect(updater(undefined)).toHaveLength(1);
-      });
-    });
-
     describe('onSuccess', () => {
       it('shows a success toast with the recipe name', () => {
         const created = {
@@ -144,24 +116,14 @@ describe('recipes api', () => {
     });
 
     describe('onError', () => {
-      it('shows an error toast and restores the previous cache', () => {
-        const context = {
-          previousRecipes: [
-            { id: '1', name: 'Existing', author: 'me', is_favorite: false, image_url: null },
-          ],
-        };
-
+      it('shows an error toast', () => {
         const config = addRecipeMutation() as any;
-        config.onError(new Error('network'), payload, context);
+        config.onError(new Error('network'), payload);
 
         expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('New Recipe'));
-        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
-          RECIPE_KEYS.my(),
-          context.previousRecipes,
-        );
       });
 
-      it('does nothing to the cache when context is missing', () => {
+      it('does nothing when called', () => {
         const config = addRecipeMutation() as any;
         config.onError(new Error('network'), payload, undefined);
 
@@ -174,6 +136,75 @@ describe('recipes api', () => {
         const config = addRecipeMutation() as any;
         config.onSettled();
         expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+      });
+    });
+  });
+
+  describe('editRecipeMutation', () => {
+    const vars: UpdateRecipeVars = {
+      id: '1',
+      payload: { name: 'Updated Recipe', steps: [], ingredients: [], is_public: true },
+    };
+
+    it('patches the recipe and returns the updated data', async () => {
+      const mockData = { id: '1', ...vars.payload };
+      mockApi.onPatch('/recipes/1').reply(200, mockData);
+
+      const config = editRecipeMutation() as any;
+      const result = await config.mutation(vars);
+      expect(result).toEqual(mockData);
+    });
+
+    describe('onMutate', () => {
+      it('optimistically updates the recipe detail', () => {
+        const previousRecipe = { id: '1', name: 'Old Recipe' };
+        vi.mocked(mockQueryCache.getQueryData).mockReturnValue(previousRecipe);
+
+        const config = editRecipeMutation() as any;
+        const context = config.onMutate(vars);
+
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.detail('1') });
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+        expect(mockQueryCache.cancelQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.favorites() });
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          RECIPE_KEYS.detail('1'),
+          expect.objectContaining(vars.payload),
+        );
+        expect(context).toEqual({ previousRecipe });
+      });
+    });
+
+    describe('onSuccess', () => {
+      it('shows a success toast', () => {
+        const config = editRecipeMutation() as any;
+        config.onSuccess({ name: 'Updated' } as any, vars, {});
+        expect(toast.success).toHaveBeenCalledWith('Recipe Updated updated successfully');
+      });
+    });
+
+    describe('onError', () => {
+      it('restores the previous recipe and invalidates caches', () => {
+        const previousRecipe = { id: '1', name: 'Old' };
+        const context = { previousRecipe };
+
+        const config = editRecipeMutation() as any;
+        config.onError(new Error('fail'), vars, context as any);
+
+        expect(toast.error).toHaveBeenCalled();
+        expect(mockQueryCache.setQueryData).toHaveBeenCalledWith(
+          RECIPE_KEYS.detail('1'),
+          previousRecipe,
+        );
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalled();
+      });
+
+      it('does not restore if context is missing', () => {
+        const config = editRecipeMutation() as any;
+        config.onError(new Error('fail'), vars, undefined);
+        expect(mockQueryCache.setQueryData).not.toHaveBeenCalledWith(
+          RECIPE_KEYS.detail('1'),
+          expect.anything(),
+        );
       });
     });
   });
@@ -228,7 +259,7 @@ describe('recipes api', () => {
     describe('onSettled', () => {
       it('invalidates the my-recipes list', () => {
         const config = addImageMutation() as any;
-        config.onSettled();
+        config.onSettled(undefined, undefined, { id: '1', image: {} as File });
         expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
       });
     });
