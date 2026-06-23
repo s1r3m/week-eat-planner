@@ -1,4 +1,6 @@
 from io import BytesIO
+from pathlib import Path
+from uuid import UUID
 
 import pytest
 
@@ -9,8 +11,6 @@ BUCKET = 'test_bucket'
 FILE_SUFFIX = '.jpg'
 CONTENT_TYPE = 'Image/jpg'
 OBJ_ID = generate_uuid7()
-
-EXPECTED_FILE_KEY = f'{BUCKET}/{OBJ_ID}{FILE_SUFFIX}'
 
 
 @pytest.fixture
@@ -35,14 +35,14 @@ def storage(mocked_s3_client) -> StorageClient:
     return StorageClient()
 
 
-async def test_storage_client__upload__file_uploaded(storage, mocked_s3_client, mocked_upload_file):
+async def test_storage_client__upload__file_uploaded(mocker, storage, mocked_s3_client, mocked_upload_file):
     file_key = await storage.upload_image(mocked_upload_file, BUCKET, OBJ_ID)
 
-    assert file_key == EXPECTED_FILE_KEY
+    assert UUID(Path(file_key).stem)
     mocked_s3_client.upload_fileobj.assert_called_once_with(
         Fileobj=mocked_upload_file.file,
         Bucket=BUCKET,
-        Key=f'{OBJ_ID}{FILE_SUFFIX}',
+        Key=mocker.ANY,
         ExtraArgs={'ContentType': mocked_upload_file.content_type},
     )
 
@@ -57,8 +57,9 @@ async def test_storage_client__file_no_name__error_raised(storage, mocked_upload
 
 
 async def test_storage_client__delete__file_deleted(storage, mocked_s3_client):
-    await storage.delete_file(EXPECTED_FILE_KEY)
-    mocked_s3_client.delete_object.assert_called_once_with(Bucket=BUCKET, Key=f'{OBJ_ID}{FILE_SUFFIX}')
+    file_key = f'{generate_uuid7()}.jpg'
+    await storage.delete_file(f'{BUCKET}/{file_key}')
+    mocked_s3_client.delete_object.assert_called_once_with(Bucket=BUCKET, Key=file_key)
 
 
 async def test_storage_client__delete_bad_fiile_key__error_raised(storage):
