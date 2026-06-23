@@ -198,9 +198,11 @@ export const deleteWeekMutation = defineMutation(() => {
       );
       return { previousWeeks };
     },
-    onError: (err: Error, id: string, context?: { previousWeeks?: WeekPreview[] }) => {
+    onError: (err: Error, _id: string, context?: { previousWeeks?: WeekPreview[] }) => {
       if (context?.previousWeeks) queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks);
+      toast.error(`Failed to delete week: ${err.message}`);
     },
+    onSuccess: () => toast.success(`Week deleted successfully`),
     onSettled: (
       _: undefined,
       _error: Error | undefined,
