@@ -43,7 +43,7 @@ watch(
   (newSteps: CookingStep[]) => {
     const lastStep = newSteps[newSteps.length - 1];
     if (!lastStep || lastStep.step.trim()) {
-      steps.value.push({ step: '', order: newSteps.length + 1 });
+      steps.value.push({ step: '', order: newSteps.length });
     }
   },
   { deep: true, immediate: true },

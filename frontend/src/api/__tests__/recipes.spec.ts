@@ -183,7 +183,7 @@ describe('recipes api', () => {
     });
 
     describe('onError', () => {
-      it('restores the previous recipe and invalidates caches', () => {
+      it('restores the previous recipe when context is available', () => {
         const previousRecipe = { id: '1', name: 'Old' };
         const context = { previousRecipe };
 
@@ -195,7 +195,6 @@ describe('recipes api', () => {
           RECIPE_KEYS.detail('1'),
           previousRecipe,
         );
-        expect(mockQueryCache.invalidateQueries).toHaveBeenCalled();
       });
 
       it('does not restore if context is missing', () => {
@@ -205,6 +204,21 @@ describe('recipes api', () => {
           RECIPE_KEYS.detail('1'),
           expect.anything(),
         );
+      });
+    });
+
+    describe('onSettled', () => {
+      it('invalidates relevant caches', () => {
+        const config = editRecipeMutation() as any;
+        config.onSettled(undefined, undefined, vars);
+
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: RECIPE_KEYS.detail('1'),
+        });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({ key: RECIPE_KEYS.my() });
+        expect(mockQueryCache.invalidateQueries).toHaveBeenCalledWith({
+          key: RECIPE_KEYS.favorites(),
+        });
       });
     });
   });

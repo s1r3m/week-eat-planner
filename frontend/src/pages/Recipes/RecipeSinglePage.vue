@@ -20,6 +20,7 @@
           size="default"
           class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Edit recipe"
+          :disabled="!recipe"
           @click="router.push({ name: ROUTE_NAMES.RECIPE_EDIT, params: { id: recipe?.id } })"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >

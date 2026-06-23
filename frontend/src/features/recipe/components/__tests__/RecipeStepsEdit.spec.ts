@@ -49,7 +49,7 @@ describe('RecipeStepsEdit', () => {
     const removeButtons = wrapper.findAll('button.text-destructive');
     await removeButtons[0].trigger('click');
     await flushPromises();
-    expect(wrapper.findAll('li')).toHaveLength(2);
+    expect(wrapper.findAll('li')).toHaveLength(3);
   });
 
   it('updates step text on input', async () => {

@@ -199,7 +199,7 @@ async def upload_image(
         try:
             await storage.delete_file(old_image_key)
         except Exception as exc:
-            logger.error(f'Failed to delete old image {old_image_key}: {exc}')
+            logger.exception(f'Failed to delete old image {old_image_key}: {exc}')
 
     return RecipeReadMinimal.model_validate(updated_recipe)
 

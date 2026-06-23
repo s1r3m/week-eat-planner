@@ -165,9 +165,10 @@ export const editRecipeMutation = defineMutation(() => {
     },
     onSuccess: (
       data: RecipeFull,
-      _vars: UpdateRecipeVars,
+      { id }: UpdateRecipeVars,
       _context?: { previousRecipe?: RecipeFull },
     ) => {
+      queryCache.setQueryData(RECIPE_KEYS.detail(id), data);
       toast.success(`Recipe ${data.name} updated successfully`);
     },
     onError: (
@@ -178,10 +179,16 @@ export const editRecipeMutation = defineMutation(() => {
       toast.error(`An error occurred while updating recipe ${payload.name}: ${err.message}`);
       if (context?.previousRecipe) {
         queryCache.setQueryData(RECIPE_KEYS.detail(id), context.previousRecipe);
-        queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });
-        queryCache.invalidateQueries({ key: RECIPE_KEYS.my() });
-        queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
       }
+    },
+    onSettled: (
+      _data: RecipeFull | undefined,
+      _err: Error | undefined,
+      { id }: UpdateRecipeVars,
+    ) => {
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.detail(id) });
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.my() });
+      queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
     },
   };
 });

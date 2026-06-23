@@ -39,6 +39,7 @@ async def test_storage_client__upload__file_uploaded(mocker, storage, mocked_s3_
     file_key = await storage.upload_image(mocked_upload_file, BUCKET, OBJ_ID)
 
     assert UUID(Path(file_key).stem)
+    assert file_key.endswith(FILE_SUFFIX)
     mocked_s3_client.upload_fileobj.assert_called_once_with(
         Fileobj=mocked_upload_file.file,
         Bucket=BUCKET,
