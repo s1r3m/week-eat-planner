@@ -232,8 +232,8 @@ class WeekService:
         if slot_errors:
             logger.error(f'There were errors during validation: {slot_errors}')
             raise MealSlotAssignException(slot_errors)
-
         logger.info('UUIDs validation complete')
+
         db_meal_slots = await self._meal_slot_dao.find_many_by_ids(slot_uuids, for_update=True)
         db_recipes = await self._recipe_dao.find_many_by_ids(recipe_uuids, for_update=False)
 
@@ -270,6 +270,6 @@ class WeekService:
         if slot_errors:
             logger.error(f'There were errors during validation: {slot_errors}')
             raise MealSlotAssignException(slot_errors)
-
         logger.info('Validation complete')
+
         return valid_assignments

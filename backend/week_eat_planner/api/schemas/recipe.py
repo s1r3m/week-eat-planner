@@ -29,7 +29,7 @@ class Ingredient(BaseModel):
     """
 
     name: str
-    amount: int
+    amount: float
     unit: Unit
 
 
