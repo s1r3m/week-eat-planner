@@ -18,7 +18,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     """Abstract base model for all database models."""
 
     __abstract__ = True
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=lambda: generate_uuid7())
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=generate_uuid7)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

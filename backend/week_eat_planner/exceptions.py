@@ -28,6 +28,17 @@ class RecipeNotFoundException(NotFoundException):
         super().__init__(detail=f'Recipe {recipe_id} not found')
 
 
+class ShoppingListNotFoundException(NotFoundException):
+    """Exception raised when a shopping list cannot be found.
+
+    Args:
+        list_id: The ID of the recipe that was not found.
+    """
+
+    def __init__(self, list_id: str | UUID) -> None:
+        super().__init__(detail=f'Recipe {list_id} not found')
+
+
 class WeekNotFoundException(NotFoundException):
     """Exception raised when a week cannot be found.
 
@@ -126,8 +137,8 @@ class UserNotFoundException(LogicException):
         detail: A description of the error.
     """
 
-    def __init__(self, detail: str) -> None:
-        super().__init__(detail)
+    def __init__(self, user_id: UUID) -> None:
+        super().__init__(f'User {user_id} was not found!')
 
 
 class MealSlotAssignException(LogicException):

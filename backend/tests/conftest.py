@@ -44,6 +44,17 @@ def db_user() -> User:
 
 
 @pytest.fixture
+def db_user_2() -> User:
+    return User(
+        id=generate_uuid7(),
+        email='user2@example.com',
+        username='user_2',
+        is_active=True,
+        hashed_password=HASHED_PASSWORD,
+    )
+
+
+@pytest.fixture
 def db_private_recipe(db_user: User) -> Recipe:
     return Recipe(
         id=generate_uuid7(),
