@@ -36,6 +36,7 @@ class ShoppingListService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
+        logger.info(f'Creating a shopping list for week {week.id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user:
             logger.error(f'User {user_id} not found during creating shooping list for week {week.id}')
@@ -46,6 +47,7 @@ class ShoppingListService:
         created = await self._shopping_list_dao.add(
             ShoppingList(week_id=week.id, user_id=user.id, items=items.model_dump()),
         )
+        logger.info(f'A shopping list for week {week.id} was created')
 
         return created
 
@@ -97,6 +99,7 @@ class ShoppingListService:
             ShoppingListNotFoundException: If the shopping list does not exist, belongs to another user,
             or list_id is invalid.
         """
+        logger.info(f'Getting a shopping list read-only with id {list_id}')
         list = await self._get_shopping_list(list_id, user_id)
         return list
 
@@ -116,6 +119,7 @@ class ShoppingListService:
             ShoppingListNotFoundException: If the shopping list does not exist, belongs to another user,
             or list_id is invalid.
         """
+        logger.info(f'Getting a shopping list for update with id {list_id}')
         list = await self._get_shopping_list(list_id, user_id, for_update=True)
         return list
 
@@ -150,3 +154,18 @@ class ShoppingListService:
             raise ShoppingListNotFoundException(list_id=list_uuid)
 
         return shopping_list
+
+    async def update(self, shopping_list: ShoppingList, new_items: ShoppingListUpdate) -> ShoppingList:
+        """Saves the given list with new items.
+
+        Args:
+            shopping_list: The ShoppingList object to update.
+            new_items: The data to update the shopping list items with.
+
+        Returns:
+            The updated ShoppingList object.
+        """
+        logger.info(f'Updating the shopping list {shopping_list.id} with {new_items}')
+        updated_list = await self._shopping_list_dao.update(RecordId(id=shopping_list.id), new_items)
+        logger.info(f'Shopping list {shopping_list.id} was updated successfully')
+        return updated_list
