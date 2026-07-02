@@ -32,11 +32,11 @@ class ShoppingListNotFoundException(NotFoundException):
     """Exception raised when a shopping list cannot be found.
 
     Args:
-        list_id: The ID of the recipe that was not found.
+        week_id: The ID of the week that the shopping list belongs to.
     """
 
-    def __init__(self, list_id: str | UUID) -> None:
-        super().__init__(detail=f'Recipe {list_id} not found')
+    def __init__(self, week_id: str | UUID) -> None:
+        super().__init__(detail=f'Shopping list for week {week_id} not found')
 
 
 class WeekNotFoundException(NotFoundException):
@@ -134,7 +134,7 @@ class UserNotFoundException(LogicException):
     """Exception raised when an operation is attempted on a removed user.
 
     Args:
-        detail: A description of the error.
+        user_id: The ID of the user that was not found.
     """
 
     def __init__(self, user_id: UUID) -> None:

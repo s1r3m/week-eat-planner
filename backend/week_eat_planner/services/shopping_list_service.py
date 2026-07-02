@@ -5,7 +5,7 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas.common import RecordId
+from week_eat_planner.api.schemas.common import RecordId, WeekId
 from week_eat_planner.api.schemas.recipe import Ingredient
 from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListItems, ShoppingListUpdate
 from week_eat_planner.constants import Unit
@@ -13,7 +13,7 @@ from week_eat_planner.db.dao import ShoppingListDAO, UserDAO
 from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.db.models.week import Week
-from week_eat_planner.exceptions import ShoppingListNotFoundException, UserNotFoundException
+from week_eat_planner.exceptions import ShoppingListNotFoundException
 
 
 class ShoppingListService:
@@ -23,30 +23,19 @@ class ShoppingListService:
         self._shopping_list_dao = ShoppingListDAO(session)
         self._user_dao = UserDAO(session)
 
-    async def create(self, week: Week, user_id: UUID) -> ShoppingList:
+    async def create(self, week: Week) -> ShoppingList:
         """Creates a shopping list for given week.
 
         Args:
             week: The week for which to create the shopping list.
-            user_id: The ID of the user creating the shopping list.
 
         Returns:
             The newly created ShoppingList object.
-
-        Raises:
-            UserNotFoundException: If the user with the given ID does not exist.
         """
         logger.info(f'Creating a shopping list for week {week.id}')
-        user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user:
-            logger.error(f'User {user_id} not found during creating shooping list for week {week.id}')
-            raise UserNotFoundException(user_id)
-
         ingredients = await self._get_aggregated_ingredients(week)
         items = ShoppingListItems(ingredients=ingredients)
-        created = await self._shopping_list_dao.add(
-            ShoppingList(week_id=week.id, user_id=user.id, items=items.model_dump()),
-        )
+        created = await self._shopping_list_dao.add(ShoppingList(week_id=week.id, items=items.model_dump()))
         logger.info(f'A shopping list for week {week.id} was created')
 
         return created
@@ -85,73 +74,55 @@ class ShoppingListService:
         ]
         return ingredients
 
-    async def get_by_id(self, list_id: str, user_id: UUID) -> ShoppingList:
-        """Retrieves a shopping list by its ID.
+    async def get_by_week(self, week: Week) -> ShoppingList:
+        """Retrieves a shopping list by the associated week.
 
         Args:
-            list_id: The ID of the shopping list to retrieve.
-            user_id: The ID of the user requesting the shopping list.
+            week: The week the shopping list belongs to.
 
         Returns:
             The requested ShoppingList object.
 
         Raises:
-            ShoppingListNotFoundException: If the shopping list does not exist, belongs to another user,
-            or list_id is invalid.
+            ShoppingListNotFoundException: If the shopping list does not exist.
         """
-        logger.info(f'Getting a shopping list read-only with id {list_id}')
-        list = await self._get_shopping_list(list_id, user_id)
+        logger.info(f'Getting a shopping list read-only for week {week.id}')
+        list = await self._get_shopping_list(week.id)
         return list
 
-    async def get_by_id_for_update(self, list_id: str, user_id: UUID) -> ShoppingList:
+    async def get_by_week_for_update(self, week: Week) -> ShoppingList:
         """Retrieves a shopping list for updating.
 
-        Ensures the user owns the list and locks it for update.
-
         Args:
-            list_id: The ID of the shopping list to retrieve.
-            user_id: The ID of the user requesting the shopping list for update.
+            week: The week the shopping list belongs to.
 
         Returns:
             The requested ShoppingList object.
 
         Raises:
-            ShoppingListNotFoundException: If the shopping list does not exist, belongs to another user,
-            or list_id is invalid.
+            ShoppingListNotFoundException: If the shopping list does not exist.
         """
-        logger.info(f'Getting a shopping list for update with id {list_id}')
-        list = await self._get_shopping_list(list_id, user_id, for_update=True)
+        logger.info(f'Getting a shopping list for update for udpate {week.id}')
+        list = await self._get_shopping_list(week.id, for_update=True)
         return list
 
-    async def _get_shopping_list(self, list_id: str, user_id: UUID, for_update: bool = False) -> ShoppingList:
+    async def _get_shopping_list(self, week_id: UUID, for_update: bool = False) -> ShoppingList:
         """Internal helper to retrieve a shopping list from the database.
 
         Args:
-            list_id: The ID of the shopping list to retrieve.
-            user_id: The ID of the user requesting the shopping list.
+            week_id: The ID of the week the shopping list belongs to.
             for_update: Whether to lock the database row for update. Defaults to False.
 
         Returns:
             The requested ShoppingList object.
 
         Raises:
-            ShoppingListNotFoundException: If the shopping list does not exist, belongs to another user,
-            or list_id is invalid.
+            ShoppingListNotFoundException: If the shopping list does not exist.
         """
-        try:
-            list_uuid = UUID(list_id)
-        except (ValueError, AttributeError) as exc:
-            logger.error(f'Invalid shopping list ID -- not UUID: {list_id}')
-            raise ShoppingListNotFoundException(list_id=list_id) from exc
-
-        shopping_list = await self._shopping_list_dao.find_one_or_none_by_id(list_uuid, for_update=for_update)
+        shopping_list = await self._shopping_list_dao.find_one_or_none(WeekId(week_id=week_id), for_update=for_update)
         if not shopping_list:
-            logger.error(f'Shopping list {list_uuid} not found')
-            raise ShoppingListNotFoundException(list_id=list_uuid)
-
-        if shopping_list.user_id != user_id:
-            logger.error(f'Shopping list {list_uuid} does not belong to {user_id}')
-            raise ShoppingListNotFoundException(list_id=list_uuid)
+            logger.error(f'Shopping list for week {week_id} not found')
+            raise ShoppingListNotFoundException(week_id=week_id)
 
         return shopping_list
 

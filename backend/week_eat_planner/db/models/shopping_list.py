@@ -17,7 +17,6 @@ class ShoppingList(Base):
     Attributes:
         id: The unique identifier for the shopping_list.
         week_id: The foreign key linking to the week from which it was created.
-        user_id: The foreign key linking to the user that created it.
         items: A JSON object storing the ingredients.
         week: The SQLAlchemy relationship to the Week object.
     """
@@ -25,7 +24,6 @@ class ShoppingList(Base):
     __tablename__ = 'shopping_lists'
 
     week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id', ondelete='CASCADE'), nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     items: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
     week: Mapped['Week'] = relationship(back_populates='shopping_list')

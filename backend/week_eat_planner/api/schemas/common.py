@@ -31,3 +31,13 @@ class SuccessResponse(BaseModel):
     """
 
     status: str = 'success'
+
+
+class WeekId(BaseModel):
+    """Schema for identifying a record belong to a week.
+
+    Attributes:
+        week_id: The ID of a week that the record belong to.
+    """
+
+    week_id: UUID

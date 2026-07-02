@@ -10,12 +10,11 @@ from week_eat_planner.api.schemas.recipe import Ingredient
 from week_eat_planner.api.schemas.shopping_list import (
     ShoppingListItem,
     ShoppingListItems,
-    ShoppingListRead,
     ShoppingListUpdate,
 )
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.exceptions import ShoppingListNotFoundException, UserNotFoundException
+from week_eat_planner.exceptions import ShoppingListNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.shopping_list_service import ShoppingListService
 
@@ -35,8 +34,8 @@ def mocked_user_dao(mocker) -> AsyncMock:
 
 
 @pytest.fixture
-def db_shopping_list(db_week, db_user) -> ShoppingList:
-    return ShoppingList(id=generate_uuid7(), week_id=db_week, user_id=db_user.id, items={'ingredients': []})
+def db_shopping_list(db_week) -> ShoppingList:
+    return ShoppingList(id=generate_uuid7(), week_id=db_week.id, items={'ingredients': []})
 
 
 async def test_get_aggregated_ingredients__no_recipes__calculated_correctly(mocked_session, db_week):
@@ -152,137 +151,72 @@ async def test_get_aggregated_ingredients__several_diff_recipes__calculated_corr
 
 
 async def test_create__week_exists__empty_list(
-    mocked_session, mocked_shopping_list_dao, mocked_user_dao, db_week, db_user
+    mocked_session, mocked_shopping_list_dao, db_week
 ):
     ingredients = []
-    added_list = ShoppingListRead(week_name=db_week.name, ingredients=ingredients)
+    added_list = ShoppingList(week_id=db_week.id, items={'ingredients': []})
     mocked_shopping_list_dao.add.return_value = added_list
-    mocked_user_dao.find_one_or_none_by_id.return_value = db_user
 
-    shopping_list = await ShoppingListService(mocked_session).create(db_week, db_user.id)
+    shopping_list = await ShoppingListService(mocked_session).create(db_week)
 
     assert shopping_list == added_list
     passed_shopping_list: ShoppingList = mocked_shopping_list_dao.add.call_args.args[0]
     assert passed_shopping_list.week_id == db_week.id
-    assert passed_shopping_list.user_id == db_user.id
     assert passed_shopping_list.items == ShoppingListItems(ingredients=ingredients).model_dump()
 
 
-async def test_create__user_was_removed__error_raised(mocked_session, mocked_user_dao, db_week, db_user):
-    mocked_user_dao.find_one_or_none_by_id.return_value = None
-
-    with pytest.raises(UserNotFoundException) as exc:
-        await ShoppingListService(mocked_session).create(db_week, db_user.id)
-
-    error = UserNotFoundException(db_user.id)
-    assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
-
-
-async def test_get_by_id__list_exists__shopping_list_found(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user
+async def test_get_by_week__list_exists__shopping_list_found(
+    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_week
 ):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = db_shopping_list
+    from week_eat_planner.api.schemas.common import WeekId
+    mocked_shopping_list_dao.find_one_or_none.return_value = db_shopping_list
 
-    shopping_list = await ShoppingListService(mocked_session).get_by_id(str_list_id, db_user.id)
+    shopping_list = await ShoppingListService(mocked_session).get_by_week(db_week)
 
     assert shopping_list == db_shopping_list
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_called_once_with(db_shopping_list.id, for_update=False)
+    mocked_shopping_list_dao.find_one_or_none.assert_called_once_with(WeekId(week_id=db_week.id), for_update=False)
 
 
-async def test_get_by_id__no_uuid__error_raised(mocked_session, db_user):
-    list_id = 'not_uuid'
+async def test_get_by_week__no_shopping_list__error_raised(
+    mocked_session, mocked_shopping_list_dao, db_week
+):
+    from week_eat_planner.api.schemas.common import WeekId
+    mocked_shopping_list_dao.find_one_or_none.return_value = None
 
     with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id(list_id, db_user.id)
+        await ShoppingListService(mocked_session).get_by_week(db_week)
 
-    error = ShoppingListNotFoundException(list_id)
+    error = ShoppingListNotFoundException(db_week.id)
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
+    mocked_shopping_list_dao.find_one_or_none.assert_awaited_once_with(WeekId(week_id=db_week.id), for_update=False)
 
 
-async def test_get_by_id__no_shopping_list__error_raised(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user
+async def test_get_by_week_for_update__list_exists__shopping_list_found(
+    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_week
 ):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = None
+    from week_eat_planner.api.schemas.common import WeekId
+    mocked_shopping_list_dao.find_one_or_none.return_value = db_shopping_list
 
-    with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id(str_list_id, db_user.id)
-
-    error = ShoppingListNotFoundException(str_list_id)
-    assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_awaited_once_with(db_shopping_list.id, for_update=False)
-
-
-async def test_get_by_id__not_owned_shopping_list__error_raised(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user_2
-):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = db_shopping_list
-
-    with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id(str_list_id, db_user_2.id)
-
-    error = ShoppingListNotFoundException(str_list_id)
-    assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_awaited_once_with(db_shopping_list.id, for_update=False)
-
-
-async def test_get_by_id_for_update__list_exists__shopping_list_found(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user
-):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = db_shopping_list
-
-    shopping_list = await ShoppingListService(mocked_session).get_by_id_for_update(str_list_id, db_user.id)
+    shopping_list = await ShoppingListService(mocked_session).get_by_week_for_update(db_week)
 
     assert shopping_list == db_shopping_list
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_called_once_with(db_shopping_list.id, for_update=True)
+    mocked_shopping_list_dao.find_one_or_none.assert_called_once_with(WeekId(week_id=db_week.id), for_update=True)
 
 
-async def test_get_by_id_for_update__no_uuid__error_raised(mocked_session, db_user):
-    list_id = 'not_uuid'
-
-    with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id_for_update(list_id, db_user.id)
-
-    error = ShoppingListNotFoundException(list_id)
-    assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
-
-
-async def test_get_by_id_for_update__no_shopping_list__error_raised(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user
+async def test_get_by_week_for_update__no_shopping_list__error_raised(
+    mocked_session, mocked_shopping_list_dao, db_week
 ):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = None
+    from week_eat_planner.api.schemas.common import WeekId
+    mocked_shopping_list_dao.find_one_or_none.return_value = None
 
     with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id_for_update(str_list_id, db_user.id)
+        await ShoppingListService(mocked_session).get_by_week_for_update(db_week)
 
-    error = ShoppingListNotFoundException(str_list_id)
+    error = ShoppingListNotFoundException(db_week.id)
     assert exc.value.status_code == error.status_code
     assert exc.value.detail == error.detail
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_awaited_once_with(db_shopping_list.id, for_update=True)
-
-
-async def test_get_by_id_for_update__not_owned_shopping_list__error_raised(
-    mocked_session, mocked_shopping_list_dao, db_shopping_list, db_user_2
-):
-    str_list_id = str(db_shopping_list.id)
-    mocked_shopping_list_dao.find_one_or_none_by_id.return_value = db_shopping_list
-
-    with pytest.raises(ShoppingListNotFoundException) as exc:
-        await ShoppingListService(mocked_session).get_by_id_for_update(str_list_id, db_user_2.id)
-
-    error = ShoppingListNotFoundException(str_list_id)
-    assert exc.value.status_code == error.status_code
-    assert exc.value.detail == error.detail
-    mocked_shopping_list_dao.find_one_or_none_by_id.assert_awaited_once_with(db_shopping_list.id, for_update=True)
+    mocked_shopping_list_dao.find_one_or_none.assert_awaited_once_with(WeekId(week_id=db_week.id), for_update=True)
 
 
 @pytest.mark.parametrize(
