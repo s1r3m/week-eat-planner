@@ -5,13 +5,9 @@ from unittest.mock import AsyncMock
 import pytest
 from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_2_INGREDIENTS
 
-from week_eat_planner.api.schemas.common import RecordId
+from week_eat_planner.api.schemas.common import RecordId, WeekId
 from week_eat_planner.api.schemas.recipe import Ingredient
-from week_eat_planner.api.schemas.shopping_list import (
-    ShoppingListItem,
-    ShoppingListItems,
-    ShoppingListUpdate,
-)
+from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.exceptions import ShoppingListNotFoundException
@@ -35,7 +31,7 @@ def mocked_user_dao(mocker) -> AsyncMock:
 
 @pytest.fixture
 def db_shopping_list(db_week) -> ShoppingList:
-    return ShoppingList(id=generate_uuid7(), week_id=db_week.id, items={'ingredients': []})
+    return ShoppingList(id=generate_uuid7(), week_id=db_week.id, items=[])
 
 
 async def test_get_aggregated_ingredients__no_recipes__calculated_correctly(mocked_session, db_week):
@@ -150,11 +146,9 @@ async def test_get_aggregated_ingredients__several_diff_recipes__calculated_corr
     assert result == [ShoppingListItem(**ing.model_dump(), checked=False) for ing in expected_ingredients]
 
 
-async def test_create__week_exists__empty_list(
-    mocked_session, mocked_shopping_list_dao, db_week
-):
+async def test_create__week_exists__empty_list(mocked_session, mocked_shopping_list_dao, db_week):
     ingredients = []
-    added_list = ShoppingList(week_id=db_week.id, items={'ingredients': []})
+    added_list = ShoppingList(week_id=db_week.id, items=[])
     mocked_shopping_list_dao.add.return_value = added_list
 
     shopping_list = await ShoppingListService(mocked_session).create(db_week)
@@ -162,13 +156,12 @@ async def test_create__week_exists__empty_list(
     assert shopping_list == added_list
     passed_shopping_list: ShoppingList = mocked_shopping_list_dao.add.call_args.args[0]
     assert passed_shopping_list.week_id == db_week.id
-    assert passed_shopping_list.items == ShoppingListItems(ingredients=ingredients).model_dump()
+    assert passed_shopping_list.items == [ing.model_dump(mode='json') for ing in ingredients]
 
 
 async def test_get_by_week__list_exists__shopping_list_found(
     mocked_session, mocked_shopping_list_dao, db_shopping_list, db_week
 ):
-    from week_eat_planner.api.schemas.common import WeekId
     mocked_shopping_list_dao.find_one_or_none.return_value = db_shopping_list
 
     shopping_list = await ShoppingListService(mocked_session).get_by_week(db_week)
@@ -177,10 +170,7 @@ async def test_get_by_week__list_exists__shopping_list_found(
     mocked_shopping_list_dao.find_one_or_none.assert_called_once_with(WeekId(week_id=db_week.id), for_update=False)
 
 
-async def test_get_by_week__no_shopping_list__error_raised(
-    mocked_session, mocked_shopping_list_dao, db_week
-):
-    from week_eat_planner.api.schemas.common import WeekId
+async def test_get_by_week__no_shopping_list__error_raised(mocked_session, mocked_shopping_list_dao, db_week):
     mocked_shopping_list_dao.find_one_or_none.return_value = None
 
     with pytest.raises(ShoppingListNotFoundException) as exc:
@@ -195,7 +185,6 @@ async def test_get_by_week__no_shopping_list__error_raised(
 async def test_get_by_week_for_update__list_exists__shopping_list_found(
     mocked_session, mocked_shopping_list_dao, db_shopping_list, db_week
 ):
-    from week_eat_planner.api.schemas.common import WeekId
     mocked_shopping_list_dao.find_one_or_none.return_value = db_shopping_list
 
     shopping_list = await ShoppingListService(mocked_session).get_by_week_for_update(db_week)
@@ -207,7 +196,6 @@ async def test_get_by_week_for_update__list_exists__shopping_list_found(
 async def test_get_by_week_for_update__no_shopping_list__error_raised(
     mocked_session, mocked_shopping_list_dao, db_week
 ):
-    from week_eat_planner.api.schemas.common import WeekId
     mocked_shopping_list_dao.find_one_or_none.return_value = None
 
     with pytest.raises(ShoppingListNotFoundException) as exc:
@@ -222,10 +210,10 @@ async def test_get_by_week_for_update__no_shopping_list__error_raised(
 @pytest.mark.parametrize(
     'payload',
     [
-        pytest.param(ShoppingListUpdate(ingredients=[]), id='empty_payload'),
+        pytest.param(ShoppingListUpdate(items=[]), id='empty_payload'),
         pytest.param(
             ShoppingListUpdate(
-                ingredients=[
+                items=[
                     ShoppingListItem(name='Carrots', amount=1.0, unit=Unit.PIECES, checked=True),
                     ShoppingListItem(name='Milk', amount=500.0, unit=Unit.GRAM, checked=False),
                     ShoppingListItem(name='Canned tomatoes', amount=0.5, unit=Unit.CANS, checked=False),
@@ -238,7 +226,7 @@ async def test_get_by_week_for_update__no_shopping_list__error_raised(
 async def test_update__shopping_list_exists___updated_successfully(
     mocked_session, mocked_shopping_list_dao, db_shopping_list, payload
 ):
-    db_shopping_list.items = {'ingredients': payload}
+    db_shopping_list.items = payload.items
     mocked_shopping_list_dao.update.return_value = db_shopping_list
 
     updated_shopping_list = await ShoppingListService(mocked_session).update(db_shopping_list, payload)

@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+from week_eat_planner.api.schemas.common import WeekId
 from week_eat_planner.api.schemas.recipe import Ingredient
 
 
@@ -17,20 +18,16 @@ class ShoppingListItems(BaseModel):
     """The collection of ingredients stored in the shopping list.
 
     Attributes:
-        ingredients: A list of shopping list items.
+        items: A list of shopping list items.
     """
 
-    ingredients: list[ShoppingListItem]
+    items: list[ShoppingListItem]
 
 
-class ShoppingListRead(ShoppingListItems):
-    """Schema for reading a shopping list, including the associated week's name.
+class ShoppingListRead(ShoppingListItems, WeekId):
+    """Schema for reading a shopping list, including the associated week's name."""
 
-    Attributes:
-        week_name: The name of the week this shopping list belongs to.
-    """
-
-    week_name: str
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ShoppingListUpdate(ShoppingListItems):

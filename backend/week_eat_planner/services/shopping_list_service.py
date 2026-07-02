@@ -7,13 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas.common import RecordId, WeekId
 from week_eat_planner.api.schemas.recipe import Ingredient
-from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListItems, ShoppingListUpdate
+from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.dao import ShoppingListDAO, UserDAO
 from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.db.models.week import Week
 from week_eat_planner.exceptions import ShoppingListNotFoundException
+from week_eat_planner.helpers import generate_uuid7
 
 
 class ShoppingListService:
@@ -34,8 +35,13 @@ class ShoppingListService:
         """
         logger.info(f'Creating a shopping list for week {week.id}')
         ingredients = await self._get_aggregated_ingredients(week)
-        items = ShoppingListItems(ingredients=ingredients)
-        created = await self._shopping_list_dao.add(ShoppingList(week_id=week.id, items=items.model_dump()))
+        created = await self._shopping_list_dao.add(
+            ShoppingList(
+                id=generate_uuid7(),
+                week_id=week.id,
+                items=[ing.model_dump(mode='json') for ing in ingredients],
+            )
+        )
         logger.info(f'A shopping list for week {week.id} was created')
 
         return created

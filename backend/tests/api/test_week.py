@@ -139,6 +139,7 @@ async def test_delete_week__other_user_existing_week__error_in_response(
     created_week, auth_client_factory, created_user_2
 ):
     user_client_2 = await auth_client_factory(created_user_2, PASSWORD)
+
     response = await user_client_2.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
     error = WeekForbiddenException(created_week.id)
@@ -152,6 +153,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
     auth_client_for_created_user,
 ):
     slot_to_assign = created_week.meal_slots[0]
+
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[{'slot_id': str(slot_to_assign.id), 'recipe_id': str(created_recipe.id)}],
@@ -180,6 +182,7 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     auth_client_for_created_user,
 ):
     bad_uuid = 'bad_uuid'
+
     response = await auth_client_for_created_user.patch(
         AppUrl.WEEK_SLOTS_TPL.format(week_id=created_week.id),
         json=[
@@ -192,3 +195,9 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     error = MealSlotAssignException([error_message])
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
+
+
+async def test_create_shopping_list__week_exists__shopping_list_created(created_week, auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.SHOPPING_LIST_TPL.format(week_id=created_week.id))
+
+    assert response.status_code == status.HTTP_201_CREATED

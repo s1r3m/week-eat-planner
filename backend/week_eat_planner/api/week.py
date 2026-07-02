@@ -171,7 +171,7 @@ async def assign_recipe_to_meal_slot(
     return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]
 
 
-@router.post(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
+@router.post(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead, status_code=status.HTTP_201_CREATED)
 async def create_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
@@ -218,7 +218,7 @@ async def get_shopping_list(
 
 
 @router.put(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
-async def udpated_shopping_list(
+async def update_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
     new_data: ShoppingListUpdate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],

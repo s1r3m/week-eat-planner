@@ -1,5 +1,3 @@
-from re import M
-
 import pytest
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
