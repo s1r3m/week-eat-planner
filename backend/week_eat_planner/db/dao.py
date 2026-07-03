@@ -36,7 +36,7 @@ class RefreshTokenDAO(BaseDAO[RefreshToken]):
 class ShoppingListDAO(BaseDAO[ShoppingList]):
     """Data Access Object for managing 'ShoppingList' records in the database.
 
-    Provides methods for CRUD operations and specialized queries for refresh tokens.
+    Provides methods for CRUD operations on shopping lists.
     """
 
     model = ShoppingList

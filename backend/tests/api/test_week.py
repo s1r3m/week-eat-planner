@@ -1,5 +1,3 @@
-from collections.abc import Callable
-
 import pytest_asyncio
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,20 +20,6 @@ from week_eat_planner.exceptions import (
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.shopping_list_service import ShoppingListService
 from week_eat_planner.services.week_service import WeekService
-
-
-@pytest_asyncio.fixture
-async def created_shopping_list_factory(db_session: AsyncSession, created_recipe: Recipe) -> Callable:
-    async def _factory(week: Week) -> ShoppingList:
-        await WeekService(db_session).assign_recipes_to_meal_slots(
-            week,
-            MealSlotAssign(recipe_id=str(created_recipe.id), slot_id=str(week.meal_slots[0].id)),
-        )
-        shopping_list = await ShoppingListService(db_session).create(week)
-        await db_session.flush()
-        return shopping_list
-
-    return _factory
 
 
 @pytest_asyncio.fixture

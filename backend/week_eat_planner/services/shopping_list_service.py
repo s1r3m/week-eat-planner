@@ -1,15 +1,17 @@
 """Service layer for shopping list related business logic."""
 
+from decimal import Decimal
 from uuid import UUID
 
 from loguru import logger
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas.common import RecordId, WeekId
 from week_eat_planner.api.schemas.recipe import Ingredient
 from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
 from week_eat_planner.constants import Unit
-from week_eat_planner.db.dao import ShoppingListDAO, UserDAO
+from week_eat_planner.db.dao import ShoppingListDAO
 from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.db.models.week import Week
@@ -21,8 +23,12 @@ class ShoppingListService:
     """Service layer for handling shopping list related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initializes the shopping list service.
+
+        Args:
+            session: The database session to use for database operations.
+        """
         self._shopping_list_dao = ShoppingListDAO(session)
-        self._user_dao = UserDAO(session)
 
     async def create(self, week: Week) -> ShoppingList:
         """Creates a shopping list for given week.
@@ -32,6 +38,9 @@ class ShoppingListService:
 
         Returns:
             The newly created ShoppingList object.
+
+        Raises:
+            ShoppingListAlreadyExistsException: If a shopping list for the week already exists.
         """
         logger.info(f'Creating a shopping list for week {week.id}')
         existing_list = await self._shopping_list_dao.find_one_or_none(WeekId(week_id=week.id))
@@ -40,13 +49,18 @@ class ShoppingListService:
             raise ShoppingListAlreadyExistsException(week_id=week.id)
 
         ingredients = await self._get_aggregated_ingredients(week)
-        created = await self._shopping_list_dao.add(
-            ShoppingList(
-                id=generate_uuid7(),
-                week_id=week.id,
-                items=[ing.model_dump(mode='json') for ing in ingredients],
+        try:
+            created = await self._shopping_list_dao.add(
+                ShoppingList(
+                    id=generate_uuid7(),
+                    week_id=week.id,
+                    items=[ing.model_dump(mode='json') for ing in ingredients],
+                )
             )
-        )
+        except IntegrityError as exc:
+            logger.error(f'Week {week.id} already has a created list (concurrent insert)')
+            raise ShoppingListAlreadyExistsException(week_id=week.id) from exc
+
         logger.info(f'A shopping list for week {week.id} was created')
 
         return created
@@ -68,19 +82,19 @@ class ShoppingListService:
             slot_portions: int = getattr(meal_slot, 'portions', 1)  # TODO: implement porions
             recipe_counts[meal_slot.recipe] = recipe_counts.get(meal_slot.recipe, 0) + slot_portions
 
-        aggregated: dict[tuple[str, Unit], float] = {}
+        aggregated: dict[tuple[str, Unit], Decimal] = {}
         for recipe, portions in recipe_counts.items():
             base_portions: int = getattr(recipe, 'portions', 1)  # TODO: implement portions
-            scale_factor = portions / base_portions
+            scale_factor = Decimal(portions) / Decimal(base_portions)
 
             for ing_data in recipe.ingredients:
                 ing = Ingredient.model_validate(ing_data)
                 key = (ing.name, ing.unit)
                 scaled_amount = ing.amount * scale_factor
-                aggregated[key] = aggregated.get(key, 0.0) + scaled_amount
+                aggregated[key] = aggregated.get(key, Decimal(0)) + scaled_amount
 
         ingredients = [
-            ShoppingListItem(name=name, unit=unit, amount=amount, checked=False)
+            ShoppingListItem(name=name, unit=unit, amount=amount.normalize(), checked=False)
             for (name, unit), amount in aggregated.items()
         ]
         return ingredients
@@ -113,7 +127,7 @@ class ShoppingListService:
         Raises:
             ShoppingListNotFoundException: If the shopping list does not exist.
         """
-        logger.info(f'Getting a shopping list for update for udpate {week.id}')
+        logger.info(f'Getting a shopping list for update {week.id}')
         list = await self._get_shopping_list(week.id, for_update=True)
         return list
 

@@ -25,10 +25,19 @@ class ShoppingListItems(BaseModel):
 
 
 class ShoppingListRead(ShoppingListItems, WeekId):
-    """Schema for reading a shopping list., including the associated week's ID."""
+    """Schema for reading a shopping list, including the associated week's ID.
+
+    Attributes:
+        items: A list of shopping list items.
+        week_id: The ID of the week the shopping list belongs to.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class ShoppingListUpdate(ShoppingListItems):
-    """Schema for updating the items in a shopping list."""
+    """Schema for updating the items in a shopping list.
+
+    Attributes:
+        items: The updated list of shopping list items.
+    """

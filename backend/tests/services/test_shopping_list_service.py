@@ -1,8 +1,10 @@
 from copy import deepcopy
+from decimal import Decimal
 from operator import attrgetter
 from unittest.mock import AsyncMock
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_2_INGREDIENTS
 
 from week_eat_planner.api.schemas.common import RecordId, WeekId
@@ -173,6 +175,18 @@ async def test_create__shopping_list_exists__error_raised(
     assert exc.value.detail == error.detail
 
 
+async def test_create__concurrent_insert__error_raised(mocked_session, mocked_shopping_list_dao, db_week):
+    mocked_shopping_list_dao.find_one_or_none.return_value = None
+    mocked_shopping_list_dao.add.side_effect = IntegrityError(None, None, None)
+
+    with pytest.raises(ShoppingListAlreadyExistsException) as exc:
+        await ShoppingListService(mocked_session).create(db_week)
+
+    error = ShoppingListAlreadyExistsException(db_week.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
 async def test_get_by_week__list_exists__shopping_list_found(
     mocked_session, mocked_shopping_list_dao, db_shopping_list, db_week
 ):
@@ -228,9 +242,9 @@ async def test_get_by_week_for_update__no_shopping_list__error_raised(
         pytest.param(
             ShoppingListUpdate(
                 items=[
-                    ShoppingListItem(name='Carrots', amount=1.0, unit=Unit.PIECES, checked=True),
-                    ShoppingListItem(name='Milk', amount=500.0, unit=Unit.GRAM, checked=False),
-                    ShoppingListItem(name='Canned tomatoes', amount=0.5, unit=Unit.CANS, checked=False),
+                    ShoppingListItem(name='Carrots', amount=Decimal(1.0), unit=Unit.PIECES, checked=True),
+                    ShoppingListItem(name='Milk', amount=Decimal(500.0), unit=Unit.GRAM, checked=False),
+                    ShoppingListItem(name='Canned tomatoes', amount=Decimal(0.5), unit=Unit.CANS, checked=False),
                 ],
             ),
             id='not_empty_payload',
