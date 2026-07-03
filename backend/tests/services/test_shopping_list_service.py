@@ -71,8 +71,8 @@ async def test_get_aggregated_ingredients__recipe_with_no_ingredients__empty_lis
 async def test_get_aggregated_ingredients__same_name_different_units__separate_items(
     mocked_session, db_week, db_private_recipe, db_public_recipe
 ):
-    ing1 = Ingredient(name='water', amount=100, unit=Unit.MILILITERS)
-    ing2 = Ingredient(name='water', amount=1, unit=Unit.PIECES)
+    ing1 = Ingredient(name='water', amount=Decimal('100'), unit=Unit.MILILITERS)
+    ing2 = Ingredient(name='water', amount=Decimal('1'), unit=Unit.PIECES)
     db_private_recipe.ingredients = [ing1.model_dump()]
     db_public_recipe.ingredients = [ing2.model_dump()]
     db_week.meal_slots[0].recipe = db_private_recipe
@@ -91,7 +91,7 @@ async def test_get_aggregated_ingredients__same_name_different_units__separate_i
 async def test_get_aggregated_ingredients__floating_point_precision__calculated_correctly(
     mocked_session, db_week, db_private_recipe
 ):
-    amount = 0.5
+    amount = Decimal('0.5')
     count = 3
     ing = Ingredient(name='salt', amount=amount, unit=Unit.GRAM)
     db_private_recipe.ingredients = [ing.model_dump()]
@@ -109,10 +109,10 @@ async def test_get_aggregated_ingredients__floating_point_precision__calculated_
 async def test_get_aggregated_ingredients__complex_overlap__calculated_correctly(
     mocked_session, db_week, db_private_recipe, db_public_recipe
 ):
-    ing_eggs = Ingredient(name='eggs', amount=2, unit=Unit.PIECES)
-    ing_flour1 = Ingredient(name='flour', amount=100, unit=Unit.GRAM)
-    ing_flour2 = Ingredient(name='flour', amount=200, unit=Unit.GRAM)
-    ing_milk = Ingredient(name='milk', amount=500, unit=Unit.MILILITERS)
+    ing_eggs = Ingredient(name='eggs', amount=Decimal('2'), unit=Unit.PIECES)
+    ing_flour1 = Ingredient(name='flour', amount=Decimal('100'), unit=Unit.GRAM)
+    ing_flour2 = Ingredient(name='flour', amount=Decimal('200'), unit=Unit.GRAM)
+    ing_milk = Ingredient(name='milk', amount=Decimal('500'), unit=Unit.MILILITERS)
     db_private_recipe.ingredients = [ing_eggs.model_dump(), ing_flour1.model_dump()]
     db_public_recipe.ingredients = [ing_flour2.model_dump(), ing_milk.model_dump()]
     db_week.meal_slots[0].recipe = db_private_recipe
@@ -177,7 +177,7 @@ async def test_create__shopping_list_exists__error_raised(
 
 async def test_create__concurrent_insert__error_raised(mocked_session, mocked_shopping_list_dao, db_week):
     mocked_shopping_list_dao.find_one_or_none.return_value = None
-    mocked_shopping_list_dao.add.side_effect = IntegrityError(None, None, None)
+    mocked_shopping_list_dao.add.side_effect = IntegrityError(None, None, BaseException())
 
     with pytest.raises(ShoppingListAlreadyExistsException) as exc:
         await ShoppingListService(mocked_session).create(db_week)

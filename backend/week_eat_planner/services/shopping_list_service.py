@@ -94,7 +94,7 @@ class ShoppingListService:
                 aggregated[key] = aggregated.get(key, Decimal(0)) + scaled_amount
 
         ingredients = [
-            ShoppingListItem(name=name, unit=unit, amount=amount.normalize(), checked=False)
+            ShoppingListItem(name=name, unit=unit, amount=amount, checked=False)
             for (name, unit), amount in aggregated.items()
         ]
         return ingredients
