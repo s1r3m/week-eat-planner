@@ -1,10 +1,18 @@
+from collections.abc import Callable
+
+import pytest_asyncio
 from fastapi import status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
 from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
+from week_eat_planner.api.schemas.meal_slot import MealSlotAssign
 from week_eat_planner.api.schemas.week import WeekRead
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.db.models.recipe import Recipe
+from week_eat_planner.db.models.shopping_list import ShoppingList
+from week_eat_planner.db.models.week import Week
 from week_eat_planner.exceptions import (
     MealSlotAssignException,
     NoAccessTokenException,
@@ -12,6 +20,37 @@ from week_eat_planner.exceptions import (
     WeekNotFoundException,
 )
 from week_eat_planner.helpers import generate_uuid7
+from week_eat_planner.services.shopping_list_service import ShoppingListService
+from week_eat_planner.services.week_service import WeekService
+
+
+@pytest_asyncio.fixture
+async def created_shopping_list_factory(db_session: AsyncSession, created_recipe: Recipe) -> Callable:
+    async def _factory(week: Week) -> ShoppingList:
+        await WeekService(db_session).assign_recipes_to_meal_slots(
+            week,
+            MealSlotAssign(recipe_id=str(created_recipe.id), slot_id=str(week.meal_slots[0].id)),
+        )
+        shopping_list = await ShoppingListService(db_session).create(week)
+        await db_session.flush()
+        return shopping_list
+
+    return _factory
+
+
+@pytest_asyncio.fixture
+async def created_week_with_recipe(created_week: Week, created_recipe: Recipe, db_session: AsyncSession) -> Week:
+    await WeekService(db_session).assign_recipes_to_meal_slots(
+        created_week,
+        MealSlotAssign(recipe_id=str(created_recipe.id), slot_id=str(created_week.meal_slots[0].id)),
+    )
+    return created_week
+
+
+@pytest_asyncio.fixture
+async def created_shopping_list(created_week_with_recipe: Week, db_session: AsyncSession) -> ShoppingList:
+    shopping_list = await ShoppingListService(db_session).create(created_week_with_recipe)
+    return shopping_list
 
 
 async def test_create_week__with_auth__week_in_response(auth_client_for_created_user, created_user):
@@ -176,7 +215,7 @@ async def test_assign_recipe_to_meal_slot__valid_data__updated_slots_in_response
     ]
 
 
-async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_response(
+async def test_assign_recipe_to_meal_slot__invalid_data__error_in_response(
     created_week,
     created_recipe,
     auth_client_for_created_user,
@@ -197,7 +236,90 @@ async def test_assign_recipe_to_meal_slot__invalid_data__updated_slots_in_respon
     assert response.json() == {'detail': error.detail}
 
 
-async def test_create_shopping_list__week_exists__shopping_list_created(created_week, auth_client_for_created_user):
-    response = await auth_client_for_created_user.post(AppUrl.SHOPPING_LIST_TPL.format(week_id=created_week.id))
+async def test_create_shopping_list__week_exists__shopping_list_created(
+    created_week_with_recipe, auth_client_for_created_user
+):
+    response = await auth_client_for_created_user.post(
+        AppUrl.SHOPPING_LIST_TPL.format(week_id=created_week_with_recipe.id)
+    )
 
     assert response.status_code == status.HTTP_201_CREATED
+    recipe = created_week_with_recipe.meal_slots[0].recipe
+    assert response.json() == {
+        'week_id': str(created_week_with_recipe.id),
+        'items': [{'checked': False, **ing} for ing in recipe.ingredients],
+    }
+
+
+async def test_create_shopping_list__bad_week_id__error_in_response(auth_client_for_created_user):
+    not_existing_week_id = generate_uuid7()
+
+    response = await auth_client_for_created_user.post(
+        AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id)
+    )
+
+    error = WeekNotFoundException(not_existing_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_get_shopping_list__list_exists__shopping_list_in_response(
+    auth_client_for_created_user, created_shopping_list
+):
+    week = created_shopping_list.week
+
+    response = await auth_client_for_created_user.get(AppUrl.SHOPPING_LIST_TPL.format(week_id=week.id))
+
+    assert response.status_code == status.HTTP_200_OK
+    recipe = week.meal_slots[0].recipe
+    assert response.json() == {
+        'week_id': str(week.id),
+        'items': [{'checked': False, **ing} for ing in recipe.ingredients],
+    }
+
+
+async def test_get_shopping_list__week_not_exist__error_in_response(auth_client_for_created_user):
+    not_existing_week_id = generate_uuid7()
+
+    response = await auth_client_for_created_user.get(
+        AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id)
+    )
+
+    error = WeekNotFoundException(not_existing_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_update_shopping_list__list_exists__shopping_list_in_response(
+    auth_client_for_created_user, created_shopping_list
+):
+    week = created_shopping_list.week
+    recipe = week.meal_slots[0].recipe
+
+    response = await auth_client_for_created_user.put(
+        AppUrl.SHOPPING_LIST_TPL.format(week_id=week.id),
+        json={'items': [{'checked': True, **ing} for ing in recipe.ingredients]},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        'week_id': str(week.id),
+        'items': [{'checked': True, **ing} for ing in recipe.ingredients],
+    }
+
+
+async def test_update_shopping_list__week_not_exist__shopping_list_in_response(
+    auth_client_for_created_user, created_shopping_list
+):
+    not_existing_week_id = generate_uuid7()
+    week = created_shopping_list.week
+    recipe = week.meal_slots[0].recipe
+
+    response = await auth_client_for_created_user.put(
+        AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id),
+        json={'items': [{'checked': True, **ing} for ing in recipe.ingredients]},
+    )
+
+    error = WeekNotFoundException(not_existing_week_id)
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
