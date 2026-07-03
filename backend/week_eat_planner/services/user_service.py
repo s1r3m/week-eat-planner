@@ -25,7 +25,7 @@ class UserService:
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
             logger.error(f'User not found with {user_id=}')
-            raise UserNotFoundException(f'User {user_id} was not found!')
+            raise UserNotFoundException(user_id)
 
         return user
 
@@ -68,9 +68,8 @@ class UserService:
         logger.debug(f'Updating user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
-            msg = f'User {user_id} was not found!'
-            logger.error(msg)
-            raise UserNotFoundException(msg)
+            logger.error(f'User {user_id} was not found!')
+            raise UserNotFoundException(user_id)
 
         updated_user = await self._user_dao.update(RecordId(id=user_id), values)
         logger.debug(f'User {user.id} was successfully updated')
@@ -95,9 +94,8 @@ class UserService:
         logger.debug(f'Changing password for user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
-            msg = f'User {user_id} was not found!'
-            logger.error(msg)
-            raise UserNotFoundException(msg)
+            logger.error(f'User {user_id} was not found!')
+            raise UserNotFoundException(user_id)
 
         if not user.hashed_password:
             logger.error(f'User {user.id} was registered with {user.oauth_provider}')

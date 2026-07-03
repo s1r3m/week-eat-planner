@@ -1,6 +1,7 @@
+from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_serializer
 
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.config import settings
@@ -29,12 +30,31 @@ class Ingredient(BaseModel):
     """
 
     name: str
-    amount: int
+    amount: Decimal
     unit: Unit
+
+    @field_serializer('amount')
+    def serialize_amount(self, amount: Decimal) -> str:
+        """Serializes Decimal amount to string to preserve precision in JSON.
+
+        Args:
+            amount: The Decimal amount to serialize.
+
+        Returns:
+            The string representation of the amount.
+        """
+        return str(amount)
 
 
 class RecipeBase(BaseModel):
-    """Base schema for a recipe, containing common fields."""
+    """Base schema for a recipe, containing common fields.
+
+    Attributes:
+        name: The name of the recipe.
+        is_public: Whether the recipe is visible to all users.
+        steps: A list of cooking steps for the recipe.
+        ingredients: A list of ingredients required for the recipe.
+    """
 
     name: str
     is_public: bool

@@ -6,7 +6,7 @@ import pytest_asyncio
 from fastapi import UploadFile, status
 from starlette.datastructures import Headers
 
-from tests.constants import RECIPE_INGREDIENTS, RECIPE_IS_PUBLIC, RECIPE_NAME, RECIPE_STEPS
+from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_1_IS_PUBLIC, RECIPE_1_NAME, RECIPE_1_STEPS
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
@@ -67,10 +67,10 @@ async def favorite_private_recipe(auth_client_for_created_user, created_recipe) 
 
 async def test_create_recipe__with_auth__recipe_in_response(auth_client_for_created_user, created_user):
     create_data = RecipeCreate(
-        name=RECIPE_NAME,
-        is_public=RECIPE_IS_PUBLIC,
-        steps=RECIPE_STEPS,
-        ingredients=RECIPE_INGREDIENTS,
+        name=RECIPE_1_NAME,
+        is_public=RECIPE_1_IS_PUBLIC,
+        steps=RECIPE_1_STEPS,
+        ingredients=RECIPE_1_INGREDIENTS,
     )
 
     response = await auth_client_for_created_user.post(AppUrl.RECIPES, json=create_data.model_dump(mode='json'))

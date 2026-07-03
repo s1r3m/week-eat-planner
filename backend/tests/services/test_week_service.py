@@ -2,17 +2,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 from tests.api.conftest import WEEK_1_NAME
-from tests.constants import WEEK_1_ID
 
-from week_eat_planner.api.schemas import (
-    MealSlotAssign,
-    UserRead,
-    WeekCreate,
-    WeekRead,
-    WeekUpdate,
-)
+from week_eat_planner.api.schemas import MealSlotAssign, WeekCreate, WeekUpdate
 from week_eat_planner.api.schemas.common import RecordId
-from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Recipe, Week
+from week_eat_planner.db.models import MealSlot, Recipe, Week
 from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.week_service import WeekService
@@ -37,32 +30,6 @@ def mocked_recipe_dao(mocker) -> AsyncMock:
     recipe_dao_mock = mocker.AsyncMock()
     mocker.patch('week_eat_planner.services.week_service.RecipeDAO', return_value=recipe_dao_mock)
     return recipe_dao_mock
-
-
-@pytest.fixture
-def db_week(user_read: UserRead, db_meal_slots: list[MealSlot]) -> Week:
-    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=user_read.id, meal_slots=db_meal_slots)
-
-
-@pytest.fixture
-def week_read(db_week: Week) -> WeekRead:
-    return WeekRead.model_validate(db_week)
-
-
-@pytest.fixture
-def db_meal_slots() -> list[MealSlot]:
-    slots = []
-    for meal_type in MealType:
-        for day in DayOfWeek:
-            slot = MealSlot(
-                id=generate_uuid7(),
-                week_id=WEEK_1_ID,
-                day_of_week=day,
-                meal_type=meal_type,
-                recipe_id=None,
-            )
-            slots.append(slot)
-    return slots
 
 
 @pytest.fixture

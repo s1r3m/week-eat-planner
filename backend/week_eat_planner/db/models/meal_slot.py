@@ -51,7 +51,9 @@ class MealSlot(Base):
     week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id', ondelete='CASCADE'), nullable=False, index=True)
     day_of_week: Mapped[DayOfWeek] = mapped_column(nullable=False)
     meal_type: Mapped[MealType] = mapped_column(nullable=False)
-    recipe_id: Mapped[UUID] = mapped_column(ForeignKey('recipes.id', ondelete='SET NULL'), nullable=True, unique=False)
+    recipe_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey('recipes.id', ondelete='SET NULL'), nullable=True, unique=False
+    )
 
     week: Mapped['Week'] = relationship(back_populates='meal_slots', lazy='selectin')
     recipe: Mapped['Recipe'] = relationship(back_populates='meal_slots', lazy='selectin', foreign_keys=[recipe_id])

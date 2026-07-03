@@ -6,9 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tests.constants import (
     EMAIL,
     HASHED_PASSWORD,
-    RECIPE_INGREDIENTS,
-    RECIPE_NAME,
-    RECIPE_STEPS,
+    RECIPE_1_INGREDIENTS,
+    RECIPE_1_NAME,
+    RECIPE_1_STEPS,
+    RECIPE_2_INGREDIENTS,
+    RECIPE_2_NAME,
+    RECIPE_2_STEPS,
     USERNAME,
     USER_ID,
     WEEK_1_ID,
@@ -16,6 +19,7 @@ from tests.constants import (
 )
 from week_eat_planner.api.schemas import UserRead, WeekRead
 from week_eat_planner.db.models import Recipe, User
+from week_eat_planner.db.models.meal_slot import DayOfWeek, MealSlot, MealType
 from week_eat_planner.db.models.week import Week
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
@@ -40,15 +44,26 @@ def db_user() -> User:
 
 
 @pytest.fixture
+def db_user_2() -> User:
+    return User(
+        id=generate_uuid7(),
+        email='user2@example.com',
+        username='user_2',
+        is_active=True,
+        hashed_password=HASHED_PASSWORD,
+    )
+
+
+@pytest.fixture
 def db_private_recipe(db_user: User) -> Recipe:
     return Recipe(
         id=generate_uuid7(),
-        name=RECIPE_NAME,
+        name=RECIPE_1_NAME,
         user_id=db_user.id,
         user=db_user,
         is_public=False,
-        steps=[step.model_dump() for step in RECIPE_STEPS],
-        ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
+        steps=[step.model_dump() for step in RECIPE_1_STEPS],
+        ingredients=[recipe.model_dump() for recipe in RECIPE_1_INGREDIENTS],
     )
 
 
@@ -56,18 +71,13 @@ def db_private_recipe(db_user: User) -> Recipe:
 def db_public_recipe(db_user: User) -> Recipe:
     return Recipe(
         id=generate_uuid7(),
-        name=RECIPE_NAME,
+        name=RECIPE_2_NAME,
         user_id=db_user.id,
         user=db_user,
         is_public=True,
-        steps=[step.model_dump() for step in RECIPE_STEPS],
-        ingredients=[recipe.model_dump() for recipe in RECIPE_INGREDIENTS],
+        steps=[step.model_dump() for step in RECIPE_2_STEPS],
+        ingredients=[recipe.model_dump() for recipe in RECIPE_2_INGREDIENTS],
     )
-
-
-@pytest.fixture
-def db_week(db_user: User) -> Week:
-    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=db_user.id, meal_slots=[], user=db_user)
 
 
 @pytest.fixture
@@ -88,5 +98,26 @@ def user_read_2() -> UserRead:
 
 
 @pytest.fixture
-def week_out(db_week: Week) -> WeekRead:
+def db_week(user_read: UserRead, db_meal_slots: list[MealSlot]) -> Week:
+    return Week(id=WEEK_1_ID, name=WEEK_1_NAME, user_id=user_read.id, meal_slots=db_meal_slots)
+
+
+@pytest.fixture
+def week_read(db_week: Week) -> WeekRead:
     return WeekRead.model_validate(db_week)
+
+
+@pytest.fixture
+def db_meal_slots() -> list[MealSlot]:
+    slots: list[MealSlot] = []
+    for meal_type in MealType:
+        for day in DayOfWeek:
+            slot = MealSlot(
+                id=generate_uuid7(),
+                week_id=WEEK_1_ID,
+                day_of_week=day,
+                meal_type=meal_type,
+                recipe_id=None,
+            )
+            slots.append(slot)
+    return slots

@@ -18,7 +18,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     """Abstract base model for all database models."""
 
     __abstract__ = True
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=lambda: generate_uuid7())
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=generate_uuid7)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
@@ -137,11 +137,12 @@ class BaseDAO(Generic[T]):
 
         return list(records)
 
-    async def find_one_or_none(self, filters: BaseModel) -> T | None:
+    async def find_one_or_none(self, filters: BaseModel, for_update: bool = False) -> T | None:
         """Fetches a single record from the database or None if not found.
 
         Args:
             filters: A Pydantic model containing the filter criteria.
+            for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
 
         Returns:
             An instance of the model if found, otherwise None.
@@ -153,6 +154,10 @@ class BaseDAO(Generic[T]):
         logger.debug(f'Getting {self.model.__name__} with {filter_by}')
         try:
             query = select(self.model).filter_by(**filter_by)
+
+            if for_update:
+                query = query.with_for_update()
+
             result = await self._session.execute(query)
             record = result.scalar_one_or_none()
             if record:

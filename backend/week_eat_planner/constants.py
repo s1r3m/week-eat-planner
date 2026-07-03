@@ -27,6 +27,8 @@ class AppUrl(StrEnum):
     WEEKS_TPL = '/weeks/{week_id}'
     WEEK_SLOTS_TPL = '/weeks/{week_id}/slots'
 
+    SHOPPING_LIST_TPL = '/weeks/{week_id}/shopping-list'
+
     USER = '/user'
     USER_PASSWORD = '/user/password'
 

@@ -2,6 +2,7 @@
 
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import MealSlot, Recipe, RefreshToken, User, Week
+from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.db.models.user_favorites import UserFavorite
 
 
@@ -30,6 +31,15 @@ class RefreshTokenDAO(BaseDAO[RefreshToken]):
     """
 
     model = RefreshToken
+
+
+class ShoppingListDAO(BaseDAO[ShoppingList]):
+    """Data Access Object for managing 'ShoppingList' records in the database.
+
+    Provides methods for CRUD operations on shopping lists.
+    """
+
+    model = ShoppingList
 
 
 class UserDAO(BaseDAO[User]):

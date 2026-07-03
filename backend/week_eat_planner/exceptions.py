@@ -28,6 +28,17 @@ class RecipeNotFoundException(NotFoundException):
         super().__init__(detail=f'Recipe {recipe_id} not found')
 
 
+class ShoppingListNotFoundException(NotFoundException):
+    """Exception raised when a shopping list cannot be found.
+
+    Args:
+        week_id: The ID of the week that the shopping list belongs to.
+    """
+
+    def __init__(self, week_id: str | UUID) -> None:
+        super().__init__(detail=f'Shopping list for week {week_id} not found')
+
+
 class WeekNotFoundException(NotFoundException):
     """Exception raised when a week cannot be found.
 
@@ -123,11 +134,11 @@ class UserNotFoundException(LogicException):
     """Exception raised when an operation is attempted on a removed user.
 
     Args:
-        detail: A description of the error.
+        user_id: The ID of the user that was not found.
     """
 
-    def __init__(self, detail: str) -> None:
-        super().__init__(detail)
+    def __init__(self, user_id: UUID) -> None:
+        super().__init__(f'User {user_id} was not found!')
 
 
 class MealSlotAssignException(LogicException):
@@ -157,6 +168,13 @@ class SignUpWithAuthException(LogicException):
 
     def __init__(self) -> None:
         super().__init__(detail='Sign up requests should not be authenticated')
+
+
+class ShoppingListAlreadyExistsException(LogicException):
+    """Exception raised when attempting to create a shopping list of a week with existing shopping list."""
+
+    def __init__(self, week_id: UUID) -> None:
+        super().__init__(detail=f'Shopping list of the week {week_id} already exists')
 
 
 # Access Forbidden Exceptions.

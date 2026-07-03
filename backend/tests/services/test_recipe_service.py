@@ -2,7 +2,7 @@ from unittest.mock import ANY, AsyncMock
 
 import pytest
 from sqlalchemy.exc import IntegrityError
-from tests.constants import RECIPE_INGREDIENTS, RECIPE_NAME, RECIPE_STEPS
+from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_1_NAME, RECIPE_1_STEPS
 
 from week_eat_planner.api.schemas import RecipeCreate, RecipeUpdate
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
@@ -42,10 +42,10 @@ def db_user_favorite(db_public_recipe, db_user) -> UserFavorite:
 @pytest.fixture
 def recipe_create() -> RecipeCreate:
     return RecipeCreate(
-        name=RECIPE_NAME,
+        name=RECIPE_1_NAME,
         is_public=False,
-        steps=RECIPE_STEPS,
-        ingredients=RECIPE_INGREDIENTS,
+        steps=RECIPE_1_STEPS,
+        ingredients=RECIPE_1_INGREDIENTS,
     )
 
 

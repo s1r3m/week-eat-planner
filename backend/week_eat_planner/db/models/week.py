@@ -8,6 +8,7 @@ from week_eat_planner.db.base import Base
 
 if TYPE_CHECKING:
     from .meal_slot import MealSlot
+    from .shopping_list import ShoppingList
     from .user import User
 
 
@@ -30,4 +31,7 @@ class Week(Base):
     user: Mapped['User'] = relationship(back_populates='weeks')
     meal_slots: Mapped[list['MealSlot']] = relationship(
         back_populates='week', cascade='all, delete-orphan', lazy='selectin'
+    )
+    shopping_list: Mapped['ShoppingList | None'] = relationship(
+        back_populates='week', cascade='all, delete-orphan', uselist=False
     )
