@@ -170,6 +170,13 @@ class SignUpWithAuthException(LogicException):
         super().__init__(detail='Sign up requests should not be authenticated')
 
 
+class ShoppingListAlreadyExistsException(LogicException):
+    """Exception raised when attempting to create a shopping list of a week with existing shopping list."""
+
+    def __init__(self, week_id: UUID) -> None:
+        super().__init__(detail=f'Shopping list of the week {week_id} already exists')
+
+
 # Access Forbidden Exceptions.
 class AccessForbiddenException(HTTPException):
     """Base exception for access denial errors.

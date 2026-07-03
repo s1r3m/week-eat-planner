@@ -13,7 +13,7 @@ from week_eat_planner.db.dao import ShoppingListDAO, UserDAO
 from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.db.models.shopping_list import ShoppingList
 from week_eat_planner.db.models.week import Week
-from week_eat_planner.exceptions import ShoppingListNotFoundException
+from week_eat_planner.exceptions import ShoppingListAlreadyExistsException, ShoppingListNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 
 
@@ -34,6 +34,11 @@ class ShoppingListService:
             The newly created ShoppingList object.
         """
         logger.info(f'Creating a shopping list for week {week.id}')
+        existing_list = await self._shopping_list_dao.find_one_or_none(WeekId(week_id=week.id))
+        if existing_list:
+            logger.error(f'Week {week.id} already has created list {existing_list.id}')
+            raise ShoppingListAlreadyExistsException(week_id=week.id)
+
         ingredients = await self._get_aggregated_ingredients(week)
         created = await self._shopping_list_dao.add(
             ShoppingList(

@@ -23,7 +23,12 @@ class ShoppingList(Base):
 
     __tablename__ = 'shopping_lists'
 
-    week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id', ondelete='CASCADE'), nullable=False)
-    items: Mapped[list] = mapped_column(JSONB, nullable=False)
+    week_id: Mapped[UUID] = mapped_column(
+        ForeignKey('weeks.id', ondelete='CASCADE'),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    items: Mapped[list] = mapped_column(JSONB, nullable=False, default=[], server_default='[]')
 
     week: Mapped['Week'] = relationship(back_populates='shopping_list')

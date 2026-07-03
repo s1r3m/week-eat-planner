@@ -25,7 +25,7 @@ class ShoppingListItems(BaseModel):
 
 
 class ShoppingListRead(ShoppingListItems, WeekId):
-    """Schema for reading a shopping list, including the associated week's name."""
+    """Schema for reading a shopping list., including the associated week's ID."""
 
     model_config = ConfigDict(from_attributes=True)
 

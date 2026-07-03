@@ -10,7 +10,7 @@ from week_eat_planner.api.schemas.recipe import Ingredient
 from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.exceptions import ShoppingListNotFoundException
+from week_eat_planner.exceptions import ShoppingListAlreadyExistsException, ShoppingListNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.shopping_list_service import ShoppingListService
 
@@ -149,6 +149,7 @@ async def test_get_aggregated_ingredients__several_diff_recipes__calculated_corr
 async def test_create__week_exists__empty_list(mocked_session, mocked_shopping_list_dao, db_week):
     ingredients = []
     added_list = ShoppingList(week_id=db_week.id, items=[])
+    mocked_shopping_list_dao.find_one_or_none.return_value = None
     mocked_shopping_list_dao.add.return_value = added_list
 
     shopping_list = await ShoppingListService(mocked_session).create(db_week)
@@ -157,6 +158,19 @@ async def test_create__week_exists__empty_list(mocked_session, mocked_shopping_l
     passed_shopping_list: ShoppingList = mocked_shopping_list_dao.add.call_args.args[0]
     assert passed_shopping_list.week_id == db_week.id
     assert passed_shopping_list.items == [ing.model_dump(mode='json') for ing in ingredients]
+
+
+async def test_create__shopping_list_exists__error_raised(
+    mocked_session, mocked_shopping_list_dao, db_week, db_shopping_list
+):
+    mocked_shopping_list_dao.find_one_or_none.return_value = db_shopping_list
+
+    with pytest.raises(ShoppingListAlreadyExistsException) as exc:
+        await ShoppingListService(mocked_session).create(db_week)
+
+    error = ShoppingListAlreadyExistsException(db_week.id)
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_get_by_week__list_exists__shopping_list_found(

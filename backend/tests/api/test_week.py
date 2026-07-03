@@ -254,9 +254,7 @@ async def test_create_shopping_list__week_exists__shopping_list_created(
 async def test_create_shopping_list__bad_week_id__error_in_response(auth_client_for_created_user):
     not_existing_week_id = generate_uuid7()
 
-    response = await auth_client_for_created_user.post(
-        AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id)
-    )
+    response = await auth_client_for_created_user.post(AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id))
 
     error = WeekNotFoundException(not_existing_week_id)
     assert response.status_code == error.status_code
@@ -281,9 +279,7 @@ async def test_get_shopping_list__list_exists__shopping_list_in_response(
 async def test_get_shopping_list__week_not_exist__error_in_response(auth_client_for_created_user):
     not_existing_week_id = generate_uuid7()
 
-    response = await auth_client_for_created_user.get(
-        AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id)
-    )
+    response = await auth_client_for_created_user.get(AppUrl.SHOPPING_LIST_TPL.format(week_id=not_existing_week_id))
 
     error = WeekNotFoundException(not_existing_week_id)
     assert response.status_code == error.status_code
@@ -308,7 +304,7 @@ async def test_update_shopping_list__list_exists__shopping_list_in_response(
     }
 
 
-async def test_update_shopping_list__week_not_exist__shopping_list_in_response(
+async def test_update_shopping_list__week_not_exist__error_in_response(
     auth_client_for_created_user, created_shopping_list
 ):
     not_existing_week_id = generate_uuid7()

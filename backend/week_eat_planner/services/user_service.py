@@ -68,7 +68,7 @@ class UserService:
         logger.debug(f'Updating user {user_id}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
-            logger.error('User {user_id} was not found!')
+            logger.error(f'User {user_id} was not found!')
             raise UserNotFoundException(user_id)
 
         updated_user = await self._user_dao.update(RecordId(id=user_id), values)
