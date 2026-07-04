@@ -2,7 +2,7 @@
   <Card
     class="flex flex-col gap-6 items-center-safe w-full p-6 mt-6 rounded-xl text-muted-foreground"
   >
-    <MessageCircleX :size="42" />
+    <MessageCircleX :size="42" class="text-destructive" />
     <h2 class="text-lg">An error has occurred</h2>
     <p>{{ error.message }}</p>
     <Button @click="retry"> Try again</Button>

@@ -10,6 +10,7 @@ export const ROUTE_NAMES = {
 
   WEEKS: 'weeks',
   WEEK: 'week',
+  SHOPPING_LIST: 'shopping-list',
 
   PROFILE: 'profile',
 

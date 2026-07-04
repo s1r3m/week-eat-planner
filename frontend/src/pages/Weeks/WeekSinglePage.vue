@@ -6,11 +6,19 @@
           v-if="week"
           variant="outline"
           size="default"
-          class="md:h-11 md:px-7 md:text-title-sm"
+          class="md:h-11 md:px-7 md:text-title-sm hidden"
           aria-label="Edit week"
           @click="editingWeek = week"
           ><Pen /> <span class="hidden md:inline"> Edit </span></Button
         >
+        <Button
+          v-if="week"
+          size="default"
+          class="md:h-11 md:px-7 md:text-title-sm"
+          aria-label="Go to the shopping list"
+          @click="router.push({ name: ROUTE_NAMES.SHOPPING_LIST, params: { id: route.params.id } })"
+          ><ListTodo /><span class="hidden md:inline"> Shopping list</span>
+        </Button>
         <Button
           v-if="week"
           variant="destructiveOutline"
@@ -50,9 +58,11 @@ import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 import MealSlotAssignRecipeDialog from '@/features/mealSlot/components/MealSlotAssignRecipeDialog.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
-import { Pen, Trash } from 'lucide-vue-next';
+import { ListTodo, Pen, Trash } from 'lucide-vue-next';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
+import router from '@/router';
+import { ROUTE_NAMES } from '@/domain/router/routeNames';
 
 const route = useRoute();
 

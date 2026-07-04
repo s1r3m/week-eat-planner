@@ -86,6 +86,7 @@ export const WEEK_KEYS = {
    * @returns Hierarchical cache key.
    */
   detail: (id: string) => [...WEEK_KEYS.root, 'detail', id] as const,
+  shopping_list: (id: string) => [...WEEK_KEYS.root, 'shopping-list', id] as const,
 };
 
 /**

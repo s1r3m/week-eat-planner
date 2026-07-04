@@ -50,6 +50,11 @@ const routes = [
         component: () => import('@/pages/Weeks/WeekSinglePage.vue'),
       },
       {
+        path: 'weeks/:id/shopping-list',
+        name: ROUTE_NAMES.SHOPPING_LIST,
+        component: () => import('@/pages/Weeks/ShoppingListPage.vue'),
+      },
+      {
         path: 'profile',
         name: ROUTE_NAMES.PROFILE,
         component: () => import('@/pages/Profile/ProfilePage.vue'),
