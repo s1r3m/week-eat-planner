@@ -1,7 +1,7 @@
 <template>
   <div id="week-container" class="space-y-6 m-6">
     <PageTitle :header="week?.name">
-      <template v-if="!isLoading" #controls>
+      <template v-if="!isWeekLoading" #controls>
         <Button
           v-if="week"
           variant="outline"
@@ -16,8 +16,9 @@
           size="default"
           class="md:h-11 md:px-7 md:text-title-sm"
           aria-label="Go to the shopping list"
-          @click="router.push({ name: ROUTE_NAMES.SHOPPING_LIST, params: { id: route.params.id } })"
-          ><ListTodo /><span class="hidden md:inline"> Shopping list</span>
+          :disabled="isListCreating"
+          @click="createShoppingList(week.id)"
+          ><ShoppingCart /><span class="hidden md:inline">Groceries</span>
         </Button>
         <Button
           v-if="week"
@@ -38,7 +39,7 @@
       :week-days="week.week_days"
       @select-slot="selectedSlot = $event"
     />
-    <TheLoadingPageState v-else-if="isLoading" />
+    <TheLoadingPageState v-else-if="isWeekLoading" />
 
     <WeekEditDialog v-model="editingWeek" />
     <WeekDeleteDialog v-model="deletingWeek" />
@@ -49,7 +50,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useQuery } from '@pinia/colada';
+import { useMutation, useQuery } from '@pinia/colada';
 import { getWeekQuery } from '@/api/weeks';
 import type { WeekPreview, MealSlot } from '@/api/weeks';
 
@@ -58,20 +59,23 @@ import MealSlotGrid from '@/features/mealSlot/components/MealSlotGrid.vue';
 import MealSlotAssignRecipeDialog from '@/features/mealSlot/components/MealSlotAssignRecipeDialog.vue';
 import { WeekDeleteDialog, WeekEditDialog } from '@/features/week';
 import Button from '@/components/ui/button/Button.vue';
-import { ListTodo, Pen, Trash } from 'lucide-vue-next';
+import { ShoppingCart, Pen, Trash } from 'lucide-vue-next';
 import TheLoadingPageState from '@/layouts/components/TheLoadingPageState.vue';
 import ErrorRetryCard from '@/components/shared/ErrorRetryCard.vue';
-import router from '@/router';
-import { ROUTE_NAMES } from '@/domain/router/routeNames';
+import { createShoppingListMutation } from '@/api/shoppingList';
 
 const route = useRoute();
 
 const {
   data: week,
-  isLoading,
+  isLoading: isWeekLoading,
   error,
   refetch,
 } = useQuery(() => getWeekQuery(String(route.params.id)));
+
+const { mutate: createShoppingList, isLoading: isListCreating } = useMutation(
+  createShoppingListMutation(),
+);
 
 const editingWeek = ref<WeekPreview | null>(null);
 const deletingWeek = ref<WeekPreview | null>(null);

@@ -46,6 +46,17 @@ export const useBreadcrumbs = () => {
         label: week.value?.name || '',
       },
     ],
+    [ROUTE_NAMES.SHOPPING_LIST]: () => [
+      { to: { name: ROUTE_NAMES.WEEKS }, label: 'My weeks' },
+      {
+        to: {
+          name: ROUTE_NAMES.WEEK,
+          params: { id: week.value?.id },
+        },
+        label: week.value?.name || '',
+      },
+      { label: 'Groceries' },
+    ],
     [ROUTE_NAMES.RECIPES]: () => [{ label: 'Recipes' }],
     [ROUTE_NAMES.RECIPE]: () => [
       { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },

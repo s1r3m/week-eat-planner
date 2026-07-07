@@ -33,6 +33,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Allow access from outside the container
     port: 3000,
+    // allowedHosts: ['shelba-visceromotor-charleen.ngrok-free.dev'],
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

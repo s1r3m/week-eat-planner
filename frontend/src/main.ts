@@ -16,33 +16,8 @@ const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedState);
 
-/**
- * Global error handler for Axios and application-level errors.
- * Displays appropriate toast notifications based on the error type and context,
- * while ignoring silent failures like background token refreshes.
- *
- * @param error - The error object to handle.
- */
-export const handleGlobalError = (error: unknown) => {
-  if (!axios.isAxiosError(error)) {
-    toast.error(error instanceof Error ? error.message : 'An error occurred');
-    return;
-  }
-
-  // Don't show toast for silent refresh failures
-  if (error.config?.url?.includes('/auth/refresh')) return;
-
-  const detail = (error?.response?.data as { detail?: unknown } | undefined)?.detail;
-  const message =
-    typeof detail === 'string' && detail.trim() ? detail : error.message || 'An error occurred';
-  toast.error(message);
-};
-
 app.use(pinia);
-app.use(PiniaColada, {
-  plugins: [PiniaColadaQueryHooksPlugin({ onError: handleGlobalError })],
-  mutationOptions: { onError: handleGlobalError },
-});
+app.use(PiniaColada);
 app.use(router);
 app.use(i18n);
 app.mount('#app');

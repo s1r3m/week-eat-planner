@@ -1,5 +1,6 @@
-import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
-import { isAuthenticated, refreshToken } from './auth';
+import axios from 'axios';
+import type { AxiosError, AxiosRequestConfig } from 'axios';
+import { refreshToken } from './auth';
 
 /**
  * Default timeout for API requests in milliseconds.
