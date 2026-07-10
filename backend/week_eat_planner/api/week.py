@@ -219,7 +219,7 @@ async def get_shopping_list(
 
 @router.put(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
 async def update_shopping_list(
-    week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
+    week_id: Annotated[str, Path(title='ID of the week to edit a shopping list for')],
     new_data: ShoppingListUpdate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
@@ -242,3 +242,22 @@ async def update_shopping_list(
     updated_shopping_list = await shopping_list_service.update(shopping_list, new_data)
 
     return ShoppingListRead.model_validate(updated_shopping_list)
+
+
+@router.delete(AppUrl.SHOPPING_LIST_TPL, status_code=status.HTTP_204_NO_CONTENT)
+async def delete_shopping_list(
+    week_id: Annotated[str, Path(title='ID of the week to delete a shopping list for')],
+    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> None:
+    """Deletes an existing shopping list.
+
+    Args:
+    Returns:
+        None
+    """
+    logger.info(f'Got DELETE {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
+    week = await WeekService(session).get_visible_week(week_id, user_id)
+    shopping_list_service = ShoppingListService(session)
+    shopping_list = await shopping_list_service.get_by_week_for_update(week)
+    await shopping_list_service.delete(shopping_list)

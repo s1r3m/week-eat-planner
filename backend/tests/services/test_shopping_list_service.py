@@ -261,3 +261,9 @@ async def test_update__shopping_list_exists___updated_successfully(
 
     assert updated_shopping_list == db_shopping_list
     mocked_shopping_list_dao.update.assert_awaited_once_with(RecordId(id=db_shopping_list.id), payload)
+
+
+async def test_delete__existing_shopping_list__list_deleted(mocked_session, mocked_shopping_list_dao, db_shopping_list):
+    mocked_shopping_list_dao.delete.return_value = None
+    await ShoppingListService(mocked_session).delete(db_shopping_list)
+    mocked_shopping_list_dao.delete.assert_awaited_with(RecordId(id=db_shopping_list.id))

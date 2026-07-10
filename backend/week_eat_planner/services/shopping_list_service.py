@@ -165,3 +165,16 @@ class ShoppingListService:
         updated_list = await self._shopping_list_dao.update(RecordId(id=shopping_list.id), new_items)
         logger.info(f'Shopping list {shopping_list.id} was updated successfully')
         return updated_list
+
+    async def delete(self, shopping_list: ShoppingList) -> None:
+        """Deletes the given list.
+
+        Args:
+            shopping_list: The shopping list to delete.
+
+        Returns:
+            None.
+        """
+        logger.info(f'Deleting the shopping list {shopping_list.id}')
+        count = await self._shopping_list_dao.delete(RecordId(id=shopping_list.id))
+        logger.info(f'The shopping list {shopping_list.id} deleted successgully: {count=}')
