@@ -57,9 +57,9 @@ describe('WeekFormDialog', () => {
     expect(submitBtn.attributes('disabled')).toBeDefined();
   });
 
-  it('emits submit with the entered name when the form is submitted', async () => {
+  it('emits trimmed name when the form is submitted', async () => {
     const wrapper = mountComponent();
-    await wrapper.find('[data-slot="input"]').setValue('My New Week');
+    await wrapper.find('[data-slot="input"]').setValue('  My New Week  ');
     await wrapper.find('form').trigger('submit.prevent');
 
     expect(wrapper.emitted('submit')).toBeTruthy();

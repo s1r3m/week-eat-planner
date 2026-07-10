@@ -8,12 +8,16 @@ import { useRoute } from 'vue-router';
 vi.mock('@pinia/colada', () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(() => ({ mutate: vi.fn() })),
+  useQueryCache: vi.fn(),
   defineQueryOptions: vi.fn((fn) => fn),
   defineMutation: vi.fn((fn) => fn),
 }));
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
 }));
 
 vi.mock('@/api/weeks', () => ({

@@ -52,10 +52,10 @@ describe('UserEditForm', () => {
     expect((wrapper.find('input#username').element as HTMLInputElement).disabled).toBe(true);
   });
 
-  it('calls mutate with only the new username when the username has changed', async () => {
+  it('calls mutate with trimmed username when the username has changed', async () => {
     const wrapper = mountComponent();
 
-    await wrapper.find('input#username').setValue('changeduser');
+    await wrapper.find('input#username').setValue('  changeduser  ');
     await flushPromises();
     await wrapper.find('form#profile-form').trigger('submit');
 

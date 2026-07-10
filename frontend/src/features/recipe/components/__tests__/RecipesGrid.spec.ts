@@ -58,7 +58,9 @@ describe('RecipesGrid', () => {
     it('shows the empty state message when no recipes are provided', () => {
       const wrapper = mountComponent({ recipes: [] });
       expect(wrapper.text()).toContain('Nothing here yet');
-      expect(wrapper.text()).toContain('Browse our recipe collection to start planning!');
+      expect(wrapper.text()).toContain(
+        'Browse our recipe collection to start planning or create your own first recipe!',
+      );
     });
 
     it('navigates to the recipes page when the empty-state button is clicked', async () => {

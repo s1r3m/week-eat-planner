@@ -52,7 +52,7 @@ const routes = [
       {
         path: 'weeks/:id/shopping-list',
         name: ROUTE_NAMES.SHOPPING_LIST,
-        component: () => import('@/pages/Weeks/ShoppingListPage.vue'),
+        component: () => import('@/pages/ShoppingList/ShoppingListPage.vue'),
       },
       {
         path: 'profile',

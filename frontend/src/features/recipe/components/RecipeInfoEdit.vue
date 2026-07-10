@@ -4,7 +4,7 @@
       <FieldLabel for="recipe-name"> Name </FieldLabel>
       <Input
         id="recipe-name"
-        v-model="name"
+        v-model.trim="name"
         type="text"
         placeholder="e.g Pasta Carbonara"
         autocomplete="off"

@@ -9,7 +9,7 @@
       <form id="weekForm" @submit.prevent="onSubmit">
         <FieldGroup>
           <FieldLabel for="weekName"> Name </FieldLabel>
-          <Input id="weekName" v-model="name" type="text" placeholder="E.g. Week 1" />
+          <Input id="weekName" v-model.trim="name" type="text" placeholder="E.g. Week 1" />
         </FieldGroup>
       </form>
 
@@ -69,6 +69,6 @@ watch(
 );
 
 const onSubmit = () => {
-  emit('submit', name.value);
+  emit('submit', name.value.trim());
 };
 </script>

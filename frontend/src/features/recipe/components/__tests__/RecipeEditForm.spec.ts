@@ -39,11 +39,11 @@ describe('RecipeEditForm', () => {
     expect(wrapper.getComponent(RecipeStepsEdit)).toBeDefined();
   });
 
-  it('collects values from all sections and emits update on submit', async () => {
+  it('collects values from all sections and emits update on submit with trimmed strings', async () => {
     const wrapper = mount(RecipeEditForm, { props: { recipe: mockRecipe } });
 
     // Set a new value to ensure editing works
-    await wrapper.find('#recipe-name').setValue('Updated Recipe');
+    await wrapper.find('#recipe-name').setValue('  Updated Recipe  ');
 
     await wrapper.find('form').trigger('submit');
     await flushPromises();
