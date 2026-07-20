@@ -11,7 +11,7 @@
             <FieldLabel for="username">Username</FieldLabel>
             <Input
               id="username"
-              v-model="username"
+              v-model.trim="username"
               :class="{ 'border-destructive': errors.username }"
               :disabled="isLoading"
             />
@@ -44,7 +44,7 @@ const user = defineModel<UserData>();
 
 const schema = zod
   .object({
-    username: zod.string().min(1, { error: 'Must be filled' }),
+    username: zod.string().trim().min(1, { error: 'Must be filled' }),
   })
   .refine((data) => data.username !== user.value?.username, {
     error: 'Username must be different from current value',

@@ -303,3 +303,14 @@ async def test_update_shopping_list__week_not_exist__error_in_response(
     error = WeekNotFoundException(not_existing_week_id)
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
+
+
+async def test_delete_shopping_list__existing_week_with_list__deleted(
+    auth_client_for_created_user, created_shopping_list
+):
+    week = created_shopping_list.week
+
+    response = await auth_client_for_created_user.delete(AppUrl.SHOPPING_LIST_TPL.format(week_id=week.id))
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not response.text

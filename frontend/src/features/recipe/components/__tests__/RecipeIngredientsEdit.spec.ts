@@ -64,14 +64,14 @@ describe('RecipeIngredientsEdit', () => {
     expect(wrapper.findAll('li')).toHaveLength(1);
   });
 
-  it('updates ingredient name and amount on input', async () => {
+  it('updates trimmed ingredient name and amount on input', async () => {
     const wrapper = mount(TestWrapper, { props: { initialValues } });
     await flushPromises();
 
     const nameInput = wrapper.find('input[type="text"]');
     const amountInput = wrapper.find('input[type="number"]');
 
-    await nameInput.setValue('Flour');
+    await nameInput.setValue('  Flour  ');
     await amountInput.setValue(500);
     await flushPromises();
 

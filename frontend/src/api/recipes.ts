@@ -318,14 +318,14 @@ export const toggleFavoriteMutation = defineMutation(() => {
       _payload: FavoritePayload,
       context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
+      toast.error(`An error during the toggling: ${err.message}`);
       context?.previousState?.forEach((data, key) => queryCache.setQueryData(key, data));
     },
     onSuccess: (
       _data: FavoritePayload | RecipePreview,
-      { id, is_favorite }: FavoritePayload,
+      { is_favorite }: FavoritePayload,
       _context?: { previousState?: Map<EntryKey, RecipeCacheData> },
     ) => {
-      console.debug(`The recipe ${id} has been marked is_favorite=${!is_favorite}`);
       if (!is_favorite) queryCache.invalidateQueries({ key: RECIPE_KEYS.favorites() });
     },
     onSettled: (

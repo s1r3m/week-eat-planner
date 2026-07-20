@@ -1,6 +1,6 @@
 <template>
   <div class="flex gap-1">
-    <Input v-model="ingredient.name" class="flex-5" type="text" placeholder="Ingredient" />
+    <Input v-model.trim="ingredient.name" class="flex-5" type="text" placeholder="Ingredient" />
     <Input v-model="ingredient.amount" class="flex-1" type="number" min="0" placeholder="qty" />
     <Select v-model="ingredient.unit" default-value="g">
       <SelectTrigger class="w-18" size="lg">

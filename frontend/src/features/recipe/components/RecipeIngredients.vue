@@ -8,10 +8,7 @@
           :key="item.name"
           class="leading-relaxed text-on-surface-variant text-body-md ml-4"
         >
-          <div class="flex items-center justify-between">
-            <span>{{ item.name }}</span>
-            <span class="">{{ item.amount }} {{ item.unit }}</span>
-          </div>
+          <IngredientItem :name="item.name" :amount="item.amount" :unit="item.unit" />
         </li>
       </ul>
     </div>
@@ -20,6 +17,7 @@
 
 <script setup lang="ts">
 import type { Ingredient } from '@/api/recipes';
+import IngredientItem from '@/components/shared/IngredientItem.vue';
 
 defineProps<{
   ingredients: Ingredient[];

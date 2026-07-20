@@ -1,5 +1,5 @@
 <template>
-  <form class="mx-auto max-w-7xl" @submit.prevent="onSubmit">
+  <form class="mx-auto max-w-7xl" novalidate @submit.prevent="onSubmit">
     <div class="flex flex-col gap-6">
       <RecipeInfoEdit />
       <FieldSeparator />
@@ -37,7 +37,7 @@ const { handleSubmit, errors } = useForm({
   initialValues: {
     name: '',
     image: null,
-    ingredients: [{ name: '', amount: 0, unit: 'g' }],
+    ingredients: [{ name: '', amount: 0.0, unit: 'g' }],
     steps: [{ step: '', order: 1 }],
   },
 });

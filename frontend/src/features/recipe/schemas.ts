@@ -7,7 +7,7 @@ export const recipeInfoSchema = zod.object({
 });
 
 export const ingredientSchema: zod.ZodType<Ingredient> = zod.object({
-  name: zod.string(),
+  name: zod.string().trim(),
   amount: zod.coerce.number().min(0),
   unit: zod.enum(UNITS),
 });

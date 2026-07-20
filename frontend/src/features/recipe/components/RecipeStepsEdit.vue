@@ -5,7 +5,7 @@
       <ol class="list-decimal marker:text-primary marker:font-bold">
         <li v-for="(step, idx) in steps" :key="step.order" class="ml-4 mb-3">
           <div class="flex gap-1">
-            <Input v-model="step.step" placeholder="Do the..." />
+            <Input v-model.trim="step.step" placeholder="Do the..." />
             <Button
               variant="ghost"
               class="text-destructive w-4 h-12 rounded-sm"

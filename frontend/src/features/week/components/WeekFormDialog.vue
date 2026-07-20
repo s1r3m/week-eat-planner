@@ -9,7 +9,7 @@
       <form id="weekForm" @submit.prevent="onSubmit">
         <FieldGroup>
           <FieldLabel for="weekName"> Name </FieldLabel>
-          <Input id="weekName" v-model="name" type="text" placeholder="E.g. Week 1" />
+          <Input id="weekName" v-model.trim="name" type="text" placeholder="E.g. Week 1" />
         </FieldGroup>
       </form>
 
@@ -20,7 +20,7 @@
         <Button
           form="weekForm"
           type="submit"
-          :disabled="!name.trim() || name.trim() === initialName || isLoading"
+          :disabled="!name.trim() || name.trim() === initialName?.trim() || isLoading"
         >
           <Spinner v-if="isLoading" />
           {{ isLoading ? 'Saving...' : submitLabel }}
@@ -59,16 +59,19 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = defineModel<boolean>();
-const name = ref(props.initialName || '');
+const name = ref(props.initialName?.trim() || '');
 
 watch(
   () => props.initialName,
   (newVal) => {
-    name.value = newVal || '';
+    name.value = newVal?.trim() || '';
   },
 );
 
 const onSubmit = () => {
-  emit('submit', name.value);
+  const trimmedName = name.value.trim();
+  const initialName = props.initialName?.trim() || '';
+  if (!trimmedName || trimmedName === initialName || props.isLoading) return;
+  emit('submit', trimmedName);
 };
 </script>

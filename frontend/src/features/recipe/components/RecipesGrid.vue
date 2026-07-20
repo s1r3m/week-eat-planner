@@ -3,9 +3,11 @@
     <Card
       class="flex flex-col gap-6 items-center-safe bg-muted w-full mt-12 rounded-xl text-muted-foreground"
     >
-      <Star :size="42" />
+      <Star :size="42" class="text-primary" />
       <h2 class="text-lg">Nothing here yet</h2>
-      <p>Browse our recipe collection to start planning!</p>
+      <p class="text-center mx-6">
+        Browse our recipe collection to start planning or create your own first recipe!
+      </p>
       <Button @click="router.push({ name: ROUTE_NAMES.RECIPES })">To recipes</Button>
     </Card>
   </div>

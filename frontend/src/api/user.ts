@@ -76,7 +76,8 @@ export const updateUserMutation = defineMutation(() => {
       if (previous) queryCache.setQueryData(USER_KEYS.profile(), { ...previous, ...data });
       return { previous };
     },
-    onError: (_err: Error, _data: UserPayload, context?: { previous?: UserData }) => {
+    onError: (err: Error, _data: UserPayload, context?: { previous?: UserData }) => {
+      toast.error(`An error during updating: ${err.message}`);
       if (context?.previous) queryCache.setQueryData(USER_KEYS.profile(), context.previous);
     },
     onSuccess: (_resp: UserData, _data: UserPayload, _context?: { previous?: UserData }) => {

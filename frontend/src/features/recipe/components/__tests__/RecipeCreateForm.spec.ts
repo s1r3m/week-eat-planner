@@ -27,11 +27,11 @@ describe('RecipeCreateForm', () => {
     expect(wrapper.getComponent(RecipeStepsEdit)).toBeDefined();
   });
 
-  it('collects values from all sections and emits create on submit', async () => {
+  it('collects values from all sections and emits create on submit with trimmed strings', async () => {
     const wrapper = mount(RecipeCreateForm);
 
     // Set values by interacting with inputs since we no longer use v-model props
-    await wrapper.find('#recipe-name').setValue('New Recipe');
+    await wrapper.find('#recipe-name').setValue('  New Recipe  ');
 
     // For file input, we trigger change event
     const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
@@ -44,7 +44,7 @@ describe('RecipeCreateForm', () => {
 
     // For ingredients and steps, we need to find the inputs and set their values
     const ingredientInputs = wrapper.findAll('input[placeholder="Ingredient"]');
-    await ingredientInputs[0].setValue('Tomato');
+    await ingredientInputs[0].setValue('  Tomato  ');
     const amountInputs = wrapper.findAll('input[placeholder="qty"]');
     await amountInputs[0].setValue('2');
 
@@ -52,7 +52,7 @@ describe('RecipeCreateForm', () => {
     await flushPromises();
 
     const stepInputs = wrapper.findAll('input[placeholder="Do the..."]');
-    await stepInputs[0].setValue('Wash tomato');
+    await stepInputs[0].setValue('  Wash tomato  ');
 
     await flushPromises();
 

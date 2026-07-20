@@ -57,13 +57,44 @@ describe('WeekFormDialog', () => {
     expect(submitBtn.attributes('disabled')).toBeDefined();
   });
 
-  it('emits submit with the entered name when the form is submitted', async () => {
+  it('disables the submit button when name is equal to initialName even with different whitespace', async () => {
+    const wrapper = mountComponent({ initialName: '  Original  ' });
+    const submitBtn = wrapper.find('[data-slot="button"][type="submit"]');
+
+    // Initially should be 'Original' (trimmed) in the input, but let's check the button
+    expect(submitBtn.attributes('disabled')).toBeDefined();
+
+    await wrapper.find('[data-slot="input"]').setValue('Original');
+    expect(submitBtn.attributes('disabled')).toBeDefined();
+  });
+
+  it('emits trimmed name when the form is submitted', async () => {
     const wrapper = mountComponent();
-    await wrapper.find('[data-slot="input"]').setValue('My New Week');
+    await wrapper.find('[data-slot="input"]').setValue('  My New Week  ');
     await wrapper.find('form').trigger('submit.prevent');
 
     expect(wrapper.emitted('submit')).toBeTruthy();
     expect(wrapper.emitted('submit')![0]).toEqual(['My New Week']);
+  });
+
+  it('does not emit when submitting with invalid data', async () => {
+    const wrapper = mountComponent({ initialName: 'Original' });
+
+    // 1. Empty name
+    await wrapper.find('[data-slot="input"]').setValue('   ');
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.emitted('submit')).toBeFalsy();
+
+    // 2. Same as initial
+    await wrapper.find('[data-slot="input"]').setValue('Original');
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.emitted('submit')).toBeFalsy();
+
+    // 3. isLoading is true
+    await wrapper.setProps({ isLoading: true });
+    await wrapper.find('[data-slot="input"]').setValue('New Name');
+    await wrapper.find('form').trigger('submit.prevent');
+    expect(wrapper.emitted('submit')).toBeFalsy();
   });
 
   it('shows loading spinner and disables submit while isLoading is true', () => {

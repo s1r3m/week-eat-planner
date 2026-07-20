@@ -6,7 +6,7 @@
           <FieldLabel for="email"> Email </FieldLabel>
           <Input
             id="email"
-            v-model="email"
+            v-model.trim="email"
             type="email"
             :class="{ 'border-destructive': errors.email }"
             placeholder="your@email.com"
@@ -17,7 +17,7 @@
           <FieldLabel for="username"> Username </FieldLabel>
           <Input
             id="username"
-            v-model="username"
+            v-model.trim="username"
             type="text"
             :class="{ 'border-destructive': errors.username }"
             placeholder="Your username"
@@ -63,9 +63,10 @@ import { Spinner } from '@/components/ui/spinner';
 const schema = zod.object({
   email: zod
     .string()
+    .trim()
     .min(1, { error: 'This is required' })
     .pipe(zod.email({ error: 'Invalid email' })),
-  username: zod.string().min(1, { error: 'This is required' }),
+  username: zod.string().trim().min(1, { error: 'This is required' }),
   password: zod
     .string()
     .min(1, { error: 'This is required' })
