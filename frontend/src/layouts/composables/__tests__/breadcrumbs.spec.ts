@@ -74,6 +74,17 @@ describe('useBreadcrumbs', () => {
     ]);
   });
 
+  it('handles missing week data for the SHOPPING_LIST route', () => {
+    mockRoute.name = ROUTE_NAMES.SHOPPING_LIST;
+    mockRoute.params = { id: 'week-1' };
+    weekData.value = null;
+    expect(useBreadcrumbs().value).toEqual([
+      { to: { name: ROUTE_NAMES.WEEKS }, label: 'My weeks' },
+      { to: { name: ROUTE_NAMES.WEEK, params: { id: undefined } }, label: '' },
+      { label: 'Groceries' },
+    ]);
+  });
+
   it('returns [Recipes] for the RECIPES route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES;
     expect(useBreadcrumbs().value).toEqual([{ label: 'Recipes' }]);
@@ -115,6 +126,17 @@ describe('useBreadcrumbs', () => {
     expect(useBreadcrumbs().value).toEqual([
       { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
       { to: { name: ROUTE_NAMES.RECIPE, params: { id: 'recipe-1' } }, label: 'Recipe Name' },
+      { label: 'Edit' },
+    ]);
+  });
+
+  it('handles missing recipe data for the RECIPE_EDIT route', () => {
+    mockRoute.name = ROUTE_NAMES.RECIPE_EDIT;
+    mockRoute.params = { id: 'recipe-1' };
+    recipeData.value = null;
+    expect(useBreadcrumbs().value).toEqual([
+      { to: { name: ROUTE_NAMES.RECIPES_MY }, label: 'My recipes' },
+      { to: { name: ROUTE_NAMES.RECIPE, params: { id: undefined } }, label: '' },
       { label: 'Edit' },
     ]);
   });

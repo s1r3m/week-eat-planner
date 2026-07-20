@@ -44,6 +44,7 @@ describe('UserEditForm', () => {
 
     // Trigger update on disabled email input for v-model coverage
     const emailInput = wrapper.findAllComponents(Input).find((c) => c.attributes('id') === 'email');
+    expect(emailInput).toBeDefined();
     await emailInput?.vm.$emit('update:modelValue', 'newemail@example.com');
   });
 
