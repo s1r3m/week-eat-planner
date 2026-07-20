@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import UserEditForm from '../UserEditForm.vue';
 import { useMutation } from '@pinia/colada';
 import type { UserData } from '@/api/user';
+import { Input } from '@/components/ui/input';
 
 vi.mock('@pinia/colada', () => ({
   useMutation: vi.fn(),
@@ -42,7 +43,8 @@ describe('UserEditForm', () => {
     expect((wrapper.find('input#username').element as HTMLInputElement).value).toBe(user.username);
 
     // Trigger update on disabled email input for v-model coverage
-    await wrapper.find('input#email').setValue('newemail@example.com');
+    const emailInput = wrapper.findAllComponents(Input).find(c => c.attributes('id') === 'email');
+    await emailInput?.vm.$emit('update:modelValue', 'newemail@example.com');
   });
 
   it('disables the username input while a mutation is in flight', async () => {

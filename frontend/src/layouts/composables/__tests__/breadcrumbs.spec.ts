@@ -63,6 +63,17 @@ describe('useBreadcrumbs', () => {
     expect(useBreadcrumbs().value[1].label).toBe('');
   });
 
+  it('returns [My weeks → week name → Groceries] for the SHOPPING_LIST route', () => {
+    mockRoute.name = ROUTE_NAMES.SHOPPING_LIST;
+    mockRoute.params = { id: 'week-1' };
+    weekData.value = { id: 'week-1', name: 'Week Name' } as any;
+    expect(useBreadcrumbs().value).toEqual([
+      { to: { name: ROUTE_NAMES.WEEKS }, label: 'My weeks' },
+      { to: { name: ROUTE_NAMES.WEEK, params: { id: 'week-1' } }, label: 'Week Name' },
+      { label: 'Groceries' },
+    ]);
+  });
+
   it('returns [Recipes] for the RECIPES route', () => {
     mockRoute.name = ROUTE_NAMES.RECIPES;
     expect(useBreadcrumbs().value).toEqual([{ label: 'Recipes' }]);
