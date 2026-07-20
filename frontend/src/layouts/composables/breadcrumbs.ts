@@ -30,7 +30,7 @@ export const useBreadcrumbs = () => {
 
   const { data: week } = useQuery(() => ({
     ...getWeekQuery(String(route.params.id)),
-    enabled: route.name === ROUTE_NAMES.WEEK,
+    enabled: route.name === ROUTE_NAMES.WEEK || route.name === ROUTE_NAMES.SHOPPING_LIST,
   }));
 
   const { data: recipe } = useQuery(() => ({

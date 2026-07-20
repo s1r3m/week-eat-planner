@@ -6,7 +6,7 @@
           variant="destructiveOutline"
           size="default"
           class="md:h-11 md:px-7 md:text-title-sm"
-          aria-label="Delete week"
+          aria-label="Delete shopping list"
           @click="remove(week.id)"
           ><Trash /><span class="hidden md:inline"> Delete </span></Button
         >
@@ -21,6 +21,7 @@
     />
     <TheLoadingPageState v-else-if="isLoading" />
   </div>
+  <TheLoadingPageState v-else />
 </template>
 
 <script setup lang="ts">

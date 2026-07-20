@@ -5,11 +5,10 @@ import { defineConfig } from 'vite';
 import type { UserConfig } from 'vite';
 import { CoverageV8Options } from 'vitest/node';
 import vue from '@vitejs/plugin-vue';
-import vueDevTools from 'vite-plugin-vue-devtools';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [vue(), vueDevTools(), tailwindcss()],
+  plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -33,7 +32,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Allow access from outside the container
     port: 3000,
-    // allowedHosts: ['shelba-visceromotor-charleen.ngrok-free.dev'],
+    allowedHosts: ['shelba-visceromotor-charleen.ngrok-free.dev'],
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

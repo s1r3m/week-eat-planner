@@ -1,7 +1,13 @@
 <template>
   <ul class="divide-y divide-outline-variant/30">
     <li v-for="item in sortedList" :key="`${item.name}:${item.unit}`">
-      <ShoppingListLine :item="item" @update="$emit('check')" />
+      <ShoppingListLine
+        :item="item"
+        @update="
+          item.checked = $event;
+          $emit('check');
+        "
+      />
     </li>
   </ul>
 </template>

@@ -3,6 +3,7 @@ import { apiClient } from '@/api/client';
 import { type RecipePreview } from '@/api/recipes';
 import { WEEK_KEYS } from '@/api/weeks';
 import type { WeekFull, DayOfWeek, MealType } from '@/api/weeks';
+import { toast } from 'vue-sonner';
 
 /**
  * Snapshot of a meal slot returned by the API after an update.
@@ -72,6 +73,7 @@ export const assignRecipeMutation = defineMutation(() => {
       return { week };
     },
     onError: (err: Error, { weekId }: MealSlotVars, context?: { week?: WeekFull }) => {
+      toast.error(`An error during assigning: ${err.message}`);
       if (context?.week) queryCache.setQueryData(WEEK_KEYS.detail(weekId), context.week);
     },
     onSettled: (

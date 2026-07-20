@@ -3,7 +3,7 @@
     class="flex min-h-12 w-full cursor-pointer items-center gap-3 px-4 transition-colors hover:bg-surface-container-low select-none"
     :class="{ 'opacity-50': item.checked }"
   >
-    <Checkbox v-model="item.checked" @update:model-value="$emit('update')" />
+    <Checkbox :model-value="item.checked" @update:model-value="$emit('update', $event === true)" />
     <IngredientItem
       :name="item.name"
       :amount="item.amount"
@@ -27,6 +27,6 @@ import IngredientItem from '@/components/shared/IngredientItem.vue';
 
 defineProps<{ item: ShoppingListItem }>();
 defineEmits<{
-  update: [];
+  update: [checked: boolean];
 }>();
 </script>
