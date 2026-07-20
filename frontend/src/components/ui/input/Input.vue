@@ -8,9 +8,12 @@ const props = defineProps<{
 }>();
 
 const [modelValue, modifiers] = defineModel<string | number>({
-  default: props.defaultValue ?? '',
   set: (val) => (modifiers.trim && typeof val === 'string' ? val.trim() : val),
 });
+
+if (modelValue.value === undefined) {
+  modelValue.value = props.defaultValue ?? '';
+}
 </script>
 
 <template>

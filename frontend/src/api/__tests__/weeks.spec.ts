@@ -337,6 +337,14 @@ describe('weeks api', () => {
       });
     });
 
+    describe('onSuccess', () => {
+      it('shows a success toast', () => {
+        const config = deleteWeekMutation() as any;
+        config.onSuccess();
+        expect(toast.success).toHaveBeenCalledWith('Week deleted successfully');
+      });
+    });
+
     describe('onSettled', () => {
       it('invalidates both the list and the deleted week detail', () => {
         const config = deleteWeekMutation() as any;

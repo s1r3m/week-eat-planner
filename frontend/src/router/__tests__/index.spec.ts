@@ -58,7 +58,9 @@ describe('Router', () => {
     const error = new Error('Auth fail');
     vi.mocked(initAuth).mockRejectedValueOnce(error);
 
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     await expect(router.push({ name: ROUTE_NAMES.HOME })).rejects.toThrow(error);
+    consoleSpy.mockRestore();
 
     expect(initAuth).toHaveBeenCalled();
     expect(isAuthenticated.value).toBe(false);
