@@ -1,9 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { PiniaColada, PiniaColadaQueryHooksPlugin } from '@pinia/colada';
+import { PiniaColada } from '@pinia/colada';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
-import { toast } from '@/components/ui/sonner';
-import axios from 'axios';
 import App from '@/App.vue';
 import router from '@/router';
 import i18n from '@/i18n';

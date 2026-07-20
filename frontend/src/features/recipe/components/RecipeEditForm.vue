@@ -1,5 +1,5 @@
 <template>
-  <form class="mx-auto max-w-7xl" @submit.prevent="onSubmit">
+  <form class="mx-auto max-w-7xl" novalidate @submit.prevent="onSubmit">
     <div class="flex flex-col gap-6">
       <RecipeInfoEdit :initial-image="recipe.image_url" />
       <FieldSeparator />
