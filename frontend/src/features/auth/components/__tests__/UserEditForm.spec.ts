@@ -43,7 +43,7 @@ describe('UserEditForm', () => {
     expect((wrapper.find('input#username').element as HTMLInputElement).value).toBe(user.username);
 
     // Trigger update on disabled email input for v-model coverage
-    const emailInput = wrapper.findAllComponents(Input).find(c => c.attributes('id') === 'email');
+    const emailInput = wrapper.findAllComponents(Input).find((c) => c.attributes('id') === 'email');
     await emailInput?.vm.$emit('update:modelValue', 'newemail@example.com');
   });
 
