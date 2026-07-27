@@ -9,7 +9,7 @@
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare",
 		"lint": "oxlint app && eslint app --max-warnings=0 && stylelint \"app/**/*.{vue,css,scss}\"",
-		"lint:fix": "oxlint app --fix && eslint --fix app && stylelint --fix",
+		"lint:fix": "oxlint app --fix && eslint --fix app && stylelint --fix \"app/**/*.{vue,css,scss}\"",
 		"format": "prettier --write .",
 		"format:check": "prettier --check ."
 	},

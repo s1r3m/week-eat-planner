@@ -7,18 +7,17 @@
 </script>
 
 <template>
-	<p :class="['badge', `badge--${variant}`]">
+	<p :class="['badge', `badge--${variant}`, 'text-label-sm']">
 		<slot></slot>
 	</p>
 </template>
 
 <style scoped lang="scss">
 	.badge {
-		display: inline;
+		display: inline-flex;
+		align-items: center;
 		padding: var(--spacing) var(--space-xs);
 		border-radius: var(--radius-lg);
-		font-size: var(--text-body-sm);
-		letter-spacing: var(--tracking-normal);
 	}
 
 	.badge--default {

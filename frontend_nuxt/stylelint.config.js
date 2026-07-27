@@ -17,7 +17,6 @@ export default {
 					'mixin-content',
 					'custom-media',
 					'media',
-					'tailwind',
 				],
 			},
 		],

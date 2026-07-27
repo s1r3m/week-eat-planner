@@ -37,7 +37,7 @@
 		padding: var(--space-xs) var(--space-lg);
 		border-radius: var(--radius-xl);
 		font-size: var(--text-body-lg);
-		font-weight: var(--font-weight-normal);
+		font-weight: var(--font-weight-regular);
 		letter-spacing: var(--tracking-normal);
 		transition: all 0.3s ease;
 	}
@@ -63,9 +63,12 @@
 	}
 
 	.btn:disabled {
-		opacity: 0.5;
+		opacity: 0.6;
 		cursor: not-allowed;
-		filter: grayscale(1);
+		filter: grayscale(0.8);
+		background-color: var(--color-outline);
+		color: var(--color-secondary);
+		border-color: var(--color-outline);
 	}
 
 	.btn:not(:disabled):hover {

@@ -7,28 +7,25 @@
 			class="logo"
 			src="@/assets/logo.png"
 			alt=""
+			aria-hidden="true"
 		/>
 
-		<h1>Week Eat Planner</h1>
+		<h1 class="text-title-lg text-primary">Week Eat Planner</h1>
 	</NuxtLink>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 	.app-logo-container {
 		display: flex;
+		align-items: center;
+		column-gap: var(--space-xs);
 		text-decoration: none;
 	}
 
 	.logo {
 		flex-shrink: 0;
-		width: 100%;
-		max-width: 36px;
-		height: auto;
+		width: 36px;
+		height: 36px;
 		object-fit: contain;
-	}
-
-	h1 {
-		color: var(--color-primary);
-		font-size: var(--text-title-lg);
 	}
 </style>

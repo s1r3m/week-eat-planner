@@ -3,13 +3,13 @@
 		<div class="promo">
 			<UiBadge variant="outline">Smarter meal planning</UiBadge>
 
-			<h2>
+			<h2 class="text-headline-lg">
 				Plan once.
 				<span>Eat better</span>
 				all week.
 			</h2>
 
-			<p class="description">
+			<p class="description text-body-md text-secondary">
 				Build a week of meals, keep your budget on track, and reduce waste with
 				auto-generated grocery lists.
 			</p>
@@ -29,7 +29,7 @@
 		</div>
 
 		<img
-			src="@/assets/styles/promo/photo2.jpg"
+			src="@/assets/promo/photo2.jpg"
 			alt="meal planner"
 		/>
 	</section>
@@ -61,14 +61,11 @@
 	}
 
 	.description {
-		font-size: var(--text-body-md);
-		color: var(--color-secondary);
+		/* Layout specific overrides */
 	}
 
 	h2 {
-		font-size: var(--text-headline-lg);
-		font-weight: var(--font-weight-semibold);
-		line-height: 1.2;
+		/* Layout specific overrides */
 	}
 
 	@media screen and (width > 768px) {
@@ -93,7 +90,6 @@
 
 		.description {
 			font-size: var(--text-body-lg);
-			color: var(--color-secondary);
 			line-height: 2;
 			text-align: left;
 		}

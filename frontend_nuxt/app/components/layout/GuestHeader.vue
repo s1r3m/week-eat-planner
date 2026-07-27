@@ -11,7 +11,7 @@
 	</header>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 	.guest-header {
 		display: flex;
 		position: sticky;

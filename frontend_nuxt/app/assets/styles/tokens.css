@@ -12,6 +12,12 @@
 	--color-on-surface: #1a1a1a;
 	--color-outline: #d4dedd;
 
+	/* Fonts */
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
 	/* Spacing */
 	--spacing: 0.25rem;
 

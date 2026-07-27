@@ -24,7 +24,7 @@
 	</div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 	.controls-container {
 		display: flex;
 		align-items: center;
