@@ -2,7 +2,11 @@
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 
-	css: ['@/assets/main.css'],
+	css: [
+		'@/assets/styles/reset.css',
+		'@/assets/styles/tokens.css',
+		'@/assets/styles/globals.scss',
+	],
 
 	devtools: { enabled: true },
 

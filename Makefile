@@ -174,6 +174,11 @@ fe_test:
 	cd $(FE_PATH) && yarn test:coverage
 
 ## ------------------------------------------------- Nuxt --------------------------------------------------------------
+## @Nuxt Start the app
+nuxt_start:
+	@echo "🏃 Starting Vue app on port 3000..."
+	cd $(NUXT_PATH) && bun run dev
+
 ## @Nuxt Run linters
 nuxt_lint:
 	@echo "Run ESlint"
