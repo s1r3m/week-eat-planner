@@ -11,7 +11,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: var(--space-md);
+		padding: var(--space-md) 0;
 		border-bottom: 1px solid var(--color-outline);
 	}
 </style>

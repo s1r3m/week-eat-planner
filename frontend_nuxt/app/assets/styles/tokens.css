@@ -1,7 +1,7 @@
 :root {
 	/* Colors */
 	--color-primary: #3bb8a9;
-	--color-on-primary: #041514;
+	--color-on-primary: #ffffff;
 	--color-secondary: #51605f;
 	--color-on-secondary: #ffffff;
 	--color-tertiary: #51605f;
@@ -14,7 +14,19 @@
 
 	/* Spacing */
 	--spacing: 0.25rem;
+
+	/* Font Weight */
+	--font-weight-light: 300;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	/* Letter Spacing */
+	--tracking-tight: -0.025em;
 	--tracking-normal: 0em;
+	--tracking-wide: 0.025em;
+	--tracking-wider: 0.05em;
 
 	--space-xs: calc(var(--spacing) * 1.5);
 	--space-sm: calc(var(--spacing) * 2);

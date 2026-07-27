@@ -1,8 +1,8 @@
 <template>
-	<div id="layout-container">
+	<div class="layout-container">
 		<LayoutGuestHeader />
 
-		<main id="guest-main">
+		<main class="guest-main">
 			<slot></slot>
 		</main>
 
@@ -11,13 +11,15 @@
 </template>
 
 <style scoped>
-	#layout-container {
+	.layout-container {
 		display: flex;
 		flex-direction: column;
 		min-height: 100dvh;
+		max-width: 1260px;
+		margin: 0 auto;
 	}
 
-	#guest-main {
+	.guest-main {
 		flex: 1 1 auto;
 	}
 </style>

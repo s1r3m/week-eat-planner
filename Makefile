@@ -154,8 +154,8 @@ fe_install: $(FE_ENV_FILE)
 
 ## @FE Start the app
 fe_start:
-	@echo "🏃 Starting Vue app on port 3000..."
-	cd $(FE_PATH) && yarn dev
+	@echo "🏃 Starting Vue app on port 3001..."
+	cd $(FE_PATH) && yarn dev --port 3001
 
 ## @FE Run linters
 fe_lint:

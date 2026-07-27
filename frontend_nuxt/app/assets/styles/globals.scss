@@ -13,6 +13,8 @@ body {
 	background: var(--color-surface);
 	color: var(--color-on-surface);
 	line-height: 1.5;
+	font-weight: var(--font-weight-light);
+	letter-spacing: var(--tracking-normal);
 	font-family:
 		ui-sans-serif,
 		system-ui,
@@ -32,6 +34,16 @@ body {
 
 body.no-scroll {
 	overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: var(--font-weight-medium);
+	letter-spacing: var(--tracking-tight);
 }
 
 button {

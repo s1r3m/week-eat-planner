@@ -1,29 +1,26 @@
 <script setup lang="ts">
 	const route = useRoute()
 
-	const loginHidden = computed(() => route.name === 'login')
-	const signupHidden = computed(() => route.name === 'signup')
+	const showLogin = computed(() => route.name !== 'login')
+	const showSignup = computed(() => route.name !== 'signup')
 </script>
 
 <template>
 	<div class="controls-container">
-		<button
-			type="button"
-			class="btn"
-			:hidden="loginHidden"
+		<UiButton
+			v-if="showLogin"
+			variant="outline"
 			@click="navigateTo({ name: 'login' })"
 		>
 			Login
-		</button>
+		</UiButton>
 
-		<button
-			type="button"
-			class="btn primary"
-			:hidden="signupHidden"
+		<UiButton
+			v-if="showSignup"
 			@click="navigateTo({ name: 'signup' })"
 		>
 			Register
-		</button>
+		</UiButton>
 	</div>
 </template>
 
@@ -32,15 +29,5 @@
 		display: flex;
 		align-items: center;
 		column-gap: var(--space-md);
-	}
-
-	.btn {
-		padding: var(--space-xs) var(--space-md);
-		border-radius: var(--radius-md);
-		transition: all 0.3s ease;
-	}
-
-	.primary {
-		background-color: var(--color-primary);
 	}
 </style>
