@@ -22,6 +22,7 @@
 	.logo {
 		width: 40px;
 	}
+
 	h1 {
 		color: var(--color-primary);
 		font-size: var(--text-title-lg);

@@ -17,4 +17,14 @@ export default defineNuxtConfig({
 			apiUrl: process.env.NUXT_PUBLIC_API_URL,
 		},
 	},
+
+	app: {
+		head: {
+			title: 'Week Eat Planner',
+			htmlAttrs: {
+				lang: 'en',
+			},
+			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+		},
+	},
 })
