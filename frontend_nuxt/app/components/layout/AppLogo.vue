@@ -6,7 +6,7 @@
 		<img
 			class="logo"
 			src="@/assets/logo.png"
-			alt="Week Eat Planner logo"
+			alt=""
 		/>
 
 		<h1>Week Eat Planner</h1>
@@ -20,7 +20,11 @@
 	}
 
 	.logo {
-		width: 40px;
+		flex-shrink: 0;
+		width: 100%;
+		max-width: 36px;
+		height: auto;
+		object-fit: contain;
 	}
 
 	h1 {

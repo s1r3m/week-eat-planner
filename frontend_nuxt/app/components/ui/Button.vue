@@ -32,6 +32,7 @@
 	.btn {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		column-gap: var(--space-md);
 		padding: var(--space-xs) var(--space-lg);
 		border-radius: var(--radius-xl);
@@ -57,8 +58,14 @@
 		border: 1px solid var(--color-primary);
 	}
 
-	.btn--outline:hover {
+	.btn--outline:not(:disabled):hover {
 		background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+	}
+
+	.btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+		filter: grayscale(1);
 	}
 
 	.btn:not(:disabled):hover {

@@ -5,8 +5,6 @@
 
 			<h2>
 				Plan once.
-				<br />
-
 				<span>Eat better</span>
 				all week.
 			</h2>
@@ -21,7 +19,12 @@
 					Start Planning
 				</UiButton>
 
-				<UiButton variant="outline">See how it works</UiButton>
+				<UiButton
+					variant="outline"
+					:disabled="true"
+				>
+					See how it works
+				</UiButton>
 			</div>
 		</div>
 
@@ -34,9 +37,26 @@
 
 <style scoped lang="scss">
 	.hero-container {
-		margin-top: var(--space-2xl);
+		margin-top: var(--space-lg);
+		padding: 0 var(--space-md);
 		display: flex;
-		flex-direction: column-reverse;
+		flex-direction: column;
+		row-gap: var(--space-2xl);
+	}
+
+	.promo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		row-gap: var(--space-md);
+		flex-direction: column;
+	}
+
+	.buttons-container {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		row-gap: var(--space-md);
 	}
 
 	@media screen and (width > 768px) {
@@ -44,36 +64,41 @@
 			flex-direction: row;
 			justify-content: space-between;
 		}
-	}
 
-	.promo {
-		display: flex;
-		align-items: start;
-		justify-content: center;
-		gap: var(--space-2xl);
-		flex-direction: column;
-	}
+		.promo {
+			align-items: start;
+			justify-content: center;
+			column-gap: var(--space-2xl);
+			flex-direction: column;
+		}
 
-	.buttons-container {
-		display: flex;
-		justify-content: start;
-		column-gap: var(--space-2xl);
+		.buttons-container {
+			flex-direction: row;
+			justify-content: start;
+			column-gap: var(--space-2xl);
+		}
+
+		h2 {
+			font-size: var(--text-headline-xl);
+			line-height: 1.5;
+		}
 	}
 
 	.description {
-		font-size: var(--text-body-lg);
+		font-size: var(--text-body-md);
 		color: var(--color-secondary);
+		text-align: center;
 	}
 
 	h2 {
-		font-size: var(--text-headline-xl);
+		font-size: var(--text-headline-lg);
 		font-weight: var(--font-weight-semibold);
-		line-height: 1.2;
 	}
 
 	img {
-		width: 480px;
-		height: 100%;
+		width: 100%;
+		max-width: 480px;
+		height: auto;
 		border-radius: var(--radius-lg);
 	}
 

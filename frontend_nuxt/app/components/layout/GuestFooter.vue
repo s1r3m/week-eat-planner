@@ -12,10 +12,10 @@
 <style scoped>
 	.guest-footer {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
-		border-top: 1px solid var(--color-outline);
+		justify-content: space-between;
 		padding: var(--space-md);
+		border-top: 1px solid var(--color-outline);
 	}
 
 	span {

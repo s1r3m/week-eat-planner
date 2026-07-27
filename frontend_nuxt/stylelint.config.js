@@ -27,14 +27,6 @@ export default {
 		'declaration-property-value-no-unknown': null,
 		'no-descending-specificity': [true, { severity: 'warning' }],
 
-		'order/properties-order': [
-			[],
-			{
-				severity: 'warning',
-				unspecified: 'bottom',
-			},
-		],
-
 		'property-no-unknown': [
 			true,
 			{

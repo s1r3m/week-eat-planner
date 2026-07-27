@@ -8,8 +8,8 @@
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
 		"postinstall": "nuxt prepare",
-		"lint": "oxlint app && eslint app --max-warnings=0 && stylelint \"app/**/*.{vue,css}\"",
-		"lint:fix": "oxlint app --fix && eslint --fix app",
+		"lint": "oxlint app && eslint app --max-warnings=0 && stylelint \"app/**/*.{vue,css,scss}\"",
+		"lint:fix": "oxlint app --fix && eslint --fix app && stylelint --fix",
 		"format": "prettier --write .",
 		"format:check": "prettier --check ."
 	},
@@ -39,6 +39,7 @@
 		"oxlint": "^1.75.0",
 		"prettier": "^3.9.6",
 		"sass-embedded": "^1.100.0",
+		"stylelint": "^17.14.1",
 		"stylelint-config-property-sort-order-smacss": "^11.2.0",
 		"stylelint-config-recommended": "^18.0.0",
 		"stylelint-config-standard": "^40.0.0",

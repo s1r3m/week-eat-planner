@@ -10,11 +10,8 @@ html {
 
 body {
 	min-height: 100%;
-	background: var(--color-surface);
+	background-color: var(--color-surface);
 	color: var(--color-on-surface);
-	line-height: 1.5;
-	font-weight: var(--font-weight-light);
-	letter-spacing: var(--tracking-normal);
 	font-family:
 		ui-sans-serif,
 		system-ui,
@@ -30,6 +27,9 @@ body {
 		'Segoe UI Emoji',
 		'Segoe UI Symbol',
 		'Noto Color Emoji';
+	font-weight: var(--font-weight-light);
+	letter-spacing: var(--tracking-normal);
+	line-height: 1.5;
 }
 
 body.no-scroll {
