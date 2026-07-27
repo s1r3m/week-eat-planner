@@ -46,9 +46,10 @@
 
 	.promo {
 		display: flex;
+		text-align: center;
 		align-items: center;
 		justify-content: center;
-		row-gap: var(--space-md);
+		row-gap: var(--space-lg);
 		flex-direction: column;
 	}
 
@@ -62,12 +63,12 @@
 	.description {
 		font-size: var(--text-body-md);
 		color: var(--color-secondary);
-		text-align: center;
 	}
 
 	h2 {
 		font-size: var(--text-headline-lg);
 		font-weight: var(--font-weight-semibold);
+		line-height: 1.2;
 	}
 
 	@media screen and (width > 768px) {
@@ -77,9 +78,10 @@
 		}
 
 		.promo {
+			padding: var(--space-md);
 			align-items: start;
 			justify-content: center;
-			column-gap: var(--space-2xl);
+			row-gap: var(--space-xl);
 			flex-direction: column;
 		}
 
@@ -99,6 +101,7 @@
 		h2 {
 			font-size: var(--text-headline-xl);
 			line-height: 1.5;
+			text-align: left;
 		}
 	}
 
