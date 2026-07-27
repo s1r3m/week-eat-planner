@@ -1,0 +1,34 @@
+<script setup lang="ts">
+	type BadgeVariant = 'default' | 'outline'
+
+	const { variant = 'default' } = defineProps<{
+		variant?: BadgeVariant
+	}>()
+</script>
+
+<template>
+	<p :class="['badge', `badge--${variant}`]">
+		<slot></slot>
+	</p>
+</template>
+
+<style scoped lang="scss">
+	.badge {
+		display: inline;
+		padding: var(--spacing) var(--space-xs);
+		border-radius: var(--radius-lg);
+		font-size: var(--text-body-sm);
+		letter-spacing: var(--tracking-normal);
+	}
+
+	.badge--default {
+		background-color: var(--color-primary);
+		color: var(--color-on-primary);
+	}
+
+	.badge--outline {
+		background-color: var(--color-surface);
+		color: var(--color-primary);
+		border: 1px dotted var(--color-primary);
+	}
+</style>
