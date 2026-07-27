@@ -59,6 +59,17 @@
 		row-gap: var(--space-md);
 	}
 
+	.description {
+		font-size: var(--text-body-md);
+		color: var(--color-secondary);
+		text-align: center;
+	}
+
+	h2 {
+		font-size: var(--text-headline-lg);
+		font-weight: var(--font-weight-semibold);
+	}
+
 	@media screen and (width > 768px) {
 		.hero-container {
 			flex-direction: row;
@@ -78,21 +89,17 @@
 			column-gap: var(--space-2xl);
 		}
 
+		.description {
+			font-size: var(--text-body-lg);
+			color: var(--color-secondary);
+			line-height: 2;
+			text-align: left;
+		}
+
 		h2 {
 			font-size: var(--text-headline-xl);
 			line-height: 1.5;
 		}
-	}
-
-	.description {
-		font-size: var(--text-body-md);
-		color: var(--color-secondary);
-		text-align: center;
-	}
-
-	h2 {
-		font-size: var(--text-headline-lg);
-		font-weight: var(--font-weight-semibold);
 	}
 
 	img {
