@@ -60,14 +60,6 @@
 		row-gap: var(--space-md);
 	}
 
-	.description {
-		/* Layout specific overrides */
-	}
-
-	h2 {
-		/* Layout specific overrides */
-	}
-
 	@media screen and (width > 768px) {
 		.hero-container {
 			flex-direction: row;
