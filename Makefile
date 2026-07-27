@@ -14,6 +14,7 @@ UV_VERSION = 0.6.11
 PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
 FE_PATH = $(PROJECT_PATH)/frontend
+NUXT_PATH = $(PROJECT_PATH)/frontend_nuxt
 
 ENV_FILE = $(BE_PATH)/.env
 BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
@@ -171,6 +172,23 @@ fe_style:
 ## @Tests Run fe unittests.
 fe_test:
 	cd $(FE_PATH) && yarn test:coverage
+
+## ------------------------------------------------- Nuxt --------------------------------------------------------------
+## @Nuxt Run linters
+nuxt_lint:
+	@echo "Run ESlint"
+	cd $(NUXT_PATH) && bun run lint
+	cd $(NUXT_PATH) && bun run format:check
+
+## @Nuxt Fix style
+nuxt_style:
+	@echo "Run ESlint"
+	cd $(NUXT_PATH) && bun run format
+	cd $(NUXT_PATH) && bun run lint:fix
+
+## @Nuxt Run fe unittests.
+nuxt_test:
+	cd $(NUXT_PATH) && bun test
 
 ## ----------------------------------------------- Overall -------------------------------------------------------------
 lint: be_lint fe_lint
