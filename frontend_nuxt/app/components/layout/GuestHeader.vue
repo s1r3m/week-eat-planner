@@ -1,7 +1,8 @@
 <template>
 	<header class="guest-header">
 		<LayoutAppLogo />
-		<LayoutAuthButtons />
+
+		<LayoutAuthControls />
 	</header>
 </template>
 
@@ -10,7 +11,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		border-bottom: 1px solid red;
-		padding: 12px;
+		padding: var(--space-md);
+		border-bottom: 1px solid var(--color-outline);
 	}
 </style>

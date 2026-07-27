@@ -1,6 +1,11 @@
 html {
-	scroll-behavior: smooth;
-	scrollbar-gutter: auto;
+	scrollbar-gutter: stable;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
 }
 
 body {
@@ -27,4 +32,8 @@ body {
 
 body.no-scroll {
 	overflow: hidden;
+}
+
+button {
+	cursor: pointer;
 }

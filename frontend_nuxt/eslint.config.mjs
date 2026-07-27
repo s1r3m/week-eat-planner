@@ -46,18 +46,7 @@ export default withNuxt(
 				'unicorn/filename-case': 'off',
 				'unicorn/no-null': 'off',
 
-				'unicorn/prevent-abbreviations': [
-					'warn',
-					{
-						replacements: {
-							e: false,
-							i: false,
-							props: false,
-							ref: false,
-						},
-					},
-				],
-
+				'unicorn/prevent-abbreviations': 'warn',
 				'vue/block-lang': [
 					'error',
 					{

@@ -181,13 +181,13 @@ nuxt_start:
 
 ## @Nuxt Run linters
 nuxt_lint:
-	@echo "Run ESlint"
+	@echo "Run Linters"
 	cd $(NUXT_PATH) && bun run lint
 	cd $(NUXT_PATH) && bun run format:check
 
 ## @Nuxt Fix style
 nuxt_style:
-	@echo "Run ESlint"
+	@echo "Run Style"
 	cd $(NUXT_PATH) && bun run format
 	cd $(NUXT_PATH) && bun run lint:fix
 

@@ -1,17 +1,17 @@
 :root {
 	/* Colors */
 	--color-primary: #3bb8a9;
-	--color-on-primary: #ffffff;
+	--color-on-primary: #041514;
 	--color-secondary: #51605f;
 	--color-on-secondary: #ffffff;
 	--color-tertiary: #51605f;
 	--color-on-tertiary: #ffffff;
+	--color-error: #e5484d;
+	--color-on-error: #ffffff;
 	--color-surface: #fafaf9;
 	--color-on-surface: #1a1a1a;
 	--color-outline: #d4dedd;
 	--color-outline-variant: #d4dedd;
-
-	--color-background: #fafaf9;
 
 	/* Spacing */
 	--spacing: 0.25rem;
