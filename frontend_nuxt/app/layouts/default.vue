@@ -1,14 +1,12 @@
 <template>
 	<div id="layout-container">
-		<header id="guest-header">
-			<h1>Week Eat Planner</h1>
-		</header>
+		<LayoutGuestHeader />
 
 		<main id="guest-main">
 			<slot></slot>
 		</main>
 
-		<footer id="guest-footer">Footer</footer>
+		<LayoutGuestFooter />
 	</div>
 </template>
 
@@ -16,16 +14,7 @@
 	#layout-container {
 		display: flex;
 		flex-direction: column;
-	}
-
-	#guest-header {
-		border-bottom: 1px solid red;
-		flex: 0 0 auto;
-	}
-
-	#guest-footer {
-		border-top: 1px solid red;
-		flex: 0 0 auto;
+		min-height: 100dvh;
 	}
 
 	#guest-main {
