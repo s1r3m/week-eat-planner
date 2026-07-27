@@ -1,12 +1,16 @@
 <template>
 	<header class="guest-header">
-		<h1>Week Eat Planner</h1>
+		<LayoutAppLogo />
+		<LayoutAuthButtons />
 	</header>
 </template>
 
 <style scoped>
 	.guest-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 		border-bottom: 1px solid red;
-		flex: 0 0 auto;
+		padding: 12px;
 	}
 </style>
