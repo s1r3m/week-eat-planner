@@ -13,12 +13,6 @@ export default defineNuxtConfig({
 
 	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt'],
 
-	runtimeConfig: {
-		public: {
-			apiUrl: process.env.NUXT_PUBLIC_API_URL,
-		},
-	},
-
 	app: {
 		head: {
 			title: 'Week Eat Planner',

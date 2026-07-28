@@ -26,8 +26,8 @@
 	}
 
 	.badge--outline {
+		border: 1px dotted var(--color-primary);
 		background-color: var(--color-surface);
 		color: var(--color-primary);
-		border: 1px dotted var(--color-primary);
 	}
 </style>

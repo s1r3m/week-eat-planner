@@ -177,7 +177,7 @@ fe_test:
 ## @Nuxt Start the app
 nuxt_start:
 	@echo "🏃 Starting Vue app on port 3000..."
-	cd $(NUXT_PATH) && bun run dev
+	cd $(NUXT_PATH) && bun run dev --port 3000
 
 ## @Nuxt Run linters
 nuxt_lint:

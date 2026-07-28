@@ -22,6 +22,6 @@ body.no-scroll {
 	overflow: hidden;
 }
 
-button {
+button:not(:disabled) {
 	cursor: pointer;
 }

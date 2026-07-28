@@ -37,26 +37,26 @@
 
 <style scoped lang="scss">
 	.hero-container {
-		margin-top: var(--space-lg);
-		padding: 0 var(--space-md);
 		display: flex;
 		flex-direction: column;
+		margin-top: var(--space-lg);
+		padding: 0 var(--space-md);
 		row-gap: var(--space-2xl);
 	}
 
 	.promo {
 		display: flex;
-		text-align: center;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		text-align: center;
 		row-gap: var(--space-lg);
-		flex-direction: column;
 	}
 
 	.buttons-container {
-		width: 100%;
 		display: flex;
 		flex-direction: column;
+		width: 100%;
 		row-gap: var(--space-md);
 	}
 
@@ -67,11 +67,11 @@
 		}
 
 		.promo {
-			padding: var(--space-md);
+			flex-direction: column;
 			align-items: start;
 			justify-content: center;
+			padding: var(--space-md);
 			row-gap: var(--space-xl);
-			flex-direction: column;
 		}
 
 		.buttons-container {

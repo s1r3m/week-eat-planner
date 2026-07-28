@@ -5,6 +5,13 @@ export default {
 		'stylelint-config-property-sort-order-smacss',
 	],
 
+	overrides: [
+		{
+			files: ['**/*.scss'],
+			customSyntax: 'postcss-scss',
+		},
+	],
+
 	plugins: ['stylelint-order'],
 
 	rules: {
