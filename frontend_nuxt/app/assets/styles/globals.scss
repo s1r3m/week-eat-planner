@@ -1,0 +1,27 @@
+html {
+	scrollbar-gutter: stable;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+body {
+	min-height: 100%;
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+	font-family: var(--font-sans);
+	font-weight: var(--font-weight-light);
+	letter-spacing: var(--tracking-normal);
+	line-height: 1.5;
+}
+
+body.no-scroll {
+	overflow: hidden;
+}
+
+button:not(:disabled) {
+	cursor: pointer;
+}

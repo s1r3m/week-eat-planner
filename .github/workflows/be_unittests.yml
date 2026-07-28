@@ -1,4 +1,6 @@
 name: BE Unittests
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:

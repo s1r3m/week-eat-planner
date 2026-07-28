@@ -1,4 +1,6 @@
 name: autotests.yml
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:

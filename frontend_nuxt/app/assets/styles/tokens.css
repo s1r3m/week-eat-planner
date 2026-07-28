@@ -1,0 +1,88 @@
+:root {
+	color-scheme: light dark;
+
+	/* Colors */
+	--color-primary: #3bb8a9;
+	--color-on-primary: #fafaf9;
+	--color-secondary: #51605f;
+	--color-on-secondary: #fafaf9;
+	--color-tertiary: #51605f;
+	--color-on-tertiary: #fafaf9;
+	--color-error: #e5484d;
+	--color-on-error: #fafaf9;
+	--color-surface: #fafaf9;
+	--color-on-surface: #1a1a1a;
+	--color-outline: #d4dedd;
+
+	/* Fonts */
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+	/* Spacing */
+	--spacing: 0.25rem;
+
+	/* Font Weight */
+	--font-weight-light: 300;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	/* Letter Spacing */
+	--tracking-tight: -0.025em;
+	--tracking-normal: 0em;
+	--tracking-wide: 0.025em;
+	--tracking-wider: 0.05em;
+
+	--space-xs: calc(var(--spacing) * 1.5);
+	--space-sm: calc(var(--spacing) * 2);
+	--space-md: calc(var(--spacing) * 3);
+	--space-lg: calc(var(--spacing) * 4);
+	--space-xl: calc(var(--spacing) * 6);
+	--space-2xl: calc(var(--spacing) * 8);
+
+	/* Font Scale */
+	--text-display-lg: 3.56rem;
+	--text-display-md: 2.81rem;
+	--text-display-sm: 2.25rem;
+	--text-headline-xl: 3.5rem;
+	--text-headline-lg: 2rem;
+	--text-headline-md: 1.75rem;
+	--text-headline-sm: 1.5rem;
+	--text-title-lg: 1.375rem;
+	--text-title-md: 1rem;
+	--text-title-sm: 0.875rem;
+	--text-body-lg: 1rem;
+	--text-body-md: 0.875rem;
+	--text-body-sm: 0.75rem;
+	--text-label-lg: 0.875rem;
+	--text-label-md: 0.75rem;
+	--text-label-sm: 0.6875rem;
+
+	/* Radius */
+	--radius-xs: 0.25rem;
+	--radius-sm: 0.5rem;
+	--radius-md: 0.75rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.75rem;
+	--radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-primary: #4acfbf;
+		--color-on-primary: #0b0f0e;
+		--color-secondary: #a9beba;
+		--color-on-secondary: #0b0f0e;
+		--color-tertiary: #a9beba;
+		--color-on-tertiary: #0b0f0e;
+		--color-error: #ff6f73;
+		--color-on-error: #4b0005;
+		--color-surface: #0b0f0e;
+		--color-on-surface: #e7f2f1;
+		--color-on-surface-variant: #a9beba;
+		--color-outline: rgba(231 242 241 / 0.2);
+	}
+}
