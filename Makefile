@@ -116,7 +116,7 @@ db_dump:
 
 ## @App Restore database from file.
 db_restore:
-	cat wep_db.bck.sql | $(DOCKER_COMPOSE) exec -T db psql -U wep -d wep
+	$(DOCKER_COMPOSE) exec -T db psql -v ON_ERROR_STOP=1 -U wep -d wep < wep_db.bck.sql
 
 ## @App Drop and recreate public schema (Wipes all data!).
 db_drop_schema:

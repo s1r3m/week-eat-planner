@@ -1,8 +1,8 @@
 import type { LoginPayload, SignupPayload } from '@/api/auth'
 import type { UserData } from '@/api/user'
 
-import { useAuthApi } from '../api/auth'
-import { useUserApi } from '../api/user'
+import { useAuthApi } from '@/api/auth'
+import { useUserApi } from '@/api/user'
 
 export const useAuthStore = defineStore('auth', () => {
 	const authApi = useAuthApi()
@@ -21,8 +21,11 @@ export const useAuthStore = defineStore('auth', () => {
 	}
 
 	const logout = async () => {
-		await authApi.logout()
-		user.value = null
+		try {
+			await authApi.logout()
+		} finally {
+			user.value = null
+		}
 	}
 
 	return { isAuthenticated, login, logout, signup, user }

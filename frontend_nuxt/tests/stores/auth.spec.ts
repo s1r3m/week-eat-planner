@@ -18,7 +18,7 @@ globalThis.ref = ref
 globalThis.computed = computed
 
 // Import store
-const { useAuthStore } = await import('../../app/stores/auth.ts')
+const { useAuthStore } = await import('@/stores/auth')
 
 describe('useAuthStore', () => {
 	beforeEach(() => {

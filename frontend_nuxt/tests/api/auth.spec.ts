@@ -1,5 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { useAuthApi } from '../../app/api/auth.ts'
+import { useAuthApi } from '@/api/auth'
 
 const mockApi = mock()
 // Mock useNuxtApp globally for tests

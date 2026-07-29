@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(() => {
 	const config = useRuntimeConfig()
-	const headers = useRequestHeaders(['cookies'])
+	const headers = useRequestHeaders(['cookie'])
 	let refreshPromise: null | Promise<void> = null
 
 	const api = $fetch.create({

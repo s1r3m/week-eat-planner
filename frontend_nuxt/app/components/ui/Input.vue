@@ -27,6 +27,8 @@
 
 		<button
 			v-if="type === 'password'"
+			aria-label,
+			:aria-pressed="revealed"
 			type="button"
 			@click="revealed = !revealed"
 		>

@@ -18,7 +18,10 @@
 				<h1 class="text-headline-md">Welcome back</h1>
 			</div>
 
-			<form class="login-form">
+			<form
+				class="login-form"
+				@submit.prevent="onSubmit"
+			>
 				<div class="form-group">
 					<label for="email">Email:</label>
 
@@ -44,12 +47,7 @@
 					<small v-if="false"></small>
 				</div>
 
-				<UiButton
-					type="submit"
-					@click.prevent="onSubmit"
-				>
-					Login
-				</UiButton>
+				<UiButton type="submit">Login</UiButton>
 			</form>
 		</div>
 	</div>
