@@ -108,8 +108,17 @@ stop:
 db_shell:
 	PGPASSWORD=wep uvx pgcli -h localhost -p 5432 -U wep -d wep
 
+## @App Dump database to file.
 db_dump:
-	PGPASSWORD=wep pg_dump -h localhost -p 5432 -U wep -d wep > wep_db.bck.sql
+	$(DOCKER_COMPOSE) exec -T db pg_dump -U wep -d wep > wep_db.bck.sql
+
+## @App Restore database from file.
+db_restore:
+	cat wep_db.bck.sql | $(DOCKER_COMPOSE) exec -T db psql -U wep -d wep
+
+## @App Drop and recreate public schema (Wipes all data!).
+db_drop_schema:
+	$(DOCKER_COMPOSE) exec -T db psql -U wep -d wep -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 ## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 

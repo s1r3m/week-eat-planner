@@ -11,10 +11,6 @@
 		type?: ButtonType
 		variant?: ButtonVariant
 	}>()
-
-	defineEmits<{
-		click: []
-	}>()
 </script>
 
 <template>
@@ -22,7 +18,6 @@
 		:class="['btn', `btn--${variant}`]"
 		:disabled="disabled"
 		:type="type"
-		@click="$emit('click')"
 	>
 		<slot></slot>
 	</button>

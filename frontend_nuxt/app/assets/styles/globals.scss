@@ -25,3 +25,7 @@ body.no-scroll {
 button:not(:disabled) {
 	cursor: pointer;
 }
+
+.page-container {
+	padding: var(--space-md);
+}
