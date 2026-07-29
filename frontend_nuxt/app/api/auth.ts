@@ -3,6 +3,12 @@ export interface LoginPayload {
 	username: string
 }
 
+export interface SignupPayload {
+	email: string
+	password: string
+	username: string
+}
+
 export interface SuccessResponse {
 	status: string
 }
@@ -20,6 +26,11 @@ export const useAuthApi = () => {
 		},
 		logout: () =>
 			$api<void>('/auth/logout', {
+				method: 'POST',
+			}),
+		signup: (body: SignupPayload) =>
+			$api<SuccessResponse>('/auth/signup', {
+				body,
 				method: 'POST',
 			}),
 	}

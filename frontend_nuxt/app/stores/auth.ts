@@ -1,4 +1,4 @@
-import type { LoginPayload } from '@/api/auth'
+import type { LoginPayload, SignupPayload } from '@/api/auth'
 import type { UserData } from '@/api/user'
 
 import { useAuthApi } from '@/api/auth'
@@ -10,6 +10,11 @@ export const useAuthStore = defineStore('auth', () => {
 	const user = ref<null | UserData>(null)
 	const isAuthenticated = computed(() => !!user.value)
 
+	const signup = async (payload: SignupPayload) => {
+		await authApi.signup(payload)
+		user.value = await userApi.getUser()
+	}
+
 	const login = async (payload: LoginPayload) => {
 		await authApi.login(payload)
 		user.value = await userApi.getUser()
@@ -20,5 +25,5 @@ export const useAuthStore = defineStore('auth', () => {
 		user.value = null
 	}
 
-	return { isAuthenticated, login, logout, user }
+	return { isAuthenticated, login, logout, signup, user }
 })

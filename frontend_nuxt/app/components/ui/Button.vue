@@ -38,7 +38,7 @@
 	}
 
 	.btn--primary {
-		border: none;
+		border: 1px solid var(--color-primary);
 		background-color: var(--color-primary);
 		color: var(--color-on-primary);
 	}
