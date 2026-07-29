@@ -21,6 +21,8 @@ BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
 
 FE_ENV_FILE = $(FE_PATH)/.env
 FE_TEST_ENV_FILE = $(FE_PATH)/.env.fe_test
+NUXT_ENV_FILE = $(NUXT_PATH)/.env
+NUXT_TEST_ENV_FILE = $(NUXT_PATH)/.env.fe_test
 
 export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
@@ -183,6 +185,15 @@ fe_test:
 	cd $(FE_PATH) && yarn test:coverage
 
 ## ------------------------------------------------- Nuxt --------------------------------------------------------------
+## @Nuxt Prepare env file for fe nuxt unittests
+$(NUXT_ENV_FILE):
+	cp $(NUXT_TEST_ENV_FILE) $(NUXT_ENV_FILE)
+
+# @FE Install requirements
+fe_install: $(NUXT_ENV_FILE)
+	@echo "🚀 Installing the packages..."
+	cd $(NUXT_PATH) && bun install
+
 ## @Nuxt Start the app
 nuxt_start:
 	@echo "🏃 Starting Vue app on port 3000..."
@@ -202,7 +213,7 @@ nuxt_style:
 
 ## @Nuxt Run fe unittests.
 nuxt_test:
-	cd $(NUXT_PATH) && bun test
+	cd $(NUXT_PATH) && bun test --coverage
 
 ## ----------------------------------------------- Overall -------------------------------------------------------------
 lint: be_lint fe_lint

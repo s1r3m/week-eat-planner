@@ -56,3 +56,39 @@ jobs:
       - name: Run fe unittests
         run: |
           make fe_test
+
+  nuxt_unittests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "bun"
+          cache-dependency-path: frontend_nuxt/bun.lock
+
+      - name: Install frontend dependencies
+        run: |
+          make nuxt_install
+
+      - name: Run fe unittests
+        run: |
+          make nuxt_test
