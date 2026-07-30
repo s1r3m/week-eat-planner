@@ -40,7 +40,6 @@
 		display: flex;
 		flex-direction: column;
 		margin-top: var(--space-lg);
-		padding: 0 var(--space-md);
 		row-gap: var(--space-2xl);
 	}
 

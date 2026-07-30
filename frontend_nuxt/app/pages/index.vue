@@ -1,5 +1,5 @@
 <template>
-	<div class="promo-page">
+	<div class="page-container promo-page">
 		<PromoHero />
 	</div>
 </template>

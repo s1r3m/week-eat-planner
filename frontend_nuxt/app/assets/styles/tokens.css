@@ -12,6 +12,8 @@
 	--color-on-error: #fafaf9;
 	--color-surface: #fafaf9;
 	--color-on-surface: #1a1a1a;
+	--color-surface-variant: #f4f6f6;
+	--color-on-surface-variant: #51605f;
 	--color-outline: #d4dedd;
 
 	/* Fonts */
@@ -82,6 +84,7 @@
 		--color-on-error: #4b0005;
 		--color-surface: #0b0f0e;
 		--color-on-surface: #e7f2f1;
+		--color-surface-variant: #1a2523;
 		--color-on-surface-variant: #a9beba;
 		--color-outline: rgba(231 242 241 / 0.2);
 	}

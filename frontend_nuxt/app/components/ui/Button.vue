@@ -11,10 +11,6 @@
 		type?: ButtonType
 		variant?: ButtonVariant
 	}>()
-
-	defineEmits<{
-		click: []
-	}>()
 </script>
 
 <template>
@@ -22,7 +18,6 @@
 		:class="['btn', `btn--${variant}`]"
 		:disabled="disabled"
 		:type="type"
-		@click="$emit('click')"
 	>
 		<slot></slot>
 	</button>
@@ -43,7 +38,7 @@
 	}
 
 	.btn--primary {
-		border: none;
+		border: 1px solid var(--color-primary);
 		background-color: var(--color-primary);
 		color: var(--color-on-primary);
 	}

@@ -1,0 +1,35 @@
+import type { SuccessResponse } from '@/schemas/api'
+
+export interface LoginPayload {
+	password: string
+	username: string
+}
+
+export interface SignupPayload {
+	email: string
+	password: string
+	username: string
+}
+
+export const useAuthApi = () => {
+	const { $api } = useNuxtApp()
+
+	return {
+		login: (payload: LoginPayload) => {
+			const body = new URLSearchParams({ ...payload })
+			return $api<SuccessResponse>('/auth/login', {
+				body,
+				method: 'POST',
+			})
+		},
+		logout: () =>
+			$api<void>('/auth/logout', {
+				method: 'POST',
+			}),
+		signup: (body: SignupPayload) =>
+			$api<SuccessResponse>('/auth/signup', {
+				body,
+				method: 'POST',
+			}),
+	}
+}

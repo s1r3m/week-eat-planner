@@ -9,6 +9,10 @@ export default defineNuxtConfig({
 		'@/assets/styles/globals.scss',
 	],
 
+	imports: {
+		dirs: ['@/composables/**'],
+	},
+
 	devtools: { enabled: true },
 
 	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt'],
@@ -20,6 +24,12 @@ export default defineNuxtConfig({
 				lang: 'en',
 			},
 			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+		},
+	},
+
+	runtimeConfig: {
+		public: {
+			apiBase: process.env.NUXT_PUBLIC_API_BASE,
 		},
 	},
 })

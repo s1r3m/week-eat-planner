@@ -21,6 +21,8 @@ BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
 
 FE_ENV_FILE = $(FE_PATH)/.env
 FE_TEST_ENV_FILE = $(FE_PATH)/.env.fe_test
+NUXT_ENV_FILE = $(NUXT_PATH)/.env
+NUXT_TEST_ENV_FILE = $(NUXT_PATH)/.env.fe_test
 
 export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
@@ -108,8 +110,17 @@ stop:
 db_shell:
 	PGPASSWORD=wep uvx pgcli -h localhost -p 5432 -U wep -d wep
 
+## @App Dump database to file.
 db_dump:
-	PGPASSWORD=wep pg_dump -h localhost -p 5432 -U wep -d wep > wep_db.bck.sql
+	$(DOCKER_COMPOSE) exec -T db pg_dump -U wep -d wep > wep_db.bck.sql
+
+## @App Restore database from file.
+db_restore:
+	$(DOCKER_COMPOSE) exec -T db psql -v ON_ERROR_STOP=1 -U wep -d wep < wep_db.bck.sql
+
+## @App Drop and recreate public schema (Wipes all data!).
+db_drop_schema:
+	$(DOCKER_COMPOSE) exec -T db psql -U wep -d wep -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 ## ----------------------------------------------- BE TESTS ------------------------------------------------------------
 
@@ -174,6 +185,15 @@ fe_test:
 	cd $(FE_PATH) && yarn test:coverage
 
 ## ------------------------------------------------- Nuxt --------------------------------------------------------------
+## @Nuxt Prepare env file for fe nuxt unittests
+$(NUXT_ENV_FILE):
+	cp $(NUXT_TEST_ENV_FILE) $(NUXT_ENV_FILE)
+
+# @FE Install requirements
+nuxt_install: $(NUXT_ENV_FILE)
+	@echo "🚀 Installing the packages..."
+	cd $(NUXT_PATH) && bun install
+
 ## @Nuxt Start the app
 nuxt_start:
 	@echo "🏃 Starting Vue app on port 3000..."
@@ -193,7 +213,7 @@ nuxt_style:
 
 ## @Nuxt Run fe unittests.
 nuxt_test:
-	cd $(NUXT_PATH) && bun test
+	cd $(NUXT_PATH) && bun test --coverage
 
 ## ----------------------------------------------- Overall -------------------------------------------------------------
 lint: be_lint fe_lint

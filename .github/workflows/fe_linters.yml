@@ -51,3 +51,36 @@ jobs:
       - name: Analysing the code with ESLint
         run: |
           make fe_lint
+
+  nuxt_linters:
+    runs-on: ubuntu-latest
+    container:
+      image: oven/bun:1
+    steps:
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Set up env
+        run: |
+          cp frontend_nuxt/.env.fe_test frontend_nuxt/.env
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend_nuxt && bun install
+
+      - name: Analysing the code with ESLint
+        run: |
+          cd frontend_nuxt && bun run lint
