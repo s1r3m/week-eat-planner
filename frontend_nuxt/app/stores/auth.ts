@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (user.value) return
 		try {
 			user.value = await userApi.getUser()
-		} catch (error) {
+		} catch {
 			user.value = null
 		}
 	}
