@@ -4,8 +4,7 @@ import { useLoginValidation } from '@/schemas/auth/login'
 
 export const useLoginForm = () => {
 	const authStore = useAuthStore()
-	const { errors, handleSubmit, meta, password, username } =
-		useLoginValidation()
+	const { email, errors, handleSubmit, meta, password } = useLoginValidation()
 
 	const isLoading = ref<boolean>(false)
 	const serverError = ref<null | string>(null)
@@ -17,7 +16,7 @@ export const useLoginForm = () => {
 			serverError.value = null
 			await authStore.login({
 				password: password.value,
-				username: username.value,
+				username: email.value,
 			})
 		} catch (error) {
 			password.value = ''
@@ -40,7 +39,7 @@ export const useLoginForm = () => {
 	})
 
 	return {
-		email: username,
+		email,
 		errors,
 		isLoading,
 		login,

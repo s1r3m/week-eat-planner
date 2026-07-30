@@ -56,6 +56,6 @@ describe('useLoginValidation', () => {
 		expect(result).toHaveProperty('handleSubmit')
 		expect(result).toHaveProperty('meta')
 		expect(result).toHaveProperty('password')
-		expect(result).toHaveProperty('username')
+		expect(result).toHaveProperty('email')
 	})
 })

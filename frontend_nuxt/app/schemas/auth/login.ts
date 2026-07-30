@@ -24,8 +24,8 @@ export const useLoginValidation = () => {
 		validationSchema: toTypedSchema(schema),
 	})
 
-	const { value: username } = useField<FormValues['email']>('email')
+	const { value: email } = useField<FormValues['email']>('email')
 	const { value: password } = useField<FormValues['password']>('password')
 
-	return { errors, handleSubmit, meta, password, username }
+	return { email, errors, handleSubmit, meta, password }
 }
