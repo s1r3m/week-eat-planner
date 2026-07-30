@@ -60,7 +60,7 @@ jobs:
   nuxt_unittests:
     runs-on: ubuntu-latest
     container:
-      image: oven/bun:latest
+      image: oven/bun:1
     steps:
       - name: Clean workspace (Manual)
         if: inputs.clean_workspace == true
@@ -77,6 +77,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
+
+      - name: Set up env
+        run: |
+          cp frontend_nuxt/.env.fe_test cp frontend_nuxt/.env
 
       - name: Install frontend dependencies
         run: |

@@ -77,6 +77,6 @@
 		transform: translateY(-50%);
 		border: 0;
 		background: transparent;
-		inset-inline-end: var(--space-lg);
+		inset-inline-end: var(--space-md);
 	}
 </style>
