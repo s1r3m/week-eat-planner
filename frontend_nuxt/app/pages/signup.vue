@@ -11,8 +11,12 @@
 	} = useSignupForm()
 
 	const onSubmit = async () => {
-		await register()
-		navigateTo({ name: 'my-weeks' })
+		try {
+			await register()
+			await navigateTo({ name: 'my-weeks' })
+		} catch {
+			// serverError is already set by useSignupForm; swallow here
+		}
 	}
 </script>
 
