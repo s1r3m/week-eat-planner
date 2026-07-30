@@ -33,6 +33,7 @@
 					<UiInput
 						id="email"
 						v-model="email"
+						name="email"
 						placeholder="Enter email"
 					/>
 
@@ -45,6 +46,7 @@
 					<UiInput
 						id="password"
 						v-model="password"
+						name="password"
 						type="password"
 						placeholder="Enter password"
 					/>

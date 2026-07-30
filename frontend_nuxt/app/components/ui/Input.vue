@@ -1,10 +1,14 @@
 <script setup lang="ts">
 	const {
+		autocomplete = 'off',
 		id,
+		name = '',
 		placeholder = '',
 		type = 'text',
 	} = defineProps<{
+		autocomplete?: string
 		id: string
+		name: string
 		placeholder?: string
 		type?: 'password' | 'text'
 	}>()
@@ -22,6 +26,8 @@
 			:id="id"
 			v-model="model"
 			:type="inputType"
+			:name="name"
+			:autocomplete="autocomplete"
 			:placeholder="placeholder"
 		/>
 

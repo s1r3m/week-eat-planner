@@ -25,6 +25,7 @@
 
 			<form
 				class="login-form"
+				autocomplete="off"
 				@submit.prevent="onSubmit"
 			>
 				<UiAlert
@@ -40,6 +41,8 @@
 					<UiInput
 						id="email"
 						v-model="email"
+						name="email"
+						autocomplete="email"
 						placeholder="Enter email"
 					/>
 
@@ -52,6 +55,7 @@
 					<UiInput
 						id="username"
 						v-model="username"
+						name="username"
 						placeholder="Enter username"
 					/>
 
@@ -65,6 +69,8 @@
 						id="password"
 						v-model="password"
 						type="password"
+						name="password"
+						autocomplete="new-password"
 						placeholder="Enter password"
 					/>
 
