@@ -80,7 +80,7 @@ jobs:
 
       - name: Set up env
         run: |
-          cp frontend_nuxt/.env.fe_test cp frontend_nuxt/.env
+          cp frontend_nuxt/.env.fe_test frontend_nuxt/.env
 
       - name: Install frontend dependencies
         run: |
