@@ -10,12 +10,31 @@ export default defineNuxtPlugin(() => {
 	})
 
 	const refreshTokens = async () => {
-		await $fetch('/auth/refresh', {
+		const response = await $fetch<Response>('/auth/refresh', {
 			baseURL: config.public.apiBase,
 			credentials: 'include',
 			headers,
 			method: 'POST',
 		})
+		if (import.meta.server) {
+			const event = useRequestEvent()
+
+			if (event) {
+				const cookies = response.headers.getSetCookie()
+
+				for (const cookie of cookies) {
+					appendResponseHeader(event, 'set-cookie', cookie)
+				}
+
+				const cookieHeader = cookies
+					.map((cookie) => cookie.split(';', 1)[0])
+					.join('; ')
+
+				if (cookieHeader) {
+					headers.cookie = cookieHeader
+				}
+			}
+		}
 	}
 
 	const isUnauthorized = (error: unknown): boolean => {
