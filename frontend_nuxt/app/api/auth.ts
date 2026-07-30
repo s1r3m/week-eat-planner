@@ -1,3 +1,5 @@
+import type { SuccessResponse } from '@/schemas/api'
+
 export interface LoginPayload {
 	password: string
 	username: string
@@ -7,10 +9,6 @@ export interface SignupPayload {
 	email: string
 	password: string
 	username: string
-}
-
-export interface SuccessResponse {
-	status: string
 }
 
 export const useAuthApi = () => {

@@ -9,6 +9,10 @@ export default defineNuxtConfig({
 		'@/assets/styles/globals.scss',
 	],
 
+	imports: {
+		dirs: ['@/composables/**'],
+	},
+
 	devtools: { enabled: true },
 
 	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt'],

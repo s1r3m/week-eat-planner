@@ -27,7 +27,7 @@
 
 		<button
 			v-if="type === 'password'"
-			aria-label,
+			aria-label="Toggle password visibility"
 			:aria-pressed="revealed"
 			type="button"
 			@click="revealed = !revealed"

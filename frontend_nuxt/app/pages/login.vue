@@ -1,12 +1,9 @@
 <script setup lang="ts">
-	const authStore = useAuthStore()
-	const email = ref<string>('')
-	const password = ref<string>('')
+	const { email, errors, isLoading, login, meta, password, serverError } =
+		useLoginForm()
+
 	const onSubmit = async () => {
-		await authStore.login({
-			password: password.value,
-			username: email.value,
-		})
+		await login()
 		await navigateTo({ name: 'my-weeks' })
 	}
 </script>
@@ -20,8 +17,16 @@
 
 			<form
 				class="login-form"
+				novalidate
 				@submit.prevent="onSubmit"
 			>
+				<UiAlert
+					v-if="serverError"
+					:message="serverError"
+					variant="error"
+					@close="serverError = null"
+				/>
+
 				<div class="form-group">
 					<label for="email">Email:</label>
 
@@ -31,7 +36,7 @@
 						placeholder="Enter email"
 					/>
 
-					<small v-if="false">Email is required</small>
+					<small v-if="errors.email">{{ errors.email }}</small>
 				</div>
 
 				<div class="form-group">
@@ -44,10 +49,15 @@
 						placeholder="Enter password"
 					/>
 
-					<small v-if="false"></small>
+					<small v-if="errors.password">{{ errors.password }}</small>
 				</div>
 
-				<UiButton type="submit">Login</UiButton>
+				<UiButton
+					type="submit"
+					:disabled="!meta.valid || isLoading"
+				>
+					{{ isLoading ? 'Logging in... ' : 'Login' }}
+				</UiButton>
 			</form>
 		</div>
 	</div>
@@ -80,7 +90,8 @@
 
 	.form-group {
 		position: relative;
-		margin-bottom: var(--space-xl);
+		margin-top: var(--space-2xl);
+		margin-bottom: var(--space-2xl);
 
 		label {
 			display: block;
@@ -90,7 +101,8 @@
 
 		small {
 			position: absolute;
-			bottom: calc(var(--space-sm) * -1);
+			padding-left: var(--space-sm);
+			color: var(--color-error);
 		}
 	}
 
