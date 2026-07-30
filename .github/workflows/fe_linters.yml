@@ -77,8 +77,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "bun"
-          cache-dependency-path: frontend_nuxt/bun.lock
 
       - name: Install frontend dependencies
         run: |

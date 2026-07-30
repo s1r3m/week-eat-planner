@@ -13,12 +13,20 @@ const mockAuthStore = {
 // @ts-ignore
 globalThis.useAuthStore = () => mockAuthStore
 
-const mockHandleSubmit = mock((fn: any) => fn)
 const mockEmail = ref('')
 const mockUsername = ref('')
 const mockPassword = ref('')
 const mockErrors = ref({})
 const mockMeta = ref({})
+
+const mockHandleSubmit = mock((fn: any) => {
+	return () =>
+		fn({
+			email: mockEmail.value,
+			password: mockPassword.value,
+			username: mockUsername.value,
+		})
+})
 
 // Mock vee-validate (same as in useLoginForm.spec.ts)
 mock.module('vee-validate', () => ({

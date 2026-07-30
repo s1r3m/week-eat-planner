@@ -9,14 +9,15 @@ export const useLoginForm = () => {
 	const isLoading = ref<boolean>(false)
 	const serverError = ref<null | string>(null)
 
-	const login = handleSubmit(async () => {
+	const login = handleSubmit(async (values) => {
 		isLoading.value = true
+		serverError.value = null
 
 		try {
 			serverError.value = null
 			await authStore.login({
-				password: password.value,
-				username: email.value,
+				password: values.password,
+				username: values.email,
 			})
 		} catch (error) {
 			password.value = ''

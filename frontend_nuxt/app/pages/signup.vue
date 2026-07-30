@@ -42,7 +42,7 @@
 						id="email"
 						v-model="email"
 						name="email"
-						autocomplete="email"
+						autocomplete="username"
 						placeholder="Enter email"
 					/>
 
@@ -50,12 +50,12 @@
 				</div>
 
 				<div class="form-group">
-					<label for="username">Username:</label>
+					<label for="name">Name:</label>
 
 					<UiInput
-						id="username"
+						id="name"
 						v-model="username"
-						name="username"
+						name="name"
 						placeholder="Enter username"
 					/>
 

@@ -13,11 +13,14 @@ const mockAuthStore = {
 // @ts-ignore
 globalThis.useAuthStore = () => mockAuthStore
 
-const mockHandleSubmit = mock((fn: any) => fn)
 const mockUsername = ref('')
 const mockPassword = ref('')
 const mockErrors = ref({})
 const mockMeta = ref({})
+
+const mockHandleSubmit = mock((fn: any) => {
+	return () => fn({ email: mockUsername.value, password: mockPassword.value })
+})
 
 // Mock vee-validate
 mock.module('vee-validate', () => ({

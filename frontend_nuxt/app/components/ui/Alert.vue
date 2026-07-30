@@ -21,7 +21,10 @@
 </script>
 
 <template>
-	<div :class="['alert', `alert--${variant}`]">
+	<div
+		:class="['alert', `alert--${variant}`]"
+		:role="variant === 'error' ? 'alert' : 'status'"
+	>
 		<div class="alert-header">
 			<Icon :name="`lucide:${icons[variant]}`" />
 
@@ -33,6 +36,7 @@
 		<button
 			class="icon"
 			type="button"
+			aria-label="Close alert"
 			@click.prevent="$emit('close')"
 		>
 			<Icon name="lucide:x" />
@@ -62,7 +66,7 @@
 	}
 
 	.alert--success {
-		background-color: var(--color-primary/40);
+		background-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
 		color: var(--color-on-primary);
 	}
 

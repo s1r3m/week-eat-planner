@@ -10,14 +10,15 @@ export const useSignupForm = () => {
 	const isLoading = ref<boolean>(false)
 	const serverError = ref<null | string>(null)
 
-	const register = handleSubmit(async () => {
+	const register = handleSubmit(async (values) => {
 		isLoading.value = true
+		serverError.value = null
 
 		try {
 			await authStore.signup({
-				email: email.value,
-				password: password.value,
-				username: username.value,
+				email: values.email,
+				password: values.password,
+				username: values.username,
 			})
 		} catch (error) {
 			if (
