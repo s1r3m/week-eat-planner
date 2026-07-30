@@ -75,8 +75,8 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          make nuxt_install
+          cd frontend_nuxt && bun install
 
       - name: Analysing the code with ESLint
         run: |
-          make nuxt_lint
+          cd frontend_nuxt && bun run lint

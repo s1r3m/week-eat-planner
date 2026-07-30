@@ -80,8 +80,8 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          make nuxt_install
+          cd frontend_nuxt && bun install
 
       - name: Run fe unittests
         run: |
-          make nuxt_test
+          cd frontend_nuxt && bun test --coverage
