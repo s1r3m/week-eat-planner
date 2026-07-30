@@ -68,13 +68,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Merge base branch into PR
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
-          git merge "origin/${{ github.event.pull_request.base.ref }}"
-          echo "Merge successful."
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
