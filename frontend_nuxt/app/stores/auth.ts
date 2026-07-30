@@ -24,9 +24,19 @@ export const useAuthStore = defineStore('auth', () => {
 		try {
 			await authApi.logout()
 		} finally {
+			// Regardless of status -- remove the user.
 			user.value = null
 		}
 	}
 
-	return { isAuthenticated, login, logout, signup, user }
+	const init = async () => {
+		if (user.value) return
+		try {
+			user.value = await userApi.getUser()
+		} catch (error) {
+			user.value = null
+		}
+	}
+
+	return { init, isAuthenticated, login, logout, signup, user }
 })

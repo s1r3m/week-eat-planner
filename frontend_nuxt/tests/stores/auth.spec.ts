@@ -96,4 +96,38 @@ describe('useAuthStore', () => {
 			expect(store.isAuthenticated).toBe(false)
 		})
 	})
+
+	describe('init', () => {
+		it('returns early if user is already set', async () => {
+			const store = useAuthStore()
+			const mockUser = { username: 'test', id: '1' }
+			store.user = mockUser as any
+
+			await store.init()
+
+			expect(mockApi).not.toHaveBeenCalled()
+			expect(store.user).toEqual(mockUser)
+		})
+
+		it('fetches user if not set', async () => {
+			const store = useAuthStore()
+			const mockUser = { username: 'test', id: '1' }
+			mockApi.mockResolvedValueOnce(mockUser)
+
+			await store.init()
+
+			expect(mockApi).toHaveBeenCalledWith('/user')
+			expect(store.user).toEqual(mockUser)
+		})
+
+		it('sets user to null on error', async () => {
+			const store = useAuthStore()
+			mockApi.mockRejectedValueOnce(new Error('Unauthorized'))
+
+			await store.init()
+
+			expect(mockApi).toHaveBeenCalledWith('/user')
+			expect(store.user).toBeNull()
+		})
+	})
 })
