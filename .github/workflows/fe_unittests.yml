@@ -59,6 +59,8 @@ jobs:
 
   nuxt_unittests:
     runs-on: ubuntu-latest
+    container:
+      image: oven/bun:latest
     steps:
       - name: Clean workspace (Manual)
         if: inputs.clean_workspace == true
