@@ -1,27 +1,25 @@
 import type { ErrorResponse } from '@/schemas/api'
 
-import { useLoginValidation } from '@/schemas/auth/login'
+import { useSignupValidation } from '@/schemas/auth/signup'
 
-export const useLoginForm = () => {
+export const useSignupForm = () => {
 	const authStore = useAuthStore()
-	const { errors, handleSubmit, meta, password, username } =
-		useLoginValidation()
+	const { email, errors, handleSubmit, meta, password, username } =
+		useSignupValidation()
 
 	const isLoading = ref<boolean>(false)
 	const serverError = ref<null | string>(null)
 
-	const login = handleSubmit(async () => {
+	const register = handleSubmit(async () => {
 		isLoading.value = true
 
 		try {
-			serverError.value = null
-			await authStore.login({
+			await authStore.signup({
+				email: email.value,
 				password: password.value,
 				username: username.value,
 			})
 		} catch (error) {
-			password.value = ''
-
 			if (
 				typeof error === 'object' &&
 				error !== null &&
@@ -33,6 +31,7 @@ export const useLoginForm = () => {
 			} else {
 				serverError.value = 'Something went wrong'
 			}
+
 			throw error
 		} finally {
 			isLoading.value = false
@@ -40,12 +39,13 @@ export const useLoginForm = () => {
 	})
 
 	return {
-		email: username,
+		email,
 		errors,
 		isLoading,
-		login,
 		meta,
 		password,
+		register,
 		serverError,
+		username,
 	}
 }

@@ -190,7 +190,7 @@ $(NUXT_ENV_FILE):
 	cp $(NUXT_TEST_ENV_FILE) $(NUXT_ENV_FILE)
 
 # @FE Install requirements
-fe_install: $(NUXT_ENV_FILE)
+nuxt_install: $(NUXT_ENV_FILE)
 	@echo "🚀 Installing the packages..."
 	cd $(NUXT_PATH) && bun install
 
