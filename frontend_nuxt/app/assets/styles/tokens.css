@@ -70,6 +70,11 @@
 	--radius-lg: 1rem;
 	--radius-xl: 1.75rem;
 	--radius-full: 9999px;
+
+	/* Layouts */
+	--header-height: 64px;
+	--sidebar-expanded: 235px;
+	--sidebar-collapsed: 60px;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+	definePageMeta({
+		layout: 'app',
+	})
 	const { logout, user } = useAuthStore()
 
 	const onLogout = () => {

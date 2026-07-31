@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	type ButtonType = 'button' | 'submit'
-	type ButtonVariant = 'outline' | 'primary' | 'secondary'
+	type ButtonVariant = 'icon' | 'outline' | 'primary' | 'secondary'
 
 	const {
 		disabled = false,
@@ -51,6 +51,14 @@
 		border: 1px solid var(--color-primary);
 		background-color: var(--color-surface);
 		color: var(--color-primary);
+	}
+
+	.btn--icon {
+		padding: 0;
+		margin: 0;
+		font-size: var(--text-title-lg);
+		border: none;
+		background: transparent;
 	}
 
 	.btn--outline:not(:disabled):hover {

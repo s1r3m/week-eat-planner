@@ -1,3 +1,9 @@
+<script setup lang="ts">
+	const { collapsed = false } = defineProps<{
+		collapsed?: boolean
+	}>()
+</script>
+
 <template>
 	<NuxtLink
 		:to="{ name: 'index' }"
@@ -10,7 +16,12 @@
 			aria-hidden="true"
 		/>
 
-		<h1 class="text-title-lg text-primary">Week Eat Planner</h1>
+		<h1
+			class="text-title-lg"
+			:class="{ collapsed }"
+		>
+			Week Eat Planner
+		</h1>
 	</NuxtLink>
 </template>
 
@@ -27,5 +38,19 @@
 		width: 36px;
 		height: 36px;
 		object-fit: contain;
+	}
+
+	h1 {
+		color: var(--color-primary);
+		overflow: hidden;
+		white-space: nowrap;
+		opacity: 1;
+		max-width: 100%;
+		transition: all 0.3s ease;
+	}
+
+	.collapsed {
+		opacity: 0;
+		max-width: 0;
 	}
 </style>
