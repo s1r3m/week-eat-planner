@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	type ButtonType = 'button' | 'submit'
-	type ButtonVariant = 'icon' | 'outline' | 'primary' | 'secondary'
+	type ButtonVariant = 'danger' | 'icon' | 'outline' | 'primary'
 
 	const {
 		disabled = false,
@@ -43,8 +43,10 @@
 		color: var(--color-on-primary);
 	}
 
-	.btn--secondary {
-		background-color: var(--color-secondary);
+	.btn--danger {
+		border: 1px solid var(--color-error);
+		background-color: var(--color-error);
+		color: var(--color-on-error);
 	}
 
 	.btn--outline {

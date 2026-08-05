@@ -35,7 +35,12 @@
 				<Icon name="lucide:menu" />
 			</UiButton>
 
-			<UiButton @click="onLogout">Logout</UiButton>
+			<UiButton
+				variant="danger"
+				@click="onLogout"
+			>
+				Logout
+			</UiButton>
 		</div>
 	</header>
 </template>

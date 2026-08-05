@@ -28,4 +28,5 @@ button:not(:disabled) {
 
 .page-container {
 	padding: var(--space-md);
+	container-type: inline-size;
 }
