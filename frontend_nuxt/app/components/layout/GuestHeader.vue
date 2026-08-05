@@ -19,7 +19,6 @@
 		align-items: center;
 		justify-content: space-between;
 		height: var(--header-height);
-		padding: var(--space-md) 0;
 		border-bottom: 1px solid var(--color-outline);
 		inset: 0;
 		backdrop-filter: blur(16px);

@@ -6,13 +6,10 @@
 
 <template>
 	<div class="user-info">
-		<Icon
-			name="lucide:circle-user"
-			:size="25"
-		/>
+		<Icon name="lucide:circle-user" />
 
 		<p
-			class="user-name"
+			class="user-info__name"
 			:class="{ collapsed }"
 		>
 			Jonh Doe
@@ -23,10 +20,12 @@
 <style scoped lang="scss">
 	.user-info {
 		display: flex;
+		align-items: center;
 		gap: var(--space-md);
+		padding: var(--space-md);
 	}
 
-	.user-name {
+	.user-info__name {
 		max-width: 100%;
 		overflow: hidden;
 		transition: all 0.3s ease;

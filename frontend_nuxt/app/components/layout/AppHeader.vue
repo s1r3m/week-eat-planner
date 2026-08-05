@@ -1,5 +1,12 @@
 <script setup lang="ts">
 	const { collapsed, toggleCollapsed } = useSidebar()
+
+	const { logout } = useAuthStore()
+
+	const onLogout = () => {
+		logout()
+		navigateTo({ name: 'index' })
+	}
 </script>
 
 <template>
@@ -20,13 +27,15 @@
 			<div class="breadcrumbs">My Weeks -> temp</div>
 		</div>
 
-		<div class="app-header__right-side mobile_only">
+		<div class="app-header__right-side">
 			<UiButton
-				class="app-header__menu-btn"
+				class="app-header__menu-btn mobile_only"
 				variant="icon"
 			>
 				<Icon name="lucide:menu" />
 			</UiButton>
+
+			<UiButton @click="onLogout">Logout</UiButton>
 		</div>
 	</header>
 </template>

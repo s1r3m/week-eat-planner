@@ -7,10 +7,10 @@
 <template>
 	<NuxtLink
 		:to="{ name: 'index' }"
-		class="app-logo-container"
+		class="app_logo"
 	>
 		<img
-			class="logo"
+			class="app_logo__icon"
 			src="@/assets/logo.png"
 			alt=""
 			aria-hidden="true"
@@ -26,14 +26,15 @@
 </template>
 
 <style scoped lang="scss">
-	.app-logo-container {
+	.app_logo {
 		display: flex;
 		align-items: center;
+		padding: var(--space-md);
 		column-gap: var(--space-xs);
 		text-decoration: none;
 	}
 
-	.logo {
+	.app_logo__icon {
 		flex-shrink: 0;
 		width: 36px;
 		height: 36px;
@@ -41,7 +42,7 @@
 	}
 
 	h1 {
-		max-width: 100%;
+		width: 100%;
 		overflow: hidden;
 		transition: all 0.3s ease;
 		opacity: 1;

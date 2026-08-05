@@ -7,40 +7,51 @@
 		icon: string
 		id: number
 		title: string
+		to: string
 	}
 
 	const navLinks: NavLink[] = [
-		{ icon: 'lucide:calendar-days', id: 1, title: 'My Weeks' },
-		{ icon: 'lucide:utensils', id: 2, title: 'My Recipes' },
+		{ icon: 'lucide:calendar-days', id: 1, title: 'My Weeks', to: 'my-weeks' },
+		{ icon: 'lucide:utensils', id: 2, title: 'My Recipes', to: 'my-recipes' },
 	]
 </script>
 
 <template>
-	<div class="navigation">
+	<div class="nav">
 		<div
 			v-for="link in navLinks"
 			:key="link.id"
-			class="nav-link"
+			class="nav__link"
 		>
 			<Icon :name="link.icon" />
 
-			<span
-				class="nav-title"
+			<NuxtLink
+				class="nav__title"
 				:class="{ collapsed }"
+				:to="{ name: link.to }"
 			>
 				{{ link.title }}
-			</span>
+			</NuxtLink>
 		</div>
 	</div>
 </template>
 
 <style scoped lang="scss">
-	.nav-link {
-		margin-bottom: var(--space-md);
+	.nav {
+		display: flex;
+		flex-direction: column;
+		padding: var(--space-md);
+		gap: var(--space-md);
+	}
+
+	.nav__link {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
 		font-size: var(--text-title-md);
 	}
 
-	.nav-title {
+	.nav__title {
 		max-width: 100%;
 		overflow: hidden;
 		transition: all 0.3s ease;

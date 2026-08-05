@@ -4,11 +4,12 @@
 
 <template>
 	<div class="app-sidebar">
-		<div class="upside">
-			<LayoutAppLogo :collapsed="collapsed" />
+		<LayoutAppLogo :collapsed="collapsed" />
 
-			<LayoutAppNavigation :collapsed="collapsed" />
-		</div>
+		<LayoutAppNavigation
+			class="app-sidebar__nav"
+			:collapsed="collapsed"
+		/>
 
 		<LayoutAppUser :collapsed="collapsed" />
 	</div>
@@ -19,8 +20,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-md);
-		justify-content: space-between;
-		padding: var(--space-md) 0;
 		border-right: 1px solid var(--color-outline);
+	}
+
+	.app-sidebar__nav {
+		flex: 1;
 	}
 </style>
