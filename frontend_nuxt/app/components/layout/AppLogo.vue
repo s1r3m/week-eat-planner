@@ -41,16 +41,16 @@
 	}
 
 	h1 {
-		color: var(--color-primary);
-		overflow: hidden;
-		white-space: nowrap;
-		opacity: 1;
 		max-width: 100%;
+		overflow: hidden;
 		transition: all 0.3s ease;
+		opacity: 1;
+		color: var(--color-primary);
+		white-space: nowrap;
 	}
 
 	.collapsed {
-		opacity: 0;
 		max-width: 0;
+		opacity: 0;
 	}
 </style>

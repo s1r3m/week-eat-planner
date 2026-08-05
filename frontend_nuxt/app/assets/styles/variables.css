@@ -33,10 +33,10 @@
 	--font-weight-bold: 700;
 
 	/* Letter Spacing */
-	--tracking-tight: -0.025em;
-	--tracking-normal: 0em;
-	--tracking-wide: 0.025em;
-	--tracking-wider: 0.05em;
+	--tracking-tight: -0.025rem;
+	--tracking-normal: 0rem;
+	--tracking-wide: 0.025rem;
+	--tracking-wider: 0.05rem;
 
 	--space-xs: calc(var(--spacing) * 1.5);
 	--space-sm: calc(var(--spacing) * 2);

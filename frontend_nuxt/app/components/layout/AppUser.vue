@@ -10,6 +10,7 @@
 			name="lucide:circle-user"
 			:size="25"
 		/>
+
 		<p
 			class="user-name"
 			:class="{ collapsed }"
@@ -24,16 +25,17 @@
 		display: flex;
 		gap: var(--space-md);
 	}
+
 	.user-name {
-		overflow: hidden;
-		white-space: nowrap;
-		opacity: 1;
 		max-width: 100%;
+		overflow: hidden;
 		transition: all 0.3s ease;
+		opacity: 1;
+		white-space: nowrap;
 	}
 
 	.collapsed {
-		opacity: 0;
 		max-width: 0;
+		opacity: 0;
 	}
 </style>

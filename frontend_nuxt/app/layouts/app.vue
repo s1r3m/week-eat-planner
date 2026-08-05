@@ -7,13 +7,9 @@
 		class="layout"
 		:class="{ collapsed }"
 	>
-		<header class="auth-header">
-			<LayoutAppHeader />
-		</header>
+		<LayoutAppHeader class="auth-header" />
 
-		<aside class="auth-sidebar">
-			<LayoutAppSidebar />
-		</aside>
+		<LayoutAppSidebar class="auth-sidebar" />
 
 		<main class="content">
 			<slot></slot>
@@ -26,12 +22,12 @@
 		--sidebar-width: var(--sidebar-expanded);
 
 		display: grid;
+		grid-template:
+			'side head' var(--header-height)
+			'side main' 1fr
+			/ var(--sidebar-width) 1fr;
 		width: 100%;
-		grid-template-columns: var(--sidebar-width) 1fr;
-		grid-template-rows: var(--header-height) 1fr;
-		grid-template-areas: 'side head' 'side main';
 		height: 100vh;
-
 		transition: grid-template-columns 0.3s ease;
 	}
 
@@ -41,11 +37,6 @@
 
 	.auth-header {
 		grid-area: head;
-		display: flex;
-		padding: var(--space-md);
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid var(--color-outline);
 	}
 
 	.auth-sidebar {

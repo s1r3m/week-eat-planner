@@ -54,11 +54,11 @@
 	}
 
 	.btn--icon {
-		padding: 0;
 		margin: 0;
-		font-size: var(--text-title-lg);
+		padding: 0;
 		border: none;
 		background: transparent;
+		font-size: var(--text-title-lg);
 	}
 
 	.btn--outline:not(:disabled):hover {

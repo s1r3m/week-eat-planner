@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 
 	css: [
 		'@/assets/styles/reset.css',
-		'@/assets/styles/tokens.css',
+		'@/assets/styles/variables.css',
 		'@/assets/styles/typography.scss',
 		'@/assets/styles/globals.scss',
 	],

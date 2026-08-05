@@ -15,13 +15,13 @@
 	.guest-header {
 		display: flex;
 		position: sticky;
-		inset: 0;
 		z-index: 30;
-		height: var(--header-height);
 		align-items: center;
 		justify-content: space-between;
+		height: var(--header-height);
 		padding: var(--space-md) 0;
 		border-bottom: 1px solid var(--color-outline);
+		inset: 0;
 		backdrop-filter: blur(16px);
 	}
 

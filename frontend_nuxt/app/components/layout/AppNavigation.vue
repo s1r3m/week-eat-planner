@@ -4,25 +4,26 @@
 	}>()
 
 	interface NavLink {
-		id: number
 		icon: string
+		id: number
 		title: string
 	}
 
 	const navLinks: NavLink[] = [
-		{ id: 1, icon: 'lucide:calendar-days', title: 'My Weeks' },
-		{ id: 2, icon: 'lucide:utensils', title: 'My Recipes' },
+		{ icon: 'lucide:calendar-days', id: 1, title: 'My Weeks' },
+		{ icon: 'lucide:utensils', id: 2, title: 'My Recipes' },
 	]
 </script>
 
 <template>
 	<div class="navigation">
 		<div
-			class="nav-link"
 			v-for="link in navLinks"
 			:key="link.id"
+			class="nav-link"
 		>
 			<Icon :name="link.icon" />
+
 			<span
 				class="nav-title"
 				:class="{ collapsed }"
@@ -40,15 +41,15 @@
 	}
 
 	.nav-title {
-		overflow: hidden;
-		white-space: nowrap;
-		opacity: 1;
 		max-width: 100%;
+		overflow: hidden;
 		transition: all 0.3s ease;
+		opacity: 1;
+		white-space: nowrap;
 	}
 
 	.collapsed {
-		opacity: 0;
 		max-width: 0;
+		opacity: 0;
 	}
 </style>
