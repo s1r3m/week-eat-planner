@@ -10,7 +10,7 @@ export default defineNuxtConfig({
 	],
 
 	imports: {
-		dirs: ['@/composables/**'],
+		dirs: ['@/composables/**', '@/api/*'],
 	},
 
 	devtools: { enabled: true },
