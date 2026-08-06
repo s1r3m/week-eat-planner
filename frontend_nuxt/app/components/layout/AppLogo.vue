@@ -25,7 +25,7 @@
 	</NuxtLink>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.app_logo {
 		display: flex;
 		align-items: center;

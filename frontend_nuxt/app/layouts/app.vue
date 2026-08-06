@@ -17,7 +17,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.layout {
 		--sidebar-width: var(--sidebar-expanded);
 

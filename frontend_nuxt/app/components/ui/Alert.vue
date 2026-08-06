@@ -44,7 +44,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.alert {
 		display: flex;
 		position: relative;

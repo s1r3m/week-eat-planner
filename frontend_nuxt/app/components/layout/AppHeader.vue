@@ -45,7 +45,7 @@
 	</header>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.app-header {
 		display: flex;
 		align-items: center;

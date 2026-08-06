@@ -23,7 +23,7 @@
 	</button>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.btn {
 		display: flex;
 		align-items: center;

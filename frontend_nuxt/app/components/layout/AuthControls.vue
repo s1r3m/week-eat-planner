@@ -24,7 +24,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.header-controls {
 		display: flex;
 		align-items: center;

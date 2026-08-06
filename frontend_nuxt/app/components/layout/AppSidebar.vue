@@ -15,7 +15,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.app-sidebar {
 		display: flex;
 		flex-direction: column;

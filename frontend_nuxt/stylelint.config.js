@@ -5,26 +5,13 @@ export default {
 		'stylelint-config-property-sort-order-smacss',
 	],
 
-	overrides: [
-		{
-			files: ['**/*.scss'],
-			customSyntax: 'postcss-scss',
-		},
-	],
-
 	plugins: ['stylelint-order'],
 
 	rules: {
 		'at-rule-no-unknown': [
 			true,
 			{
-				ignoreAtRules: [
-					'mixin',
-					'define-mixin',
-					'mixin-content',
-					'custom-media',
-					'media',
-				],
+				ignoreAtRules: ['custom-media', 'media'],
 			},
 		],
 

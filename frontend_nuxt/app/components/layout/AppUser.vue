@@ -17,7 +17,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.user-info {
 		display: flex;
 		align-items: center;
