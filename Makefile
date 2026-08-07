@@ -213,7 +213,7 @@ nuxt_style:
 
 ## @Nuxt Run fe unittests.
 nuxt_test:
-	cd $(NUXT_PATH) && bun test --coverage
+	cd $(NUXT_PATH) && bun run test:coverage
 
 ## ----------------------------------------------- Overall -------------------------------------------------------------
 lint: be_lint fe_lint

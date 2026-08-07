@@ -3,11 +3,9 @@ import { useSidebar } from '@/composables/layout/useSidebar'
 import { ref } from 'vue'
 
 // Mock useState
-const mockState = ref(false)
 // @ts-ignore
 globalThis.useState = (_key: string, init: () => any) => {
-	if (init) init()
-	return mockState
+	return ref(init ? init() : false)
 }
 
 // Mock readonly

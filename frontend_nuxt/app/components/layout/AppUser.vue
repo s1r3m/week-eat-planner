@@ -2,6 +2,8 @@
 	defineProps<{
 		collapsed: boolean
 	}>()
+
+	const authStore = useAuthStore()
 </script>
 
 <template>
@@ -9,10 +11,11 @@
 		<Icon name="lucide:circle-user" />
 
 		<p
+			v-if="authStore.user?.username"
 			class="user-info__name"
 			:class="{ collapsed }"
 		>
-			Jonh Doe
+			{{ authStore.user.username }}
 		</p>
 	</div>
 </template>

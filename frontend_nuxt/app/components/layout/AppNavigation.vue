@@ -45,20 +45,23 @@
 			:key="link.id"
 			class="nav__item"
 		>
-			<div class="nav__link">
+			<NuxtLink
+				class="nav__link"
+				:to="link.to"
+				:aria-label="link.title"
+			>
 				<Icon
 					v-if="link.icon"
 					:name="link.icon"
 				/>
 
-				<NuxtLink
+				<span
 					class="nav__title"
 					:class="{ collapsed }"
-					:to="link.to"
 				>
 					{{ link.title }}
-				</NuxtLink>
-			</div>
+				</span>
+			</NuxtLink>
 
 			<div
 				v-if="link.child?.length && !collapsed"
@@ -105,9 +108,22 @@
 	.nav__link {
 		display: flex;
 		align-items: center;
+		padding: var(--space-xs);
+		transition: all 0.3s ease;
+		border-radius: var(--radius-sm);
 		color: var(--color-on-surface-variant);
 		font-size: var(--text-title-lg);
+		text-decoration: none;
 		gap: var(--space-md);
+
+		&:hover {
+			color: var(--color-primary);
+		}
+
+		&.router-link-active {
+			background-color: var(--color-surface-variant);
+			color: var(--color-primary);
+		}
 	}
 
 	.nav__title {
@@ -115,14 +131,8 @@
 		overflow: hidden;
 		transition: all 0.3s ease;
 		opacity: 1;
-		color: var(--color-on-surface-variant);
-		text-decoration: none;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-
-		&:hover {
-			color: var(--color-primary);
-		}
 	}
 
 	.collapsed {
@@ -138,7 +148,10 @@
 	}
 
 	.nav__child-link {
+		padding: var(--space-xs) var(--space-sm);
 		overflow: hidden;
+		transition: all 0.3s ease;
+		border-radius: var(--radius-xs);
 		color: var(--color-on-surface-variant);
 		font-size: var(--text-body-lg);
 		text-decoration: none;
@@ -146,6 +159,11 @@
 		white-space: nowrap;
 
 		&:hover {
+			color: var(--color-primary);
+		}
+
+		&.router-link-exact-active {
+			background-color: var(--color-surface-variant);
 			color: var(--color-primary);
 		}
 	}

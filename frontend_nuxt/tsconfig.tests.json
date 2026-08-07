@@ -3,16 +3,16 @@
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
-		"paths": {
-			"@/*": ["./app/*"],
-			"~/*": ["./app/*"]
-		},
-		"types": ["bun-types", "node"],
 		"strict": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
+		"noEmit": true,
 		"allowImportingTsExtensions": true,
-		"noEmit": true
+		"types": ["bun-types", "node"],
+		"paths": {
+			"@/*": ["./app/*"],
+			"~/*": ["./app/*"]
+		}
 	},
 	"include": ["tests/**/*", ".nuxt/nuxt.d.ts"]
 }
