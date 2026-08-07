@@ -7,8 +7,10 @@ export const addWeekMutation = defineMutation(() => {
 			queryCache.cancelQueries({ key: WEEK_KEYS.all() })
 			const previousWeeks =
 				queryCache.getQueryData<IWeekPreview[]>(WEEK_KEYS.all()) || []
-			queryCache.setQueryData(WEEK_KEYS.all(), (old: IWeekPreview[] = []) => [
-				...old,
+			const oldWeeks =
+				queryCache.getQueryData<IWeekPreview[]>(WEEK_KEYS.all()) ?? []
+			queryCache.setQueryData(WEEK_KEYS.all(), [
+				...oldWeeks,
 				{
 					id: `temp-id-${crypto.randomUUID()}`,
 					user_id: 'temp-obj', // Consider adding a user to add to
@@ -29,9 +31,7 @@ export const addWeekMutation = defineMutation(() => {
 			if (context?.previousWeeks)
 				queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks)
 		},
-		onSuccess: (week: IWeekPreview) => {
-			console.log(`Week ${week.name} created successfully`)
-		},
+		onSuccess: () => {},
 		onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
 	}
 })
@@ -45,8 +45,11 @@ export const deleteWeekMutation = defineMutation(() => {
 			queryCache.cancelQueries({ key: WEEK_KEYS.all() })
 			const previousWeeks =
 				queryCache.getQueryData<IWeekPreview[]>(WEEK_KEYS.all()) || []
-			queryCache.setQueryData(WEEK_KEYS.all(), (old: IWeekPreview[] = []) =>
-				old.filter((week: IWeekPreview) => week.id !== id),
+			const oldWeeks =
+				queryCache.getQueryData<IWeekPreview[]>(WEEK_KEYS.all()) ?? []
+			queryCache.setQueryData(
+				WEEK_KEYS.all(),
+				oldWeeks.filter((week) => week.id !== id),
 			)
 			return { previousWeeks }
 		},
@@ -59,7 +62,7 @@ export const deleteWeekMutation = defineMutation(() => {
 				queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks)
 			console.error(`Failed to delete week: ${error.message}`)
 		},
-		onSuccess: () => console.log(`Week deleted successfully`),
+		onSuccess: () => {},
 		onSettled: (
 			_: undefined,
 			_error: Error | undefined,
