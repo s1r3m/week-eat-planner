@@ -8,6 +8,6 @@
 	<div class="page-container">
 		<h1>My Recipes</h1>
 
-		<p>It's comming soon</p>
+		<p>It's coming soon</p>
 	</div>
 </template>

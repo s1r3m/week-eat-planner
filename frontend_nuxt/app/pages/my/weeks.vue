@@ -1,30 +1,36 @@
 <script setup lang="ts">
+	import { addWeekMutation } from '~/api/weeks/mutations'
+
 	definePageMeta({
 		layout: 'app',
 	})
 
-	const { getWeeks } = useWeeksApi()
-
 	const {
 		data: weeks,
 		error,
-		pending,
+		isLoading: isLoadingWeeks,
 		refresh,
-	} = useAsyncData('weeks', () => {
-		return new Promise<IWeekPreview[]>((resolve) => {
-			setTimeout(() => {
-				resolve(getWeeks())
-			}, 1000)
-		})
-	})
+	} = useQuery(getWeeksQuery())
+	const { mutate: create, isLoading: isCreating } =
+		useMutation(addWeekMutation())
 </script>
 
 <template>
 	<div class="page-container">
-		<PageTitle />
+		<PageTitle name="My Weeks">
+			<template #controls>
+				<UiButton
+					:disabled="isCreating"
+					@click="create({ name: 'new week' })"
+				>
+					<Icon name="lucide:plus" />
+					Create week
+				</UiButton>
+			</template>
+		</PageTitle>
 
 		<PageLoadingState
-			v-if="pending"
+			v-if="!weeks?.length && isLoadingWeeks"
 			name="weeks"
 		/>
 
@@ -35,14 +41,9 @@
 			@repeat="refresh"
 		/>
 
-		<PageEmptyState
-			v-else-if="!weeks?.length"
-			name="weeks"
-		/>
-
-		<WeeksGrid
+		<WeekGrid
 			v-else
-			:weeks="weeks"
+			:weeks="weeks ?? []"
 		/>
 	</div>
 </template>

@@ -16,6 +16,8 @@
 	"dependencies": {
 		"@nuxt/eslint": "^1.16.0",
 		"@nuxt/icon": "^2.3.1",
+		"@pinia/colada": "^1.4.2",
+		"@pinia/colada-nuxt": "^1.0.2",
 		"@pinia/nuxt": "^1.0.1",
 		"@vee-validate/zod": "^4.15.1",
 		"eslint": "^10.8.0",

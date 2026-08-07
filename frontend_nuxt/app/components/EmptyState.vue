@@ -26,7 +26,7 @@
 		gap: var(--space-lg);
 		align-items: center;
 		padding: var(--space-md);
-		border: 1px solid var(--color-outline);
+		border: 1px solid var(--color-primary);
 		border-radius: var(--radius-md);
 		background-color: var(--color-surface-variant);
 	}

@@ -10,12 +10,12 @@ export default defineNuxtConfig({
 	],
 
 	imports: {
-		dirs: ['@/composables/**', '@/api/*'],
+		dirs: ['@/composables/**', '@/api/**'],
 	},
 
 	devtools: { enabled: true },
 
-	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt'],
+	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt', '@pinia/colada-nuxt'],
 
 	app: {
 		head: {
