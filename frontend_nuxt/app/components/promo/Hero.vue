@@ -35,7 +35,7 @@
 	</section>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.hero-container {
 		display: flex;
 		flex-direction: column;

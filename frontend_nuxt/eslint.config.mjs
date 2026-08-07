@@ -86,6 +86,10 @@ export default withNuxt(
 
 				'vue/html-indent': ['warn', 'tab'],
 
+				'perfectionist/sort-objects': 'off',
+
+				'perfectionist/sort-interfaces': 'off',
+
 				'vue/html-self-closing': [
 					'warn',
 					{
@@ -126,6 +130,14 @@ export default withNuxt(
 						project: ['./.nuxt/tsconfig.app.json'],
 					}),
 				],
+			},
+		},
+
+		{
+			files: ['app/api/**/*.{ts,js,mjs}'],
+			name: 'app/api-naming-override',
+			rules: {
+				camelcase: 'off',
 			},
 		},
 

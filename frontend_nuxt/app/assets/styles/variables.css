@@ -33,10 +33,10 @@
 	--font-weight-bold: 700;
 
 	/* Letter Spacing */
-	--tracking-tight: -0.025em;
-	--tracking-normal: 0em;
-	--tracking-wide: 0.025em;
-	--tracking-wider: 0.05em;
+	--tracking-tight: -0.025rem;
+	--tracking-normal: 0rem;
+	--tracking-wide: 0.025rem;
+	--tracking-wider: 0.05rem;
 
 	--space-xs: calc(var(--spacing) * 1.5);
 	--space-sm: calc(var(--spacing) * 2);
@@ -70,6 +70,11 @@
 	--radius-lg: 1rem;
 	--radius-xl: 1.75rem;
 	--radius-full: 9999px;
+
+	/* Layouts */
+	--header-height: 64px;
+	--sidebar-expanded: 235px;
+	--sidebar-collapsed: 60px;
 }
 
 @media (prefers-color-scheme: dark) {

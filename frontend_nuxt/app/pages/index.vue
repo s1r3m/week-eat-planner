@@ -4,7 +4,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.promo-page {
 		display: flex;
 		flex-direction: column;

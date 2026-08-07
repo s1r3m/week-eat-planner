@@ -88,4 +88,4 @@ jobs:
 
       - name: Run fe unittests
         run: |
-          cd frontend_nuxt && bun test --coverage
+          cd frontend_nuxt && bun run test:coverage

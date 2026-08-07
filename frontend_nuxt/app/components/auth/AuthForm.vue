@@ -25,7 +25,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.card {
 		display: flex;
 		flex-direction: column;

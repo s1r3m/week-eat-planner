@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	type ButtonType = 'button' | 'submit'
-	type ButtonVariant = 'outline' | 'primary' | 'secondary'
+	type ButtonVariant = 'danger' | 'icon' | 'outline' | 'primary'
 
 	const {
 		disabled = false,
@@ -23,7 +23,7 @@
 	</button>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.btn {
 		display: flex;
 		align-items: center;
@@ -43,14 +43,24 @@
 		color: var(--color-on-primary);
 	}
 
-	.btn--secondary {
-		background-color: var(--color-secondary);
+	.btn--danger {
+		border: 1px solid var(--color-error);
+		background-color: var(--color-error);
+		color: var(--color-on-error);
 	}
 
 	.btn--outline {
 		border: 1px solid var(--color-primary);
 		background-color: var(--color-surface);
 		color: var(--color-primary);
+	}
+
+	.btn--icon {
+		margin: 0;
+		padding: 0;
+		border: none;
+		background: transparent;
+		font-size: var(--text-title-lg);
 	}
 
 	.btn--outline:not(:disabled):hover {

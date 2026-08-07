@@ -10,7 +10,7 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.layout-container {
 		display: flex;
 		flex-direction: column;

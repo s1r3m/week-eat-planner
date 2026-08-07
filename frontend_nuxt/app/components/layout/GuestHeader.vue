@@ -11,16 +11,16 @@
 	</header>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.guest-header {
 		display: flex;
 		position: sticky;
-		inset: 0;
 		z-index: 30;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-md);
+		height: var(--header-height);
 		border-bottom: 1px solid var(--color-outline);
+		inset: 0;
 		backdrop-filter: blur(16px);
 	}
 

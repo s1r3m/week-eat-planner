@@ -9,7 +9,7 @@
 	</footer>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.guest-footer {
 		display: flex;
 		align-items: center;

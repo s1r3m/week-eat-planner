@@ -31,11 +31,11 @@
 			:placeholder="placeholder"
 		/>
 
-		<button
+		<UiButton
 			v-if="type === 'password'"
+			variant="icon"
 			aria-label="Toggle password visibility"
 			:aria-pressed="revealed"
-			type="button"
 			@click="revealed = !revealed"
 		>
 			<Icon
@@ -47,11 +47,11 @@
 				v-else
 				name="lucide:eye-closed"
 			/>
-		</button>
+		</UiButton>
 	</div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.container {
 		position: relative;
 	}

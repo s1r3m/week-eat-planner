@@ -12,7 +12,7 @@
 	</p>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 	.badge {
 		display: inline-flex;
 		align-items: center;

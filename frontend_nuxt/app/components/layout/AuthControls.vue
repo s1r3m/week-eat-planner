@@ -6,7 +6,7 @@
 </script>
 
 <template>
-	<div class="controls-container">
+	<div class="header-controls">
 		<UiButton
 			v-if="showLogin"
 			variant="outline"
@@ -24,10 +24,11 @@
 	</div>
 </template>
 
-<style scoped lang="scss">
-	.controls-container {
+<style scoped>
+	.header-controls {
 		display: flex;
 		align-items: center;
+		padding: var(--space-md);
 		column-gap: var(--space-md);
 	}
 </style>

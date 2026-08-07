@@ -4,18 +4,18 @@ export default defineNuxtConfig({
 
 	css: [
 		'@/assets/styles/reset.css',
-		'@/assets/styles/tokens.css',
-		'@/assets/styles/typography.scss',
-		'@/assets/styles/globals.scss',
+		'@/assets/styles/variables.css',
+		'@/assets/styles/typography.css',
+		'@/assets/styles/globals.css',
 	],
 
 	imports: {
-		dirs: ['@/composables/**'],
+		dirs: ['@/composables/**', '@/api/**'],
 	},
 
 	devtools: { enabled: true },
 
-	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt'],
+	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt', '@pinia/colada-nuxt'],
 
 	app: {
 		head: {
