@@ -1,13 +1,16 @@
 <script setup lang="ts">
 	definePageMeta({
+		middleware: 'auth',
 		layout: 'app',
 	})
 </script>
 
 <template>
 	<div class="page-container">
-		<h1>My Recipes</h1>
+		<PageTitle name="My Recipes" />
 
-		<p>It's coming soon</p>
+		<div>
+			<p>It's coming soon</p>
+		</div>
 	</div>
 </template>

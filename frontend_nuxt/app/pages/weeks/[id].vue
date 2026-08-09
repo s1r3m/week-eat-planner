@@ -1,0 +1,56 @@
+<script setup lang="ts">
+	definePageMeta({
+		middleware: 'shared',
+	})
+
+	const route = useRoute()
+	const authStore = useAuthStore()
+	const { mutate: remove } = useMutation(deleteWeekMutation())
+	const {
+		data: week,
+		error,
+		refetch,
+	} = useQuery(getWeekQuery(route.params.id as string))
+
+	const onDelete = async (weekId: string) => {
+		remove(weekId)
+		return await navigateTo({ name: 'my-weeks' })
+	}
+</script>
+
+<template>
+	<div class="page-container">
+		<PageTitle name="Week">
+			<template
+				v-if="authStore.isAuthenticated"
+				#controls
+			>
+				<UiButton
+					variant="danger"
+					:disabled="!week"
+					@click="onDelete(week?.id as string)"
+				>
+					<Icon name="lucide:trash" />
+					Delete week
+				</UiButton>
+			</template>
+		</PageTitle>
+
+		<PageLoadingState
+			v-if="!week"
+			name="weeks"
+		/>
+
+		<PageErrorState
+			v-else-if="error"
+			name="weeks"
+			:error="error"
+			@repeat="refetch"
+		/>
+
+		<WeekSlotGrid
+			v-else
+			:week="week"
+		/>
+	</div>
+</template>

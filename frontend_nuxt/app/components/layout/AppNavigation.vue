@@ -26,7 +26,7 @@
 				id: week.id,
 				title: week.name,
 				inactive: week.__pending,
-				to: { name: 'my-weeks' },
+				to: { name: 'weeks-id', params: { id: week.id } },
 			})),
 		},
 		{

@@ -7,6 +7,7 @@ export const useWeeksApi = () => {
 		},
 		deleteWeek: (weekId: string) =>
 			$api<undefined>(`/weeks/${weekId}`, { method: 'DELETE' }),
+		getWeek: async (weekId: string) => $api<IWeek>(`/weeks/${weekId}`),
 		getWeeks: async () => {
 			return $api<IWeekPreview[]>('/weeks')
 		},

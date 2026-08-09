@@ -3,8 +3,6 @@
 		pending?: boolean
 		week: IWeekPreview
 	}>()
-
-	const { mutate: remove } = useMutation(deleteWeekMutation())
 </script>
 
 <template>
@@ -12,7 +10,7 @@
 		<div
 			class="weeks-grid__card-content"
 			aria-disabled="true"
-			@click="remove(week.id)"
+			@click="navigateTo({ name: 'weeks-id', params: { id: week.id } })"
 		>
 			<div class="weeks_grid__card-bg"></div>
 
