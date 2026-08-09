@@ -51,4 +51,22 @@ describe('useWeeksApi', () => {
 			expect(result).toEqual(mockResponse)
 		})
 	})
+
+	describe('getWeek', () => {
+		it('calls the /weeks/{id} with GET method', async () => {
+			const weekId = '1'
+			const mockResponse = {
+				id: weekId,
+				name: 'Week 1',
+				user_id: 'user1',
+				week_days: [{ name: 'MONDAY', meal_slots: [] }],
+			}
+			mockApi.mockResolvedValue(mockResponse)
+
+			const result = await weeksApi.getWeek(weekId)
+
+			expect(mockApi).toHaveBeenCalledWith(`/weeks/${weekId}`)
+			expect(result).toEqual(mockResponse)
+		})
+	})
 })
