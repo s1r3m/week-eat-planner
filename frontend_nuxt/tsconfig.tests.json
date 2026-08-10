@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"composite": true,
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
@@ -14,5 +15,5 @@
 			"~/*": ["./app/*"]
 		}
 	},
-	"include": ["tests/**/*", ".nuxt/nuxt.d.ts"]
+	"include": ["app/**/*", "tests/**/*", ".nuxt/nuxt.d.ts"]
 }

@@ -7,9 +7,9 @@ const mockConfig = {
 	},
 }
 const mockHeaders = { cookie: 'test-cookie' }
-const mockFetch = mock()
-// @ts-ignore
+const mockFetch = mock() as any
 mockFetch.create = mock(() => mockFetch)
+mockFetch.raw = mock()
 
 // @ts-ignore
 globalThis.defineNuxtPlugin = (fn: any) => fn
@@ -31,8 +31,13 @@ const plugin = (await import('@/plugins/api')).default
 describe('api plugin', () => {
 	beforeEach(() => {
 		mockFetch.mockClear()
-		// @ts-ignore
 		mockFetch.create.mockClear()
+		mockFetch.raw.mockClear()
+		// Reset implementations to default
+		mockFetch.mockImplementation(() => Promise.resolve({}))
+		mockFetch.raw.mockImplementation(() =>
+			Promise.resolve({ headers: { getSetCookie: () => [] } }),
+		)
 		// @ts-ignore
 		globalThis.useRequestEvent.mockClear()
 		// @ts-ignore
@@ -52,7 +57,7 @@ describe('api plugin', () => {
 
 	describe('$api wrapper', () => {
 		it('performs a successful request', async () => {
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 			mockFetch.mockResolvedValue({ data: 'ok' })
 
@@ -63,7 +68,7 @@ describe('api plugin', () => {
 		})
 
 		it('refreshes token on 401 and retries the request', async () => {
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 
 			// 1. Initial request fails with 401
@@ -73,7 +78,7 @@ describe('api plugin', () => {
 			mockFetch.mockRejectedValueOnce(error401)
 
 			// 2. Refresh tokens succeeds
-			mockFetch.mockResolvedValueOnce({
+			mockFetch.raw.mockResolvedValueOnce({
 				headers: {
 					getSetCookie: () => [],
 				},
@@ -85,17 +90,18 @@ describe('api plugin', () => {
 			const result = await $api('/test')
 
 			expect(result).toEqual({ data: 'retried' })
-			// Check calls: 1. /test, 2. /auth/refresh, 3. /test (retry)
-			expect(mockFetch).toHaveBeenCalledTimes(3)
+			// Check calls: 1. /test, 2. /auth/refresh (via raw), 3. /test (retry)
+			expect(mockFetch).toHaveBeenCalledTimes(2)
 			expect(mockFetch.mock.calls[0][0]).toBe('/test')
-			expect(mockFetch.mock.calls[1][0]).toBe('/auth/refresh')
-			expect(mockFetch.mock.calls[1][1].method).toBe('POST')
-			expect(mockFetch.mock.calls[2][0]).toBe('/test')
-			expect(mockFetch.mock.calls[2][1]._retry).toBe(true)
+			expect(mockFetch.raw).toHaveBeenCalledTimes(1)
+			expect(mockFetch.raw.mock.calls[0][0]).toBe('/auth/refresh')
+			expect(mockFetch.raw.mock.calls[0][1].method).toBe('POST')
+			expect(mockFetch.mock.calls[1][0]).toBe('/test')
+			expect(mockFetch.mock.calls[1][1]._retry).toBe(true)
 		})
 
 		it('does not refresh on 401 for auth requests', async () => {
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 
 			const error401 = {
@@ -112,21 +118,25 @@ describe('api plugin', () => {
 		})
 
 		it('coalesces concurrent refreshes', async () => {
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 
 			const error401 = {
 				response: new Response(null, { status: 401 }),
 			}
 
-			// Mock /auth/refresh with a delay
+			// Mock /auth/refresh with a delay via mockFetch.raw
 			let refreshCalled = 0
-			mockFetch.mockImplementation(async (url: string, options: any) => {
+			mockFetch.raw.mockImplementation(async (url: string) => {
 				if (url === '/auth/refresh') {
 					refreshCalled++
 					await new Promise((resolve) => setTimeout(resolve, 50))
 					return { headers: { getSetCookie: () => [] } }
 				}
+				return {}
+			})
+
+			mockFetch.mockImplementation(async (url: string, options: any) => {
 				if ((url === '/test1' || url === '/test2') && !options?._retry) {
 					throw error401
 				}
@@ -146,16 +156,16 @@ describe('api plugin', () => {
 		})
 
 		it('throws original error if refresh fails', async () => {
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 
 			const error401 = {
 				response: new Response(null, { status: 401 }),
 			}
 			mockFetch.mockRejectedValueOnce(error401) // initial
-			mockFetch.mockRejectedValueOnce(new Error('Refresh failed')) // refresh
+			mockFetch.raw.mockRejectedValueOnce(new Error('Refresh failed')) // refresh
 
-			await expect($api('/test')).rejects.toThrow('Refresh failed')
+			await expect($api('/test')).rejects.toEqual(error401)
 		})
 
 		it('synchronizes cookies on server-side during refresh', async () => {
@@ -172,7 +182,7 @@ describe('api plugin', () => {
 			// @ts-ignore
 			globalThis.useRequestEvent.mockReturnValue(mockEvent)
 
-			const { provide } = plugin() as any
+			const { provide } = plugin({} as any) as any
 			const $api = provide.api
 
 			const error401 = {
@@ -182,7 +192,7 @@ describe('api plugin', () => {
 
 			// Refresh with cookies
 			const mockSetCookies = ['token=new; Path=/; HttpOnly', 'other=val']
-			mockFetch.mockResolvedValueOnce({
+			mockFetch.raw.mockResolvedValueOnce({
 				headers: {
 					getSetCookie: () => mockSetCookies,
 				},
