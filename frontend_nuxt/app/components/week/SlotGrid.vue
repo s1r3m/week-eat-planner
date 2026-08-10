@@ -1,5 +1,17 @@
 <script setup lang="ts">
 	defineProps<{ week: IWeek }>()
+
+	const mealTypeOrder: Record<MealType, number> = {
+		BREAKFAST: 0,
+		LUNCH: 1,
+		DINNER: 3,
+		SNACK: 2,
+	}
+	const sortSlots = (slots: IMealSlot[]) => {
+		return [...slots].sort(
+			(a, b) => mealTypeOrder[a.meal_type] - mealTypeOrder[b.meal_type],
+		)
+	}
 </script>
 
 <template>
@@ -13,7 +25,7 @@
 
 			<div class="meal-slot-grid__day-block">
 				<WeekSlotCard
-					v-for="slot in day.slots"
+					v-for="slot in sortSlots(day.slots)"
 					:key="slot.id"
 					:meal-slot="slot"
 				/>
@@ -26,10 +38,7 @@
 	.meal-slot-grid {
 		display: flex;
 		flex-direction: column;
-		margin: var(--space-md) 0;
-		padding: var(--space-md);
-		border: 1px solid var(--color-outline);
-		border-radius: var(--radius-md);
+		margin-top: var(--space-lg);
 		gap: var(--space-lg);
 	}
 
@@ -38,11 +47,13 @@
 		flex-direction: column;
 		padding: var(--space-md);
 		border: 1px solid var(--color-outline);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-lg);
+		background-color: var(--color-surface-variant);
+		gap: var(--space-lg);
 	}
 
 	.meal-slot-grid__day-title {
-		text-align: center;
+		text-align: left;
 	}
 
 	.meal-slot-grid__day-block {

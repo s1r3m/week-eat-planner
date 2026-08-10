@@ -11,7 +11,7 @@ export interface IMealSlot {
 	id: string
 	meal_type: MealType
 	day_of_week: DayOfWeek
-	recipe: null
+	recipe: IRecipe | null
 }
 
 export interface IWeek extends IWeekPreview {

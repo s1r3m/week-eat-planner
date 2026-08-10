@@ -45,8 +45,8 @@
 
 	.btn--danger {
 		border: 1px solid var(--color-error);
-		background-color: var(--color-error);
-		color: var(--color-on-error);
+		background-color: var(--color-surface);
+		color: var(--color-error);
 	}
 
 	.btn--outline {

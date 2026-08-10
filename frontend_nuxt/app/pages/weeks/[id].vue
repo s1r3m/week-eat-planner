@@ -19,12 +19,20 @@
 </script>
 
 <template>
-	<div class="page-container">
-		<PageTitle name="Week">
+	<div
+		v-if="week"
+		class="page-container"
+	>
+		<PageTitle :name="week?.name">
 			<template
 				v-if="authStore.isAuthenticated"
 				#controls
 			>
+				<UiButton>
+					<Icon name="lucide:shopping-cart" />
+					Groceries
+				</UiButton>
+
 				<UiButton
 					variant="danger"
 					:disabled="!week"

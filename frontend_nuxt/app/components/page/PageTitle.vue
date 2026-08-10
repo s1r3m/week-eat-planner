@@ -6,7 +6,7 @@
 
 <template>
 	<div class="page-title">
-		<h1 class="page-title__name">{{ name }}</h1>
+		<h2 class="page-title__name">{{ name }}</h2>
 
 		<div class="page-title__controls">
 			<slot name="controls"></slot>
