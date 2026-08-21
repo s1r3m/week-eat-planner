@@ -58,7 +58,7 @@ describe('getWeekQuery', () => {
 
 		const result = await getWeekQuery('123').query()
 
-		expect(mockGetWeek).toHaveBeenCalled()
+		expect(mockGetWeek).toHaveBeenCalledWith('123')
 		expect(result).toEqual(mockData)
 	})
 })

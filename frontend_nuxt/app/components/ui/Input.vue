@@ -8,7 +8,7 @@
 	} = defineProps<{
 		autocomplete?: string
 		id: string
-		name: string
+		name?: string
 		placeholder?: string
 		type?: 'password' | 'text'
 	}>()

@@ -6,12 +6,12 @@
 </script>
 
 <template>
-	<NuxtLink :to="{ name: 'weeks-id', params: { id: week.id } }">
+	<NuxtLink
+		:to="{ name: 'weeks-id', params: { id: week.id } }"
+		:aria-disabled="week.__pending || undefined"
+	>
 		<div class="weeks-grid__card">
-			<div
-				class="weeks-grid__card-content"
-				aria-disabled="true"
-			>
+			<div class="weeks-grid__card-content">
 				<div class="weeks_grid__card-bg"></div>
 
 				<h2 class="weeks-grid__card-name">{{ week.name }}</h2>

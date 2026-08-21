@@ -30,9 +30,9 @@
 		justify-content: center;
 		padding: var(--space-xs) var(--space-lg);
 		column-gap: var(--space-md);
-		transition: all 0.3s ease;
+		transition: background-color 0.2s ease;
 		border-radius: var(--radius-xl);
-		font-size: var(--line-height-button);
+		font-size: var(--font-size-button);
 		font-weight: var(--font-weight-regular);
 		letter-spacing: var(--tracking-normal);
 	}

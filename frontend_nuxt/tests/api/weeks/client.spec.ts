@@ -63,7 +63,7 @@ describe('useWeeksApi', () => {
 				id: weekId,
 				name: 'Week 1',
 				user_id: 'user1',
-				week_days: [{ name: 'MONDAY', meal_slots: [] }],
+				week_days: [{ name: 'MONDAY', slots: [] }],
 			}
 			mockApi.mockResolvedValue(mockResponse)
 

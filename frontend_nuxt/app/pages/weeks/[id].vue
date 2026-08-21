@@ -5,7 +5,7 @@
 
 	const route = useRoute()
 	const authStore = useAuthStore()
-	const { mutate: remove } = useMutation(deleteWeekMutation())
+	const { mutateAsync: remove } = useMutation(deleteWeekMutation())
 	const {
 		data: week,
 		error,
@@ -13,7 +13,12 @@
 	} = useQuery(getWeekQuery(route.params.id as string))
 
 	const onDelete = async (weekId: string) => {
-		remove(weekId)
+		try {
+			await remove(weekId)
+		} catch (error: unknown) {
+			console.error('An error during delete: ', error)
+			return
+		}
 		return await navigateTo({ name: 'my-weeks' })
 	}
 </script>
