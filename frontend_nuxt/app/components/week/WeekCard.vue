@@ -9,19 +9,19 @@
 	<NuxtLink
 		:to="{ name: 'weeks-id', params: { id: week.id } }"
 		:aria-disabled="pending || undefined"
-		:class="{ 'weeks-grid__link--disabled': pending }"
+		:class="{ 'week-card__link--disabled': pending }"
 		:tabindex="pending ? -1 : undefined"
 	>
-		<div class="weeks-grid__card">
-			<div class="weeks-grid__card-content">
-				<div class="weeks_grid__card-bg"></div>
+		<div class="week-card">
+			<div class="week-card__content">
+				<div class="week-card__bg"></div>
 
-				<h2 class="weeks-grid__card-name">{{ week.name }}</h2>
+				<h2 class="week-card__name">{{ week.name }}</h2>
 			</div>
 
 			<div
 				v-if="pending"
-				class="weeks-grid__card-blocker"
+				class="week-card__blocker"
 				aria-hidden="true"
 			>
 				<span class="spinner"></span>
@@ -31,17 +31,17 @@
 </template>
 
 <style scoped>
-	.weeks-grid__card {
+	.week-card {
 		display: grid;
 		isolation: isolate;
 	}
 
-	.weeks-grid__card-content,
-	.weeks-grid__card-blocker {
+	.week-card__content,
+	.week-card__blocker {
 		grid-area: 1 / 1;
 	}
 
-	.weeks-grid__card-content {
+	.week-card__content {
 		display: grid;
 		width: 100%;
 		height: 240px;
@@ -53,7 +53,7 @@
 		isolation: isolate;
 	}
 
-	.weeks-grid__card-blocker {
+	.week-card__blocker {
 		display: flex;
 		z-index: 1;
 		align-items: center;
@@ -62,18 +62,17 @@
 		cursor: not-allowed;
 	}
 
-	.weeks_grid__card-bg {
+	.week-card__bg {
 		grid-area: 1 / 1;
 		width: 100%;
 		height: 100%;
 		background: color-mix(in oklab, var(--color-primary) 30%, white);
 	}
 
-	.weeks-grid__card-name {
+	.week-card__name {
 		position: relative;
 		grid-area: 1 / 1;
 		align-self: end;
-		margin: 0;
 		padding: var(--space-md);
 		background: rgb(255 255 255 / 45%);
 		color: var(--color-text);
@@ -96,7 +95,7 @@
 		}
 	}
 
-	.weeks-grid__link--disabled {
+	.week-card__link--disabled {
 		cursor: not-allowed;
 		pointer-events: none;
 	}

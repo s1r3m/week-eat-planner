@@ -36,7 +36,7 @@
 				<UiButton aria-label="Groceries">
 					<Icon name="lucide:shopping-cart" />
 
-					<span class="button-label">Groceries</span>
+					<span class="page-title__button-label">Groceries</span>
 				</UiButton>
 
 				<UiButton
@@ -47,7 +47,7 @@
 				>
 					<Icon name="lucide:trash" />
 
-					<span class="button-label">Delete week</span>
+					<span class="page-title__button-label">Delete week</span>
 				</UiButton>
 			</template>
 		</PageTitle>
@@ -72,12 +72,12 @@
 </template>
 
 <style scoped>
-	.button-label {
+	.page-title__button-label {
 		display: none;
 	}
 
 	@media (width > 768px) {
-		.button-label {
+		.page-title__button-label {
 			display: inline;
 		}
 	}
