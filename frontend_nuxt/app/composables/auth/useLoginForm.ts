@@ -14,7 +14,6 @@ export const useLoginForm = () => {
 		serverError.value = null
 
 		try {
-			serverError.value = null
 			await authStore.login({
 				password: values.password,
 				username: values.email,
@@ -28,8 +27,11 @@ export const useLoginForm = () => {
 				'data' in error &&
 				error.data
 			) {
-				const body = error.data as ErrorResponse
-				serverError.value = body.detail
+				const body = error.data as Partial<ErrorResponse>
+				serverError.value =
+					typeof body.detail === 'string' && body.detail
+						? body.detail
+						: 'Something went wrong'
 			} else {
 				serverError.value = 'Something went wrong'
 			}

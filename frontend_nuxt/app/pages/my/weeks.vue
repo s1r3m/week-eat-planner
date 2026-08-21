@@ -1,7 +1,6 @@
 <script setup lang="ts">
-	import { addWeekMutation } from '~/api/weeks/mutations'
-
 	definePageMeta({
+		middleware: 'auth',
 		layout: 'app',
 	})
 
@@ -9,7 +8,7 @@
 		data: weeks,
 		error,
 		isLoading: isLoadingWeeks,
-		refresh,
+		refetch,
 	} = useQuery(getWeeksQuery())
 	const { mutate: create, isLoading: isCreating } =
 		useMutation(addWeekMutation())
@@ -38,7 +37,7 @@
 			v-else-if="error"
 			name="weeks"
 			:error="error"
-			@repeat="refresh"
+			@repeat="refetch"
 		/>
 
 		<WeekGrid

@@ -88,7 +88,7 @@ migrations: $(VENV_ACTIVATE) $(ENV_FILE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
-start: stop minio migrations
+start: minio migrations
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 minio:
@@ -115,7 +115,7 @@ db_dump:
 	$(DOCKER_COMPOSE) exec -T db pg_dump -U wep -d wep > wep_db.bck.sql
 
 ## @App Restore database from file.
-db_restore:
+db_restore: $(ENV_FILE) run_db
 	$(DOCKER_COMPOSE) exec -T db psql -v ON_ERROR_STOP=1 -U wep -d wep < wep_db.bck.sql
 
 ## @App Drop and recreate public schema (Wipes all data!).

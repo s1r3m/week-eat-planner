@@ -26,7 +26,7 @@
 				id: week.id,
 				title: week.name,
 				inactive: week.__pending,
-				to: { name: 'my-weeks' },
+				to: { name: 'weeks-id', params: { id: week.id } },
 			})),
 		},
 		{
@@ -110,14 +110,13 @@
 		align-items: center;
 		padding: var(--space-xs);
 		transition: all 0.3s ease;
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius-xl);
 		color: var(--color-on-surface-variant);
-		font-size: var(--text-title-lg);
-		text-decoration: none;
+		font-size: var(--font-size-body);
 		gap: var(--space-md);
 
 		&:hover {
-			color: var(--color-primary);
+			background-color: var(--color-surface-variant);
 		}
 
 		&.router-link-active {
@@ -144,21 +143,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-xs);
-		padding-left: calc(1.5rem + var(--space-md));
+		padding-left: var(--space-xl);
 	}
 
 	.nav__child-link {
 		padding: var(--space-xs) var(--space-sm);
 		overflow: hidden;
 		transition: all 0.3s ease;
-		border-radius: var(--radius-xs);
+		border-radius: var(--radius-xl);
 		color: var(--color-on-surface-variant);
-		font-size: var(--text-body-lg);
 		text-decoration: none;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 
 		&:hover {
+			background-color: var(--color-surface-variant);
 			color: var(--color-primary);
 		}
 

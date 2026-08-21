@@ -2,10 +2,10 @@
 	<header class="guest-header">
 		<LayoutAppLogo />
 
-		<LayoutAuthControls class="desktop-only" />
+		<LayoutAuthControls class="guest-header__controls" />
 
 		<Icon
-			class="mobile-only"
+			class="guest-header__mobile-controls"
 			name="lucide:menu"
 		/>
 	</header>
@@ -24,20 +24,20 @@
 		backdrop-filter: blur(16px);
 	}
 
-	.mobile-only {
+	.guest-header__mobile-controls {
 		display: block;
 	}
 
-	.desktop-only {
+	.guest-header__controls {
 		display: none;
 	}
 
 	@media (width >= 768px) {
-		.mobile-only {
+		.guest-header__mobile-controls {
 			display: none;
 		}
 
-		.desktop-only {
+		.guest-header__controls {
 			display: flex;
 		}
 	}

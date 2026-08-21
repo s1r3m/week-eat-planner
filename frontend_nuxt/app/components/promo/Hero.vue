@@ -38,7 +38,7 @@
 <style scoped>
 	.hero-container {
 		display: flex;
-		flex-direction: column;
+		flex-direction: column-reverse;
 		margin-top: var(--space-lg);
 		row-gap: var(--space-2xl);
 	}
@@ -80,13 +80,13 @@
 		}
 
 		.description {
-			font-size: var(--text-body-lg);
+			font-size: var(--font-size-title);
 			line-height: 2;
 			text-align: left;
 		}
 
 		h2 {
-			font-size: var(--text-headline-xl);
+			font-size: var(--font-size-hero);
 			line-height: 1.5;
 			text-align: left;
 		}

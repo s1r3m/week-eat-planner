@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { useUserApi } from '@/api/user'
 
 const mockApi = mock()
@@ -9,6 +9,10 @@ globalThis.useNuxtApp = () => ({
 })
 
 describe('useUserApi', () => {
+	beforeEach(() => {
+		mockApi.mockClear()
+	})
+
 	const userApi = useUserApi()
 
 	describe('getUser', () => {

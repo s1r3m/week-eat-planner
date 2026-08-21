@@ -25,6 +25,7 @@
 		<AuthForm
 			id="singup-form"
 			header="Register"
+			description="Create your account"
 			@submit="onSubmit"
 		>
 			<UiAlert

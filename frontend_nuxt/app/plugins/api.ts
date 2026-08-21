@@ -10,7 +10,7 @@ export default defineNuxtPlugin(() => {
 	})
 
 	const refreshTokens = async () => {
-		const response = await $fetch<Response>('/auth/refresh', {
+		const response = await $fetch.raw('/auth/refresh', {
 			baseURL: config.public.apiBase,
 			credentials: 'include',
 			headers,
@@ -37,14 +37,8 @@ export default defineNuxtPlugin(() => {
 		}
 	}
 
-	const isUnauthorized = (error: unknown): boolean => {
-		return (
-			typeof error === 'object' &&
-			error !== null &&
-			'response' in error &&
-			error.response instanceof Response &&
-			error.response.status === 401
-		)
+	const isUnauthorized = (error: any): boolean => {
+		return error?.status === 401 || error?.response?.status === 401
 	}
 
 	const isAuthRequest = (request: Parameters<typeof api>[0]): boolean => {
@@ -73,7 +67,11 @@ export default defineNuxtPlugin(() => {
 				})()
 			}
 
-			await refreshPromise
+			try {
+				await refreshPromise
+			} catch {
+				throw error
+			}
 
 			return api(request, { ...options, _retry: true })
 		}

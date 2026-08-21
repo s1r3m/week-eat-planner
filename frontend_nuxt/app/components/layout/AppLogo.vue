@@ -17,7 +17,7 @@
 		/>
 
 		<h1
-			class="text-title-lg"
+			class="app_logo__title"
 			:class="{ collapsed }"
 		>
 			Week Eat Planner
@@ -41,12 +41,15 @@
 		object-fit: contain;
 	}
 
-	h1 {
+	.app_logo__title {
 		width: 100%;
 		overflow: hidden;
 		transition: all 0.3s ease;
 		opacity: 1;
 		color: var(--color-primary);
+		font-size: var(--font-size-title);
+		font-weight: var(--font-weight-medium);
+		letter-spacing: var(--tracking-tight);
 		white-space: nowrap;
 	}
 

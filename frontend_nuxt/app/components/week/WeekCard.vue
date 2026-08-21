@@ -3,30 +3,31 @@
 		pending?: boolean
 		week: IWeekPreview
 	}>()
-
-	const { mutate: remove } = useMutation(deleteWeekMutation())
 </script>
 
 <template>
-	<div class="weeks-grid__card">
-		<div
-			class="weeks-grid__card-content"
-			aria-disabled="true"
-			@click="remove(week.id)"
-		>
-			<div class="weeks_grid__card-bg"></div>
+	<NuxtLink
+		:to="{ name: 'weeks-id', params: { id: week.id } }"
+		:aria-disabled="pending || undefined"
+		:class="{ 'weeks-grid__link--disabled': pending }"
+		:tabindex="pending ? -1 : undefined"
+	>
+		<div class="weeks-grid__card">
+			<div class="weeks-grid__card-content">
+				<div class="weeks_grid__card-bg"></div>
 
-			<h2 class="weeks-grid__card-name">{{ week.name }}</h2>
-		</div>
+				<h2 class="weeks-grid__card-name">{{ week.name }}</h2>
+			</div>
 
-		<div
-			v-if="week.__pending"
-			class="weeks-grid__card-blocker"
-			aria-hidden="true"
-		>
-			<span class="spinner"></span>
+			<div
+				v-if="pending"
+				class="weeks-grid__card-blocker"
+				aria-hidden="true"
+			>
+				<span class="spinner"></span>
+			</div>
 		</div>
-	</div>
+	</NuxtLink>
 </template>
 
 <style scoped>
@@ -93,5 +94,10 @@
 		to {
 			transform: rotate(360deg);
 		}
+	}
+
+	.weeks-grid__link--disabled {
+		cursor: not-allowed;
+		pointer-events: none;
 	}
 </style>

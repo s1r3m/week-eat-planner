@@ -90,6 +90,8 @@ export default withNuxt(
 
 				'perfectionist/sort-interfaces': 'off',
 
+				'perfectionist/sort-union-types': 'off',
+
 				'vue/html-self-closing': [
 					'warn',
 					{

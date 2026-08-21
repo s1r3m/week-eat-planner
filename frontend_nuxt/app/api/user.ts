@@ -1,6 +1,3 @@
-/**
-Publicly visible information about a user.
-*/
 export interface UserData {
 	avatar_url: null | string
 	email: string
@@ -10,9 +7,6 @@ export interface UserData {
 	username: string
 }
 
-/**
-Payload for updating user profile fields.
-*/
 export interface UserPayload {
 	/** The new username to set. */
 	username: string

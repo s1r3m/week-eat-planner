@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { useWeeksApi } from '@/api/weeks/client'
 
 const mockApi = mock()
@@ -9,6 +9,10 @@ globalThis.useNuxtApp = () => ({
 })
 
 describe('useWeeksApi', () => {
+	beforeEach(() => {
+		mockApi.mockClear()
+	})
+
 	const weeksApi = useWeeksApi()
 
 	describe('createWeek', () => {
@@ -48,6 +52,24 @@ describe('useWeeksApi', () => {
 			const result = await weeksApi.getWeeks()
 
 			expect(mockApi).toHaveBeenCalledWith('/weeks')
+			expect(result).toEqual(mockResponse)
+		})
+	})
+
+	describe('getWeek', () => {
+		it('calls the /weeks/{id} with GET method', async () => {
+			const weekId = '1'
+			const mockResponse = {
+				id: weekId,
+				name: 'Week 1',
+				user_id: 'user1',
+				week_days: [{ name: 'MONDAY', slots: [] }],
+			}
+			mockApi.mockResolvedValue(mockResponse)
+
+			const result = await weeksApi.getWeek(weekId)
+
+			expect(mockApi).toHaveBeenCalledWith(`/weeks/${weekId}`)
 			expect(result).toEqual(mockResponse)
 		})
 	})
