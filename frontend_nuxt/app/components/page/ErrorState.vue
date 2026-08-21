@@ -40,5 +40,6 @@
 
 	.error-state__title {
 		color: var(--color-error);
+		font-size: var(--font-size-title);
 	}
 </style>

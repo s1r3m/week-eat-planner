@@ -32,7 +32,7 @@
 		column-gap: var(--space-md);
 		transition: all 0.3s ease;
 		border-radius: var(--radius-xl);
-		font-size: var(--text-body-lg);
+		font-size: var(--line-height-button);
 		font-weight: var(--font-weight-regular);
 		letter-spacing: var(--tracking-normal);
 	}
@@ -60,7 +60,8 @@
 		padding: 0;
 		border: none;
 		background: transparent;
-		font-size: var(--text-title-lg);
+		color: var(--color-primary);
+		font-size: var(--font-size-title);
 	}
 
 	.btn--outline:not(:disabled):hover {

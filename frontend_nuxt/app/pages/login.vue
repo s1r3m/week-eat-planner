@@ -17,6 +17,7 @@
 		<AuthForm
 			id="login-form"
 			header="Welcome back"
+			description="Login to your account"
 			@submit="onSubmit"
 		>
 			<UiAlert

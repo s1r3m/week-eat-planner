@@ -3,5 +3,6 @@ export interface IRecipe {
 	name: string
 	author: string
 	is_favorite: boolean
-	image_url: string | null
+	image_url?: string
+	portions?: number
 }

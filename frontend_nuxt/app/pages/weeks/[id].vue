@@ -30,7 +30,8 @@
 			>
 				<UiButton>
 					<Icon name="lucide:shopping-cart" />
-					Groceries
+
+					<span class="button-label">Groceries</span>
 				</UiButton>
 
 				<UiButton
@@ -39,7 +40,8 @@
 					@click="onDelete(week?.id as string)"
 				>
 					<Icon name="lucide:trash" />
-					Delete week
+
+					<span class="button-label">Delete week</span>
 				</UiButton>
 			</template>
 		</PageTitle>
@@ -62,3 +64,15 @@
 		/>
 	</div>
 </template>
+
+<style scoped>
+	.button-label {
+		display: none;
+	}
+
+	@media (width > 768px) {
+		.button-label {
+			display: inline;
+		}
+	}
+</style>

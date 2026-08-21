@@ -3,22 +3,59 @@
 </script>
 
 <template>
-	<div class="slot">
-		<div class="slot__bg"></div>
+	<div
+		class="slot"
+		:class="{ 'slot--filled': !!mealSlot.recipe }"
+		role="button"
+	>
+		<div class="slot__bg">
+			<img
+				v-if="mealSlot.recipe?.image_url"
+				class="slot__bg-image"
+				:src="mealSlot.recipe?.image_url"
+				alt=""
+				loading="lazy"
+			/>
+		</div>
 
 		<div class="slot__content">
-			<h3 class="slot__type">{{ mealSlot.meal_type }}</h3>
+			<UiBadge>{{ mealSlot.meal_type }}</UiBadge>
+
+			<template v-if="mealSlot.recipe">
+				<div class="slot__portion">
+					<span
+						class="slot__portion-control"
+						role="button"
+					>
+						<Icon name="lucide:minus" />
+					</span>
+					{{ mealSlot.recipe?.portions ?? 1 }}
+					<span
+						class="slot__portion-control"
+						role="button"
+					>
+						<Icon name="lucide:plus" />
+					</span>
+				</div>
+
+				<UiBadge
+					v-if="mealSlot.recipe"
+					variant="recipe-name"
+				>
+					{{ mealSlot.recipe?.name }}
+				</UiBadge>
+			</template>
 
 			<div
-				v-if="mealSlot.recipe"
-				class="slot__portion"
+				v-else
+				class="slot__assign"
 			>
-				<span>-</span>
-				1
-				<span>+</span>
+				<Icon
+					name="lucide:plus"
+					:size="14"
+				/>
+				Assign a recipe
 			</div>
-
-			<p>{{ mealSlot.recipe?.name }}</p>
 		</div>
 	</div>
 </template>
@@ -26,21 +63,56 @@
 <style scoped>
 	.slot {
 		display: grid;
+		position: relative;
 		grid-template-areas: 1 / 1;
-		min-height: 120px;
-		padding: var(--space-md);
+		height: 120px;
+		overflow: hidden;
 		transition: all 0.3s ease;
-		border: 1px solid var(--color-primary);
+		border: 1px dotted var(--color-primary);
 		border-radius: var(--radius-xl);
+		cursor: pointer;
 
 		&:hover {
-			transform: scale(1.02);
+			background-color: color-mix(
+				in oklab,
+				var(--color-primary) 25%,
+				rgb(255 255 255)
+			);
 		}
 	}
 
+	.slot--filled {
+		border: 1px solid var(--color-primary);
+	}
+
 	.slot__bg {
-		position: relative;
+		position: absolute;
+		z-index: 0;
 		grid-area: 1 / 1;
+		transition: all 0.3s ease;
+		inset: 0;
+
+		.slot__bg-image {
+			display: block;
+			width: 100%;
+			object-fit: cover;
+			object-position: center;
+			transition: transform 0.3s ease;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			z-index: 0;
+			background: rgb(255 255 255 / 50%);
+			pointer-events: none;
+			inset: 0;
+			backdrop-filter: blur(3px);
+		}
+	}
+
+	.slot:hover .slot__bg img {
+		transform: scale(1.1);
 	}
 
 	.slot__content {
@@ -50,19 +122,32 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: space-between;
-	}
+		padding: var(--space-md);
 
-	.slot__type {
-		padding: var(--space-xs) var(--space-sm);
-		border: 1px solid var(--color-primary);
-		border-radius: var(--radius-full);
-		background-color: var(--color-primary);
-		color: var(--color-on-primary);
-		font-size: var(--text-badge-md);
-		text-align: center;
-	}
+		.slot__portion {
+			z-index: 10;
+		}
 
-	.empty {
-		border: 1px dotted var(--color-primary);
+		.slot__portion-control {
+			display: inline-flex;
+			align-items: center;
+			padding: var(--space-xs);
+			border: 1px solid var(--color-outline);
+			border-radius: var(--radius-full);
+
+			&:hover {
+				background-color: color-mix(
+					in oklab,
+					var(--color-primary) 25%,
+					rgb(255 255 255)
+				);
+			}
+		}
+
+		.slot__assign {
+			display: flex;
+			align-items: center;
+			font-size: var(--font-size-label);
+		}
 	}
 </style>

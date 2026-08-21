@@ -110,13 +110,14 @@
 		align-items: center;
 		padding: var(--space-xs);
 		transition: all 0.3s ease;
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius-xl);
 		color: var(--color-on-surface-variant);
-		font-size: var(--text-title-lg);
+		font-size: var(--font-size-body);
 		text-decoration: none;
 		gap: var(--space-md);
 
 		&:hover {
+			background-color: var(--color-surface-variant);
 			color: var(--color-primary);
 		}
 
@@ -144,21 +145,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-xs);
-		padding-left: calc(1.5rem + var(--space-md));
+		padding-left: var(--space-xl);
 	}
 
 	.nav__child-link {
 		padding: var(--space-xs) var(--space-sm);
 		overflow: hidden;
 		transition: all 0.3s ease;
-		border-radius: var(--radius-xs);
+		border-radius: var(--radius-xl);
 		color: var(--color-on-surface-variant);
-		font-size: var(--text-body-lg);
 		text-decoration: none;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 
 		&:hover {
+			background-color: var(--color-surface-variant);
 			color: var(--color-primary);
 		}
 
