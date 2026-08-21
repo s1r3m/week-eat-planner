@@ -33,7 +33,7 @@
 				v-if="authStore.isAuthenticated"
 				#controls
 			>
-				<UiButton>
+				<UiButton aria-label="Groceries">
 					<Icon name="lucide:shopping-cart" />
 
 					<span class="button-label">Groceries</span>
@@ -42,6 +42,7 @@
 				<UiButton
 					variant="danger"
 					:disabled="!week"
+					aria-label="Delete week"
 					@click="onDelete(week?.id as string)"
 				>
 					<Icon name="lucide:trash" />

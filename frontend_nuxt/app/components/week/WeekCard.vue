@@ -8,7 +8,7 @@
 <template>
 	<NuxtLink
 		:to="{ name: 'weeks-id', params: { id: week.id } }"
-		:aria-disabled="week.__pending || undefined"
+		:aria-disabled="pending || undefined"
 	>
 		<div class="weeks-grid__card">
 			<div class="weeks-grid__card-content">
@@ -18,7 +18,7 @@
 			</div>
 
 			<div
-				v-if="week.__pending"
+				v-if="pending"
 				class="weeks-grid__card-blocker"
 				aria-hidden="true"
 			>
