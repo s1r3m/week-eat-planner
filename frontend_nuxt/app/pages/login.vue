@@ -1,13 +1,25 @@
 <script setup lang="ts">
 	const { email, errors, isLoading, login, meta, password, serverError } =
 		useLoginForm()
+	const route = useRoute()
 
 	const onSubmit = async () => {
 		try {
 			await login()
-			await navigateTo({ name: 'my-weeks' })
 		} catch {
 			// serverError is already set by useSignupForm; swallow here
+			return
+		}
+
+		const redirect = route.query.redirect as string | undefined
+		if (
+			typeof redirect === 'string' &&
+			redirect.startsWith('/') &&
+			!redirect.startsWith('//')
+		) {
+			await navigateTo(redirect)
+		} else {
+			await navigateTo({ name: 'my-weeks' })
 		}
 	}
 </script>

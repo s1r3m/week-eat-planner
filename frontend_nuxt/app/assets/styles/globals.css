@@ -26,6 +26,11 @@ button:not(:disabled) {
 	cursor: pointer;
 }
 
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
 .page-container {
 	padding: var(--space-md);
 	container-type: inline-size;

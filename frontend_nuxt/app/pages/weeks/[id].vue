@@ -19,11 +19,11 @@
 </script>
 
 <template>
-	<div
-		v-if="week"
-		class="page-container"
-	>
-		<PageTitle :name="week?.name">
+	<div class="page-container">
+		<PageTitle
+			v-if="week"
+			:name="week.name"
+		>
 			<template
 				v-if="authStore.isAuthenticated"
 				#controls
@@ -46,11 +46,6 @@
 			</template>
 		</PageTitle>
 
-		<PageLoadingState
-			v-if="!week"
-			name="weeks"
-		/>
-
 		<PageErrorState
 			v-else-if="error"
 			name="weeks"
@@ -58,8 +53,13 @@
 			@repeat="refetch"
 		/>
 
-		<WeekSlotGrid
+		<PageLoadingState
 			v-else
+			name="weeks"
+		/>
+
+		<WeekSlotGrid
+			v-if="week"
 			:week="week"
 		/>
 	</div>

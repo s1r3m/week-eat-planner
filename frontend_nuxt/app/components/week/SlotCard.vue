@@ -6,7 +6,6 @@
 	<div
 		class="slot"
 		:class="{ 'slot--filled': !!mealSlot.recipe }"
-		role="button"
 	>
 		<div class="slot__bg">
 			<img
@@ -23,17 +22,11 @@
 
 			<template v-if="mealSlot.recipe">
 				<div class="slot__portion">
-					<span
-						class="slot__portion-control"
-						role="button"
-					>
+					<span class="slot__portion-control">
 						<Icon name="lucide:minus" />
 					</span>
 					{{ mealSlot.recipe?.portions ?? 1 }}
-					<span
-						class="slot__portion-control"
-						role="button"
-					>
+					<span class="slot__portion-control">
 						<Icon name="lucide:plus" />
 					</span>
 				</div>

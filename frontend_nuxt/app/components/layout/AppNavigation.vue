@@ -113,12 +113,10 @@
 		border-radius: var(--radius-xl);
 		color: var(--color-on-surface-variant);
 		font-size: var(--font-size-body);
-		text-decoration: none;
 		gap: var(--space-md);
 
 		&:hover {
 			background-color: var(--color-surface-variant);
-			color: var(--color-primary);
 		}
 
 		&.router-link-active {

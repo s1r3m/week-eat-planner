@@ -6,25 +6,26 @@
 </script>
 
 <template>
-	<div class="weeks-grid__card">
-		<div
-			class="weeks-grid__card-content"
-			aria-disabled="true"
-			@click="navigateTo({ name: 'weeks-id', params: { id: week.id } })"
-		>
-			<div class="weeks_grid__card-bg"></div>
+	<NuxtLink :to="{ name: 'weeks-id', params: { id: week.id } }">
+		<div class="weeks-grid__card">
+			<div
+				class="weeks-grid__card-content"
+				aria-disabled="true"
+			>
+				<div class="weeks_grid__card-bg"></div>
 
-			<h2 class="weeks-grid__card-name">{{ week.name }}</h2>
-		</div>
+				<h2 class="weeks-grid__card-name">{{ week.name }}</h2>
+			</div>
 
-		<div
-			v-if="week.__pending"
-			class="weeks-grid__card-blocker"
-			aria-hidden="true"
-		>
-			<span class="spinner"></span>
+			<div
+				v-if="week.__pending"
+				class="weeks-grid__card-blocker"
+				aria-hidden="true"
+			>
+				<span class="spinner"></span>
+			</div>
 		</div>
-	</div>
+	</NuxtLink>
 </template>
 
 <style scoped>
