@@ -9,6 +9,8 @@
 	<NuxtLink
 		:to="{ name: 'weeks-id', params: { id: week.id } }"
 		:aria-disabled="pending || undefined"
+		:class="{ 'weeks-grid__link--disabled': pending }"
+		:tabindex="pending ? -1 : undefined"
 	>
 		<div class="weeks-grid__card">
 			<div class="weeks-grid__card-content">
@@ -92,5 +94,10 @@
 		to {
 			transform: rotate(360deg);
 		}
+	}
+
+	.weeks-grid__link--disabled {
+		cursor: not-allowed;
+		pointer-events: none;
 	}
 </style>
