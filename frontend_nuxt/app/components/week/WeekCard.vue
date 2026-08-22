@@ -24,7 +24,7 @@
 				class="week-card__blocker"
 				aria-hidden="true"
 			>
-				<span class="spinner"></span>
+				<UiSpinner />
 			</div>
 		</div>
 	</NuxtLink>
@@ -77,22 +77,6 @@
 		background: rgb(255 255 255 / 45%);
 		color: var(--color-text);
 		text-align: center;
-	}
-
-	.spinner {
-		display: inline-block;
-		width: 48px;
-		height: 48px;
-		animation: spin 0.7s linear infinite;
-		border: 6px solid var(--color-primary);
-		border-radius: 50%;
-		border-right-color: transparent;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 
 	.week-card__link--disabled {

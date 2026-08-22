@@ -6,7 +6,12 @@
 </script>
 
 <template>
-	<NuxtLink>
+	<NuxtLink
+		:to="'#'"
+		:aria-disabled="pending || undefined"
+		:class="{ 'week-card__link--disabled': pending }"
+		:tabindex="pending ? -1 : undefined"
+	>
 		<div class="recipe-card">
 			<div class="recipe-card__content">
 				<div class="recipe-card__bg">
@@ -31,7 +36,7 @@
 				class="recipe-card__blocker"
 				aria-hidden="true"
 			>
-				<span class="spinner"></span>
+				<UiSpinner />
 			</div>
 		</div>
 	</NuxtLink>
@@ -106,15 +111,5 @@
 		.recipe-card__author {
 			font-size: var(--font-size-label);
 		}
-	}
-
-	.spinner {
-		display: inline-block;
-		width: 48px;
-		height: 48px;
-		animation: spin 0.7s linear infinite;
-		border: 6px solid var(--color-primary);
-		border-radius: 50%;
-		border-right-color: transparent;
 	}
 </style>

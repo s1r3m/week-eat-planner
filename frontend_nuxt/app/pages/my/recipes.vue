@@ -26,12 +26,12 @@
 
 		<PageLoadingState
 			v-if="!recipes && isLoadingRecipes"
-			name="weeks"
+			name="recipes"
 		/>
 
 		<PageErrorState
 			v-else-if="error"
-			name="weeks"
+			name="recipes"
 			:error="error"
 			@repeat="refetch"
 		/>
