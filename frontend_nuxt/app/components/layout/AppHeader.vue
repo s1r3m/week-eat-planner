@@ -28,8 +28,10 @@
 		</div>
 
 		<div class="app-header__right-side">
+			<UiModeSwitch />
+
 			<UiButton
-				class="app-header__menu-btn mobile_only"
+				class="app-header__mobile-menu"
 				variant="icon"
 			>
 				<Icon name="lucide:menu" />
@@ -63,14 +65,15 @@
 	.app-header__right-side {
 		display: flex;
 		align-items: center;
+		gap: var(--space-md);
 	}
 
-	.mobile_only {
+	.app-header__mobile-menu {
 		display: block;
 	}
 
-	@media screen and (width > 480px) {
-		.mobile_only {
+	@media (width > 480px) {
+		.app-header__mobile-menu {
 			display: none;
 		}
 	}

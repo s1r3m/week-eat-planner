@@ -1,24 +1,38 @@
-:root {
+html {
 	color-scheme: light dark;
+}
 
+html.light {
+	color-scheme: light;
+}
+
+html.dark {
+	color-scheme: dark;
+}
+
+:root {
 	/* Colors */
-	--color-primary: #3bb8a9;
-	--color-on-primary: #fafaf9;
-	--color-secondary: #51605f;
-	--color-on-secondary: #fafaf9;
-	--color-tertiary: #51605f;
-	--color-on-tertiary: #fafaf9;
-	--color-error: #e5484d;
-	--color-on-error: #fafaf9;
-	--color-surface: #fafaf9;
-	--color-on-surface: #1a1a1a;
-	--color-surface-variant: #f4f6f6;
-	--color-on-surface-variant: #51605f;
-	--color-outline: #d4dedd;
+	--color-primary: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
+	--color-on-primary: light-dark(rgb(250 250 249 / 100%) rgb(11 15 14 / 100%));
+	--color-secondary: light-dark(rgb(81 96 95 / 100%), rgb(169 190 186 / 100%));
+	--color-on-secondary: light-dark(rgb(81 96 95 / 100%) rgb(11 15 14 / 100%));
+	--color-error: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
+	--color-on-error: light-dark(rgb(81 96 95 / 100%) rgb(11 15 14 / 100%));
+	--color-surface: light-dark(rgb(81 96 95 / 100%) rgb(11 15 14 / 100%));
+	--color-on-surface: light-dark(rgb(26 26 26 / 100%), rgb(231 242 241 / 100%));
+	--color-surface-variant: light-dark(
+		rgb(244 246 246 / 100%),
+		rgb(26 37 35 / 100%)
+	);
+	--color-on-surface-variant: light-dark(
+		rgb(81 96 95 / 100%),
+		rgb(169 190 186 / 100%)
+	);
+	--color-outline: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 0.2));
 
 	/* Fonts */
 	--font-family:
-		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+		ui-sans-serif system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
 		Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
 		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
@@ -73,22 +87,4 @@
 	--header-height: 64px;
 	--sidebar-expanded: 235px;
 	--sidebar-collapsed: 60px;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--color-primary: #4acfbf;
-		--color-on-primary: #0b0f0e;
-		--color-secondary: #a9beba;
-		--color-on-secondary: #0b0f0e;
-		--color-tertiary: #a9beba;
-		--color-on-tertiary: #0b0f0e;
-		--color-error: #ff6f73;
-		--color-on-error: #4b0005;
-		--color-surface: #0b0f0e;
-		--color-on-surface: #e7f2f1;
-		--color-surface-variant: #1a2523;
-		--color-on-surface-variant: #a9beba;
-		--color-outline: rgba(231 242 241 / 0.2);
-	}
 }

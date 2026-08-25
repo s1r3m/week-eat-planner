@@ -6,6 +6,7 @@ export default defineNuxtConfig({
 		'@/assets/styles/reset.css',
 		'@/assets/styles/variables.css',
 		'@/assets/styles/globals.css',
+		'@/assets/styles/dropdown.css',
 	],
 
 	imports: {
@@ -14,7 +15,17 @@ export default defineNuxtConfig({
 
 	devtools: { enabled: true },
 
-	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt', '@pinia/colada-nuxt'],
+	modules: [
+		'@nuxt/eslint',
+		'@nuxt/icon',
+		'@pinia/nuxt',
+		'@pinia/colada-nuxt',
+		'@nuxtjs/color-mode',
+	],
+
+	colorMode: {
+		classSuffix: '',
+	},
 
 	app: {
 		head: {

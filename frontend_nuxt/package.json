@@ -36,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@iconify-json/lucide": "^1.2.120",
+		"@nuxtjs/color-mode": "^4.0.1",
 		"@types/node": "^26.1.1",
 		"@vue/eslint-config-prettier": "^10.2.0",
 		"@vue/eslint-config-typescript": "^14.9.0",
