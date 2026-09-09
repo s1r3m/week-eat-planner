@@ -26,7 +26,7 @@ interface MutationOptions {
 	mutation: (payload: any) => Promise<any>
 	onMutate: (payload: any) => any
 	onError: (error: Error, payload: any, context: any) => void
-	onSuccess: (data: any) => void
+	onSuccess: (data: any, payload?: any) => void
 	onSettled: (data?: any, error?: Error, payload?: any, context?: any) => void
 }
 
@@ -151,20 +151,32 @@ describe('Weeks Mutations', () => {
 			)
 		})
 
-		it('calls onSuccess', () => {
-			// Trigger the empty onSuccess to reach 100% function coverage
-			deleteWeekOptions.onSuccess(undefined)
-		})
-
-		it('settles by invalidating queries', () => {
+		it('invalidates the deleted detail without refetching on success', () => {
 			const id = '1'
 			const mockInvalidate = mock()
 			queryCache.invalidateQueries = mockInvalidate
 
-			deleteWeekOptions.onSettled(undefined, undefined as any, id, {} as any)
+			deleteWeekOptions.onSuccess(undefined, id)
 
-			expect(mockInvalidate).toHaveBeenCalledWith({ key: WEEK_KEYS.all() })
-			expect(mockInvalidate).toHaveBeenCalledWith({ key: WEEK_KEYS.detail(id) })
+			expect(mockInvalidate).toHaveBeenCalledTimes(1)
+			expect(mockInvalidate).toHaveBeenCalledWith(
+				{ key: WEEK_KEYS.detail(id) },
+				false,
+			)
 		})
+
+		it.each([undefined, new Error('Failed')])(
+			'settles by invalidating only the list with error %s',
+			(error) => {
+				const id = '1'
+				const mockInvalidate = mock()
+				queryCache.invalidateQueries = mockInvalidate
+
+				deleteWeekOptions.onSettled(undefined, error, id, {})
+
+				expect(mockInvalidate).toHaveBeenCalledTimes(1)
+				expect(mockInvalidate).toHaveBeenCalledWith({ key: WEEK_KEYS.all() })
+			},
+		)
 	})
 })

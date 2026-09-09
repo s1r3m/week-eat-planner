@@ -2,12 +2,7 @@
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 
-	css: [
-		'@/assets/styles/reset.css',
-		'@/assets/styles/variables.css',
-		'@/assets/styles/globals.css',
-		'@/assets/styles/dropdown.css',
-	],
+	css: ['@/assets/styles/main.css'],
 
 	imports: {
 		dirs: ['@/composables/**', '@/api/**'],
