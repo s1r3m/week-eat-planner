@@ -20,6 +20,7 @@
 			<template #controls>
 				<UiButton
 					:disabled="isCreating"
+					aria-label="Create week"
 					@click="create({ name: 'new week' })"
 				>
 					<Icon name="lucide:plus" />

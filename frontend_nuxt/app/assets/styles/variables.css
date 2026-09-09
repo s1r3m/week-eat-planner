@@ -15,10 +15,13 @@ html.dark {
 	--color-primary: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
 	--color-on-primary: light-dark(rgb(250 250 249 / 100%), rgb(11 15 14 / 100%));
 	--color-secondary: light-dark(rgb(81 96 95 / 100%), rgb(169 190 186 / 100%));
-	--color-on-secondary: light-dark(rgb(81 96 95 / 100%), rgb(11 15 14 / 100%));
+	--color-on-secondary: light-dark(
+		rgb(250 250 249 / 100%),
+		rgb(11 15 14 / 100%)
+	);
 	--color-error: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
 	--color-on-error: light-dark(rgb(81 96 95 / 100%), rgb(11 15 14 / 100%));
-	--color-surface: light-dark(rgb(81 96 95 / 100%) rgb(11 15 14 / 100%));
+	--color-surface: light-dark(rgb(81 96 95 / 100%), rgb(11 15 14 / 100%));
 	--color-on-surface: light-dark(rgb(26 26 26 / 100%), rgb(231 242 241 / 100%));
 	--color-surface-variant: light-dark(
 		rgb(244 246 246 / 100%),
