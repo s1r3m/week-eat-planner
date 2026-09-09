@@ -165,8 +165,8 @@ fe_install: $(FE_ENV_FILE)
 
 ## @FE Start the app
 fe_start:
-	@echo "🏃 Starting Vue app on port 3001..."
-	cd $(FE_PATH) && yarn dev --port 3001
+	@echo "🏃 Starting Vue app on port 3000..."
+	cd $(FE_PATH) && yarn dev --port 3000
 
 ## @FE Run linters
 fe_lint:
@@ -196,8 +196,8 @@ nuxt_install: $(NUXT_ENV_FILE)
 
 ## @Nuxt Start the app
 nuxt_start:
-	@echo "🏃 Starting Vue app on port 3000..."
-	cd $(NUXT_PATH) && bun run dev --port 3000
+	@echo "🏃 Starting Vue app on port 3001..."
+	cd $(NUXT_PATH) && bun run dev --port 3001
 
 ## @Nuxt Run linters
 nuxt_lint:

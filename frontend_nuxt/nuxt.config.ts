@@ -2,11 +2,7 @@
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
 
-	css: [
-		'@/assets/styles/reset.css',
-		'@/assets/styles/variables.css',
-		'@/assets/styles/globals.css',
-	],
+	css: ['@/assets/styles/main.css'],
 
 	imports: {
 		dirs: ['@/composables/**', '@/api/**'],
@@ -14,7 +10,17 @@ export default defineNuxtConfig({
 
 	devtools: { enabled: true },
 
-	modules: ['@nuxt/eslint', '@nuxt/icon', '@pinia/nuxt', '@pinia/colada-nuxt'],
+	modules: [
+		'@nuxt/eslint',
+		'@nuxt/icon',
+		'@pinia/nuxt',
+		'@pinia/colada-nuxt',
+		'@nuxtjs/color-mode',
+	],
+
+	colorMode: {
+		classSuffix: '',
+	},
 
 	app: {
 		head: {

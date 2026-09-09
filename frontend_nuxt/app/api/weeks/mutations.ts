@@ -62,15 +62,9 @@ export const deleteWeekMutation = defineMutation(() => {
 				queryCache.setQueryData(WEEK_KEYS.all(), context.previousWeeks)
 			console.error(`Failed to delete week: ${error.message}`)
 		},
-		onSuccess: () => {},
-		onSettled: (
-			_: undefined,
-			_error: Error | undefined,
-			id: string,
-			_context: { previousWeeks?: IWeekPreview[] },
-		) => {
-			queryCache.invalidateQueries({ key: WEEK_KEYS.all() })
-			queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) })
+		onSuccess: (_: undefined, id: string) => {
+			return queryCache.invalidateQueries({ key: WEEK_KEYS.detail(id) }, false)
 		},
+		onSettled: () => queryCache.invalidateQueries({ key: WEEK_KEYS.all() }),
 	}
 })

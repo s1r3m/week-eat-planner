@@ -20,10 +20,12 @@
 			<template #controls>
 				<UiButton
 					:disabled="isCreating"
+					aria-label="Create week"
 					@click="create({ name: 'new week' })"
 				>
 					<Icon name="lucide:plus" />
-					Create week
+
+					<span class="page-title__button-label">Create week</span>
 				</UiButton>
 			</template>
 		</PageTitle>
@@ -46,3 +48,15 @@
 		/>
 	</div>
 </template>
+
+<style scoped>
+	.page-title__button-label {
+		display: none;
+	}
+
+	@media (width > 768px) {
+		.page-title__button-label {
+			display: inline;
+		}
+	}
+</style>

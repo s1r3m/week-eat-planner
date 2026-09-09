@@ -31,6 +31,7 @@
 		padding: var(--space-xs) var(--space-lg);
 		column-gap: var(--space-md);
 		transition: background-color 0.2s ease;
+		border: 1px solid transparent;
 		border-radius: var(--radius-xl);
 		font-size: var(--font-size-button);
 		font-weight: var(--font-weight-regular);
@@ -38,33 +39,33 @@
 	}
 
 	.btn--primary {
-		border: 1px solid var(--color-primary);
+		border-color: var(--color-primary);
 		background-color: var(--color-primary);
 		color: var(--color-on-primary);
 	}
 
 	.btn--danger {
-		border: 1px solid var(--color-error);
+		border-color: var(--color-error);
 		background-color: var(--color-surface);
 		color: var(--color-error);
 	}
 
 	.btn--outline {
-		border: 1px solid var(--color-primary);
+		border-color: var(--color-primary);
 		background-color: var(--color-surface);
 		color: var(--color-primary);
 	}
 
 	.btn--icon {
 		margin: 0;
-		padding: 0;
-		border: none;
+		padding: var(--space-xs);
 		background: transparent;
 		color: var(--color-primary);
 		font-size: var(--font-size-title);
 	}
 
-	.btn--outline:not(:disabled):hover {
+	.btn--outline:not(:disabled):hover,
+	.btn--icon:not(:disabled):hover {
 		background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
 	}
 

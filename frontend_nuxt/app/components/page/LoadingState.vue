@@ -7,7 +7,7 @@
 <template>
 	<div class="loading-state">
 		<div class="loading-state__card">
-			<span class="spinner"></span>
+			<UiSpinner />
 
 			<h2 class="loading-state__title">Loading {{ name }}...</h2>
 		</div>
@@ -29,21 +29,5 @@
 		border: 1px solid var(--color-outline);
 		border-radius: var(--radius-md);
 		background-color: var(--color-surface-variant);
-	}
-
-	.spinner {
-		display: inline-block;
-		width: 24px;
-		height: 24px;
-		animation: spin 0.7s linear infinite;
-		border: 3px solid var(--color-primary);
-		border-radius: 50%;
-		border-right-color: transparent;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>

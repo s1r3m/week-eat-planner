@@ -31,9 +31,10 @@
 			:placeholder="placeholder"
 		/>
 
-		<UiButton
+		<button
 			v-if="type === 'password'"
-			variant="icon"
+			type="button"
+			class="toggle-visibility"
 			aria-label="Toggle password visibility"
 			:aria-pressed="revealed"
 			@click="revealed = !revealed"
@@ -41,13 +42,15 @@
 			<Icon
 				v-if="revealed"
 				name="lucide:eye"
+				:size="24"
 			/>
 
 			<Icon
 				v-else
 				name="lucide:eye-closed"
+				:size="24"
 			/>
-		</UiButton>
+		</button>
 	</div>
 </template>
 
@@ -78,5 +81,6 @@
 		border: 0;
 		background: transparent;
 		inset-inline-end: var(--space-md);
+		color: var(--color-primary);
 	}
 </style>
