@@ -1,40 +1,63 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	compatibilityDate: '2025-07-15',
+  compatibilityDate: '2025-07-15',
 
-	css: ['@/assets/styles/main.css'],
+  css: ['@/core/assets/styles/main.css'],
 
-	imports: {
-		dirs: ['@/composables/**', '@/api/**'],
-	},
+  devtools: { enabled: true },
 
-	devtools: { enabled: true },
+  dir: {
+    assets: '~~/app/core/assets',
+    layouts: '~~/app/core/layouts',
+    middleware: '~~/app/core/router/middleware',
+  },
 
-	modules: [
-		'@nuxt/eslint',
-		'@nuxt/icon',
-		'@pinia/nuxt',
-		'@pinia/colada-nuxt',
-		'@nuxtjs/color-mode',
-	],
+  imports: {
+    dirs: [],
+    scan: false,
+  },
+  modules: ['@nuxt/eslint', '@pinia/nuxt', '@nuxt/icon', 'nuxt-open-fetch'],
 
-	colorMode: {
-		classSuffix: '',
-	},
+  nitro: {
+    devProxy: {
+      '/backend-api': {
+        changeOrigin: true,
+        cookieDomainRewrite: '',
+        target: process.env.NUXT_PUBLIC_API_URL,
+      },
+    },
+  },
 
-	app: {
-		head: {
-			title: 'Week Eat Planner',
-			htmlAttrs: {
-				lang: 'en',
-			},
-			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
-		},
-	},
+  openFetch: {
+    clients: {
+      baseApi: {
+        baseURL: process.env.NUXT_PUBLIC_API_URL,
+        schema: 'http://localhost:8000/openapi.json',
+      },
+    },
+    disableNuxtPlugin: true,
+  },
 
-	runtimeConfig: {
-		public: {
-			apiBase: process.env.NUXT_PUBLIC_API_BASE,
-		},
-	},
+  postcss: {
+    plugins: {
+      '@csstools/postcss-global-data': {
+        files: ['app/core/assets/styles/foundation/media.css'],
+      },
+      'postcss-custom-media': {},
+      'postcss-mixins': {
+        mixinsFiles: ['app/core/assets/styles/foundation/mixins.css'],
+      },
+    },
+  },
+
+  runtimeConfig: {
+    public: {
+      apiUrl: process.env.NUXT_PUBLIC_API_URL,
+    },
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'reka-ui'],
+    },
+  },
 })

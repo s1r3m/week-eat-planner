@@ -1,133 +1,104 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { createPinia, setActivePinia, defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
-const mockApi = mock()
-// Mock useNuxtApp globally for tests
-// @ts-ignore
-globalThis.useNuxtApp = () => ({
-	$api: mockApi,
+import { beforeEach, expect, it } from 'bun:test'
+import { api, clear, reset, unauthorized, deferred } from '../helpers/auth'
+const { useAuthStore } = await import('@/modules/auth/stores/auth')
+beforeEach(reset)
+const user = { id: '1', username: 'test', email: 'test@example.com' }
+it('initializes anonymous sessions once', async () => {
+  api.mockRejectedValue(unauthorized)
+  const store = useAuthStore()
+  await store.init()
+  await store.init()
+  expect(api).toHaveBeenCalledTimes(1)
+  expect(store.isInitialized).toBe(true)
+  expect(store.isAuthenticated).toBe(false)
 })
-
-// Mock Nuxt/Vue globals
-// @ts-ignore
-globalThis.defineStore = defineStore
-// @ts-ignore
-globalThis.ref = ref
-// @ts-ignore
-globalThis.computed = computed
-
-// Import store
-const { useAuthStore } = await import('@/stores/auth')
-
-describe('useAuthStore', () => {
-	beforeEach(() => {
-		setActivePinia(createPinia())
-		mockApi.mockClear()
-	})
-
-	it('initializes with null user and not authenticated', () => {
-		const store = useAuthStore()
-		expect(store.user).toBeNull()
-		expect(store.isAuthenticated).toBe(false)
-	})
-
-	describe('signup', () => {
-		it('calls signup and then gets user', async () => {
-			const payload = {
-				username: 'test',
-				email: 'test@example.com',
-				password: 'password',
-			}
-			const mockUser = { username: 'test', id: '1' }
-
-			// Mock API responses
-			mockApi.mockResolvedValueOnce({ status: 'success' }) // signup
-			mockApi.mockResolvedValueOnce(mockUser) // getUser
-
-			const store = useAuthStore()
-			await store.signup(payload)
-
-			expect(mockApi).toHaveBeenCalledWith('/auth/signup', {
-				body: payload,
-				method: 'POST',
-			})
-			expect(mockApi).toHaveBeenCalledWith('/user')
-			expect(store.user).toEqual(mockUser)
-			expect(store.isAuthenticated).toBe(true)
-		})
-	})
-
-	describe('login', () => {
-		it('calls login and then gets user', async () => {
-			const payload = { username: 'test', password: 'password' }
-			const mockUser = { username: 'test', id: '1' }
-
-			// Mock API responses
-			mockApi.mockResolvedValueOnce({ status: 'success' }) // login
-			mockApi.mockResolvedValueOnce(mockUser) // getUser
-
-			const store = useAuthStore()
-			await store.login(payload)
-
-			expect(mockApi).toHaveBeenCalledWith('/auth/login', {
-				body: expect.any(URLSearchParams),
-				method: 'POST',
-			})
-			expect(mockApi).toHaveBeenCalledWith('/user')
-			expect(store.user).toEqual(mockUser)
-			expect(store.isAuthenticated).toBe(true)
-		})
-	})
-
-	describe('logout', () => {
-		it('calls logout and clears user', async () => {
-			const store = useAuthStore()
-			store.user = { username: 'test', id: '1' } as any
-
-			mockApi.mockResolvedValue(undefined)
-
-			await store.logout()
-
-			expect(mockApi).toHaveBeenCalledWith('/auth/logout', {
-				method: 'POST',
-			})
-			expect(store.user).toBeNull()
-			expect(store.isAuthenticated).toBe(false)
-		})
-	})
-
-	describe('init', () => {
-		it('returns early if user is already set', async () => {
-			const store = useAuthStore()
-			const mockUser = { username: 'test', id: '1' }
-			store.user = mockUser as any
-
-			await store.init()
-
-			expect(mockApi).not.toHaveBeenCalled()
-			expect(store.user).toEqual(mockUser)
-		})
-
-		it('fetches user if not set', async () => {
-			const store = useAuthStore()
-			const mockUser = { username: 'test', id: '1' }
-			mockApi.mockResolvedValueOnce(mockUser)
-
-			await store.init()
-
-			expect(mockApi).toHaveBeenCalledWith('/user')
-			expect(store.user).toEqual(mockUser)
-		})
-
-		it('sets user to null on error', async () => {
-			const store = useAuthStore()
-			mockApi.mockRejectedValueOnce(new Error('Unauthorized'))
-
-			await store.init()
-
-			expect(mockApi).toHaveBeenCalledWith('/user')
-			expect(store.user).toBeNull()
-		})
-	})
+it('shares initialization and retries transient failures', async () => {
+  const pending = deferred<unknown>()
+  api.mockImplementationOnce(() => pending.promise)
+  const store = useAuthStore()
+  const a = store.init()
+  const b = store.init()
+  expect(api).toHaveBeenCalledTimes(1)
+  const results = Promise.allSettled([a, b])
+  pending.reject(new Error('offline'))
+  expect((await results).map((result) => result.status)).toEqual([
+    'rejected',
+    'rejected',
+  ])
+  expect(store.isInitialized).toBe(false)
+  api.mockResolvedValue(user)
+  await store.init()
+  expect(store.user).toEqual(user)
+})
+it('sends form-encoded login and loads the user', async () => {
+  api.mockResolvedValueOnce({}).mockResolvedValueOnce(user)
+  const store = useAuthStore()
+  await store.login({ username: user.email, password: 'secret' })
+  expect(api.mock.calls[0][1].body.toString()).toBe(
+    'username=test%40example.com&password=secret',
+  )
+  expect(api.mock.calls[1]).toEqual(['/user', { skipSessionHandling: true }])
+  expect(store.user).toEqual(user)
+})
+it('uses signup response directly', async () => {
+  api.mockResolvedValue(user)
+  const store = useAuthStore()
+  await store.signup({
+    username: 'test',
+    email: user.email,
+    password: 'secret',
+  })
+  expect(api).toHaveBeenCalledTimes(1)
+  expect(store.user).toEqual(user)
+  expect(store.isInitialized).toBe(true)
+})
+it('propagates login and signup errors', async () => {
+  api.mockRejectedValue(unauthorized)
+  const store = useAuthStore()
+  await expect(
+    store.login({ username: user.email, password: 'bad' }),
+  ).rejects.toEqual(unauthorized)
+  await expect(
+    store.signup({ username: 'test', email: user.email, password: 'bad' }),
+  ).rejects.toEqual(unauthorized)
+  expect(store.isLoading).toBe(false)
+})
+it('rejects login if user fetch cannot establish a session', async () => {
+  api.mockResolvedValueOnce({}).mockRejectedValueOnce(unauthorized)
+  await expect(
+    useAuthStore().login({ username: user.email, password: 'secret' }),
+  ).rejects.toThrow('Unable to establish')
+})
+it.each([undefined, unauthorized])(
+  'clears local auth after successful or unauthorized logout',
+  async (error) => {
+    const store = useAuthStore()
+    store.user = user as any
+    if (error) api.mockRejectedValue(error)
+    await store.logout()
+    expect(store.user).toBeNull()
+    expect(clear).toHaveBeenCalledTimes(1)
+    expect(api).toHaveBeenCalledWith('/auth/logout', {
+      method: 'POST',
+      skipSessionHandling: true,
+    })
+  },
+)
+it('retains auth and propagates logout outages', async () => {
+  const store = useAuthStore()
+  store.user = user as any
+  api.mockRejectedValue(new Error('offline'))
+  await expect(store.logout()).rejects.toThrow('offline')
+  expect(store.user).toEqual(user)
+  expect(clear).not.toHaveBeenCalled()
+})
+it('does not restore a user from a fetch completed after logout', async () => {
+  const pending = deferred<unknown>()
+  api.mockImplementationOnce(() => pending.promise)
+  const store = useAuthStore()
+  const fetch = store.fetchUser()
+  store.clearSession()
+  pending.resolve(user)
+  await fetch
+  expect(store.user).toBeNull()
 })

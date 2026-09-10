@@ -1,0 +1,6 @@
+@import '@/core/assets/styles/foundation/globals.css';
+@import '@/core/assets/styles/foundation/media.css';
+@import '@/core/assets/styles/foundation/reset.css';
+@import '@/core/assets/styles/foundation/variables.css';
+
+@import '@/core/assets/styles/portals/dropdown.css';

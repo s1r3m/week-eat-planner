@@ -1,6 +1,6 @@
 export default {
 	extends: [
-		'stylelint-config-recommended',
+		'stylelint-config-standard',
 		'stylelint-config-standard-vue',
 		'stylelint-config-property-sort-order-smacss',
 	],
@@ -8,17 +8,42 @@ export default {
 	plugins: ['stylelint-order'],
 
 	rules: {
+		'at-rule-empty-line-before': [
+			'always',
+			{
+				except: ['first-nested'],
+				ignore: ['after-comment'],
+				ignoreAtRules: ['import', 'custom-media'],
+			},
+		],
+
 		'at-rule-no-unknown': [
 			true,
 			{
-				ignoreAtRules: ['custom-media', 'media'],
+				ignoreAtRules: [
+					'mixin',
+					'define-mixin',
+					'mixin-content',
+					'custom-media',
+					'media',
+					'tailwind',
+				],
 			},
 		],
 
 		'color-function-notation': 'modern',
 		'custom-property-pattern': null,
 		'declaration-property-value-no-unknown': null,
+		'import-notation': null,
 		'no-descending-specificity': [true, { severity: 'warning' }],
+
+		'order/properties-order': [
+			[],
+			{
+				severity: 'warning',
+				unspecified: 'bottom',
+			},
+		],
 
 		'property-no-unknown': [
 			true,
@@ -36,5 +61,6 @@ export default {
 		],
 
 		'selector-class-pattern': null,
+		'value-keyword-case': null,
 	},
 }

@@ -1,226 +1,175 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-
-// Mock Nuxt globals
-const mockConfig = {
-	public: {
-		apiBase: 'http://api.test',
-	},
-}
-const mockHeaders = { cookie: 'test-cookie' }
-const mockFetch = mock() as any
-mockFetch.create = mock(() => mockFetch)
-mockFetch.raw = mock()
-
-// @ts-ignore
-globalThis.defineNuxtPlugin = (fn: any) => fn
-// @ts-ignore
-globalThis.useRuntimeConfig = () => mockConfig
-// @ts-ignore
-globalThis.useRequestHeaders = () => mockHeaders
-// @ts-ignore
-globalThis.$fetch = mockFetch
-// @ts-ignore
-globalThis.useRequestEvent = mock()
-// @ts-ignore
-globalThis.appendResponseHeader = mock()
-
-// Import the plugin
-// We need to import it after mocking globals
+import { beforeEach, afterEach, describe, expect, it } from 'bun:test'
+import {
+  api,
+  raw,
+  clear,
+  navigate,
+  layout,
+  append,
+  headers,
+  event,
+  nuxtApp,
+  route,
+  reset,
+  unauthorized,
+  deferred,
+} from '../helpers/auth'
 const plugin = (await import('@/plugins/api')).default
+const { useAuthStore } = await import('@/modules/auth/stores/auth')
+const setup = () => (plugin as any).setup(nuxtApp).provide.api
+beforeEach(reset)
+afterEach(() => {
+  delete (Object.prototype as any).server
+})
 
-describe('api plugin', () => {
-	beforeEach(() => {
-		mockFetch.mockClear()
-		mockFetch.create.mockClear()
-		mockFetch.raw.mockClear()
-		// Reset implementations to default
-		mockFetch.mockImplementation(() => Promise.resolve({}))
-		mockFetch.raw.mockImplementation(() =>
-			Promise.resolve({ headers: { getSetCookie: () => [] } }),
-		)
-		// @ts-ignore
-		globalThis.useRequestEvent.mockClear()
-		// @ts-ignore
-		globalThis.appendResponseHeader.mockClear()
-	})
+describe('API recovery', () => {
+  it('uses configured transport and disables automatic retries', async () => {
+    const client = setup()
+    await client('/user', { retry: 4 })
+    expect((api as any).create).toHaveBeenCalledWith({
+      baseURL: 'http://api.test',
+      credentials: 'include',
+      retry: 0,
+    })
+    expect(api.mock.calls[0][1].retry).toBe(0)
+  })
+  it('refreshes once and replays concurrent requests, including late 401s', async () => {
+    const client = setup()
+    const late = deferred<unknown>()
+    api
+      .mockRejectedValueOnce(unauthorized)
+      .mockImplementationOnce(() => late.promise)
+      .mockResolvedValue({ ok: true })
+    const first = client('/one')
+    const second = client('/two')
+    await first
+    late.reject(unauthorized)
+    expect(await second).toEqual({ ok: true })
+    expect(raw).toHaveBeenCalledTimes(1)
+    expect(api).toHaveBeenCalledTimes(4)
+  })
+  it.each([
+    '/auth/login',
+    '/auth/signup',
+    '/auth/google/exchange',
+    '/auth/refresh',
+  ])('does not recover %s', async (path) => {
+    const client = setup()
+    api.mockRejectedValue(unauthorized)
+    await expect(client(path)).rejects.toEqual(unauthorized)
+    expect(raw).not.toHaveBeenCalled()
+    expect(clear).not.toHaveBeenCalled()
+  })
+  it('allows logout recovery while suppressing session handling', async () => {
+    const client = setup()
+    api.mockRejectedValueOnce(unauthorized).mockResolvedValue(undefined)
+    await client('/auth/logout', { method: 'POST', skipSessionHandling: true })
+    expect(raw).toHaveBeenCalledTimes(1)
+    expect(clear).not.toHaveBeenCalled()
+    expect(api.mock.calls[0][1].skipSessionHandling).toBeUndefined()
+  })
+  it('clears and redirects only once for a group of terminal failures', async () => {
+    const client = setup()
+    api.mockRejectedValue(unauthorized)
+    raw.mockRejectedValue(unauthorized)
+    await Promise.allSettled([client('/one'), client('/two')])
+    expect(raw).toHaveBeenCalledTimes(1)
+    expect(clear).toHaveBeenCalledTimes(1)
+    expect(navigate).toHaveBeenCalledTimes(1)
+    expect(navigate).toHaveBeenCalledWith({
+      path: '/login',
+      query: { redirect: '/my/weeks?q=1' },
+    })
+  })
+  it('handles a replayed 401 without refreshing again', async () => {
+    const client = setup()
+    api.mockRejectedValue(unauthorized)
+    await expect(client('/user')).rejects.toEqual(unauthorized)
+    expect(raw).toHaveBeenCalledTimes(1)
+    expect(clear).toHaveBeenCalledTimes(1)
+  })
+  it.each([new Error('offline'), { status: 500 }])(
+    'preserves auth on refresh outages',
+    async (error) => {
+      const client = setup()
+      const store = useAuthStore()
+      store.user = { id: '1' } as any
+      api.mockRejectedValue(unauthorized)
+      raw.mockRejectedValue(error)
+      await expect(client('/user')).rejects.toEqual(error)
+      expect(store.isAuthenticated).toBe(true)
+      expect(clear).not.toHaveBeenCalled()
+    },
+  )
+  it('suppresses terminal handling for initialization', async () => {
+    const client = setup()
+    api.mockRejectedValue(unauthorized)
+    raw.mockRejectedValue(unauthorized)
+    await expect(
+      client('/user', { skipSessionHandling: true }),
+    ).rejects.toEqual(unauthorized)
+    expect(clear).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
+  })
+  it('keeps shared pages open anonymously', async () => {
+    route.path = '/weeks/abc'
+    route.fullPath = '/weeks/abc'
+    const client = setup()
+    api.mockRejectedValue(unauthorized)
+    raw.mockRejectedValue(unauthorized)
+    await expect(client('/weeks/abc')).rejects.toEqual(unauthorized)
+    expect(clear).toHaveBeenCalledTimes(1)
+    expect(navigate).not.toHaveBeenCalled()
+    expect(layout).toHaveBeenCalledWith('default')
+  })
+  it('captures SSR event and merges rotated cookies for replay and later requests', async () => {
+    Object.defineProperty(Object.prototype, 'server', {
+      configurable: true,
+      get: () => true,
+    })
+    const client = setup()
+    api.mockRejectedValueOnce(unauthorized).mockResolvedValue({})
+    const cookies = [
+      'access_token=new; Path=/; HttpOnly',
+      'refresh_token=new-refresh; Path=/; HttpOnly',
+    ]
+    raw.mockResolvedValue({ headers: { getSetCookie: () => cookies } })
+    await client('/one')
+    await client('/two')
+    expect(append).toHaveBeenCalledWith(event, 'set-cookie', cookies[0])
+    expect(append).toHaveBeenCalledWith(event, 'set-cookie', cookies[1])
+    expect(api.mock.calls[0][1].headers.get('cookie')).toContain(
+      'access_token=old;',
+    )
+    expect(api.mock.calls[1][1].headers.get('cookie')).toBe(
+      'access_token=new; refresh_token=new-refresh; preference=dark',
+    )
+    expect(api.mock.calls[2][1].headers.get('cookie')).toBe(
+      api.mock.calls[1][1].headers.get('cookie'),
+    )
+    expect(headers.cookie).toContain('access_token=old;')
+  })
+})
 
-	it('initializes the api client with correct config', () => {
-		// @ts-ignore
-		plugin()
-		// @ts-ignore
-		expect(mockFetch.create).toHaveBeenCalledWith({
-			baseURL: 'http://api.test',
-			credentials: 'include',
-			headers: mockHeaders,
-		})
-	})
-
-	describe('$api wrapper', () => {
-		it('performs a successful request', async () => {
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-			mockFetch.mockResolvedValue({ data: 'ok' })
-
-			const result = await $api('/test')
-
-			expect(result).toEqual({ data: 'ok' })
-			expect(mockFetch).toHaveBeenCalledWith('/test', undefined)
-		})
-
-		it('refreshes token on 401 and retries the request', async () => {
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-
-			// 1. Initial request fails with 401
-			const error401 = {
-				response: new Response(null, { status: 401 }),
-			}
-			mockFetch.mockRejectedValueOnce(error401)
-
-			// 2. Refresh tokens succeeds
-			mockFetch.raw.mockResolvedValueOnce({
-				headers: {
-					getSetCookie: () => [],
-				},
-			})
-
-			// 3. Retry succeeds
-			mockFetch.mockResolvedValueOnce({ data: 'retried' })
-
-			const result = await $api('/test')
-
-			expect(result).toEqual({ data: 'retried' })
-			// Check calls: 1. /test, 2. /auth/refresh (via raw), 3. /test (retry)
-			expect(mockFetch).toHaveBeenCalledTimes(2)
-			expect(mockFetch.mock.calls[0][0]).toBe('/test')
-			expect(mockFetch.raw).toHaveBeenCalledTimes(1)
-			expect(mockFetch.raw.mock.calls[0][0]).toBe('/auth/refresh')
-			expect(mockFetch.raw.mock.calls[0][1].method).toBe('POST')
-			expect(mockFetch.mock.calls[1][0]).toBe('/test')
-			expect(mockFetch.mock.calls[1][1]._retry).toBe(true)
-		})
-
-		it('does not refresh on 401 for auth requests', async () => {
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-
-			const error401 = {
-				response: new Response(null, { status: 401 }),
-			}
-			mockFetch.mockRejectedValue(error401)
-
-			await expect($api('/auth/login')).rejects.toEqual(error401)
-			expect(mockFetch).toHaveBeenCalledTimes(1)
-			expect(mockFetch).not.toHaveBeenCalledWith(
-				'/auth/refresh',
-				expect.anything(),
-			)
-		})
-
-		it('coalesces concurrent refreshes', async () => {
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-
-			const error401 = {
-				response: new Response(null, { status: 401 }),
-			}
-
-			// Mock /auth/refresh with a delay via mockFetch.raw
-			let refreshCalled = 0
-			mockFetch.raw.mockImplementation(async (url: string) => {
-				if (url === '/auth/refresh') {
-					refreshCalled++
-					await new Promise((resolve) => setTimeout(resolve, 50))
-					return { headers: { getSetCookie: () => [] } }
-				}
-				return {}
-			})
-
-			mockFetch.mockImplementation(async (url: string, options: any) => {
-				if ((url === '/test1' || url === '/test2') && !options?._retry) {
-					throw error401
-				}
-				return { data: 'ok' }
-			})
-
-			// Trigger two concurrent requests that both hit 401
-			const p1 = $api('/test1')
-			const p2 = $api('/test2')
-
-			const [r1, r2] = await Promise.all([p1, p2])
-
-			expect(r1).toEqual({ data: 'ok' })
-			expect(r2).toEqual({ data: 'ok' })
-			// /auth/refresh should only be called once
-			expect(refreshCalled).toBe(1)
-		})
-
-		it('throws original error if refresh fails', async () => {
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-
-			const error401 = {
-				response: new Response(null, { status: 401 }),
-			}
-			mockFetch.mockRejectedValueOnce(error401) // initial
-			mockFetch.raw.mockRejectedValueOnce(new Error('Refresh failed')) // refresh
-
-			await expect($api('/test')).rejects.toEqual(error401)
-		})
-
-		it('synchronizes cookies on server-side during refresh', async () => {
-			// Mock import.meta.server using prototype hack as it's module-scoped in Bun.
-			Object.defineProperty(Object.prototype, 'server', {
-				get() {
-					return (globalThis as any)._MOCK_SERVER_
-				},
-				configurable: true,
-			})
-			;(globalThis as any)._MOCK_SERVER_ = true
-
-			const mockEvent = {}
-			// @ts-ignore
-			globalThis.useRequestEvent.mockReturnValue(mockEvent)
-
-			const { provide } = plugin({} as any) as any
-			const $api = provide.api
-
-			const error401 = {
-				response: new Response(null, { status: 401 }),
-			}
-			mockFetch.mockRejectedValueOnce(error401)
-
-			// Refresh with cookies
-			const mockSetCookies = ['token=new; Path=/; HttpOnly', 'other=val']
-			mockFetch.raw.mockResolvedValueOnce({
-				headers: {
-					getSetCookie: () => mockSetCookies,
-				},
-			})
-
-			mockFetch.mockResolvedValueOnce({ data: 'ok' })
-
-			await $api('/test')
-
-			// @ts-ignore
-			expect(globalThis.appendResponseHeader).toHaveBeenCalledWith(
-				mockEvent,
-				'set-cookie',
-				mockSetCookies[0],
-			)
-			// @ts-ignore
-			expect(globalThis.appendResponseHeader).toHaveBeenCalledWith(
-				mockEvent,
-				'set-cookie',
-				mockSetCookies[1],
-			)
-
-			// Check if headers were updated
-			expect(mockHeaders.cookie).toBe('token=new; other=val')
-
-			// Reset
-			delete (Object.prototype as any).server
-			;(globalThis as any)._MOCK_SERVER_ = false
-		})
-	})
+it('shares rotation with requests sent while refresh is pending', async () => {
+  const client = setup()
+  const rotation = deferred<unknown>()
+  const started = deferred<void>()
+  const late = deferred<unknown>()
+  raw.mockImplementationOnce(() => {
+    started.resolve()
+    return rotation.promise
+  })
+  api
+    .mockRejectedValueOnce(unauthorized)
+    .mockImplementationOnce(() => late.promise)
+    .mockResolvedValue({})
+  const first = client('/one')
+  await started.promise
+  const second = client('/two')
+  rotation.resolve({ headers: { getSetCookie: () => [] } })
+  await first
+  late.reject(unauthorized)
+  await second
+  expect(raw).toHaveBeenCalledTimes(1)
 })

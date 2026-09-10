@@ -1,175 +1,71 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { ref } from 'vue'
+import { beforeEach, expect, it } from 'bun:test'
+import { api, navigate, reset, unauthorized } from '../../helpers/auth'
+import { getRedirectTarget, isPublicRoute } from '@/modules/auth/utils/session'
+const guard = (await import('@/core/router/middleware/auth.global'))
+  .default as any
+beforeEach(reset)
+it.each(['/', '/login', '/signup', '/weeks/abc'])(
+  'allows public route %s without login loops',
+  async (path) => {
+    api.mockRejectedValue(unauthorized)
+    await guard({ path, fullPath: path })
+    expect(navigate).not.toHaveBeenCalled()
+    expect(isPublicRoute(path)).toBe(true)
+  },
+)
+it('redirects protected routes with their query and hash', async () => {
+  api.mockRejectedValue(unauthorized)
+  await guard({ path: '/my/weeks', fullPath: '/my/weeks?q=1#week' })
+  expect(navigate).toHaveBeenCalledWith({
+    path: '/login',
+    query: { redirect: '/my/weeks?q=1#week' },
+  })
+})
+it('allows authenticated navigation', async () => {
+  api.mockResolvedValue({ id: '1' })
+  await guard({ path: '/my/weeks', fullPath: '/my/weeks' })
+  expect(navigate).not.toHaveBeenCalled()
+})
+it('reports protected initialization outages as 503', async () => {
+  api.mockRejectedValue(new Error('offline'))
+  expect(await guard({ path: '/my/weeks' })).toMatchObject({ statusCode: 503 })
+  expect(navigate).not.toHaveBeenCalled()
+})
+it('allows public pages during initialization outages', async () => {
+  api.mockRejectedValue(new Error('offline'))
+  expect(await guard({ path: '/weeks/abc' })).toBeUndefined()
+})
+it.each([
+  undefined,
+  '//evil.test',
+  '/\\evil.test',
+  'https://evil.test',
+  '/\n/evil.test',
+  ['/my/weeks'],
+])('rejects unsafe redirect %j', (value) => {
+  expect(getRedirectTarget(value)).toBe('/my/weeks')
+})
+it('preserves safe internal return URLs', () => {
+  expect(getRedirectTarget('/my/recipes?q=1#item')).toBe('/my/recipes?q=1#item')
+  expect(isPublicRoute('/weeks/a/edit')).toBe(false)
+})
 
-// Mock Nuxt & Vue functions
-const mockNavigateTo = mock()
-// @ts-ignore
-globalThis.navigateTo = mockNavigateTo
-
-const mockRoute = {
-	query: {} as Record<string, any>,
-}
-// @ts-ignore
-globalThis.useRoute = () => mockRoute
-
-// Mock Composables
-const mockLogin = mock()
-const mockLoginForm = {
-	email: ref(''),
-	errors: ref({}),
-	isLoading: ref(false),
-	login: mockLogin,
-	meta: ref({ valid: true }),
-	password: ref(''),
-	serverError: ref(null),
-}
-
-// @ts-ignore
-globalThis.useLoginForm = () => mockLoginForm
-
-// Import the page component logic
-// Note: Since we are testing the logic in <script setup>, we can import the component
-// and test the onSubmit function if it's exported or accessible.
-// In a real Nuxt/Vitest setup we'd use mount(), but here we'll follow the pattern in useLoginForm.spec.ts
-// by mocking the environment and checking calls.
-
-describe('Login Page logic', () => {
-	beforeEach(() => {
-		mockNavigateTo.mockClear()
-		mockLogin.mockClear()
-		mockRoute.query = {}
-		mockLoginForm.serverError.value = null
-	})
-
-	it('navigates to my-weeks on successful login by default', async () => {
-		// Simulate the onSubmit from login.vue
-		const onSubmit = async () => {
-			try {
-				await mockLogin()
-			} catch {
-				return
-			}
-			const redirect = mockRoute.query.redirect
-			if (
-				typeof redirect === 'string' &&
-				redirect.startsWith('/') &&
-				!redirect.startsWith('//')
-			) {
-				await mockNavigateTo(redirect)
-			} else {
-				await mockNavigateTo({ name: 'my-weeks' })
-			}
-		}
-
-		mockLogin.mockResolvedValueOnce({})
-		await onSubmit()
-
-		expect(mockLogin).toHaveBeenCalled()
-		expect(mockNavigateTo).toHaveBeenCalledWith({ name: 'my-weeks' })
-	})
-
-	it('navigates to redirect query param if provided and valid', async () => {
-		const onSubmit = async () => {
-			try {
-				await mockLogin()
-			} catch {
-				return
-			}
-			const redirect = mockRoute.query.redirect
-			if (
-				typeof redirect === 'string' &&
-				redirect.startsWith('/') &&
-				!redirect.startsWith('//')
-			) {
-				await mockNavigateTo(redirect)
-			} else {
-				await mockNavigateTo({ name: 'my-weeks' })
-			}
-		}
-
-		mockRoute.query.redirect = '/recipes'
-		mockLogin.mockResolvedValueOnce({})
-		await onSubmit()
-
-		expect(mockNavigateTo).toHaveBeenCalledWith('/recipes')
-	})
-
-	it('ignores unsafe redirect query param (protocol relative)', async () => {
-		const onSubmit = async () => {
-			try {
-				await mockLogin()
-			} catch {
-				return
-			}
-			const redirect = mockRoute.query.redirect
-			if (
-				typeof redirect === 'string' &&
-				redirect.startsWith('/') &&
-				!redirect.startsWith('//')
-			) {
-				await mockNavigateTo(redirect)
-			} else {
-				await mockNavigateTo({ name: 'my-weeks' })
-			}
-		}
-
-		mockRoute.query.redirect = '//evil.com'
-		mockLogin.mockResolvedValueOnce({})
-		await onSubmit()
-
-		expect(mockNavigateTo).toHaveBeenCalledWith({ name: 'my-weeks' })
-	})
-
-	it('ignores non-string redirect query param', async () => {
-		const onSubmit = async () => {
-			try {
-				await mockLogin()
-			} catch {
-				return
-			}
-			const redirect = mockRoute.query.redirect
-			if (
-				typeof redirect === 'string' &&
-				redirect.startsWith('/') &&
-				!redirect.startsWith('//')
-			) {
-				await mockNavigateTo(redirect)
-			} else {
-				await mockNavigateTo({ name: 'my-weeks' })
-			}
-		}
-
-		// @ts-ignore
-		mockRoute.query.redirect = ['/one', '/two']
-		mockLogin.mockResolvedValueOnce({})
-		await onSubmit()
-
-		expect(mockNavigateTo).toHaveBeenCalledWith({ name: 'my-weeks' })
-	})
-
-	it('does not navigate if login fails', async () => {
-		const onSubmit = async () => {
-			try {
-				await mockLogin()
-			} catch {
-				return
-			}
-			const redirect = mockRoute.query.redirect
-			if (
-				typeof redirect === 'string' &&
-				redirect.startsWith('/') &&
-				!redirect.startsWith('//')
-			) {
-				await mockNavigateTo(redirect)
-			} else {
-				await mockNavigateTo({ name: 'my-weeks' })
-			}
-		}
-
-		mockLogin.mockRejectedValueOnce(new Error('Login failed'))
-		await onSubmit()
-
-		expect(mockLogin).toHaveBeenCalled()
-		expect(mockNavigateTo).not.toHaveBeenCalled()
-	})
+it('initializes through the dependent plugin and avoids repeat middleware fetches', async () => {
+  const plugin = (await import('@/plugins/authInit')).default as any
+  const keys = new Set<string>()
+  Object.assign(globalThis, {
+    callOnce: async (key: string, fn: () => Promise<void>) => {
+      if (!keys.has(key)) {
+        await fn()
+        keys.add(key)
+      }
+    },
+  })
+  api.mockRejectedValue(unauthorized)
+  await plugin.setup()
+  await plugin.setup()
+  await guard({ path: '/login', fullPath: '/login' })
+  expect(plugin.dependsOn).toEqual(['base-api'])
+  expect(keys.has('auth:init')).toBe(true)
+  expect(api).toHaveBeenCalledTimes(1)
 })

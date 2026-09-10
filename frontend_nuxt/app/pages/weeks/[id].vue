@@ -1,84 +1,82 @@
 <script setup lang="ts">
-	definePageMeta({
-		middleware: 'shared',
-	})
+  import { useAuthStore } from '@/modules/auth/stores/auth'
 
-	const route = useRoute()
-	const authStore = useAuthStore()
-	const { mutateAsync: remove } = useMutation(deleteWeekMutation())
-	const {
-		data: week,
-		error,
-		refetch,
-	} = useQuery(getWeekQuery(route.params.id as string))
+  const route = useRoute()
+  const authStore = useAuthStore()
+  const { mutateAsync: remove } = useMutation(deleteWeekMutation())
+  const {
+    data: week,
+    error,
+    refetch,
+  } = useQuery(getWeekQuery(route.params.id as string))
 
-	const onDelete = async (weekId: string) => {
-		try {
-			await remove(weekId)
-		} catch (error: unknown) {
-			console.error('An error during delete: ', error)
-			return
-		}
-		return await navigateTo({ name: 'my-weeks' })
-	}
+  const onDelete = async (weekId: string) => {
+    try {
+      await remove(weekId)
+    } catch (error: unknown) {
+      console.error('An error during delete: ', error)
+      return
+    }
+    return await navigateTo({ name: 'my-weeks' })
+  }
 </script>
 
 <template>
-	<div class="page-container">
-		<PageTitle
-			v-if="week"
-			:name="week.name"
-		>
-			<template
-				v-if="authStore.isAuthenticated"
-				#controls
-			>
-				<UiButton aria-label="Groceries">
-					<Icon name="lucide:shopping-cart" />
+  <div class="page-container">
+    <PageTitle
+      v-if="week"
+      :name="week.name"
+    >
+      <template
+        v-if="authStore.isAuthenticated"
+        #controls
+      >
+        <UiButton aria-label="Groceries">
+          <Icon name="lucide:shopping-cart" />
 
-					<span class="page-title__button-label">Groceries</span>
-				</UiButton>
+          <span class="page-title__button-label">Groceries</span>
+        </UiButton>
 
-				<UiButton
-					variant="danger"
-					:disabled="!week"
-					aria-label="Delete week"
-					@click="onDelete(week?.id as string)"
-				>
-					<Icon name="lucide:trash" />
+        <UiButton
+          variant="danger"
+          :disabled="!week"
+          aria-label="Delete week"
+          @click="onDelete(week?.id as string)"
+        >
+          <Icon name="lucide:trash" />
 
-					<span class="page-title__button-label">Delete week</span>
-				</UiButton>
-			</template>
-		</PageTitle>
+          <span class="page-title__button-label">Delete week</span>
+        </UiButton>
+      </template>
+    </PageTitle>
 
-		<PageErrorState
-			v-else-if="error"
-			name="weeks"
-			:error="error"
-			@repeat="refetch"
-		/>
+    <PageErrorState
+      v-else-if="error"
+      name="weeks"
+      :error="error"
+      @repeat="refetch"
+    />
 
-		<PageLoadingState
-			v-else
-			name="weeks"
-		/>
+    <PageLoadingState
+      v-else
+      name="weeks"
+    />
 
-		<WeekSlotGrid
-			v-if="week"
-			:week="week"
-		/>
-	</div>
+    <WeekSlotGrid
+      v-if="week"
+      :week="week"
+    />
+  </div>
 </template>
 
 <style scoped>
-	.page-title__button-label {
-		display: none;
-	}
+  .page-title__button-label {
+    display: none;
+  }
 
-	@media (width > 768px) {
-		.page-title__button-label {
-			display: inline;
-		}
-	}
+  @media (width > 768px) {
+    .page-title__button-label {
+      display: inline;
+    }
+  }
 </style>

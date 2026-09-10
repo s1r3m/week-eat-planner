@@ -9,6 +9,7 @@ import oxlint from 'eslint-plugin-oxlint'
 import perfectionist from 'eslint-plugin-perfectionist'
 import unicorn from 'eslint-plugin-unicorn'
 import vue from 'eslint-plugin-vue'
+import vueA11y from 'eslint-plugin-vuejs-accessibility'
 import { globalIgnores } from 'eslint/config'
 
 import withNuxt from './.nuxt/eslint.config.mjs'
@@ -16,13 +17,14 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 export default withNuxt(
 	defineConfigWithVueTs(
 		{
-			files: ['app/**/*.{ts,vue,js,mjs}'],
+			files: ['layers/**/*.{ts,vue}', '*.{ts,vue,js,mjs}'],
 			name: 'app/files-to-lint',
 		},
 
 		globalIgnores(['.nuxt', '.output', 'node_modules', 'dist']),
 
 		vue.configs['flat/recommended'],
+		vueA11y.configs['flat/recommended'],
 		vueTsConfigs.strict,
 		vueTsConfigs.stylistic,
 		unicorn.configs.all,
@@ -31,6 +33,8 @@ export default withNuxt(
 		importX.flatConfigs.typescript,
 
 		skipFormatting,
+
+		...oxlint.configs['flat/all'],
 
 		{
 			rules: {
@@ -43,10 +47,41 @@ export default withNuxt(
 				'import-x/newline-after-import': 'warn',
 				'import-x/no-cycle': process.env.CI ? 'off' : 'error',
 
-				'unicorn/filename-case': 'off',
-				'unicorn/no-null': 'off',
+				'unicorn/consistent-arrow-return-style': 'off',
 
-				'unicorn/prevent-abbreviations': 'warn',
+				'unicorn/consistent-boolean-name': [
+					'error',
+					{
+						checkVariables: 'never',
+						wrappers: {
+							ComputedRef: 'value',
+							ModelRef: 'value',
+							Ref: 'value',
+							ShallowRef: 'value',
+							WritableComputedRef: 'value',
+						},
+					},
+				],
+
+				'unicorn/filename-case': 'off',
+
+				'unicorn/name-replacements': [
+					'warn',
+					{
+						replacements: {
+							e: false,
+							i: false,
+							props: false,
+							ref: false,
+						},
+					},
+				],
+
+				'unicorn/no-barrel-files': 'off',
+				'unicorn/no-null': 'off',
+				'unicorn/prefer-temporal': 'off',
+				'unicorn/try-complexity': ['error', { max: 3 }],
+
 				'vue/block-lang': [
 					'error',
 					{
@@ -86,12 +121,6 @@ export default withNuxt(
 
 				'vue/html-indent': ['warn', 'tab'],
 
-				'perfectionist/sort-objects': 'off',
-
-				'perfectionist/sort-interfaces': 'off',
-
-				'perfectionist/sort-union-types': 'off',
-
 				'vue/html-self-closing': [
 					'warn',
 					{
@@ -122,7 +151,15 @@ export default withNuxt(
 					'warn',
 					[{ blankLine: 'always', next: '*', prev: '*' }],
 				],
+
+				'vue/require-default-prop': 'off',
+
 				'vue/singleline-html-element-content-newline': 'off',
+
+				'vuejs-accessibility/label-has-for': [
+					'error',
+					{ required: { some: ['id', 'nesting'] } },
+				],
 			},
 
 			settings: {
@@ -134,15 +171,5 @@ export default withNuxt(
 				],
 			},
 		},
-
-		{
-			files: ['app/api/**/*.{ts,js,mjs}'],
-			name: 'app/api-naming-override',
-			rules: {
-				camelcase: 'off',
-			},
-		},
-
-		...oxlint.configs['flat/all'],
 	),
 )
