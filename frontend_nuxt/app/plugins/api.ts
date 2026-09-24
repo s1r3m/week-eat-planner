@@ -19,7 +19,8 @@ export default defineNuxtPlugin(() => {
     }
   }
 
-  for (const cookie of (requestHeaders.cookie ?? '').split(';')) {
+  const responseCookies = (requestHeaders.cookie ?? '').split(';')
+  for (const cookie of responseCookies) {
     rememberCookie(cookie)
   }
 
@@ -39,7 +40,7 @@ export default defineNuxtPlugin(() => {
       const response = await transport.raw('/auth/refresh', {
         headers,
         method: 'POST',
-        parseResponse: false,
+        parseResponse: () => undefined,
       })
 
       if (!event) return

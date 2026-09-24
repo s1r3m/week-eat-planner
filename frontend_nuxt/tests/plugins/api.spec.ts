@@ -24,7 +24,7 @@ beforeEach(() => {
   event = undefined
   headers = {}
   Object.assign(globalThis, {
-    $fetch: createFetch({ fetch: fetch as typeof globalThis.fetch }),
+    $fetch: createFetch({ fetch: fetch as unknown as typeof globalThis.fetch }),
     useRequestEvent: () => event,
     useRequestHeaders: () => headers,
     useRuntimeConfig: () => ({ public: { apiUrl: 'http://api.test/backend' } }),
@@ -57,7 +57,9 @@ describe('API session renewal', () => {
       .mockResolvedValueOnce(response(200))
       .mockResolvedValueOnce(Response.json({ id: 'user-1' }))
 
-    expect(await setup().provide.api('/user')).toEqual({ id: 'user-1' })
+    expect(await setup().provide.api<{ id: string }>('/user')).toEqual({
+      id: 'user-1',
+    })
     expect(requestPaths()).toEqual([
       '/backend/user',
       '/backend/auth/refresh',
@@ -141,7 +143,9 @@ describe('API session renewal', () => {
       signal: controller.signal,
     }
 
-    expect(await setup().provide.api('/weeks', options)).toEqual({
+    expect(
+      await setup().provide.api<{ id: string }>('/weeks', options),
+    ).toEqual({
       id: 'week-1',
     })
     expect(fetch.mock.calls[0]![0]).toBe(
