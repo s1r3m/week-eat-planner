@@ -42,7 +42,8 @@ mock.module('@vee-validate/zod', () => ({
   toTypedSchema: mock((schema: any) => schema),
 }))
 
-const { useSignupForm } = await import('@/composables/auth/useSignupForm')
+const { useSignupForm } =
+  await import('@/modules/auth/composables/useSignupForm')
 
 describe('useSignupForm', () => {
   beforeEach(() => {

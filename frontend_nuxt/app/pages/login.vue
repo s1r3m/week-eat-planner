@@ -1,13 +1,21 @@
 <script setup lang="ts">
-  import { useLoginForm } from '@/composables/auth/useLoginForm'
+  import type { LoginForm } from '@/modules/auth/schemas/login'
+
+  import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
   import { getRedirectTarget } from '@/modules/auth/utils/session'
-  const { email, errors, isLoading, login, meta, password, serverError } =
-    useLoginForm()
+  import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
+  import AuthCard from '@/modules/auth/ui/AuthCard.vue'
+
+  definePageMeta({
+    layout: 'default',
+  })
+
+  const { login } = useLoginForm()
   const route = useRoute()
 
-  const onSubmit = async () => {
+  const onSubmit = async (payload: LoginForm) => {
     try {
-      await login()
+      await login(payload)
     } catch {
       // serverError is already set by useSignupForm; swallow here
       return
@@ -18,54 +26,22 @@
 </script>
 
 <template>
-  <div class="page-container">
-    <AuthForm
-      id="login-form"
+  <div class="page">
+    <AuthCard
+      class=""
       header="Welcome back"
       description="Login to your account"
-      @submit="onSubmit"
     >
-      <UiAlert
-        v-if="serverError"
-        :message="serverError"
-        variant="error"
-        @close="serverError = null"
-      />
-
-      <div class="form-group">
-        <label for="email">Email:</label>
-
-        <UiInput
-          id="email"
-          v-model="email"
-          name="email"
-          placeholder="Enter email"
-        />
-
-        <small v-if="errors.email">{{ errors.email }}</small>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password:</label>
-
-        <UiInput
-          id="password"
-          v-model="password"
-          name="password"
-          type="password"
-          placeholder="Enter password"
-        />
-
-        <small v-if="errors.password">{{ errors.password }}</small>
-      </div>
-
-      <UiButton
-        class="submit"
-        type="submit"
-        :disabled="!meta.valid || isLoading"
-      >
-        {{ isLoading ? 'Logging in... ' : 'Login' }}
-      </UiButton>
-    </AuthForm>
+      <AuthLoginForm @submit="onSubmit" />
+    </AuthCard>
   </div>
 </template>
+
+<style scoped>
+  .page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--space-8);
+  }
+</style>

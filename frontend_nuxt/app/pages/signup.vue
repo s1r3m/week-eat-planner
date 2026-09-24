@@ -1,15 +1,13 @@
 <script setup lang="ts">
-  import { useSignupForm } from '@/composables/auth/useSignupForm'
-  const {
-    email,
-    errors,
-    isLoading,
-    meta,
-    password,
-    register,
-    serverError,
-    username,
-  } = useSignupForm()
+  import { useSignupForm } from '~/modules/auth/composables/useSignupForm'
+  import AuthCard from '~/modules/auth/ui/AuthCard.vue'
+  import AuthSignupForm from '~/modules/auth/ui/AuthSignupForm.vue'
+
+  definePageMeta({
+    layout: 'default',
+  })
+
+  const { register } = useSignupForm()
 
   const onSubmit = async () => {
     try {
@@ -22,69 +20,21 @@
 </script>
 
 <template>
-  <div class="page-container">
-    <AuthForm
-      id="singup-form"
-      header="Register"
-      description="Create your account"
-      @submit="onSubmit"
+  <div class="page">
+    <AuthCard
+      header="Join us"
+      description="Register your account"
     >
-      <UiAlert
-        v-if="serverError"
-        :message="serverError"
-        variant="error"
-        @close="serverError = null"
-      />
-
-      <div class="form-group">
-        <label for="email">Email:</label>
-
-        <UiInput
-          id="email"
-          v-model="email"
-          name="email"
-          autocomplete="username"
-          placeholder="Enter email"
-        />
-
-        <small v-if="errors.email">{{ errors.email }}</small>
-      </div>
-
-      <div class="form-group">
-        <label for="name">Name:</label>
-
-        <UiInput
-          id="name"
-          v-model="username"
-          name="name"
-          placeholder="Enter username"
-        />
-
-        <small v-if="errors.username">{{ errors.username }}</small>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password:</label>
-
-        <UiInput
-          id="password"
-          v-model="password"
-          type="password"
-          name="password"
-          autocomplete="new-password"
-          placeholder="Enter password"
-        />
-
-        <small v-if="errors.password">{{ errors.password }}</small>
-      </div>
-
-      <UiButton
-        class="submit"
-        type="submit"
-        :disabled="isLoading || !meta.valid"
-      >
-        {{ isLoading ? 'Creating a profile...' : 'Register' }}
-      </UiButton>
-    </AuthForm>
+      <AuthSignupForm @submit="onSubmit" />
+    </AuthCard>
   </div>
 </template>
+
+<style scoped>
+  .page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--space-8);
+  }
+</style>

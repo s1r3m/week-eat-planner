@@ -1,2 +1,2 @@
-@custom-media --mobile (width <= 480px);
-@custom-media --sidebar-hidden (width < 900px), (height < 480px);
+@custom-media --desktop (width > 768px);
+@custom-media --sidebar-show (width > 900px), (height > 480px);

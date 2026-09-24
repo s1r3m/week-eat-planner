@@ -207,7 +207,7 @@
   --md-sys-color-on-tertiary: #1a2523;
   --md-sys-color-error: #ff6f73;
   --md-sys-color-on-error: #4b0005;
-  --md-sys-color-surface: #111b19;
+  --md-sys-color-surface: rgb(17, 27, 25);
   --md-sys-color-on-surface: #e7f2f1;
   --md-sys-color-on-surface-variant: #a9beba;
   --md-sys-color-outline: rgba(231, 242, 241, 0.2);

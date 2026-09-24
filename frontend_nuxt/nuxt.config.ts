@@ -1,4 +1,21 @@
 export default defineNuxtConfig({
+  app: {
+    head: {
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: '',
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap',
+        },
+      ],
+    },
+  },
+
   compatibilityDate: '2025-07-15',
 
   css: ['@/core/assets/styles/main.css'],
@@ -15,7 +32,14 @@ export default defineNuxtConfig({
     dirs: [],
     scan: false,
   },
-  modules: ['@nuxt/eslint', '@pinia/nuxt', '@nuxt/icon', 'nuxt-open-fetch'],
+  modules: [
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    '@pinia/colada-nuxt',
+    '@nuxt/icon',
+    '@nuxtjs/color-mode',
+    'nuxt-open-fetch',
+  ],
 
   nitro: {
     devProxy: {

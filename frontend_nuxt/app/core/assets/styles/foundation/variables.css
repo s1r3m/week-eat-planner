@@ -1,93 +1,119 @@
 html {
-	color-scheme: light dark;
+  color-scheme: light dark;
 }
 
 html.light {
-	color-scheme: light;
+  color-scheme: light;
 }
 
 html.dark {
-	color-scheme: dark;
+  color-scheme: dark;
 }
 
 :root {
-	/* Colors */
-	--color-primary: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
-	--color-on-primary: light-dark(rgb(250 250 249 / 100%), rgb(11 15 14 / 100%));
-	--color-secondary: light-dark(rgb(81 96 95 / 100%), rgb(169 190 186 / 100%));
-	--color-on-secondary: light-dark(
-		rgb(250 250 249 / 100%),
-		rgb(11 15 14 / 100%)
-	);
-	--color-error: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
-	--color-on-error: light-dark(rgb(81 96 95 / 100%), rgb(11 15 14 / 100%));
-	--color-surface: light-dark(rgb(81 96 95 / 100%), rgb(11 15 14 / 100%));
-	--color-on-surface: light-dark(rgb(26 26 26 / 100%), rgb(231 242 241 / 100%));
-	--color-surface-variant: light-dark(
-		rgb(244 246 246 / 100%),
-		rgb(26 37 35 / 100%)
-	);
-	--color-on-surface-variant: light-dark(
-		rgb(81 96 95 / 100%),
-		rgb(169 190 186 / 100%)
-	);
-	--color-outline: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 0.2));
+  /* Font */
+  --font-family: 'Nunito Sans', system-ui, -apple-system, sans-serif;
 
-	/* Fonts */
-	--font-family:
-		ui-sans-serif system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-		Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  /* Brand / Primary */
+  --brand-primary: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
+  --brand-hover-button: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
+  --brand-link: light-dark(rgb(43 127 255 / 100%), rgb(81 162 255 / 100%));
 
-	/* Spacing */
-	--spacing: 0.25rem;
+  /* Text Colors */
+  --text-highlighted: light-dark(rgb(26 26 26 / 100%), rgb(231 242 241 / 100%));
+  --text-highlighted-2: light-dark(rgb(255 255 255 / 100%), rgb(255 255 255 / 100%));
+  --text-highlighted-3: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
+  --text: light-dark(rgb(49 65 88 / 100%), rgb(226 232 240 / 100%));
+  --text-toned: light-dark(rgb(69 85 108 / 100%), rgb(202 213 226 / 100%));
+  --text-muted: light-dark(rgb(98 116 142 / 100%), rgb(144 161 185 / 100%));
+  --text-dimmed: light-dark(rgb(144 161 185 / 100%), rgb(98 116 142 / 100%));
 
-	/* Font Weight */
-	--font-weight-light: 300;
-	--font-weight-regular: 400;
-	--font-weight-medium: 500;
-	--font-weight-semibold: 600;
-	--font-weight-bold: 700;
+  /* Background */
+  --bg: light-dark(rgb(250 250 249 / 100%), rgb(17 27 25 / 100%));
+  --bg-2: light-dark(rgb(255 255 255 / 100%), rgb(255 255 255 / 100%));
+  --bg-d: light-dark(rgb(255 255 255 / 100%), rgb(12 20 18 / 100%));
+  --bg-elevated: light-dark(rgb(244 246 246 / 100%), rgb(26 37 35 / 100%));
+  --bg-accented: light-dark(rgb(242 244 245 / 100%), rgb(28 39 37 / 100%));
+  --bg-inverted: light-dark(rgb(19 27 41 / 100%), rgb(255 255 255 / 100%));
+  --bg-red-hover: light-dark(rgb(229 72 77 / 10%), rgb(255 111 115 / 10%));
+  --bg-red-active: light-dark(rgb(229 72 77 / 20%), rgb(255 111 115 / 20%));
+  --bg-green-hover: light-dark(rgb(59 184 169 / 10%), rgb(74 207 191 / 10%));
+  --bg-green-active: light-dark(rgb(59 184 169 / 20%), rgb(74 207 191 / 20%));
+  --bg-grey-pressed: light-dark(rgb(144 161 185 / 15%), rgb(98 116 142 / 15%));
+  --bg-blue-hover: light-dark(rgb(43 127 255 / 10%), rgb(81 162 255 / 10%));
+  --bg-blue-active: light-dark(rgb(43 127 255 / 20%), rgb(81 162 255 / 20%));
 
-	/* Letter Spacing */
-	--tracking-tight: -0.025rem;
-	--tracking-normal: 0rem;
-	--tracking-wide: 0.025rem;
-	--tracking-wider: 0.05rem;
+  /* Overlay */
+  --overlay: light-dark(rgb(15 23 43 / 20%), rgb(15 23 43 / 20%));
 
-	--space-xs: calc(var(--spacing) * 1.5);
-	--space-sm: calc(var(--spacing) * 2);
-	--space-md: calc(var(--spacing) * 3);
-	--space-lg: calc(var(--spacing) * 4);
-	--space-xl: calc(var(--spacing) * 6);
-	--space-2xl: calc(var(--spacing) * 8);
+  /* Border */
+  --border: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 20%));
+  --border-2: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 20%));
 
-	/* Font Scale */
-	--font-size-hero: 3rem;
-	--font-size-display: 2rem;
-	--font-size-title: 1.5rem;
-	--font-size-body: 1rem;
-	--font-size-label: 0.875rem;
-	--font-size-button: 1rem;
-	--font-size-small: 0.5rem;
+  /* Error */
+  --error: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
 
-	/* Line heights */
-	--line-height-display: 2.5rem;
-	--line-height-title: 2rem;
-	--line-height-body: 1.5rem;
-	--line-height-label: 1.25rem;
-	--line-height-small: 1rem;
+  /* Warning */
+  --warning: rgb(239 177 0 / 100%);
 
-	/* Radius */
-	--radius-xs: 0.25rem;
-	--radius-sm: 0.5rem;
-	--radius-md: 0.75rem;
-	--radius-lg: 1rem;
-	--radius-xl: 1.75rem;
-	--radius-full: 9999px;
+  /* Shadow */
+  --shadow-sm: 0 2px 4px rgb(0 0 0 / 10%);
 
-	/* Layouts */
-	--header-height: 64px;
-	--sidebar-expanded: 235px;
-	--sidebar-collapsed: 60px;
+  /* Fluid Base (390px → 1440px) */
+  --fs-min: 16;
+  --fs-max: 18;
+  --vw-min: 390;
+  --vw-max: 1440;
+  --text-base: clamp(
+    1rem,
+    calc(
+      1rem + (var(--fs-max) - var(--fs-min)) * (100vw - var(--vw-min) * 1px) /
+        (var(--vw-max) - var(--vw-min))
+    ),
+    calc(var(--fs-max) / var(--fs-min) * 1rem)
+  );
+
+  /* Fluid Typography (в rem относительно базового) */
+  --text-10: 0.625rem; /* 10px → 11.25px */
+  --text-12: 0.75rem; /* 12px → 13.5px */
+  --text-14: 0.875rem; /* 14px → 15.75px */
+  --text-16: 1rem; /* 16px → 18px */
+  --text-20: 1.25rem; /* 20px → 22.5px */
+  --text-24: 1.5rem; /* 24px → 27px */
+  --text-32: 2rem; /* 32px → 36px */
+  --text-40: 2.5rem; /* 40px → 45px */
+  --text-48: 3rem; /* 48px → 54px */
+
+  /* Fluid Spacing (8x система, в rem) */
+  --space-1: 0.25rem; /* 4px → 4.5px */
+  --space-2: 0.5rem; /* 8px → 9px */
+  --space-3: 0.75rem; /* 12px → 13.5px */
+  --space-4: 1rem; /* 16px → 18px */
+  --space-5: 1.5rem; /* 24px → 27px */
+  --space-6: 2rem; /* 32px → 36px */
+  --space-7: 2.5rem; /* 40px → 45px */
+  --space-8: 3rem; /* 48px → 54px */
+  --space-9: 3.5rem; /* 56px → 63px */
+  --space-10: 4rem; /* 64px → 72px */
+
+  /* Radius */
+  --radius-sm: 0.25rem; /* 4px → 4.5px */
+  --radius-md: 0.375rem; /* 6px → 6.75px */
+  --radius-lg: 0.5rem; /* 8px → 9px */
+  --radius-xl: 1rem; /* 16px → 18px */
+
+  /* Container */
+  --container-max-width: 1440px;
+
+  /* Motion */
+  --duration-fast: 0.2s; /* ховеры, цвет, мелкие сдвиги */
+  --duration-base: 0.3s; /* раскрытия, панели, крупные перемещения */
+
+  /* Layouts */
+  --header-height: var(--space-10);
+  --sidebar-expanded: 235px;
+  --sidebar-collapsed: 60px;
+
+  /* Blur */
+  --blur: 16px;
 }

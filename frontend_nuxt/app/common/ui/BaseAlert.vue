@@ -50,25 +50,25 @@
     display: flex;
     position: relative;
     flex-direction: column;
-    padding: var(--space-md);
+    padding: var(--space-2);
     border-radius: var(--radius-md);
-    gap: var(--space-md);
+    gap: var(--space-2);
   }
 
   .alert-header {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-2);
   }
 
   .alert--error {
-    background-color: var(--color-error);
-    color: var(--color-on-error);
+    background-color: var(--error);
+    color: var(--text-highlighted-2);
   }
 
   .alert--success {
-    background-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-    color: var(--color-on-primary);
+    background-color: color-mix(in srgb, var(--brand-primary) 40%, transparent);
+    color: var(--text);
   }
 
   .icon {
@@ -77,6 +77,6 @@
     border: 0;
     background: transparent;
     color: inherit;
-    inset-inline-end: var(--space-lg);
+    inset-inline-end: var(--space-4);
   }
 </style>

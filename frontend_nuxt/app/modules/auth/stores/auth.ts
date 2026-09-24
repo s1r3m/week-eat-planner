@@ -25,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     isInitialized.value = true
     nuxtApp.runWithContext(() => clearNuxtData())
   }
+
   const fetchUser = async () => {
     const version = sessionVersion
     try {
@@ -42,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
       return null
     }
   }
+
   const signup = async (body: SignupPayload) => {
     isLoading.value = true
     try {
@@ -56,6 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = false
     }
   }
+
   const login = async (body: LoginPayload) => {
     isLoading.value = true
     try {
@@ -76,6 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = false
     }
   }
+
   const logout = async () => {
     isLoading.value = true
     try {
@@ -92,6 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = false
     }
   }
+
   const init = (): Promise<void> => {
     if (isInitialized.value) return Promise.resolve()
     initPromise ??= fetchUser()

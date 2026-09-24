@@ -1,37 +1,32 @@
 <script setup lang="ts">
+  import BaseButton from '@/common/ui/BaseButton.vue'
+
   definePageMeta({
-    middleware: 'auth',
     layout: 'app',
   })
 
-  const {
-    data: weeks,
-    error,
-    isLoading: isLoadingWeeks,
-    refetch,
-  } = useQuery(getWeeksQuery())
-  const { mutate: create, isLoading: isCreating } =
-    useMutation(addWeekMutation())
+  const weeks = ref([])
+  const error = ref()
 </script>
 
 <template>
   <div class="page-container">
     <PageTitle name="My Weeks">
       <template #controls>
-        <UiButton
-          :disabled="isCreating"
+        <BaseButton
+          disabled
           aria-label="Create week"
-          @click="create({ name: 'new week' })"
+          @click=""
         >
           <Icon name="lucide:plus" />
 
           <span class="page-title__button-label">Create week</span>
-        </UiButton>
+        </BaseButton>
       </template>
     </PageTitle>
 
     <PageLoadingState
-      v-if="!weeks?.length && isLoadingWeeks"
+      v-if="!weeks?.length"
       name="weeks"
     />
 
@@ -39,7 +34,7 @@
       v-else-if="error"
       name="weeks"
       :error="error"
-      @repeat="refetch"
+      @repeat=""
     />
 
     <WeekGrid
