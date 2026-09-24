@@ -79,20 +79,20 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-md);
-    border-bottom: 1px solid var(--color-outline);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--border);
   }
 
   .app-header__left-side {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-2);
   }
 
   .app-header__right-side {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-2);
   }
 
   .app-header__mobile-menu {

@@ -1,8 +1,9 @@
 import type { NavLink } from '@/modules/main/types'
 
+import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+
 export const useAppNavigation = () => {
-  // const { data: weeks } = useQuery(getWeeksQuery())
-  const weeks = ref([])
+  const { data: weeks } = useWeeks()
 
   const navLinks = computed<NavLink[]>(() => [
     {
@@ -13,7 +14,6 @@ export const useAppNavigation = () => {
       child: weeks.value?.map((week) => ({
         id: week.id,
         title: week.name,
-        inactive: week.__pending,
         to: { name: 'weeks-id', params: { id: week.id } },
       })),
     },

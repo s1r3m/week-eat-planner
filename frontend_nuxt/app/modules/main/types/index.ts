@@ -5,6 +5,5 @@ export interface NavLink {
   id: string
   title: string
   to: RouteLocationRaw
-  inactive?: boolean
   child?: NavLink[]
 }

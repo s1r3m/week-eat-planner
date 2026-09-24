@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
-from week_eat_planner.db.models.meal_slot import DayOfWeek
+from week_eat_planner.db.models.meal_slot import DayOfWeek, MealSlot
 from week_eat_planner.db.models.week import Week
 
 
@@ -49,19 +49,19 @@ class WeekRead(WeekReadMinimal):
 
     @model_validator(mode='before')
     @classmethod
-    def structure_week_days(cls, data: Week) -> dict[str, Any]:
+    def structure_week_days(cls, week: Week) -> dict[str, Any]:
         """Transforms flat meal_slots into structured week_days."""
-        structured_slots = [
+        structured_slots: list[dict[str, DayOfWeek | list[MealSlot]]] = [
             {
                 'name': day,
-                'slots': [slot for slot in data.meal_slots if slot.day_of_week == day],
+                'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
             }
             for day in DayOfWeek
         ]
 
         return {
-            'id': data.id,
-            'user_id': data.user_id,
-            'name': data.name,
+            'id': week.id,
+            'user_id': week.user_id,
+            'name': week.name,
             'week_days': structured_slots,
         }

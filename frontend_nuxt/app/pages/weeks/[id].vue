@@ -1,24 +1,19 @@
 <script setup lang="ts">
-  import { useAuthStore } from '@/modules/auth/stores/auth'
+  import { useWeek } from '@/modules/weeks/composables/useWeek'
+  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
+  import BaseButton from '@/common/ui/BaseButton.vue'
+  import PageErrorState from '@/common/ui/PageErrorState.vue'
+  import PageLoadingState from '@/common/ui/PageLoadingState.vue'
+  import PageTitle from '@/common/ui/PageTitle.vue'
+  import SlotGrid from '@/modules/weeks/ui/SlotGrid.vue'
+
+  definePageMeta({
+    layout: 'app',
+  })
 
   const route = useRoute()
-  const authStore = useAuthStore()
-  const { mutateAsync: remove } = useMutation(deleteWeekMutation())
-  const {
-    data: week,
-    error,
-    refetch,
-  } = useQuery(getWeekQuery(route.params.id as string))
-
-  const onDelete = async (weekId: string) => {
-    try {
-      await remove(weekId)
-    } catch (error: unknown) {
-      console.error('An error during delete: ', error)
-      return
-    }
-    return await navigateTo({ name: 'my-weeks' })
-  }
+  const { data: week, error, refetch } = useWeek(route.params.id as string)
+  const { data: user } = useCurrentUser()
 </script>
 
 <template>
@@ -28,25 +23,31 @@
       :name="week.name"
     >
       <template
-        v-if="authStore.isAuthenticated"
+        v-if="user"
         #controls
       >
-        <UiButton aria-label="Groceries">
-          <Icon name="lucide:shopping-cart" />
+        <BaseButton aria-label="Groceries">
+          <Icon
+            name="lucide:shopping-cart"
+            :size="24"
+          />
 
           <span class="page-title__button-label">Groceries</span>
-        </UiButton>
+        </BaseButton>
 
-        <UiButton
+        <BaseButton
           variant="danger"
           :disabled="!week"
           aria-label="Delete week"
-          @click="onDelete(week?.id as string)"
+          @click=""
         >
-          <Icon name="lucide:trash" />
+          <Icon
+            name="lucide:trash"
+            :size="24"
+          />
 
           <span class="page-title__button-label">Delete week</span>
-        </UiButton>
+        </BaseButton>
       </template>
     </PageTitle>
 
@@ -62,7 +63,7 @@
       name="weeks"
     />
 
-    <WeekSlotGrid
+    <SlotGrid
       v-if="week"
       :week="week"
     />

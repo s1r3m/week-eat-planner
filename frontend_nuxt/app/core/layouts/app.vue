@@ -32,7 +32,7 @@
       / var(--sidebar-width) 1fr;
     width: 100%;
     height: 100vh;
-    transition: grid-template-columns 0.3s ease;
+    transition: grid-template-columns var(--duration-base) ease;
   }
 
   .layout--collapsed {

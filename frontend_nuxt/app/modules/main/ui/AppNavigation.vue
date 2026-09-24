@@ -37,25 +37,14 @@
         v-if="link.child?.length && !collapsed"
         class="nav__children"
       >
-        <template
+        <NuxtLink
           v-for="child in link.child"
           :key="child.id"
+          class="nav__child-link"
+          :to="child.to"
         >
-          <span
-            v-if="child.inactive"
-            class="nav__child-link nav__child-link--inactive"
-          >
-            {{ child.title }}
-          </span>
-
-          <NuxtLink
-            v-else
-            class="nav__child-link"
-            :to="child.to"
-          >
-            {{ child.title }}
-          </NuxtLink>
-        </template>
+          {{ child.title }}
+        </NuxtLink>
       </div>
     </div>
   </div>
