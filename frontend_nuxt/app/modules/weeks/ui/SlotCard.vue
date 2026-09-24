@@ -42,17 +42,6 @@
           {{ mealSlot.recipe?.name }}
         </BaseButton>
       </template>
-
-      <div
-        v-else
-        class="slot__assign"
-      >
-        <Icon
-          name="lucide:plus"
-          :size="14"
-        />
-        Assign a recipe
-      </div>
     </div>
   </div>
 </template>

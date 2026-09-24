@@ -37,7 +37,7 @@
 
         <BaseButton
           variant="danger"
-          :disabled="!week"
+          disabled
           aria-label="Delete week"
           @click="() => {}"
         >
@@ -55,7 +55,7 @@
       v-else-if="error"
       name="weeks"
       :error="error"
-      @repeat="refetch"
+      @retry="refetch"
     />
 
     <PageLoadingState

@@ -4,10 +4,10 @@ import { getRedirectTarget, isPublicRoute } from '@/modules/auth/utils/session'
 export default defineNuxtRouteMiddleware(async (to) => {
   if (isPublicRoute(to.path)) return
 
-  const { data: user, refresh } = useCurrentUser()
+  const { data: user, refetch } = useCurrentUser()
 
   try {
-    await refresh()
+    await refetch(true)
   } catch {
     return abortNavigation({
       fatal: true,

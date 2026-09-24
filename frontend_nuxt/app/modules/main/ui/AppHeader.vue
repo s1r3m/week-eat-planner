@@ -1,27 +1,12 @@
 <script setup lang="ts">
   import { useSidebar } from '@/common/composables/useSidebar'
   import BaseButton from '@/common/ui/BaseButton.vue'
-  import { useAuthApi } from '@/modules/auth/api/authApi'
+  import { useLogout } from '@/modules/auth/composables/useLogout'
   import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
   const { collapsed, toggleCollapsed } = useSidebar()
 
-  const { logout } = useAuthApi()
-
-  const logoutError = ref<null | string>(null)
-  const isLoggingOut = ref(false)
-  const onLogout = async () => {
-    isLoggingOut.value = true
-    logoutError.value = null
-    try {
-      await logout()
-      await navigateTo('/')
-    } catch {
-      logoutError.value = 'An error occured during logout. Carry on.'
-    } finally {
-      isLoggingOut.value = false
-    }
-  }
+  const { error, isLoading, mutate: logout } = useLogout()
 </script>
 
 <template>
@@ -49,6 +34,7 @@
       <BaseButton
         class="app-header__mobile-menu"
         variant="icon"
+        disab
       >
         <Icon
           name="lucide:menu"
@@ -57,16 +43,16 @@
       </BaseButton>
 
       <span
-        v-if="logoutError"
+        v-if="error"
         role="alert"
       >
-        {{ logoutError }}
+        {{ error.message }}
       </span>
 
       <BaseButton
-        :disabled="isLoggingOut"
+        :disabled="isLoading"
         variant="danger"
-        @click="onLogout"
+        @click="logout"
       >
         Logout
       </BaseButton>

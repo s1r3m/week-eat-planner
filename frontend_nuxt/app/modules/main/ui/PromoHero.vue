@@ -89,7 +89,7 @@
       flex-direction: column;
       align-items: start;
       justify-content: center;
-      padding: var(--spacse-4);
+      padding: var(--space-4);
       gap: var(--space-8);
     }
 

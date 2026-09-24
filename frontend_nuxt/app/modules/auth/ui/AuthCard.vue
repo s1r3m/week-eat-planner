@@ -19,7 +19,7 @@
   .auth-card {
     display: flex;
     flex-direction: column;
-    width: 480px;
+    max-width: 480px;
     padding: var(--space-4);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);

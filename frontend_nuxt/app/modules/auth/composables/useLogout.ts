@@ -8,7 +8,7 @@ export const useLogout = () => {
   return useMutation({
     mutation: authApi.logout,
     onSettled: () => {
-      queryCache.invalidateQueries({ key: AUTH_KEY.user() })
+      queryCache.setQueryData(AUTH_KEY.user(), null)
     },
   })
 }

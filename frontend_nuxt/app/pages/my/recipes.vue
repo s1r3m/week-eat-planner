@@ -36,7 +36,7 @@
       v-else-if="error"
       name="recipes"
       :error="error"
-      @repeat="refetch"
+      @retry="refetch"
     />
 
     <!-- <RecipeGrid

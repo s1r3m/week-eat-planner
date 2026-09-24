@@ -73,7 +73,7 @@
     background-color: var(--bg-elevated);
     transition: border-color var(--duration-fast);
 
-    &:focus {
+    &:focus-within {
       border-color: var(--brand-primary);
       outline: none;
     }

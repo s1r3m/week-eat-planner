@@ -33,7 +33,7 @@
     </PageTitle>
 
     <PageLoadingState
-      v-if="!weeks?.length || isLoading"
+      v-if="isLoading || !weeks"
       name="weeks"
     />
 
@@ -41,7 +41,7 @@
       v-else-if="error"
       name="weeks"
       :error="error"
-      @repeat="refresh"
+      @retry="refresh"
     />
 
     <WeekGrid

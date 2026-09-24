@@ -14,16 +14,15 @@
   padding: var(--space-md);
   transition: background-color 0.2s;
   border-radius: var(--radius-md);
-  outline: none;
   cursor: pointer;
   gap: var(--space-md);
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
+}
 
-  .dropdown__item--active {
-    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
-    color: var(--color-primary);
-  }
+.dropdown__item--active {
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
 }

@@ -53,7 +53,7 @@
       id="email"
       v-model="email"
       label="Email"
-      autocomplete="username"
+      autocomplete="email"
       placeholder="Enter email"
       :error="errors.email"
     />
@@ -63,6 +63,7 @@
       v-model="username"
       label="Username"
       placeholder="Enter username"
+      autocomplete="username"
       :error="errors.username"
     />
 

@@ -46,6 +46,7 @@ export default withNuxt(
         'import-x/first': 'warn',
         'import-x/newline-after-import': 'warn',
         'import-x/no-cycle': process.env.CI ? 'off' : 'error',
+        'perfectionist/sort-objects': 'off',
 
         'unicorn/consistent-arrow-return-style': 'off',
 
