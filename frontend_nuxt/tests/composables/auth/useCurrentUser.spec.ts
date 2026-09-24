@@ -2,17 +2,16 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 const mockApi = mock()
 
-Object.assign(globalThis, {
-  useNuxtApp: () => ({ $api: mockApi }),
-  useQuery: (options: unknown) => options,
-})
-
 const { useCurrentUser } =
   await import('@/modules/auth/composables/useCurrentUser')
 
 describe('useCurrentUser', () => {
   beforeEach(() => {
     mockApi.mockReset()
+    Object.assign(globalThis, {
+      useNuxtApp: () => ({ $api: mockApi }),
+      useQuery: (options: unknown) => options,
+    })
   })
 
   it('returns null for unauthorized users', async () => {

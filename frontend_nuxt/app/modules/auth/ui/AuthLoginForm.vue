@@ -1,25 +1,36 @@
 <script setup lang="ts">
-  import type { LoginForm } from '@/modules/auth/schemas/login'
-
   import BaseAlert from '@/common/ui/BaseAlert.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
   import BaseInput from '@/common/ui/BaseInput.vue'
   import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
-  import { useLoginValidation } from '@/modules/auth/schemas/login'
 
   const emits = defineEmits<{
-    submit: [LoginForm]
+    success: []
   }>()
 
-  const { email, errors, isLoading, meta, password, serverError } =
-    useLoginForm()
-  const { handleSubmit } = useLoginValidation()
+  const {
+    email,
+    errors,
+    handleSubmit,
+    isLoading,
+    login,
+    meta,
+    password,
+    serverError,
+  } = useLoginForm()
 
   const formId = useId()
   const revealed = ref<boolean>(false)
 
-  const onSubmit = handleSubmit((values: LoginForm) => {
-    emits('submit', values)
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await login(values)
+    } catch {
+      // The form displays the error set by useLoginForm.
+      return
+    }
+
+    emits('success')
   })
 </script>
 

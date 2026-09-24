@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it } from 'bun:test'
 import { useSidebar } from '@/common/composables/useSidebar'
 import { ref } from 'vue'
 

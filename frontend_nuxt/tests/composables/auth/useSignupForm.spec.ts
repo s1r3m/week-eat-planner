@@ -1,127 +1,126 @@
-import { reset } from '../../helpers/auth'
-import { useAuthStore } from '@/modules/auth/stores/auth'
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { PiniaColada, useMutation } from '@pinia/colada'
+import { renderToString } from '@vue/server-renderer'
+import { createPinia, disposePinia } from 'pinia'
+import { createSSRApp, defineComponent, h, ref } from 'vue'
+import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
 
-// Mock globals
-// @ts-ignore
-globalThis.ref = ref
+const api = mock()
+let pinia: ReturnType<typeof createPinia> | undefined
 
-const mockSignup = mock()
-const mockEmail = ref('')
-const mockUsername = ref('')
-const mockPassword = ref('')
-const mockErrors = ref({})
-const mockMeta = ref({})
+async function createForm() {
+  let form!: ReturnType<typeof useSignupForm>
+  const app = createSSRApp(
+    defineComponent({
+      setup() {
+        form = useSignupForm()
+        return () => h('form')
+      },
+    }),
+  )
+  pinia = createPinia()
+  app.use(pinia).use(PiniaColada)
+  await renderToString(app)
+  return form
+}
 
-const mockHandleSubmit = mock((fn: any) => {
-  return () =>
-    fn({
-      email: mockEmail.value,
-      password: mockPassword.value,
-      username: mockUsername.value,
-    })
+beforeEach(() => {
+  api.mockReset()
+  api.mockResolvedValue({})
+  Object.assign(globalThis, {
+    ref,
+    useMutation,
+    useNuxtApp: () => ({ $api: api }),
+  })
+})
+afterEach(() => {
+  if (pinia) disposePinia(pinia)
+  pinia = undefined
 })
 
-// Mock vee-validate (same as in useLoginForm.spec.ts)
-mock.module('vee-validate', () => ({
-  useForm: () => ({
-    errors: mockErrors,
-    handleSubmit: mockHandleSubmit,
-    meta: mockMeta,
-  }),
-  useField: (name: string) => {
-    if (name === 'email') return { value: mockEmail }
-    if (name === 'username') return { value: mockUsername }
-    if (name === 'password') return { value: mockPassword }
-    return { value: ref('') }
-  },
-}))
-
-mock.module('@vee-validate/zod', () => ({
-  toTypedSchema: mock((schema: any) => schema),
-}))
-
-const { useSignupForm } =
-  await import('@/modules/auth/composables/useSignupForm')
-
 describe('useSignupForm', () => {
-  beforeEach(() => {
-    reset()
-    useAuthStore().signup = (...args: any[]) => mockSignup(...args)
-    mockSignup.mockClear()
-    mockHandleSubmit.mockClear()
-    mockEmail.value = ''
-    mockUsername.value = ''
-    mockPassword.value = ''
-    mockErrors.value = {}
-    mockMeta.value = {}
+  it('initializes with default values', async () => {
+    const form = await createForm()
+
+    expect(form.email.value).toBe('')
+    expect(form.username.value).toBe('')
+    expect(form.password.value).toBe('')
+    expect(form.isLoading.value).toBe(false)
+    expect(form.serverError.value).toBeNull()
   })
 
-  it('initializes with default values', () => {
-    const { email, username, isLoading, serverError } = useSignupForm()
-    expect(email.value).toBe('')
-    expect(username.value).toBe('')
-    expect(isLoading.value).toBe(false)
-    expect(serverError.value).toBeNull()
+  it('submits the values bound to the form through its own validation', async () => {
+    const form = await createForm()
+    form.email.value = ' test@example.com '
+    form.username.value = ' testuser '
+    form.password.value = 'password123'
+
+    await form.handleSubmit(form.register)()
+
+    expect(api).toHaveBeenCalledTimes(1)
+    expect(api).toHaveBeenCalledWith('/auth/signup', {
+      body: {
+        email: 'test@example.com',
+        username: 'testuser',
+        password: 'password123',
+      },
+      method: 'POST',
+    })
+    expect(form.serverError.value).toBeNull()
+    expect(form.isLoading.value).toBe(false)
   })
 
-  it('calls authStore.signup on form submission', async () => {
-    const { register, email, username, password } = useSignupForm()
-    email.value = 'test@example.com'
-    username.value = 'testuser'
-    password.value = 'password123'
+  it('shows validation errors without sending invalid registration data', async () => {
+    const form = await createForm()
+    form.email.value = 'not-an-email'
+    form.username.value = ' '
+    form.password.value = 'short'
 
-    await register()
+    await form.handleSubmit(form.register)()
 
-    expect(mockSignup).toHaveBeenCalledWith({
+    expect(api).not.toHaveBeenCalled()
+    expect(form.errors.value.email).toBe('Invalid email')
+    expect(form.errors.value.username).toBe('This is required')
+    expect(form.errors.value.password).toBe('At least 8 symbols')
+  })
+
+  it('waits for the signup request and keeps loading state until it finishes', async () => {
+    const form = await createForm()
+    const response = Promise.withResolvers<unknown>()
+    const started = Promise.withResolvers<void>()
+    api.mockImplementationOnce(() => {
+      started.resolve()
+      return response.promise
+    })
+
+    const submission = form.register({
       email: 'test@example.com',
       username: 'testuser',
       password: 'password123',
     })
+    await started.promise
+    expect(form.isLoading.value).toBe(true)
+
+    response.resolve({ id: '1', username: 'testuser' })
+    await submission
+    expect(form.isLoading.value).toBe(false)
   })
 
-  it('handles successful registration', async () => {
-    const { register, isLoading, serverError } = useSignupForm()
-    mockSignup.mockResolvedValueOnce({})
+  it.each([
+    [{ data: { detail: 'User already exists' } }, 'User already exists'],
+    [{ data: { detail: [] } }, 'Something went wrong'],
+    [{ data: { detail: '' } }, 'Something went wrong'],
+    [new Error('Network error'), 'Something went wrong'],
+  ])('shows request errors on the form', async (error, message) => {
+    const form = await createForm()
+    form.email.value = 'test@example.com'
+    form.username.value = 'testuser'
+    form.password.value = 'password123'
+    api.mockRejectedValueOnce(error)
 
-    const promise = register()
-    expect(isLoading.value).toBe(true)
-    await promise
+    await expect(form.handleSubmit(form.register)()).rejects.toBe(error)
 
-    expect(isLoading.value).toBe(false)
-    expect(serverError.value).toBeNull()
-  })
-
-  it('handles registration failure with server error', async () => {
-    const { register, isLoading, serverError } = useSignupForm()
-    const errorResponse = {
-      data: {
-        detail: 'User already exists',
-      },
-    }
-    mockSignup.mockRejectedValueOnce(errorResponse)
-
-    try {
-      await register()
-    } catch (e) {
-      // Expected
-    }
-
-    expect(isLoading.value).toBe(false)
-    expect(serverError.value).toBe('User already exists')
-  })
-
-  it('handles registration failure with generic error', async () => {
-    const { register, serverError } = useSignupForm()
-    mockSignup.mockRejectedValueOnce(new Error('Network error'))
-
-    try {
-      await register()
-    } catch (e) {
-      // Expected
-    }
-
-    expect(serverError.value).toBe('Something went wrong')
+    expect(form.serverError.value).toBe(message)
+    expect(form.isLoading.value).toBe(false)
   })
 })

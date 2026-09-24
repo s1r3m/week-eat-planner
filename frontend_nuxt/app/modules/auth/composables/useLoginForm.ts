@@ -1,11 +1,11 @@
 import type { LoginForm } from '@/modules/auth/schemas/login'
-import type { LoginPayload, ValidationError } from '@/modules/auth/types'
+import type { LoginPayload } from '@/modules/auth/types'
 
 import { useLogin } from '@/modules/auth/composables/useLogin'
 import { useLoginValidation } from '@/modules/auth/schemas/login'
 
 export const useLoginForm = () => {
-  const { email, errors, meta, password } = useLoginValidation()
+  const { email, errors, handleSubmit, meta, password } = useLoginValidation()
   const { isLoading, mutateAsync: loginRequest } = useLogin()
 
   const serverError = ref<null | string>(null)
@@ -27,10 +27,10 @@ export const useLoginForm = () => {
         'data' in error &&
         error.data
       ) {
-        const body = error.data as ValidationError
+        const body = error.data as { detail?: unknown }
         serverError.value =
-          typeof body.msg === 'string' && body.msg
-            ? body.msg
+          typeof body.detail === 'string' && body.detail
+            ? body.detail
             : 'Something went wrong'
       } else {
         serverError.value = 'Something went wrong'
@@ -42,6 +42,7 @@ export const useLoginForm = () => {
   return {
     email,
     errors,
+    handleSubmit,
     isLoading,
     login,
     meta,

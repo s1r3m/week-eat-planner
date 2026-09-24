@@ -4,15 +4,34 @@
   import BaseInput from '@/common/ui/BaseInput.vue'
   import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
 
-  defineEmits<{
-    submit: []
+  const emits = defineEmits<{
+    success: []
   }>()
 
-  const { email, errors, isLoading, meta, password, serverError, username } =
-    useSignupForm()
+  const {
+    email,
+    errors,
+    handleSubmit,
+    isLoading,
+    meta,
+    password,
+    register,
+    serverError,
+    username,
+  } = useSignupForm()
 
   const formId = useId()
   const revealed = ref<boolean>(false)
+
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await register(values)
+    } catch {
+      // The form displays the error set by useSignupForm.
+      return
+    }
+    emits('success')
+  })
 </script>
 
 <template>
@@ -21,7 +40,7 @@
     class="auth-form"
     header="Register"
     description="Create your account"
-    @submit.prevent="$emit('submit')"
+    @submit.prevent="onSubmit"
   >
     <BaseAlert
       v-if="serverError"

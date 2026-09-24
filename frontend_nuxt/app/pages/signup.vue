@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
   import AuthCard from '@/modules/auth/ui/AuthCard.vue'
   import AuthSignupForm from '@/modules/auth/ui/AuthSignupForm.vue'
 
@@ -7,15 +6,8 @@
     layout: 'default',
   })
 
-  const { register } = useSignupForm()
-
-  const onSubmit = async () => {
-    try {
-      await register()
-      await navigateTo({ name: 'my-weeks' })
-    } catch {
-      // serverError is already set by useSignupForm; swallow here
-    }
+  const onSuccess = async () => {
+    await navigateTo({ name: 'my-weeks' })
   }
 </script>
 
@@ -25,7 +17,7 @@
       header="Join us"
       description="Register your account"
     >
-      <AuthSignupForm @submit="onSubmit" />
+      <AuthSignupForm @success="onSuccess" />
     </AuthCard>
   </div>
 </template>

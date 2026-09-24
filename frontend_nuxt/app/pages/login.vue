@@ -1,7 +1,4 @@
 <script setup lang="ts">
-  import type { LoginForm } from '@/modules/auth/schemas/login'
-
-  import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
   import AuthCard from '@/modules/auth/ui/AuthCard.vue'
   import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
   import { getRedirectTarget } from '@/modules/auth/utils/session'
@@ -10,17 +7,9 @@
     layout: 'default',
   })
 
-  const { login } = useLoginForm()
   const route = useRoute()
 
-  const onSubmit = async (payload: LoginForm) => {
-    try {
-      await login(payload)
-    } catch {
-      // serverError is already set by useSignupForm; swallow here
-      return
-    }
-
+  const onSuccess = async () => {
     await navigateTo(getRedirectTarget(route.query.redirect))
   }
 </script>
@@ -32,7 +21,7 @@
       header="Welcome back"
       description="Login to your account"
     >
-      <AuthLoginForm @submit="onSubmit" />
+      <AuthLoginForm @success="onSuccess" />
     </AuthCard>
   </div>
 </template>

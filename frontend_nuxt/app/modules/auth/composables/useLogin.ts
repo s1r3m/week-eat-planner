@@ -1,5 +1,5 @@
-import { AUTH_KEY } from '@/modules/auth//constants'
 import { useAuthApi } from '@/modules/auth/api/authApi'
+import { AUTH_KEY } from '@/modules/auth/constants'
 
 export const useLogin = () => {
   const authApi = useAuthApi()

@@ -4,6 +4,7 @@ export default defineNuxtPlugin(() => {
   const api = $fetch.create({
     baseURL: config.public.apiUrl,
     credentials: 'include',
+    headers: useRequestHeaders(['cookie']),
   })
 
   return { provide: { api } }

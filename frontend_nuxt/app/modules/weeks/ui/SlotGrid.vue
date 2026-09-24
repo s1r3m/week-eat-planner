@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import type { MealSlot, MealType, WeekFull } from '@/modules/weeks/types'
 
+  import SlotCard from '@/modules/weeks/ui/SlotCard.vue'
+
   defineProps<{ week: WeekFull }>()
 
   const mealTypeOrder: Record<MealType, number> = {
@@ -32,7 +34,7 @@
         v-if="day.slots"
         class="meal-slot-grid__day-block"
       >
-        <WeekSlotCard
+        <SlotCard
           v-for="slot in sortSlots(day.slots)"
           :key="slot.id"
           :meal-slot="slot"
