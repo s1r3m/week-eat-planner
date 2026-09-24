@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import { useSidebar } from '@/common/composables/useSidebar'
-  import { useAuthStore } from '@/modules/auth/stores/auth'
   import BaseButton from '@/common/ui/BaseButton.vue'
+  import { useAuthApi } from '@/modules/auth/api/authApi'
   import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
   const { collapsed, toggleCollapsed } = useSidebar()
 
-  const { logout } = useAuthStore()
+  const { logout } = useAuthApi()
 
-  const logoutError = ref<string | null>(null)
+  const logoutError = ref<null | string>(null)
   const isLoggingOut = ref(false)
   const onLogout = async () => {
     isLoggingOut.value = true

@@ -1,7 +1,6 @@
 import type {
   LoginPayload,
   SignupPayload,
-  SuccessResponse,
   UserData,
 } from '@/modules/auth/types'
 
@@ -10,16 +9,16 @@ export const useAuthApi = () => {
 
   return {
     create: (body: SignupPayload) =>
-      $api<UserData>('/auth/signup', { method: 'POST', body }),
+      $api<UserData>('/auth/signup', { body, method: 'POST' }),
     getUser: () => $api<UserData>('/user'),
     login: (body: LoginPayload) =>
       $api<UserData>('/auth/login', {
-        method: 'POST',
         body: new URLSearchParams({
-          username: body.username,
           password: body.password,
+          username: body.username,
         }),
+        method: 'POST',
       }),
-    logout: () => $api<SuccessResponse>('/auth/logout', { method: 'POST' }),
+    logout: () => $api<null>('/auth/logout', { method: 'POST' }),
   }
 }

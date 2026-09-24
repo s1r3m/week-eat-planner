@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { useWeek } from '@/modules/weeks/composables/useWeek'
-  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
   import BaseButton from '@/common/ui/BaseButton.vue'
   import PageErrorState from '@/common/ui/PageErrorState.vue'
   import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageTitle from '@/common/ui/PageTitle.vue'
+  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
+  import { useWeek } from '@/modules/weeks/composables/useWeek'
   import SlotGrid from '@/modules/weeks/ui/SlotGrid.vue'
 
   definePageMeta({
@@ -39,7 +39,7 @@
           variant="danger"
           :disabled="!week"
           aria-label="Delete week"
-          @click=""
+          @click="() => {}"
         >
           <Icon
             name="lucide:trash"

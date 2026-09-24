@@ -1,13 +1,12 @@
-import type { SuccessResponse } from '@/modules/auth/types'
-
+import { useAuthApi } from '@/modules/auth/api/authApi'
 import { AUTH_KEY } from '@/modules/auth/constants'
 
 export const useLogout = () => {
-  const { $api } = useNuxtApp()
+  const authApi = useAuthApi()
   const queryCache = useQueryCache()
 
   return useMutation({
-    mutation: () => $api<SuccessResponse>('/auth/logout', { method: 'POST' }),
+    mutation: authApi.logout,
     onSettled: () => {
       queryCache.invalidateQueries({ key: AUTH_KEY.user() })
     },

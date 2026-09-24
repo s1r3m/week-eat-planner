@@ -1,11 +1,11 @@
-import { useWeeksApi } from '@/modules/weeks/composables/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
+import { useWeeksApi } from '~/modules/weeks/api/weeksApi'
 
 export const useWeek = (weekId: string) => {
-  const { getWeek } = useWeeksApi()
+  const weeksApi = useWeeksApi()
 
   return useQuery({
     key: WEEKS_KEY.single(weekId),
-    query: () => getWeek(toValue(weekId)),
+    query: () => weeksApi.getWeek(toValue(weekId)),
   })
 }

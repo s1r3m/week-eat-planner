@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
   import BaseAlert from '@/common/ui/BaseAlert.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
   import BaseInput from '@/common/ui/BaseInput.vue'
+  import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
 
   defineEmits<{
     submit: []

@@ -1,19 +1,19 @@
 {
-	"compilerOptions": {
-		"composite": true,
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"noEmit": true,
-		"allowImportingTsExtensions": true,
-		"types": ["bun-types", "node"],
-		"paths": {
-			"@/*": ["./app/*"],
-			"~/*": ["./app/*"]
-		}
-	},
-	"include": ["app/**/*", "tests/**/*", ".nuxt/nuxt.d.ts"]
+  "compilerOptions": {
+    "composite": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["bun-types", "node"],
+    "paths": {
+      "@/*": ["./app/*"],
+      "~/*": ["./app/*"]
+    }
+  },
+  "include": ["app/**/*", "tests/**/*", ".nuxt/nuxt.d.ts"]
 }

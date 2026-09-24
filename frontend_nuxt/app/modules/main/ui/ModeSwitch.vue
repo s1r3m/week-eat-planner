@@ -25,7 +25,10 @@
           />
 
           <template #placeholder>
-            <Icon name="lucide:palette" :size="24" />
+            <Icon
+              name="lucide:palette"
+              :size="24"
+            />
           </template>
         </ClientOnly>
       </BaseButton>

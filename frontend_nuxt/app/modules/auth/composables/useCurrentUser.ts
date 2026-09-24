@@ -1,5 +1,6 @@
 import { AUTH_KEY } from '@/modules/auth/constants'
-import { useAuthApi } from '@/modules/auth/composables/authApi'
+import { useAuthApi } from '~/modules/auth/api/authApi'
+
 import { isUnauthorized } from '../utils/session'
 
 export const useCurrentUser = () => {

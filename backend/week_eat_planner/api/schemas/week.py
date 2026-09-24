@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
-from week_eat_planner.db.models.meal_slot import DayOfWeek, MealSlot
+from week_eat_planner.db.models.meal_slot import DayOfWeek
 from week_eat_planner.db.models.week import Week
 
 
@@ -36,6 +36,18 @@ class WeekReadMinimal(WeekBase, OwnerId, RecordId):
     model_config = ConfigDict(from_attributes=True)
 
 
+class WeekDayRead(BaseModel):
+    """Schema for a single day with meal_slots.
+
+    Attributes:
+        name: a day that it represents.
+        slots: actual slots of the day.
+    """
+
+    name: DayOfWeek
+    slots: list[MealSlotRead]
+
+
 class WeekRead(WeekReadMinimal):
     """Schema for a detailed representation of a week, including meal slots.
 
@@ -43,7 +55,7 @@ class WeekRead(WeekReadMinimal):
         week_days: A structured list of days, each containing its assigned meal slots.
     """
 
-    week_days: list[dict[str, DayOfWeek | list[MealSlotRead]]]
+    week_days: list[WeekDayRead]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,17 +63,16 @@ class WeekRead(WeekReadMinimal):
     @classmethod
     def structure_week_days(cls, week: Week) -> dict[str, Any]:
         """Transforms flat meal_slots into structured week_days."""
-        structured_slots: list[dict[str, DayOfWeek | list[MealSlot]]] = [
-            {
-                'name': day,
-                'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
-            }
-            for day in DayOfWeek
-        ]
 
         return {
             'id': week.id,
             'user_id': week.user_id,
             'name': week.name,
-            'week_days': structured_slots,
+            'week_days': [
+                {
+                    'name': day,
+                    'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
+                }
+                for day in DayOfWeek
+            ],
         }

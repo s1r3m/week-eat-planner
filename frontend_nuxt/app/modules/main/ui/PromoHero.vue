@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import BaseBadge from '~/common/ui/BaseBadge.vue'
-  import BaseButton from '~/common/ui/BaseButton.vue'
+  import BaseBadge from '@/common/ui/BaseBadge.vue'
+  import BaseButton from '@/common/ui/BaseButton.vue'
 </script>
 
 <template>

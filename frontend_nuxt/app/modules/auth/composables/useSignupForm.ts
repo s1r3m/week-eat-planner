@@ -1,22 +1,20 @@
-import { useAuthStore } from '@/modules/auth/stores/auth'
-import type { ErrorResponse } from '@/schemas/api'
+import type { ValidationError } from '@/modules/auth/types'
 
-import { useSignupValidation } from '~/modules/auth/schemas/signup'
+import { useSignup } from '@/modules/auth/composables/useSignup'
+import { useSignupValidation } from '@/modules/auth/schemas/signup'
 
 export const useSignupForm = () => {
-  const authStore = useAuthStore()
   const { email, errors, handleSubmit, meta, password, username } =
     useSignupValidation()
+  const { isLoading, mutate: signup } = useSignup()
 
-  const isLoading = ref<boolean>(false)
   const serverError = ref<null | string>(null)
 
   const register = handleSubmit(async (values) => {
-    isLoading.value = true
     serverError.value = null
 
     try {
-      await authStore.signup({
+      await signup({
         email: values.email,
         password: values.password,
         username: values.username,
@@ -28,15 +26,13 @@ export const useSignupForm = () => {
         'data' in error &&
         error.data
       ) {
-        const body = error.data as ErrorResponse
-        serverError.value = body.detail
+        const body = error.data as ValidationError
+        serverError.value = body.msg
       } else {
         serverError.value = 'Something went wrong'
       }
 
       throw error
-    } finally {
-      isLoading.value = false
     }
   })
 

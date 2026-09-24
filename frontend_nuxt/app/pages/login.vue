@@ -2,9 +2,9 @@
   import type { LoginForm } from '@/modules/auth/schemas/login'
 
   import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
-  import { getRedirectTarget } from '@/modules/auth/utils/session'
-  import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
   import AuthCard from '@/modules/auth/ui/AuthCard.vue'
+  import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
+  import { getRedirectTarget } from '@/modules/auth/utils/session'
 
   definePageMeta({
     layout: 'default',

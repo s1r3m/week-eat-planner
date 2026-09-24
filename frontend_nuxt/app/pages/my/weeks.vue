@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import BaseButton from '@/common/ui/BaseButton.vue'
-  import PageTitle from '@/common/ui/PageTitle.vue'
-  import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageErrorState from '@/common/ui/PageErrorState.vue'
+  import PageLoadingState from '@/common/ui/PageLoadingState.vue'
+  import PageTitle from '@/common/ui/PageTitle.vue'
   import { useWeeks } from '@/modules/weeks/composables/useWeeks'
   import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
 
@@ -10,7 +10,7 @@
     layout: 'app',
   })
 
-  const { data: weeks, isLoading, refresh, error } = useWeeks()
+  const { data: weeks, error, isLoading, refresh } = useWeeks()
 </script>
 
 <template>
@@ -20,7 +20,7 @@
         <BaseButton
           disabled
           aria-label="Create week"
-          @click=""
+          @click="() => {}"
         >
           <Icon
             name="lucide:plus"

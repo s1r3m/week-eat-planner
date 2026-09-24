@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import { useAuthStore } from '@/modules/auth/stores/auth'
+  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
 
   defineProps<{
     collapsed: boolean
   }>()
 
-  const authStore = useAuthStore()
+  const { data: user } = useCurrentUser()
 </script>
 
 <template>
@@ -13,11 +13,11 @@
     <Icon name="lucide:circle-user" />
 
     <p
-      v-if="authStore.user?.username"
+      v-if="user?.username"
       class="user-info__name"
       :class="{ 'user-info__name--collapsed': collapsed }"
     >
-      {{ authStore.user.username }}
+      {{ user.username }}
     </p>
   </div>
 </template>

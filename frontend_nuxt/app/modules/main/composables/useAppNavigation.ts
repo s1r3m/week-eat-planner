@@ -7,15 +7,15 @@ export const useAppNavigation = () => {
 
   const navLinks = computed<NavLink[]>(() => [
     {
-      icon: 'lucide:calendar-days',
-      id: '1',
-      title: 'My Weeks',
-      to: { name: 'my-weeks' },
       child: weeks.value?.map((week) => ({
         id: week.id,
         title: week.name,
         to: { name: 'weeks-id', params: { id: week.id } },
       })),
+      icon: 'lucide:calendar-days',
+      id: '1',
+      title: 'My Weeks',
+      to: { name: 'my-weeks' },
     },
     {
       icon: 'lucide:utensils',

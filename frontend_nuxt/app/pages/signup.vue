@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { useSignupForm } from '~/modules/auth/composables/useSignupForm'
-  import AuthCard from '~/modules/auth/ui/AuthCard.vue'
-  import AuthSignupForm from '~/modules/auth/ui/AuthSignupForm.vue'
+  import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
+  import AuthCard from '@/modules/auth/ui/AuthCard.vue'
+  import AuthSignupForm from '@/modules/auth/ui/AuthSignupForm.vue'
 
   definePageMeta({
     layout: 'default',

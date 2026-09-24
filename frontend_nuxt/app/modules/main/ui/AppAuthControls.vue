@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import BaseButton from '@/common/ui/BaseButton.vue'
+
   import ModeSwitch from './ModeSwitch.vue'
 
   const route = useRoute()

@@ -5,8 +5,8 @@
 
   const mealTypeOrder: Record<MealType, number> = {
     BREAKFAST: 0,
-    LUNCH: 1,
     DINNER: 3,
+    LUNCH: 1,
     SNACK: 2,
   }
   const sortSlots = (slots: MealSlot[]) => {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import type { LoginForm } from '@/modules/auth/schemas/login'
 
-  import { useLoginValidation } from '@/modules/auth/schemas/login'
-  import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
   import BaseAlert from '@/common/ui/BaseAlert.vue'
-  import BaseInput from '@/common/ui/BaseInput.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
+  import BaseInput from '@/common/ui/BaseInput.vue'
+  import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
+  import { useLoginValidation } from '@/modules/auth/schemas/login'
 
   const emits = defineEmits<{
     submit: [LoginForm]
@@ -28,7 +28,7 @@
     :id="formId"
     class="auth-form"
     novalidate
-    @submit.prevent="$emit('submit', { email, password } satisfies LoginForm)"
+    @submit.prevent="onSubmit"
   >
     <BaseAlert
       v-if="serverError"

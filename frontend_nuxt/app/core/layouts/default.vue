@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import GuestHeader from '@/modules/main/ui/GuestHeader.vue'
   import GuestFooter from '@/modules/main/ui/GuestFooter.vue'
+  import GuestHeader from '@/modules/main/ui/GuestHeader.vue'
 </script>
 
 <template>

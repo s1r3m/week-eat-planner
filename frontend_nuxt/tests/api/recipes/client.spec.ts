@@ -5,33 +5,33 @@ const mockApi = mock()
 // Mock useNuxtApp globally for tests
 // @ts-ignore
 globalThis.useNuxtApp = () => ({
-	$api: mockApi,
+  $api: mockApi,
 })
 
 describe('useRecipeApi', () => {
-	beforeEach(() => {
-		mockApi.mockClear()
-	})
+  beforeEach(() => {
+    mockApi.mockClear()
+  })
 
-	const recipeApi = useRecipeApi()
+  const recipeApi = useRecipeApi()
 
-	describe('getMyRecipes', () => {
-		it('calls the /recipes/my_recipes endpoint with GET method', async () => {
-			const mockResponse = [
-				{
-					id: '1',
-					name: 'Recipe 1',
-					author: 'user1',
-					is_favorite: false,
-					__pending: false,
-				},
-			]
-			mockApi.mockResolvedValue(mockResponse)
+  describe('getMyRecipes', () => {
+    it('calls the /recipes/my_recipes endpoint with GET method', async () => {
+      const mockResponse = [
+        {
+          id: '1',
+          name: 'Recipe 1',
+          author: 'user1',
+          is_favorite: false,
+          __pending: false,
+        },
+      ]
+      mockApi.mockResolvedValue(mockResponse)
 
-			const result = await recipeApi.getMyRecipes()
+      const result = await recipeApi.getMyRecipes()
 
-			expect(mockApi).toHaveBeenCalledWith('/recipes/my_recipes')
-			expect(result).toEqual(mockResponse)
-		})
-	})
+      expect(mockApi).toHaveBeenCalledWith('/recipes/my_recipes')
+      expect(result).toEqual(mockResponse)
+    })
+  })
 })

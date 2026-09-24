@@ -1,5 +1,5 @@
 export const WEEKS_KEY = {
-  root: () => ['weeks'],
   all: () => [...WEEKS_KEY.root(), 'all'],
+  root: () => ['weeks'],
   single: (id: string) => [...WEEKS_KEY.root(), 'week', id],
 }

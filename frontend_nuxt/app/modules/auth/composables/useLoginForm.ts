@@ -1,12 +1,12 @@
-import type { LoginPayload, ValidationError } from '@/modules/auth/types'
 import type { LoginForm } from '@/modules/auth/schemas/login'
+import type { LoginPayload, ValidationError } from '@/modules/auth/types'
 
-import { useLoginValidation } from '@/modules/auth/schemas/login'
 import { useLogin } from '@/modules/auth/composables/useLogin'
+import { useLoginValidation } from '@/modules/auth/schemas/login'
 
 export const useLoginForm = () => {
   const { email, errors, meta, password } = useLoginValidation()
-  const { mutateAsync: loginRequest, isLoading } = useLogin()
+  const { isLoading, mutateAsync: loginRequest } = useLogin()
 
   const serverError = ref<null | string>(null)
 
@@ -15,8 +15,8 @@ export const useLoginForm = () => {
 
     try {
       await loginRequest({
-        username: form.email,
         password: form.password,
+        username: form.email,
       } satisfies LoginPayload)
     } catch (error) {
       password.value = ''
@@ -43,9 +43,9 @@ export const useLoginForm = () => {
     email,
     errors,
     isLoading,
+    login,
     meta,
     password,
     serverError,
-    login,
   }
 }

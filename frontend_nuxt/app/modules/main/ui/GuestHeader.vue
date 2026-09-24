@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
-  import AppLogo from '@/modules/main/ui/AppLogo.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
   import { useLogout } from '@/modules/auth/composables/useLogout'
+  import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
+  import AppLogo from '@/modules/main/ui/AppLogo.vue'
 
   const { mutate: logout } = useLogout()
 </script>
