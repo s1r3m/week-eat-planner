@@ -5,8 +5,10 @@ export default defineNuxtPlugin(() => {
   const event = useRequestEvent()
   const requestHeaders = useRequestHeaders(['cookie'])
   const cookies = new Map<string, string>()
+  const requestRefreshes = new WeakMap<object, Promise<void> | undefined>()
 
   let refreshPromise: Promise<void> | undefined
+  let refreshing = false
 
   const rememberCookie = (cookie: string) => {
     const pair = cookie.split(';', 1)[0]?.trim() ?? ''
@@ -17,9 +19,7 @@ export default defineNuxtPlugin(() => {
     }
   }
 
-  const requestCookies = (requestHeaders.cookie ?? '').split(';')
-
-  for (const cookie of requestCookies) {
+  for (const cookie of (requestHeaders.cookie ?? '').split(';')) {
     rememberCookie(cookie)
   }
 
@@ -32,30 +32,24 @@ export default defineNuxtPlugin(() => {
   })
 
   const refreshSession = async () => {
-    const response = await transport.raw('/auth/refresh', {
-      headers: event ? { cookie: getCookieHeader() } : undefined,
-      method: 'POST',
-    })
-
-    if (!event) return
-
-    const responseCookies = response.headers.getSetCookie()
-
-    for (const cookie of responseCookies) {
-      appendResponseHeader(event, 'set-cookie', cookie)
-      rememberCookie(cookie)
-    }
-  }
-
-  const ensureSession = async () => {
-    if (!refreshPromise) {
-      refreshPromise = refreshSession()
-    }
+    const headers = event ? { cookie: getCookieHeader() } : undefined
+    refreshing = true
 
     try {
-      await refreshPromise
+      const response = await transport.raw('/auth/refresh', {
+        headers,
+        method: 'POST',
+        parseResponse: false,
+      })
+
+      if (!event) return
+
+      for (const cookie of response.headers.getSetCookie()) {
+        appendResponseHeader(event, 'set-cookie', cookie)
+        rememberCookie(cookie)
+      }
     } finally {
-      refreshPromise = undefined
+      refreshing = false
     }
   }
 
@@ -75,13 +69,14 @@ export default defineNuxtPlugin(() => {
       const isAuthRequest =
         /\/auth\/(?:login|signup|refresh|google\/exchange)\/?$/.test(path)
 
-      if (isAuthRequest) {
-        options.retry = 0
-      }
+      options.retry = isAuthRequest ? 0 : Math.min(Number(options.retry), 1)
+      options.retryStatusCodes = [401]
 
-      if (!isAuthRequest && refreshPromise) {
+      if (!isAuthRequest && refreshing) {
         await refreshPromise
       }
+
+      requestRefreshes.set(options, refreshPromise)
 
       if (event) {
         options.headers.set('cookie', getCookieHeader())
@@ -91,7 +86,11 @@ export default defineNuxtPlugin(() => {
     async onResponseError({ options, response }) {
       if (response.status !== 401 || !options.retry) return
 
-      await ensureSession()
+      if (requestRefreshes.get(options) === refreshPromise) {
+        refreshPromise = refreshSession()
+      }
+
+      await refreshPromise
     },
   })
 

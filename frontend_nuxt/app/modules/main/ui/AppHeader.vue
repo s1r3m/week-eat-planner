@@ -34,7 +34,7 @@
       <BaseButton
         class="app-header__mobile-menu"
         variant="icon"
-        disab
+        disabled
       >
         <Icon
           name="lucide:menu"

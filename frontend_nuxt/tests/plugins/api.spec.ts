@@ -248,10 +248,15 @@ describe('API session renewal', () => {
     const first = api('/one')
     await started.promise
     const second = api('/two')
+    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(fetch).toHaveBeenCalledTimes(2)
+    expect(requestPaths()).not.toContain('/backend/two')
 
     rotation.resolve(response(200))
     await Promise.all([first, second])
+    expect(requestPaths().indexOf('/backend/two')).toBeGreaterThan(
+      requestPaths().indexOf('/backend/auth/refresh'),
+    )
     expect(
       requestPaths().filter((path) => path.endsWith('/auth/refresh')),
     ).toHaveLength(1)

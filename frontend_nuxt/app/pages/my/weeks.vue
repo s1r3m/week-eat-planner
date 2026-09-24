@@ -32,16 +32,16 @@
       </template>
     </PageTitle>
 
-    <PageLoadingState
-      v-if="isLoading || !weeks"
-      name="weeks"
-    />
-
     <PageErrorState
-      v-else-if="error"
+      v-if="error"
       name="weeks"
       :error="error"
       @retry="refresh"
+    />
+
+    <PageLoadingState
+      v-else-if="isLoading || !weeks"
+      name="weeks"
     />
 
     <WeekGrid

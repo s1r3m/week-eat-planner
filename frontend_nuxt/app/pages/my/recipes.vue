@@ -5,7 +5,6 @@
   import PageTitle from '@/common/ui/PageTitle.vue'
 
   definePageMeta({
-    // middleware: 'auth',
     layout: 'app',
   })
 
@@ -38,11 +37,6 @@
       :error="error"
       @retry="refetch"
     />
-
-    <!-- <RecipeGrid
-      v-else
-      :recipes="recipes"
-    /> -->
   </div>
 </template>
 

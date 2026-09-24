@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { PiniaColada, useMutation, useQueryCache } from '@pinia/colada'
-import { renderToString } from '@vue/server-renderer'
+import { renderToString } from 'vue/server-renderer'
 import { createPinia, disposePinia } from 'pinia'
 import { createSSRApp, defineComponent, h, ref } from 'vue'
 import { useLoginForm } from '@/modules/auth/composables/useLoginForm'

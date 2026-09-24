@@ -17,7 +17,11 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 export default withNuxt(
   defineConfigWithVueTs(
     {
-      files: ['layers/**/*.{ts,vue}', '*.{ts,vue,js,mjs}'],
+      files: [
+        'app/**/*.{ts,vue,js,mjs}',
+        'layers/**/*.{ts,vue,js,mjs}',
+        '*.{ts,vue,js,mjs}',
+      ],
       name: 'app/files-to-lint',
     },
 
