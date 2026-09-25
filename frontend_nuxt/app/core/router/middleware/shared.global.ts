@@ -1,10 +1,10 @@
 import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
 
 export default defineNuxtRouteMiddleware(async () => {
-  const { data: user, refetch } = useCurrentUser()
+  const { data: user, refresh } = useCurrentUser()
 
   try {
-    await refetch(true)
+    await refresh(true)
   } catch {
     return abortNavigation({
       fatal: true,

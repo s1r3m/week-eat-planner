@@ -14,8 +14,9 @@
 
 <style scoped>
   .loading-state {
+    width: 100%;
     max-width: 30rem;
-    margin: var(--space-4) auto;
+    margin: var(--space-2) auto;
   }
 
   .loading-state__card {

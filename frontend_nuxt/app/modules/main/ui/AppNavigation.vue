@@ -27,7 +27,7 @@
 
         <span
           class="nav__title"
-          :class="{ collapsed }"
+          :class="{ 'nav__title--collapsed': collapsed }"
         >
           {{ link.title }}
         </span>
@@ -54,46 +54,50 @@
   .nav {
     display: flex;
     flex-direction: column;
-    padding: var(--space-md);
-    gap: var(--space-md);
+    gap: var(--space-2);
+    padding: var(--space-2);
   }
 
   .nav__item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-1);
   }
 
   .nav__link {
     display: flex;
     align-items: center;
-    padding: var(--space-xs);
-    transition: all 0.3s ease;
+    gap: var(--space-2);
+    padding: var(--space-1);
     border-radius: var(--radius-xl);
-    color: var(--color-on-surface-variant);
-    font-size: var(--font-size-body);
-    gap: var(--space-md);
+    color: var(--text);
+    font-size: var(--text-14);
+    transition:
+      color,
+      background-color var(--duration-base) ease;
 
     &:hover {
-      background-color: var(--color-surface-variant);
+      background-color: var(--bg-elevated);
     }
 
     &.router-link-active {
-      background-color: var(--color-surface-variant);
-      color: var(--color-primary);
+      background-color: var(--bg-elevated);
+      color: var(--brand-primary);
     }
   }
 
   .nav__title {
     max-width: 100%;
     overflow: hidden;
-    transition: all 0.3s ease;
     opacity: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition:
+      opacity,
+      max-width var(--duration-base) ease;
   }
 
-  .collapsed {
+  .nav__title--collapsed {
     max-width: 0;
     opacity: 0;
   }
@@ -101,34 +105,30 @@
   .nav__children {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    padding-left: var(--space-xl);
+    gap: var(--space-1);
+    padding-left: var(--space-8);
   }
 
   .nav__child-link {
-    padding: var(--space-xs) var(--space-sm);
+    padding: var(--space-1) var(--space-2);
     overflow: hidden;
-    transition: all 0.3s ease;
     border-radius: var(--radius-xl);
-    color: var(--color-on-surface-variant);
+    color: var(--text);
     text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: all var(--duration-base) ease;
 
-    &:hover {
-      background-color: var(--color-surface-variant);
-      color: var(--color-primary);
-    }
-
+    &:hover,
     &.router-link-exact-active {
-      background-color: var(--color-surface-variant);
-      color: var(--color-primary);
+      background-color: var(--bg-elevated);
+      color: var(--brand-primary);
     }
   }
 
   .nav__child-link--inactive {
     opacity: 0.5;
-    color: var(--color-on-surface-variant);
+    color: var(--text);
     cursor: not-allowed;
   }
 </style>

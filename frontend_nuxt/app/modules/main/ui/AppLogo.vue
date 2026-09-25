@@ -29,28 +29,28 @@
   .app_logo {
     display: flex;
     align-items: center;
-    padding: var(--space-md);
-    column-gap: var(--space-xs);
+    gap: var(--space-1);
+    padding: var(--space-2);
     text-decoration: none;
   }
 
   .app_logo__icon {
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     object-fit: contain;
   }
 
   .app_logo__title {
     width: 100%;
     overflow: hidden;
-    transition: all 0.3s ease;
     opacity: 1;
-    color: var(--color-primary);
-    font-size: var(--font-size-title);
-    font-weight: var(--font-weight-medium);
-    letter-spacing: var(--tracking-tight);
+    color: var(--brand-primary);
+    font-size: var(--text-14);
     white-space: nowrap;
+    transition:
+      opacity,
+      max-width var(--duration-base) ease;
   }
 
   .app_logo__title--collaped {

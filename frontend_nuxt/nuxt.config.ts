@@ -1,6 +1,7 @@
 export default defineNuxtConfig({
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
@@ -40,6 +41,8 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     'nuxt-open-fetch',
   ],
+
+  colorMode: { classSuffix: '', storageKey: 'wep-theme' },
 
   nitro: {
     devProxy: {

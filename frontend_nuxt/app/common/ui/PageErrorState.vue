@@ -25,8 +25,9 @@
 
 <style scoped>
   .error-state {
+    width: 100%;
     max-width: 30rem;
-    margin: var(--space-4) auto;
+    margin: var(--space-2) auto;
   }
 
   .error-state__card {

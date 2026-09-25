@@ -1,22 +1,11 @@
 <script setup lang="ts">
-  import BaseButton from '@/common/ui/BaseButton.vue'
-  import { useLogout } from '@/modules/auth/composables/useLogout'
   import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
   import AppLogo from '@/modules/main/ui/AppLogo.vue'
-
-  const { mutate: logout } = useLogout()
 </script>
 
 <template>
   <header class="guest-header">
     <AppLogo />
-
-    <BaseButton
-      variant="danger"
-      @click="logout"
-    >
-      Logout
-    </BaseButton>
 
     <AppAuthControls class="guest-header__controls" />
 
@@ -31,31 +20,27 @@
 <style scoped>
   .guest-header {
     display: flex;
-    position: sticky;
-    z-index: 2;
     align-items: center;
     justify-content: space-between;
-    height: var(--header-height);
-    border-bottom: 1px solid var(--color-outline);
     inset: 0;
-    backdrop-filter: blur(--blur);
+    position: sticky;
+    z-index: 2;
+    height: var(--header-height);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(var(--blur));
   }
 
   .guest-header__mobile-controls {
-    display: block;
-  }
-
-  .guest-header__controls {
     display: none;
   }
 
-  @media (--desktop) {
+  @media (--mobile) {
     .guest-header__mobile-controls {
-      display: none;
+      display: block;
     }
 
     .guest-header__controls {
-      display: flex;
+      display: none;
     }
   }
 </style>

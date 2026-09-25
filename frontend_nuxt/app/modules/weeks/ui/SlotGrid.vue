@@ -68,19 +68,19 @@
 
   .meal-slot-grid__day-block {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-2);
   }
 
-  @container (width > 600px) {
+  @container (--tablet) {
     .meal-slot-grid__day-block {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @container (width > 920px) {
+  @container (--mobile) {
     .meal-slot-grid__day-block {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(1, 1fr);
     }
   }
 </style>

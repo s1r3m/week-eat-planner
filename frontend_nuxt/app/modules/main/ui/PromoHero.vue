@@ -45,31 +45,35 @@
 <style scoped>
   .hero {
     display: flex;
-    flex-direction: column;
     gap: var(--space-4);
   }
 
   .hero__block {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-  }
-
-  .hero__title {
-    font-size: var(--text-32);
-    line-height: 1.5;
-  }
-
-  .hero__description {
-    font-size: var(--text-18);
-    line-height: 1.5;
+    align-items: start;
+    justify-content: center;
+    padding: var(--space-4);
+    gap: var(--space-8);
   }
 
   .hero__controls {
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    flex-direction: row;
+    justify-content: start;
     gap: var(--space-4);
+  }
+
+  .hero__title {
+    font-size: var(--text-48);
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .hero__description {
+    font-size: var(--text-24);
+    line-height: 2;
+    text-align: left;
   }
 
   .hero__img {
@@ -79,36 +83,27 @@
     border-radius: var(--radius-lg);
   }
 
-  @media (--desktop) {
+  @media (--mobile) {
     .hero {
-      flex-direction: row;
-      justify-content: space-between;
+      flex-direction: column;
     }
 
     .hero__block {
       flex-direction: column;
-      align-items: start;
-      justify-content: center;
-      padding: var(--space-4);
-      gap: var(--space-8);
-    }
-
-    .hero__controls {
-      flex-direction: row;
-      justify-content: start;
-      column-gap: var(--space-8);
+      gap: var(--space-4);
     }
 
     .hero__title {
-      font-size: var(--text-48);
-      line-height: 1.5;
-      text-align: left;
+      font-size: var(--text-32);
     }
 
     .hero__description {
-      font-size: var(--text-24);
-      line-height: 2;
-      text-align: left;
+      font-size: var(--text-18);
+    }
+
+    .hero__controls {
+      flex-direction: column;
+      width: 100%;
     }
   }
 </style>

@@ -16,6 +16,7 @@
 
 <style scoped>
   .empty-state {
+    width: 100%;
     max-width: 30rem;
     margin: var(--space-2) auto;
   }

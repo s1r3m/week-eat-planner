@@ -71,13 +71,13 @@
 </template>
 
 <style scoped>
-  .page-title__button-label {
-    display: none;
+  .page-container {
+    padding: var(--space-2);
   }
 
-  @media (width > 768px) {
+  @media (--mobile) {
     .page-title__button-label {
-      display: inline;
+      display: none;
     }
   }
 </style>

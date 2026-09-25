@@ -19,7 +19,10 @@
     <PageTitle name="My Recipes">
       <template #controls>
         <BaseButton aria-label="Create recipe">
-          <Icon name="lucide:plus" />
+          <Icon
+            name="lucide:plus"
+            :size="24"
+          />
 
           <span class="page-title__button-label">Create recipe</span>
         </BaseButton>
@@ -41,13 +44,13 @@
 </template>
 
 <style scoped>
-  .page-title__button-label {
-    display: none;
+  .page-container {
+    padding: var(--space-2);
   }
 
-  @media (width > 768px) {
+  @media (--mobile) {
     .page-title__button-label {
-      display: inline;
+      display: none;
     }
   }
 </style>

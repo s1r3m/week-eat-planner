@@ -56,13 +56,9 @@
     padding: var(--space-2);
   }
 
-  .page-title__button-label {
-    display: none;
-  }
-
-  @media (width > 768px) {
+  @media (--mobile) {
     .page-title__button-label {
-      display: inline;
+      display: none;
     }
   }
 </style>

@@ -74,14 +74,6 @@
     transition: all var(--duration-base) ease;
     inset: 0;
 
-    .slot__bg-image {
-      display: block;
-      width: 100%;
-      object-fit: cover;
-      object-position: center;
-      transition: transform var(--duration-base) ease;
-    }
-
     &::after {
       content: '';
       position: absolute;
@@ -91,6 +83,14 @@
       inset: 0;
       backdrop-filter: blur(3px);
     }
+  }
+
+  .slot__bg-image {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform var(--duration-base) ease;
   }
 
   .slot:hover .slot__bg img {
@@ -105,31 +105,31 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space-2);
+  }
 
-    .slot__portion {
-      z-index: 10;
+  .slot__portion {
+    z-index: 10;
+  }
+
+  .slot__portion-control {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+
+    &:hover {
+      background-color: color-mix(
+        in oklab,
+        var(--brand-primary) 25%,
+        rgb(255 255 255)
+      );
     }
+  }
 
-    .slot__portion-control {
-      display: inline-flex;
-      align-items: center;
-      padding: var(--space-1);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-full);
-
-      &:hover {
-        background-color: color-mix(
-          in oklab,
-          var(--brand-primary) 25%,
-          rgb(255 255 255)
-        );
-      }
-    }
-
-    .slot__assign {
-      display: flex;
-      align-items: center;
-      font-size: var(--text-12);
-    }
+  .slot__assign {
+    display: flex;
+    align-items: center;
+    font-size: var(--text-12);
   }
 </style>

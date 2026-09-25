@@ -25,7 +25,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    border-right: 1px solid var(--color-outline);
+    border-right: 1px solid var(--border);
   }
 
   .app-sidebar__nav {

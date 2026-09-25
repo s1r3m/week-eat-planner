@@ -23,7 +23,7 @@
 
   .page-title__name {
     color: var(--brand-primary);
-    font-size: var(--text-24);
+    font-size: var(--text-20);
   }
 
   .page-title__controls {

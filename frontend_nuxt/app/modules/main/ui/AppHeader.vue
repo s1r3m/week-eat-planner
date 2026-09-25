@@ -82,12 +82,12 @@
   }
 
   .app-header__mobile-menu {
-    display: block;
+    display: none;
   }
 
-  @media (--desktop) {
+  @media (--mobile) {
     .app-header__mobile-menu {
-      display: none;
+      display: block;
     }
   }
 </style>

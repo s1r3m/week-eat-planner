@@ -26,16 +26,18 @@
   .user-info {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-md);
+    gap: var(--space-2);
+    padding: var(--space-2);
   }
 
   .user-info__name {
     max-width: 100%;
     overflow: hidden;
-    transition: all 0.3s ease;
     opacity: 1;
     white-space: nowrap;
+    transition:
+      opacity,
+      max-width var(--duration-base) ease;
   }
 
   .user-info__name--collapsed {
