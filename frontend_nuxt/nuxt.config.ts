@@ -1,40 +1,90 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	compatibilityDate: '2025-07-15',
+  app: {
+    head: {
+      htmlAttrs: { lang: 'en' },
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: '',
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap',
+        },
+      ],
+    },
+  },
 
-	css: ['@/assets/styles/main.css'],
+  compatibilityDate: '2025-07-15',
 
-	imports: {
-		dirs: ['@/composables/**', '@/api/**'],
-	},
+  css: ['@/core/assets/styles/main.css'],
 
-	devtools: { enabled: true },
+  devtools: { enabled: true },
 
-	modules: [
-		'@nuxt/eslint',
-		'@nuxt/icon',
-		'@pinia/nuxt',
-		'@pinia/colada-nuxt',
-		'@nuxtjs/color-mode',
-	],
+  dir: {
+    assets: '~~/app/core/assets',
+    layouts: '~~/app/core/layouts',
+    middleware: '~~/app/core/router/middleware',
+  },
 
-	colorMode: {
-		classSuffix: '',
-	},
+  imports: {
+    dirs: [],
+    scan: false,
+  },
+  modules: [
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    '@pinia/colada-nuxt',
+    '@nuxt/icon',
+    '@nuxtjs/color-mode',
+    'nuxt-open-fetch',
+  ],
 
-	app: {
-		head: {
-			title: 'Week Eat Planner',
-			htmlAttrs: {
-				lang: 'en',
-			},
-			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
-		},
-	},
+  colorMode: { classSuffix: '', storageKey: 'wep-theme' },
 
-	runtimeConfig: {
-		public: {
-			apiBase: process.env.NUXT_PUBLIC_API_BASE,
-		},
-	},
+  nitro: {
+    devProxy: {
+      '/backend-api': {
+        changeOrigin: true,
+        cookieDomainRewrite: '',
+        target: process.env.NUXT_PUBLIC_API_URL,
+      },
+    },
+  },
+
+  openFetch: {
+    clients: {
+      baseApi: {
+        baseURL: process.env.NUXT_PUBLIC_API_URL,
+        schema: 'http://localhost:8000/openapi.json',
+      },
+    },
+    disableNuxtPlugin: true,
+  },
+
+  postcss: {
+    plugins: {
+      '@csstools/postcss-global-data': {
+        files: ['app/core/assets/styles/foundation/media.css'],
+      },
+      'postcss-custom-media': {},
+      'postcss-mixins': {
+        mixinsFiles: ['app/core/assets/styles/foundation/mixins.css'],
+      },
+    },
+  },
+
+  runtimeConfig: {
+    public: {
+      apiUrl: process.env.NUXT_PUBLIC_API_URL,
+    },
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'reka-ui'],
+    },
+  },
 })

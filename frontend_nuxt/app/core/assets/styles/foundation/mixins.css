@@ -1,0 +1,4 @@
+@define-mixin control-disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

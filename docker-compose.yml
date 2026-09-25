@@ -31,9 +31,9 @@ services:
     command: yarn dev --port 3000 --host 0.0.0.0
 
   minio:
-    image: quay.io/minio/minio
+    image: rustfs/rustfs:1.0.0
     container_name: wep-minio
-    command: server /data --console-address ":9001"
+    command: server /data --console-enable --console-address ":9001"
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -49,20 +49,20 @@ services:
       retries: 5
 
   minio-init:
-    image: minio/mc
+    image: amazon/aws-cli:2.27.41
     depends_on:
       minio:
         condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 wep_root weppassword;
-      mc mb -p local/recipes;
-      mc mb -p local/weeks;
-      mc mb -p local/users;
-      mc anonymous set public local/recipes;
-      mc anonymous set public local/weeks;
-      mc anonymous set public local/users;
-      exit 0;
+    environment:
+      AWS_ACCESS_KEY_ID: wep_root
+      AWS_SECRET_ACCESS_KEY: weppassword
+      AWS_DEFAULT_REGION: test
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      aws --endpoint-url http://minio:9000 s3 mb s3://recipes;
+      aws --endpoint-url http://minio:9000 s3 mb s3://weeks;
+      aws --endpoint-url http://minio:9000 s3 mb s3://users;
       "
 
 volumes:

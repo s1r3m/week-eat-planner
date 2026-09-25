@@ -1,40 +1,66 @@
 export default {
-	extends: [
-		'stylelint-config-recommended',
-		'stylelint-config-standard-vue',
-		'stylelint-config-property-sort-order-smacss',
-	],
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-config-standard-vue',
+    'stylelint-config-property-sort-order-smacss',
+  ],
 
-	plugins: ['stylelint-order'],
+  plugins: ['stylelint-order'],
 
-	rules: {
-		'at-rule-no-unknown': [
-			true,
-			{
-				ignoreAtRules: ['custom-media', 'media'],
-			},
-		],
+  rules: {
+    'at-rule-empty-line-before': [
+      'always',
+      {
+        except: ['first-nested'],
+        ignore: ['after-comment'],
+        ignoreAtRules: ['import', 'custom-media'],
+      },
+    ],
 
-		'color-function-notation': 'modern',
-		'custom-property-pattern': null,
-		'declaration-property-value-no-unknown': null,
-		'no-descending-specificity': [true, { severity: 'warning' }],
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: [
+          'mixin',
+          'define-mixin',
+          'mixin-content',
+          'custom-media',
+          'media',
+          'tailwind',
+        ],
+      },
+    ],
 
-		'property-no-unknown': [
-			true,
-			{
-				ignoreProperties: ['corner-shape'],
-			},
-		],
+    'color-function-notation': 'modern',
+    'custom-property-pattern': null,
+    'declaration-property-value-no-unknown': null,
+    'import-notation': null,
+    'no-descending-specificity': [true, { severity: 'warning' }],
 
-		'rule-empty-line-before': [
-			'always',
-			{
-				except: ['first-nested'],
-				ignore: ['after-comment'],
-			},
-		],
+    'order/properties-order': [
+      [],
+      {
+        severity: 'warning',
+        unspecified: 'bottom',
+      },
+    ],
 
-		'selector-class-pattern': null,
-	},
+    'property-no-unknown': [
+      true,
+      {
+        ignoreProperties: ['corner-shape'],
+      },
+    ],
+
+    'rule-empty-line-before': [
+      'always',
+      {
+        except: ['first-nested'],
+        ignore: ['after-comment'],
+      },
+    ],
+
+    'selector-class-pattern': null,
+    'value-keyword-case': null,
+  },
 }

@@ -1,0 +1,5 @@
+@custom-media --desktop (width > 1080px);
+@custom-media --tablet (width 600px);
+@custom-media --mobile (width < 450px);
+
+@custom-media --sidebar-show (width > 600px) and (height > 480px);

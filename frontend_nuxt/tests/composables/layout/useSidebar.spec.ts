@@ -1,11 +1,11 @@
-import { describe, expect, it, mock } from 'bun:test'
-import { useSidebar } from '@/composables/layout/useSidebar'
+import { describe, expect, it } from 'bun:test'
+import { useSidebar } from '@/common/composables/useSidebar'
 import { ref } from 'vue'
 
 // Mock useState
 // @ts-ignore
 globalThis.useState = (_key: string, init: () => any) => {
-	return ref(init ? init() : false)
+  return ref(init ? init() : false)
 }
 
 // Mock readonly
@@ -13,19 +13,19 @@ globalThis.useState = (_key: string, init: () => any) => {
 globalThis.readonly = (val: any) => val
 
 describe('useSidebar', () => {
-	it('initializes with default value', () => {
-		const { collapsed } = useSidebar()
-		expect(collapsed.value).toBe(false)
-	})
+  it('initializes with default value', () => {
+    const { collapsed } = useSidebar()
+    expect(collapsed.value).toBe(false)
+  })
 
-	it('toggles collapsed state', () => {
-		const { collapsed, toggleCollapsed } = useSidebar()
-		expect(collapsed.value).toBe(false)
+  it('toggles collapsed state', () => {
+    const { collapsed, toggleCollapsed } = useSidebar()
+    expect(collapsed.value).toBe(false)
 
-		toggleCollapsed()
-		expect(collapsed.value).toBe(true)
+    toggleCollapsed()
+    expect(collapsed.value).toBe(true)
 
-		toggleCollapsed()
-		expect(collapsed.value).toBe(false)
-	})
+    toggleCollapsed()
+    expect(collapsed.value).toBe(false)
+  })
 })

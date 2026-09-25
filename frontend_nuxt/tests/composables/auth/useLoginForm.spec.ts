@@ -1,120 +1,113 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { PiniaColada, useMutation, useQueryCache } from '@pinia/colada'
+import { renderToString } from 'vue/server-renderer'
+import { createPinia, disposePinia } from 'pinia'
+import { createSSRApp, defineComponent, h, ref } from 'vue'
+import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
 
-// Mock globals
-// @ts-ignore
-globalThis.ref = ref
+const api = mock()
+let pinia: ReturnType<typeof createPinia> | undefined
 
-const mockLogin = mock()
-const mockAuthStore = {
-	login: mockLogin,
+async function createForm() {
+  let form!: ReturnType<typeof useLoginForm>
+  const app = createSSRApp(
+    defineComponent({
+      setup() {
+        form = useLoginForm()
+        return () => h('form')
+      },
+    }),
+  )
+  pinia = createPinia()
+  app.use(pinia).use(PiniaColada)
+  await renderToString(app)
+  return form
 }
 
-// @ts-ignore
-globalThis.useAuthStore = () => mockAuthStore
-
-const mockUsername = ref('')
-const mockPassword = ref('')
-const mockErrors = ref({})
-const mockMeta = ref({})
-
-const mockHandleSubmit = mock((fn: any) => {
-	return () => fn({ email: mockUsername.value, password: mockPassword.value })
+beforeEach(() => {
+  api.mockReset()
+  api.mockResolvedValue({})
+  Object.assign(globalThis, {
+    ref,
+    useMutation,
+    useQueryCache,
+    useNuxtApp: () => ({ $api: api }),
+  })
+})
+afterEach(() => {
+  if (pinia) disposePinia(pinia)
+  pinia = undefined
 })
 
-// Mock vee-validate
-mock.module('vee-validate', () => ({
-	useForm: () => ({
-		errors: mockErrors,
-		handleSubmit: mockHandleSubmit,
-		meta: mockMeta,
-	}),
-	useField: (name: string) => {
-		if (name === 'email') return { value: mockUsername }
-		if (name === 'password') return { value: mockPassword }
-		return { value: ref('') }
-	},
-}))
-
-mock.module('@vee-validate/zod', () => ({
-	toTypedSchema: mock((schema: any) => schema),
-}))
-
-const { useLoginForm } = await import('@/composables/auth/useLoginForm')
-
 describe('useLoginForm', () => {
-	beforeEach(() => {
-		mockLogin.mockClear()
-		mockHandleSubmit.mockClear()
-		mockUsername.value = ''
-		mockPassword.value = ''
-		mockErrors.value = {}
-		mockMeta.value = {}
-	})
+  it('submits the values bound to the form through its own validation', async () => {
+    const form = await createForm()
+    form.email.value = 'test@example.com'
+    form.password.value = 'password123'
 
-	it('initializes with default values', () => {
-		const { email, isLoading, serverError } = useLoginForm()
-		expect(email.value).toBe('')
-		expect(isLoading.value).toBe(false)
-		expect(serverError.value).toBeNull()
-	})
+    await form.handleSubmit(form.login)()
 
-	it('calls authStore.login on form submission', async () => {
-		const { login, email, password } = useLoginForm()
-		email.value = 'test@example.com'
-		password.value = 'password'
+    expect(api).toHaveBeenCalledTimes(1)
+    expect(api).toHaveBeenCalledWith('/auth/login', {
+      body: new URLSearchParams({
+        password: 'password123',
+        username: 'test@example.com',
+      }),
+      method: 'POST',
+    })
+    expect(form.serverError.value).toBeNull()
+    expect(form.isLoading.value).toBe(false)
+  })
 
-		await login()
+  it('shows validation errors without sending invalid credentials', async () => {
+    const form = await createForm()
+    form.email.value = 'not-an-email'
+    form.password.value = 'short'
 
-		expect(mockLogin).toHaveBeenCalledWith({
-			username: 'test@example.com',
-			password: 'password',
-		})
-	})
+    await form.handleSubmit(form.login)()
 
-	it('handles successful login', async () => {
-		const { login, isLoading, serverError } = useLoginForm()
-		mockLogin.mockResolvedValueOnce({})
+    expect(api).not.toHaveBeenCalled()
+    expect(form.errors.value.email).toBe('Invalid email')
+    expect(form.errors.value.password).toBe('At least 8 symbols')
+  })
 
-		const promise = login()
-		expect(isLoading.value).toBe(true)
-		await promise
+  it('keeps loading state on the form until the login request finishes', async () => {
+    const form = await createForm()
+    const response = Promise.withResolvers<unknown>()
+    const started = Promise.withResolvers<void>()
+    api.mockImplementationOnce(() => {
+      started.resolve()
+      return response.promise
+    })
 
-		expect(isLoading.value).toBe(false)
-		expect(serverError.value).toBeNull()
-	})
+    const submission = form.login({
+      email: 'test@example.com',
+      password: 'password123',
+    })
+    await started.promise
+    expect(form.isLoading.value).toBe(true)
 
-	it('handles login failure with server error', async () => {
-		const { login, isLoading, serverError, password } = useLoginForm()
-		password.value = 'password'
-		const errorResponse = {
-			data: {
-				detail: 'Invalid credentials',
-			},
-		}
-		mockLogin.mockRejectedValueOnce(errorResponse)
+    response.resolve({ status: 'success' })
+    await submission
+    expect(form.isLoading.value).toBe(false)
+  })
 
-		try {
-			await login()
-		} catch (e) {
-			// Expected
-		}
+  it.each([
+    [{ data: { detail: 'Invalid credentials' } }, 'Invalid credentials'],
+    [new Error('Network error'), 'Something went wrong'],
+  ])(
+    'shows request errors on the form and clears its password',
+    async (error, message) => {
+      const form = await createForm()
+      form.email.value = 'test@example.com'
+      form.password.value = 'password123'
+      api.mockRejectedValueOnce(error)
 
-		expect(isLoading.value).toBe(false)
-		expect(serverError.value).toBe('Invalid credentials')
-		expect(password.value).toBe('')
-	})
+      await expect(form.handleSubmit(form.login)()).rejects.toBe(error)
 
-	it('handles login failure with generic error', async () => {
-		const { login, serverError } = useLoginForm()
-		mockLogin.mockRejectedValueOnce(new Error('Network error'))
-
-		try {
-			await login()
-		} catch (e) {
-			// Expected
-		}
-
-		expect(serverError.value).toBe('Something went wrong')
-	})
+      expect(form.serverError.value).toBe(message)
+      expect(form.password.value).toBe('')
+      expect(form.isLoading.value).toBe(false)
+    },
+  )
 })

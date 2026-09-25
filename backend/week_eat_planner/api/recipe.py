@@ -12,6 +12,7 @@ from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, StorageBucket
+from week_eat_planner.db.models.recipe import Recipe
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.helpers import check_image_suitable
 from week_eat_planner.services.recipe_service import RecipeService
@@ -24,7 +25,7 @@ async def create_recipe(
     recipe_data: RecipeCreate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> RecipeRead:
+) -> Recipe:
     """Creates a new recipe for the current user.
 
     Args:
@@ -39,14 +40,14 @@ async def create_recipe(
     recipe = await RecipeService(session).create_recipe(recipe_data, user_id)
     logger.info(f'Recipe "{recipe_data.name}" created')
 
-    return RecipeRead.model_validate(recipe)
+    return recipe
 
 
 @router.get(AppUrl.RECIPES_MY, response_model=list[RecipeReadMinimal])
 async def get_my_recipes(
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> list[RecipeReadMinimal]:
+) -> list[Recipe]:
     """Retrieves all recipes created by the current user.
 
     Args:
@@ -60,14 +61,14 @@ async def get_my_recipes(
     recipes = await RecipeService(session).get_all_user_recipes(user_id)
     logger.info(f'Successfully retrieved {len(recipes)} recipes for user {user_id}')
 
-    return [RecipeReadMinimal.model_validate(recipe) for recipe in recipes]
+    return recipes
 
 
 @router.get(AppUrl.RECIPES_FAVORITES, response_model=list[RecipeReadMinimal])
 async def get_favorites(
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> list[RecipeReadMinimal]:
+) -> list[Recipe]:
     """Retrieves all favorite recipes for the current user.
 
     Args:
@@ -81,7 +82,7 @@ async def get_favorites(
     favorites = await RecipeService(session).get_user_favorite_recipes(user_id)
     logger.info(f'Successfully retrieved {len(favorites)} favorites for user {user_id}')
 
-    return [RecipeReadMinimal.model_validate(recipe) for recipe in favorites]
+    return favorites
 
 
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)
@@ -89,7 +90,7 @@ async def get_recipe(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
     user_id: Annotated[UUID | None, Depends(get_optional_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> RecipeRead:
+) -> Recipe:
     """Retrieves a single recipe by its ID.
 
     The user must have access to the recipe (either it's public or they own it).
@@ -104,7 +105,7 @@ async def get_recipe(
     """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user_id}')
     recipe = await RecipeService(session).get_visible_recipe(recipe_id, user_id)
-    return RecipeRead.model_validate(recipe)
+    return recipe
 
 
 @router.patch(AppUrl.RECIPES_TPL, response_model=RecipeRead)
@@ -113,7 +114,7 @@ async def update_recipe(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> RecipeRead:
+) -> Recipe:
     """Updates a recipe.
 
     The user must be the owner of the recipe to update it.
@@ -131,7 +132,7 @@ async def update_recipe(
     recipe_service = RecipeService(session)
     recipe = await recipe_service.get_recipe_for_edit(recipe_id, user_id)
     updated_recipe = await recipe_service.update_recipe(recipe, new_data)
-    return RecipeRead.model_validate(updated_recipe)
+    return updated_recipe
 
 
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
@@ -170,7 +171,7 @@ async def upload_image(
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
-) -> RecipeReadMinimal:
+) -> Recipe:
     """The endpoint to upload an image to the recipe.
 
     Args:
@@ -201,7 +202,7 @@ async def upload_image(
         except Exception as exc:
             logger.exception(f'Failed to delete old image {old_image_key}: {exc}')
 
-    return RecipeReadMinimal.model_validate(updated_recipe)
+    return updated_recipe
 
 
 @router.post(AppUrl.RECIPES_FAVORITES_TPL, status_code=status.HTTP_201_CREATED, response_model=RecipeReadMinimal)
@@ -209,7 +210,7 @@ async def create_favorite(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> RecipeReadMinimal:
+) -> Recipe:
     """Adds a recipe to the user's favorites.
 
     Args:
@@ -224,7 +225,7 @@ async def create_favorite(
     recipe = await RecipeService(session).add_favorite(recipe_id, user_id)
     logger.info(f'Recipe {recipe_id} successfully marked favorite for user {user_id}')
 
-    return RecipeReadMinimal.model_validate(recipe)
+    return recipe
 
 
 @router.delete(AppUrl.RECIPES_FAVORITES_TPL, status_code=status.HTTP_204_NO_CONTENT)

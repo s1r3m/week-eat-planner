@@ -1,62 +1,64 @@
 <script setup lang="ts">
-	definePageMeta({
-		middleware: 'auth',
-		layout: 'app',
-	})
+  import BaseButton from '@/common/ui/BaseButton.vue'
+  import PageErrorState from '@/common/ui/PageErrorState.vue'
+  import PageLoadingState from '@/common/ui/PageLoadingState.vue'
+  import PageTitle from '@/common/ui/PageTitle.vue'
+  import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+  import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
 
-	const {
-		data: weeks,
-		error,
-		isLoading: isLoadingWeeks,
-		refetch,
-	} = useQuery(getWeeksQuery())
-	const { mutate: create, isLoading: isCreating } =
-		useMutation(addWeekMutation())
+  definePageMeta({
+    layout: 'app',
+  })
+
+  const { data: weeks, error, isLoading, refresh } = useWeeks()
 </script>
 
 <template>
-	<div class="page-container">
-		<PageTitle name="My Weeks">
-			<template #controls>
-				<UiButton
-					:disabled="isCreating"
-					aria-label="Create week"
-					@click="create({ name: 'new week' })"
-				>
-					<Icon name="lucide:plus" />
+  <div class="page-container">
+    <PageTitle name="My Weeks">
+      <template #controls>
+        <BaseButton
+          disabled
+          aria-label="Create week"
+          @click="() => {}"
+        >
+          <Icon
+            name="lucide:plus"
+            :size="24"
+          />
 
-					<span class="page-title__button-label">Create week</span>
-				</UiButton>
-			</template>
-		</PageTitle>
+          <span class="page-title__button-label">Create week</span>
+        </BaseButton>
+      </template>
+    </PageTitle>
 
-		<PageLoadingState
-			v-if="!weeks?.length && isLoadingWeeks"
-			name="weeks"
-		/>
+    <PageErrorState
+      v-if="error"
+      name="weeks"
+      :error="error"
+      @retry="refresh"
+    />
 
-		<PageErrorState
-			v-else-if="error"
-			name="weeks"
-			:error="error"
-			@repeat="refetch"
-		/>
+    <PageLoadingState
+      v-else-if="isLoading || !weeks"
+      name="weeks"
+    />
 
-		<WeekGrid
-			v-else
-			:weeks="weeks ?? []"
-		/>
-	</div>
+    <WeekGrid
+      v-else
+      :weeks="weeks ?? []"
+    />
+  </div>
 </template>
 
 <style scoped>
-	.page-title__button-label {
-		display: none;
-	}
+  .page-container {
+    padding: var(--space-2);
+  }
 
-	@media (width > 768px) {
-		.page-title__button-label {
-			display: inline;
-		}
-	}
+  @media (--mobile) {
+    .page-title__button-label {
+      display: none;
+    }
+  }
 </style>

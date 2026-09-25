@@ -1,81 +1,101 @@
+import { appendResponseHeader } from 'h3'
+
 export default defineNuxtPlugin(() => {
-	const config = useRuntimeConfig()
-	const headers = useRequestHeaders(['cookie'])
-	let refreshPromise: null | Promise<void> = null
+  const config = useRuntimeConfig()
+  const event = useRequestEvent()
+  const requestHeaders = useRequestHeaders(['cookie'])
+  const cookies = new Map<string, string>()
+  const requestRefreshes = new WeakMap<object, Promise<void> | undefined>()
 
-	const api = $fetch.create({
-		baseURL: config.public.apiBase,
-		credentials: 'include',
-		headers,
-	})
+  let refreshPromise: Promise<void> | undefined
+  let refreshing = false
 
-	const refreshTokens = async () => {
-		const response = await $fetch.raw('/auth/refresh', {
-			baseURL: config.public.apiBase,
-			credentials: 'include',
-			headers,
-			method: 'POST',
-		})
-		if (import.meta.server) {
-			const event = useRequestEvent()
+  const rememberCookie = (cookie: string) => {
+    const pair = cookie.split(';', 1)[0]?.trim() ?? ''
+    const separator = pair.indexOf('=')
 
-			if (event) {
-				const cookies = response.headers.getSetCookie()
+    if (separator > 0) {
+      cookies.set(pair.slice(0, separator), pair)
+    }
+  }
 
-				for (const cookie of cookies) {
-					appendResponseHeader(event, 'set-cookie', cookie)
-				}
+  const responseCookies = (requestHeaders.cookie ?? '').split(';')
+  for (const cookie of responseCookies) {
+    rememberCookie(cookie)
+  }
 
-				const cookieHeader = cookies
-					.map((cookie) => cookie.split(';', 1)[0])
-					.join('; ')
+  const getCookieHeader = () => cookies.values().toArray().join('; ')
 
-				if (cookieHeader) {
-					headers.cookie = cookieHeader
-				}
-			}
-		}
-	}
+  const transport = $fetch.create({
+    baseURL: config.public.apiUrl,
+    credentials: 'include',
+    retry: 0,
+  })
 
-	const isUnauthorized = (error: any): boolean => {
-		return error?.status === 401 || error?.response?.status === 401
-	}
+  const refreshSession = async () => {
+    const headers = event ? { cookie: getCookieHeader() } : undefined
+    refreshing = true
 
-	const isAuthRequest = (request: Parameters<typeof api>[0]): boolean => {
-		const url = typeof request === 'string' ? request : request.url
-		return url.startsWith('/auth/')
-	}
+    try {
+      const response = await transport.raw('/auth/refresh', {
+        headers,
+        method: 'POST',
+        parseResponse: () => undefined,
+      })
 
-	const apiWithRefresh = async <T>(
-		request: Parameters<typeof api>[0],
-		options?: Parameters<typeof api>[1] & { _retry?: boolean },
-	): Promise<T> => {
-		try {
-			return await api<T>(request, options)
-		} catch (error) {
-			if (!isUnauthorized(error) || isAuthRequest(request) || options?._retry) {
-				throw error
-			}
+      if (!event) return
 
-			if (!refreshPromise) {
-				refreshPromise = (async () => {
-					try {
-						await refreshTokens()
-					} finally {
-						refreshPromise = null
-					}
-				})()
-			}
+      for (const cookie of response.headers.getSetCookie()) {
+        appendResponseHeader(event, 'set-cookie', cookie)
+        rememberCookie(cookie)
+      }
+    } finally {
+      refreshing = false
+    }
+  }
 
-			try {
-				await refreshPromise
-			} catch {
-				throw error
-			}
+  const api = $fetch.create({
+    baseURL: config.public.apiUrl,
+    credentials: 'include',
+    retry: 1,
+    retryStatusCodes: [401],
 
-			return api(request, { ...options, _retry: true })
-		}
-	}
+    async onRequest({ options, request }) {
+      const path =
+        (typeof request === 'string' ? request : request.url).split(
+          /[?#]/,
+          1,
+        )[0] ?? ''
 
-	return { provide: { api: apiWithRefresh } }
+      const isAuthRequest =
+        /\/auth\/(?:login|signup|refresh|google\/exchange)\/?$/.test(path)
+
+      options.retry = isAuthRequest ? 0 : Math.min(Number(options.retry), 1)
+      options.retryStatusCodes = [401]
+
+      if (!isAuthRequest && refreshing) {
+        await refreshPromise
+      }
+
+      requestRefreshes.set(options, refreshPromise)
+
+      if (event) {
+        options.headers.set('cookie', getCookieHeader())
+      }
+    },
+
+    async onResponseError({ options, response }) {
+      if (response.status !== 401 || !options.retry) return
+
+      if (requestRefreshes.get(options) === refreshPromise) {
+        refreshPromise = refreshSession()
+      }
+
+      await refreshPromise
+    },
+  })
+
+  return {
+    provide: { api },
+  }
 })
