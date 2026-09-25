@@ -1,0 +1,68 @@
+.base-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-green-hover);
+}
+
+.base-dialog__content {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  width: calc(100% - var(--space-8));
+  max-width: 30rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.base-dialog__title {
+  color: var(--brand-primary);
+  font-size: var(--text-20);
+  text-align: center;
+}
+
+.base-dialog__description {
+  font-size: var(--text-16);
+  padding: var(--space-8) var(--space-4);
+}
+
+.base-dialog__overlay[data-state='open'],
+.base-dialog__content[data-state='open'] {
+  animation: dialog-fade-in var(--duration-base) ease;
+}
+
+.base-dialog__overlay[data-state='closed'],
+.base-dialog__content[data-state='closed'] {
+  animation: dialog-fade-out var(--duration-base) ease;
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (--mobile) {
+  .base-dialog__content {
+    max-width: 20rem;
+  }
+}

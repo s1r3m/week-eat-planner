@@ -3,7 +3,9 @@
   import PageErrorState from '@/common/ui/PageErrorState.vue'
   import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageTitle from '@/common/ui/PageTitle.vue'
+  import { useWeekDialog } from '@/modules/weeks/composables/useWeekDialog'
   import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+  import WeekCreateDialog from '@/modules/weeks/ui/WeekCreateDialog.vue'
   import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
 
   definePageMeta({
@@ -11,6 +13,7 @@
   })
 
   const { data: weeks, error, isLoading, refresh } = useWeeks()
+  const { open } = useWeekDialog()
 </script>
 
 <template>
@@ -18,9 +21,8 @@
     <PageTitle name="My Weeks">
       <template #controls>
         <BaseButton
-          disabled
           aria-label="Create week"
-          @click="() => {}"
+          @click="open"
         >
           <Icon
             name="lucide:plus"
@@ -48,6 +50,8 @@
       v-else
       :weeks="weeks ?? []"
     />
+
+    <WeekCreateDialog />
   </div>
 </template>
 

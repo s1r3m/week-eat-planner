@@ -14,7 +14,7 @@
 
     <BaseButton
       v-if="showLogin"
-      variant="outline"
+      variant="secondary"
       @click="navigateTo({ name: 'login' })"
     >
       Login

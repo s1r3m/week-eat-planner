@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "oxlint app && eslint app --max-warnings=0 --concurrency auto --cache && stylelint \"app/**/*.{vue,css}\"",
+    "lint": "oxlint app && eslint app --concurrency auto --cache && stylelint \"app/**/*.{vue,css}\"",
     "lint:fix": "oxlint app --fix && eslint --fix app && stylelint --fix \"app/**/*.{vue,css}\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -1,0 +1,75 @@
+.alert-dialog__content {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  width: calc(100% - var(--space-8));
+  max-width: 29rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.alert-dialog__description {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+}
+
+.alert-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-green-hover);
+}
+
+.alert-dialog__controls {
+  display: flex;
+  gap: var(--space-2);
+
+  & > * {
+    width: 100%;
+  }
+}
+
+.alert-dialog__overlay[data-state='open'],
+.alert-dialog__content[data-state='open'] {
+  animation: alert-dialog-fade-in var(--duration-base) ease;
+}
+
+.alert-dialog__overlay[data-state='closed'],
+.alert-dialog__content[data-state='closed'] {
+  animation: alert-dialog-fade-out var(--duration-base) ease;
+}
+
+@keyframes alert-dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes alert-dialog-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (--mobile) {
+  .alert-dialog__content {
+    max-width: 20rem;
+  }
+}

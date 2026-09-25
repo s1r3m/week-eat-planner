@@ -25,7 +25,7 @@
         </BaseButton>
 
         <BaseButton
-          variant="outline"
+          variant="secondary"
           :disabled="true"
         >
           See how it works

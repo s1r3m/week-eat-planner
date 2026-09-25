@@ -23,6 +23,7 @@
         <Icon
           v-if="link.icon"
           :name="link.icon"
+          :size="24"
         />
 
         <span
@@ -68,7 +69,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1);
+    padding: var(--space-2);
     border-radius: var(--radius-xl);
     color: var(--text);
     font-size: var(--text-14);
@@ -77,11 +78,11 @@
       background-color var(--duration-base) ease;
 
     &:hover {
-      background-color: var(--bg-elevated);
+      background-color: var(--bg-green-hover);
     }
 
     &.router-link-active {
-      background-color: var(--bg-elevated);
+      background-color: var(--bg-green-active);
       color: var(--brand-primary);
     }
   }
@@ -91,6 +92,7 @@
     overflow: hidden;
     opacity: 1;
     text-overflow: ellipsis;
+    font-size: var(--text-16);
     white-space: nowrap;
     transition:
       opacity,

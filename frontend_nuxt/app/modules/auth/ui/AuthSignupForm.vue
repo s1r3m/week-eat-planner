@@ -50,7 +50,6 @@
     />
 
     <BaseInput
-      id="email"
       v-model="email"
       label="Email"
       autocomplete="email"
@@ -59,7 +58,6 @@
     />
 
     <BaseInput
-      id="name"
       v-model="username"
       label="Username"
       placeholder="Enter username"
@@ -68,7 +66,6 @@
     />
 
     <BaseInput
-      id="password"
       v-model="password"
       label="Password"
       :type="revealed ? 'text' : 'password'"

@@ -3,4 +3,6 @@
 @import '@/core/assets/styles/foundation/reset.css';
 @import '@/core/assets/styles/foundation/variables.css';
 
+@import '@/core/assets/styles/portals/alert-dialog.css';
+@import '@/core/assets/styles/portals/dialog.css';
 @import '@/core/assets/styles/portals/dropdown.css';

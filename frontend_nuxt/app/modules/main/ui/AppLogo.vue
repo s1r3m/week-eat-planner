@@ -31,7 +31,7 @@
     align-items: center;
     gap: var(--space-1);
     padding: var(--space-2);
-    text-decoration: none;
+    height: var(--header-height);
   }
 
   .app_logo__icon {
@@ -46,7 +46,7 @@
     overflow: hidden;
     opacity: 1;
     color: var(--brand-primary);
-    font-size: var(--text-14);
+    font-size: var(--text-20);
     white-space: nowrap;
     transition:
       opacity,

@@ -49,7 +49,6 @@
     />
 
     <BaseInput
-      id="email"
       v-model="email"
       label="Email"
       name="email"
@@ -58,7 +57,6 @@
     />
 
     <BaseInput
-      id="password"
       v-model="password"
       label="Password"
       name="password"
