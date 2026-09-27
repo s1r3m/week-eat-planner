@@ -18,9 +18,12 @@
     <DialogPortal>
       <DialogOverlay class="side-panel__overlay" />
 
-      <DialogContent class="side-panel">
+      <DialogContent
+        class="side-panel"
+        :aria-describedby="undefined"
+      >
         <div class="side-panel__header">
-          <DialogTitle as-child>
+          <DialogTitle class="sr-only">
             <slot name="title"></slot>
           </DialogTitle>
 

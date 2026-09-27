@@ -15,7 +15,7 @@
 <template>
   <BaseSidePanel v-model="isOpen">
     <template #title>
-      <AppLogo />
+      <AppLogo aria-label="Navigation" />
     </template>
 
     <div class="app-sidebar">

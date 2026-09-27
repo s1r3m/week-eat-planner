@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import BaseButton from '@/common/ui/BaseButton.vue'
-  import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
   const emits = defineEmits<{
     navigate: []
@@ -19,8 +18,6 @@
 
 <template>
   <div class="header-controls">
-    <ModeSwitch />
-
     <BaseButton
       v-if="showLogin"
       variant="secondary"
@@ -44,5 +41,9 @@
     align-items: center;
     padding: var(--space-4);
     gap: var(--space-4);
+  }
+
+  .header-controls > * {
+    width: 100%;
   }
 </style>

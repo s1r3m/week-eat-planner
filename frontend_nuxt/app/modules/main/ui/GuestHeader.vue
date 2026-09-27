@@ -4,6 +4,7 @@
   import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
   import AppLogo from '@/modules/main/ui/AppLogo.vue'
   import GuestMobileSidePanel from '@/modules/main/ui/GuestMobileSidePanel.vue'
+  import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
   const { open } = useMobileSidebar()
 </script>
@@ -12,18 +13,22 @@
   <header class="guest-header">
     <AppLogo />
 
-    <AppAuthControls class="guest-header__controls" />
+    <div class="guest-header__controls-wrapper">
+      <ModeSwitch />
 
-    <BaseButton
-      class="guest-header__mobile-menu"
-      variant="icon"
-      @click="open"
-    >
-      <Icon
-        name="lucide:menu"
-        :size="24"
-      />
-    </BaseButton>
+      <AppAuthControls class="guest-header__controls" />
+
+      <BaseButton
+        class="guest-header__mobile-menu"
+        variant="icon"
+        @click="open"
+      >
+        <Icon
+          name="lucide:menu"
+          :size="24"
+        />
+      </BaseButton>
+    </div>
 
     <GuestMobileSidePanel />
   </header>
@@ -43,14 +48,18 @@
     backdrop-filter: blur(var(--blur));
   }
 
+  .guest-header__controls-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
   .guest-header__mobile-menu {
-    padding: var(--space-2);
     display: none;
   }
 
   @media (--mobile) {
     .guest-header__mobile-menu {
-      display: block;
+      display: flex;
     }
 
     .guest-header__controls {
