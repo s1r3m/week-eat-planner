@@ -1,12 +1,10 @@
 <script setup lang="ts">
   import { useSidebar } from '@/common/composables/useSidebar'
-  import { useMobileSidebar } from '@/modules/main/composables/useMobileSidebar'
   import AppHeader from '@/modules/main/ui/AppHeader.vue'
-  import AppSidebar from '@/modules/main/ui/AppSidebar.vue'
   import AppMobileSidePanel from '@/modules/main/ui/AppMobileSidePanel.vue'
+  import AppSidebar from '@/modules/main/ui/AppSidebar.vue'
 
   const { collapsed } = useSidebar()
-  const { isOpen } = useMobileSidebar()
 </script>
 
 <template>

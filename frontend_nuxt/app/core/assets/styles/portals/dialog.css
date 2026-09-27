@@ -1,7 +1,5 @@
 .base-dialog__overlay {
-  position: fixed;
-  inset: 0;
-  background-color: var(--bg-green-hover);
+  @mixin overlay;
 }
 
 .base-dialog__content {

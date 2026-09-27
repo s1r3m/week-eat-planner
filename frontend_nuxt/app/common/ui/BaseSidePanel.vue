@@ -7,7 +7,8 @@
     DialogRoot,
     DialogTitle,
   } from 'reka-ui'
-  import BaseButton from './BaseButton.vue'
+
+  import BaseButton from '@/common/ui/BaseButton.vue'
 
   const open = defineModel<boolean>({ default: false })
 </script>

@@ -8,8 +8,7 @@
 }
 
 .side-panel__overlay {
-  position: fixed;
-  inset: 0;
+  @mixin overlay;
 }
 
 .side-panel__header {
@@ -23,14 +22,20 @@
   padding: var(--space-2);
 }
 
-.side-panel[data-state='open'],
-.side-panel__overlay[data-state='open'] {
+.side-panel[data-state='open'] {
   animation: side-panel-slide-from-left var(--duration-base) ease-in-out;
 }
 
-.side-panel[data-state='closed'],
-.side-panel__overlay[data-state='closed'] {
+.side-panel__overlay[data-state='open'] {
+  animation: dialog-fade-in var(--duration-base) ease-in-out;
+}
+
+.side-panel[data-state='closed'] {
   animation: side-panel-slide-to-left var(--duration-base) ease-in-out;
+}
+
+.side-panel__overlay[data-state='closed'] {
+  animation: dialog-fade-out var(--duration-base) ease-in-out;
 }
 
 @keyframes side-panel-slide-from-left {

@@ -5,6 +5,10 @@
     collapsed?: boolean
   }>()
 
+  defineEmits<{
+    navigate: []
+  }>()
+
   const { navLinks } = useAppNavigation()
 </script>
 
@@ -18,7 +22,7 @@
       <NuxtLink
         class="nav__link"
         :to="link.to"
-        :aria-label="link.title"
+        @click="$emit('navigate')"
       >
         <Icon
           v-if="link.icon"
@@ -38,14 +42,19 @@
         v-if="link.child?.length && !collapsed"
         class="nav__children"
       >
-        <NuxtLink
+        <li
           v-for="child in link.child"
           :key="child.id"
           class="nav__child-link"
-          :to="child.to"
         >
-          {{ child.title }}
-        </NuxtLink>
+          <NuxtLink
+            class="nav__link"
+            :to="child.to"
+            @click="$emit('navigate')"
+          >
+            {{ child.title }}
+          </NuxtLink>
+        </li>
       </ul>
     </li>
   </ul>
@@ -62,7 +71,7 @@
   .nav__item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
 
   .nav__link {
@@ -81,11 +90,11 @@
       background-color: var(--bg-green-hover);
       color: var(--brand-primary);
     }
+  }
 
-    &.router-link-active {
-      background-color: var(--bg-green-active);
-      color: var(--brand-primary);
-    }
+  .nav__link.router-link-active {
+    background-color: var(--bg-green-active);
+    color: var(--brand-primary);
   }
 
   .nav__title {
@@ -113,23 +122,8 @@
   }
 
   .nav__child-link {
-    padding: var(--space-2);
     overflow: hidden;
-    border-radius: var(--radius-xl);
-    color: var(--text);
-    text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
-    transition: all var(--duration-base) ease;
-
-    &:hover {
-      background-color: var(--bg-green-hover);
-      color: var(--brand-primary);
-    }
-
-    &.router-link-exact-active {
-      background-color: var(--bg-green-active);
-      color: var(--brand-primary);
-    }
   }
 </style>
