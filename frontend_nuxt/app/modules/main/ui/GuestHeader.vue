@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import BaseButton from '@/common/ui/BaseButton.vue'
   import { useMobileSidebar } from '@/modules/main/composables/useMobileSidebar'
   import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
   import AppLogo from '@/modules/main/ui/AppLogo.vue'
