@@ -59,7 +59,7 @@ services:
       AWS_DEFAULT_REGION: test
     entrypoint: /bin/sh
     command: >
-      -c "
+      -exc "
       aws --endpoint-url http://minio:9000 s3 mb s3://recipes;
       aws --endpoint-url http://minio:9000 s3 mb s3://weeks;
       aws --endpoint-url http://minio:9000 s3 mb s3://users;

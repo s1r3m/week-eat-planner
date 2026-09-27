@@ -1,25 +1,67 @@
 <script setup lang="ts">
+  import { DropdownMenuItem } from 'reka-ui'
+
+  import BaseDropdown from '@/common/ui/BaseDropdown.vue'
   import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
+  import { useLogout } from '@/modules/auth/composables/useLogout'
 
   defineProps<{
-    collapsed: boolean
+    collapsed?: boolean
   }>()
 
   const { data: user } = useCurrentUser()
+  const { isLoading, mutate: logout } = useLogout()
+
+  const onLogout = async () => {
+    try {
+      await logout()
+      navigateTo({ name: 'index' })
+    } catch {
+      // Ignore
+    }
+  }
 </script>
 
 <template>
-  <div class="user-info">
-    <Icon name="lucide:circle-user" />
+  <BaseDropdown class="user-info__menu">
+    <template #trigger>
+      <div class="user-info">
+        <Icon
+          name="lucide:circle-user"
+          :size="24"
+        />
 
-    <p
-      v-if="user?.username"
-      class="user-info__name"
-      :class="{ 'user-info__name--collapsed': collapsed }"
+        <p
+          v-if="user?.username"
+          class="user-info__name"
+          :class="{ 'user-info__name--collapsed': collapsed }"
+        >
+          {{ user.username }}
+        </p>
+      </div>
+    </template>
+
+    <DropdownMenuItem class="dropdown__item">
+      <Icon
+        name="lucide:circle-user"
+        :size="24"
+      />
+
+      Profile
+    </DropdownMenuItem>
+
+    <DropdownMenuItem
+      class="dropdown__item"
+      @click="onLogout"
     >
-      {{ user.username }}
-    </p>
-  </div>
+      <Icon
+        name="lucide:delete"
+        :size="24"
+      />
+
+      {{ isLoading ? 'Logging out...' : 'Logout' }}
+    </DropdownMenuItem>
+  </BaseDropdown>
 </template>
 
 <style scoped>
@@ -27,7 +69,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-2);
+    padding: var(--space-4);
   }
 
   .user-info__name {

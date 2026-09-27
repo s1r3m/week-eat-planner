@@ -35,67 +35,80 @@
 </script>
 
 <template>
-  <form
-    :id="formId"
-    class="auth-form"
-    header="Register"
-    description="Create your account"
-    @submit.prevent="onSubmit"
-  >
-    <BaseAlert
-      v-if="serverError"
-      :message="serverError"
-      variant="error"
-      @close="serverError = null"
-    />
-
-    <BaseInput
-      v-model="email"
-      label="Email"
-      autocomplete="email"
-      placeholder="Enter email"
-      :error="errors.email"
-    />
-
-    <BaseInput
-      v-model="username"
-      label="Username"
-      placeholder="Enter username"
-      autocomplete="username"
-      :error="errors.username"
-    />
-
-    <BaseInput
-      v-model="password"
-      label="Password"
-      :type="revealed ? 'text' : 'password'"
-      placeholder="Enter password"
-      autocomplete="new-password"
-      :error="errors.password"
+  <div class="auth-form">
+    <form
+      :id="formId"
+      class="auth-form__form"
+      header="Register"
+      description="Create your account"
+      @submit.prevent="onSubmit"
     >
-      <template #icon-right>
-        <BaseButton
-          class="auth-form__toggle-btn"
-          variant="icon"
-          aria-label="Toggle password visibility"
-          :aria-pressed="revealed"
-          @click="revealed = !revealed"
-        >
-          <Icon
-            :name="revealed ? 'lucide:eye' : 'lucide:eye-closed'"
-            :size="24"
-          />
-        </BaseButton>
-      </template>
-    </BaseInput>
+      <BaseAlert
+        v-if="serverError"
+        :message="serverError"
+        variant="error"
+        @close="serverError = null"
+      />
 
-    <BaseButton
-      type="submit"
-      :disabled="!meta.valid || isLoading"
-    >
-      {{ isLoading ? 'Creating a profile...' : 'Register' }}
-    </BaseButton>
-  </form>
+      <BaseInput
+        v-model="email"
+        label="Email"
+        autocomplete="email"
+        placeholder="Enter email"
+        :error="errors.email"
+      />
+
+      <BaseInput
+        v-model="username"
+        label="Username"
+        placeholder="Enter username"
+        autocomplete="username"
+        :error="errors.username"
+      />
+
+      <BaseInput
+        v-model="password"
+        label="Password"
+        :type="revealed ? 'text' : 'password'"
+        placeholder="Enter password"
+        autocomplete="new-password"
+        :error="errors.password"
+      >
+        <template #icon-right>
+          <BaseButton
+            class="auth-form__toggle-btn"
+            variant="icon"
+            aria-label="Toggle password visibility"
+            :aria-pressed="revealed"
+            @click="revealed = !revealed"
+          >
+            <Icon
+              :name="revealed ? 'lucide:eye' : 'lucide:eye-closed'"
+              :size="24"
+            />
+          </BaseButton>
+        </template>
+      </BaseInput>
+
+      <BaseButton
+        type="submit"
+        :disabled="!meta.valid || isLoading"
+      >
+        {{ isLoading ? 'Creating a profile...' : 'Register' }}
+      </BaseButton>
+    </form>
+
+    <div class="auth-form__link-wrapper">
+      <span>Already have an account?</span>
+
+      <NuxtLink
+        :to="{ name: 'login' }"
+        class="auth-form__link"
+      >
+        Log in!
+      </NuxtLink>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -105,7 +118,25 @@
     gap: var(--space-4);
   }
 
+  .auth-form__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
   .auth-form__toggle-btn {
     color: var(--text-muted);
+  }
+
+  .auth-form__link-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-1);
+    font-size: var(--text-14);
+    color: var(--text-muted);
+  }
+
+  .auth-form__link {
+    color: var(--brand-primary);
   }
 </style>

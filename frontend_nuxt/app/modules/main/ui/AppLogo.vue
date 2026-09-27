@@ -30,7 +30,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    padding: var(--space-2);
+    padding: 0 var(--space-2);
     height: var(--header-height);
   }
 

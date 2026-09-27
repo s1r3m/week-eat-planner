@@ -15,9 +15,8 @@
 </script>
 
 <template>
-  <div class="page">
+  <div class="page-container">
     <AuthCard
-      class=""
       header="Welcome back"
       description="Login to your account"
     >
@@ -27,10 +26,9 @@
 </template>
 
 <style scoped>
-  .page {
+  .page-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    margin-top: var(--space-8);
+    margin-top: var(--space-4);
   }
 </style>

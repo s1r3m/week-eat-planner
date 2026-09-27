@@ -72,13 +72,13 @@
     gap: var(--space-2);
   }
 
-  @container (--tablet) {
+  @media (--tablet) {
     .meal-slot-grid__day-block {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @container (--mobile) {
+  @media (--mobile) {
     .meal-slot-grid__day-block {
       grid-template-columns: repeat(1, 1fr);
     }

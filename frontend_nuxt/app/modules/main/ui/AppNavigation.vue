@@ -2,15 +2,15 @@
   import { useAppNavigation } from '@/modules/main/composables/useAppNavigation'
 
   defineProps<{
-    collapsed: boolean
+    collapsed?: boolean
   }>()
 
   const { navLinks } = useAppNavigation()
 </script>
 
 <template>
-  <div class="nav">
-    <div
+  <ul class="nav">
+    <li
       v-for="link in navLinks"
       :key="link.id"
       class="nav__item"
@@ -34,7 +34,7 @@
         </span>
       </NuxtLink>
 
-      <div
+      <ul
         v-if="link.child?.length && !collapsed"
         class="nav__children"
       >
@@ -46,9 +46,9 @@
         >
           {{ child.title }}
         </NuxtLink>
-      </div>
-    </div>
-  </div>
+      </ul>
+    </li>
+  </ul>
 </template>
 
 <style scoped>
@@ -79,6 +79,7 @@
 
     &:hover {
       background-color: var(--bg-green-hover);
+      color: var(--brand-primary);
     }
 
     &.router-link-active {
@@ -107,12 +108,12 @@
   .nav__children {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    padding-left: var(--space-8);
+    gap: var(--space-2);
+    padding-left: var(--space-6);
   }
 
   .nav__child-link {
-    padding: var(--space-1) var(--space-2);
+    padding: var(--space-2);
     overflow: hidden;
     border-radius: var(--radius-xl);
     color: var(--text);
@@ -121,16 +122,14 @@
     white-space: nowrap;
     transition: all var(--duration-base) ease;
 
-    &:hover,
-    &.router-link-exact-active {
-      background-color: var(--bg-elevated);
+    &:hover {
+      background-color: var(--bg-green-hover);
       color: var(--brand-primary);
     }
-  }
 
-  .nav__child-link--inactive {
-    opacity: 0.5;
-    color: var(--text);
-    cursor: not-allowed;
+    &.router-link-exact-active {
+      background-color: var(--bg-green-active);
+      color: var(--brand-primary);
+    }
   }
 </style>

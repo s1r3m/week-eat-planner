@@ -26,6 +26,7 @@
     v-model="isOpen"
     title="Delete week"
     :description="`Are you sure you want to delete ${week?.name}?`"
+    title-hidden
   >
     <AlertDialogCancel as-child>
       <BaseButton variant="secondary">No</BaseButton>

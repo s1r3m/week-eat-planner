@@ -35,13 +35,13 @@
     margin: var(--space-2) 0;
   }
 
-  @container (--tablet) {
+  @media (--tablet) {
     .week-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @container (--mobile) {
+  @media (--mobile) {
     .week-grid {
       grid-template-columns: repeat(1, 1fr);
     }

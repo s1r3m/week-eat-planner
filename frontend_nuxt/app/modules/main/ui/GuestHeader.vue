@@ -25,6 +25,7 @@
     inset: 0;
     position: sticky;
     z-index: 2;
+    padding: var(--space-2) 0;
     height: var(--header-height);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(var(--blur));
