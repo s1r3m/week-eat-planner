@@ -6,6 +6,7 @@
   border-radius: var(--radius-md);
   background-color: var(--bg-elevated);
   color: var(--text);
+  z-index: 5;
 }
 
 .dropdown__item {

@@ -78,7 +78,7 @@
 
   @media (--mobile) {
     .app-header__mobile-menu {
-      display: block;
+      display: flex;
     }
 
     .app-header__left-side {

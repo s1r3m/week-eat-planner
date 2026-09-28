@@ -19,12 +19,16 @@
     </template>
 
     <div class="app-sidebar">
-      <span class="app-sidebar__navigation-title">Navigation</span>
+      <div class="app-sidebar__navigation">
+        <span class="app-sidebar__navigation-title">Navigation</span>
 
-      <AppNavigation @navigate="onNavigate" />
-
-      <AppUser />
+        <AppNavigation @navigate="onNavigate" />
+      </div>
     </div>
+
+    <template #footer>
+      <AppUser />
+    </template>
   </BaseSidePanel>
 </template>
 
@@ -32,8 +36,14 @@
   .app-sidebar {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    justify-content: space-between;
     padding: 0 var(--space-2);
+  }
+
+  .app-sidebar__navigation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .app-sidebar__navigation-title {

@@ -42,6 +42,8 @@
 
         <div class="side-panel__content">
           <slot></slot>
+
+          <slot name="footer"></slot>
         </div>
       </DialogContent>
     </DialogPortal>

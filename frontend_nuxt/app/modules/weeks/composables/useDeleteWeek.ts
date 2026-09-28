@@ -13,6 +13,7 @@ export const useDeleteWeek = () => {
     mutation: weeksApi.delete,
     onMutate: async (id: string) => {
       await queryCache.cancelQueries({ key: WEEKS_KEY.all() })
+      await queryCache.cancelQueries({ key: WEEKS_KEY.single(id) })
       const previous = queryCache.getQueryData<WeekPreview[]>(WEEKS_KEY.all())
       queryCache.setQueryData(WEEKS_KEY.all(), (weeks: WeekPreview[] = []) =>
         weeks.filter((week) => week.id !== id),
