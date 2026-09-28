@@ -21,7 +21,7 @@
       await create(form.value)
       close()
     } catch {
-      // Prevent closing.
+      form.value.name = ''
     }
   }
 </script>

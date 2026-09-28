@@ -34,6 +34,7 @@
       <BaseButton
         class="app-header__mobile-menu"
         variant="icon"
+        aria-label="Open mobile menu"
         @click="open"
       >
         <Icon
