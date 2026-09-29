@@ -3,30 +3,25 @@
 
   import type { WeekCreatePayload } from '@/modules/weeks/types'
 
-  import { useGlobalToast } from '@/common/composables/useGlobalToast'
   import BaseButton from '@/common/ui/BaseButton.vue'
   import BaseDialog from '@/common/ui/BaseDialog.vue'
   import BaseInput from '@/common/ui/BaseInput.vue'
   import { useCreateWeek } from '@/modules/weeks/composables/useCreateWeek'
-  import { useWeekDialog } from '@/modules/weeks/composables/useWeekDialog'
+  import { useWeekCreateDialog } from '@/modules/weeks/composables/useWeekCreateDialog'
 
-  const { close, isOpen } = useWeekDialog()
+  const { close, isOpen } = useWeekCreateDialog()
   const { mutate: create, isLoading } = useCreateWeek()
-
-  const { show } = useGlobalToast()
 
   const form = ref<WeekCreatePayload>({ name: '' })
 
-  const onSubmit = () => {
-    if (!form.value.name.trim()) return
+  watch(isOpen, (open) => {
+    if (open) form.value = { name: '' }
+  })
 
-    try {
-      create(form.value)
-      close()
-    } catch {
-      show('Creating of the week failed. Try again later, please.')
-      form.value.name = ''
-    }
+  const onSubmit = () => {
+    create({ name: form.value.name.trim() })
+    form.value = { name: '' }
+    close()
   }
 </script>
 

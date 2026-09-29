@@ -1,19 +1,21 @@
 import type { $Fetch } from 'ofetch'
 
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createEvent, getResponseHeader, setResponseHeader } from 'h3'
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { Socket } from 'node:net'
 import { createFetch } from 'ofetch'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const fetch = mock(
+import { stubGlobals } from '../helpers/globals'
+
+const fetch = vi.fn(
   async (_request: RequestInfo | URL, _options?: RequestInit) =>
     Response.json({ ok: true }),
 )
 let event: ReturnType<typeof createEvent> | undefined
 let headers: { cookie?: string }
 
-Object.assign(globalThis, { defineNuxtPlugin: (setup: unknown) => setup })
+stubGlobals({ defineNuxtPlugin: (setup: unknown) => setup })
 const setup = (await import('@/plugins/api')).default as unknown as () => {
   provide: { api: $Fetch }
 }
@@ -23,7 +25,7 @@ beforeEach(() => {
   fetch.mockImplementation(async () => Response.json({ ok: true }))
   event = undefined
   headers = {}
-  Object.assign(globalThis, {
+  stubGlobals({
     $fetch: createFetch({ fetch: fetch as unknown as typeof globalThis.fetch }),
     useRequestEvent: () => event,
     useRequestHeaders: () => headers,
@@ -31,18 +33,18 @@ beforeEach(() => {
   })
 })
 
+function response(status: number, cookies: string[] = []) {
+  const result = Response.json({ status }, { status })
+  for (const cookie of cookies) result.headers.append('set-cookie', cookie)
+  return result
+}
+
 function serverRequest(cookie: string) {
   const request = new IncomingMessage(new Socket())
   request.headers = { cookie }
   event = createEvent(request, new ServerResponse(request))
   headers = { cookie }
   return event
-}
-
-function response(status: number, cookies: string[] = []) {
-  const result = Response.json({ status }, { status })
-  for (const cookie of cookies) result.headers.append('set-cookie', cookie)
-  return result
 }
 
 const requestPaths = () =>
@@ -222,7 +224,7 @@ describe('API session renewal', () => {
         started.resolve()
         return rotation.promise
       }
-      if (path.endsWith('/two') && attempt === 1) return late.promise
+      if (attempt === 1 && path.endsWith('/two')) return late.promise
       return response(attempt === 1 ? 401 : 200)
     })
     const { api } = setup().provide
@@ -315,10 +317,10 @@ describe('API session renewal', () => {
       { user: 'alice' },
       { user: 'bob' },
     ])
-    expect(getResponseHeader(aliceEvent, 'set-cookie')).toEqual([
+    expect([getResponseHeader(aliceEvent, 'set-cookie')].flat()).toEqual([
       'access_token=alice-new; Path=/; HttpOnly',
     ])
-    expect(getResponseHeader(bobEvent, 'set-cookie')).toEqual([
+    expect([getResponseHeader(bobEvent, 'set-cookie')].flat()).toEqual([
       'access_token=bob-new; Path=/; HttpOnly',
     ])
     expect(

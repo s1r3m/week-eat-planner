@@ -3,7 +3,7 @@
   import PageErrorState from '@/common/ui/PageErrorState.vue'
   import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageTitle from '@/common/ui/PageTitle.vue'
-  import { useWeekDialog } from '@/modules/weeks/composables/useWeekDialog'
+  import { useWeekCreateDialog } from '@/modules/weeks/composables/useWeekCreateDialog'
   import { useWeeks } from '@/modules/weeks/composables/useWeeks'
   import WeekCreateDialog from '@/modules/weeks/ui/WeekCreateDialog.vue'
   import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
@@ -12,8 +12,8 @@
     layout: 'app',
   })
 
-  const { data: weeks, error, isLoading, refresh } = useWeeks()
-  const { open } = useWeekDialog()
+  const { data: weeks, error, refresh } = useWeeks()
+  const { open } = useWeekCreateDialog()
 </script>
 
 <template>
@@ -42,13 +42,13 @@
     />
 
     <PageLoadingState
-      v-else-if="isLoading || !weeks"
+      v-else-if="weeks === undefined"
       name="weeks"
     />
 
     <WeekGrid
       v-else
-      :weeks="weeks ?? []"
+      :weeks="weeks"
     />
 
     <WeekCreateDialog />

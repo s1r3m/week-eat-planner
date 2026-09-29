@@ -11,13 +11,10 @@
 
   const onConfirm = () => {
     if (!week.value) return
-    try {
-      remove(week.value.id)
-      close()
-      navigateTo({ name: 'my-weeks' })
-    } catch {
-      // Prevent closing the dialog.
-    }
+
+    remove(week.value.id)
+    close()
+    navigateTo({ name: 'my-weeks' })
   }
 </script>
 

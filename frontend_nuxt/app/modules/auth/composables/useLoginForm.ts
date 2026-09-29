@@ -3,6 +3,7 @@ import type { LoginPayload } from '@/modules/auth/types'
 
 import { useLogin } from '@/modules/auth/composables/useLogin'
 import { useLoginValidation } from '@/modules/auth/schemas/login'
+import { getFormErrorMessage } from '@/modules/auth/utils/formError'
 
 export const useLoginForm = () => {
   const { email, errors, handleSubmit, meta, password } = useLoginValidation()
@@ -21,20 +22,7 @@ export const useLoginForm = () => {
     } catch (error) {
       password.value = ''
 
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'data' in error &&
-        error.data
-      ) {
-        const body = error.data as { detail?: unknown }
-        serverError.value =
-          typeof body.detail === 'string' && body.detail
-            ? body.detail
-            : 'Something went wrong'
-      } else {
-        serverError.value = 'Something went wrong'
-      }
+      serverError.value = getFormErrorMessage(error)
       throw error
     }
   }

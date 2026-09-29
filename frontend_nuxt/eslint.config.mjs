@@ -19,13 +19,14 @@ export default withNuxt(
     {
       files: [
         'app/**/*.{ts,vue,js,mjs}',
+        'tests/**/*.ts',
         'layers/**/*.{ts,vue,js,mjs}',
         '*.{ts,vue,js,mjs}',
       ],
       name: 'app/files-to-lint',
     },
 
-    globalIgnores(['.nuxt', '.output', 'node_modules', 'dist']),
+    globalIgnores(['.nuxt', '.output', 'node_modules', 'dist', 'coverage', '.cache']),
 
     vue.configs['flat/recommended'],
     vueA11y.configs['flat/recommended'],
@@ -39,6 +40,16 @@ export default withNuxt(
     skipFormatting,
 
     ...oxlint.configs['flat/all'],
+
+    {
+      files: ['tests/**/*.ts'],
+      rules: {
+        'unicorn/no-top-level-assignment-in-function': 'off',
+        'unicorn/no-top-level-side-effects': 'off',
+        'unicorn/no-unreadable-new-expression': 'off',
+        'unicorn/prefer-https': 'off',
+      },
+    },
 
     {
       rules: {

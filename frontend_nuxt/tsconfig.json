@@ -4,7 +4,7 @@
       "@/*": ["./app/*"],
       "~/*": ["./app/*"]
     },
-    "types": ["node", "bun-types"]
+    "types": ["node"]
   },
   "files": [],
   "references": [

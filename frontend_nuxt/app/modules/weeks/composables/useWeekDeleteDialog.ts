@@ -1,18 +1,26 @@
-import type { WeekFull } from '@/modules/weeks/types'
+import type { WeekPreview } from '@/modules/weeks/types'
+
+type SelectedWeek = Pick<WeekPreview, 'id' | 'name'>
 
 export const useWeekDeleteDialog = () => {
-  const isOpen = useState<boolean>('week-delete-dialog:isOpen', () => false)
-  const week = useState<null | WeekFull>('week-delete-dialog:week', () => null)
+  const week = useState<null | SelectedWeek>(
+    'week-delete-dialog:week',
+    () => null,
+  )
+  const isOpen = computed({
+    get: () => week.value !== null,
+    set: (value: boolean) => {
+      if (!value) close()
+    },
+  })
 
-  const open = (w: WeekFull) => {
-    week.value = w
-    isOpen.value = true
+  const open = ({ id, name }: SelectedWeek) => {
+    week.value = { id, name }
   }
 
   const close = () => {
     week.value = null
-    isOpen.value = false
   }
 
-  return { close, isOpen, open, week }
+  return { close, isOpen, open, week: readonly(week) }
 }

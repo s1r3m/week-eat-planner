@@ -11,24 +11,29 @@ export const useDeleteWeek = () => {
 
   return useMutation({
     mutation: weeksApi.delete,
-    onMutate: async (id: string) => {
-      await queryCache.cancelQueries({ key: WEEKS_KEY.all() })
-      await queryCache.cancelQueries({ key: WEEKS_KEY.single(id) })
-      const previous = queryCache.getQueryData<WeekPreview[]>(WEEKS_KEY.all())
-      queryCache.setQueryData(WEEKS_KEY.all(), (weeks: WeekPreview[] = []) =>
+    onMutate: (id: string) => {
+      queryCache.cancelQueries({ key: WEEKS_KEY.all() })
+      queryCache.cancelQueries({ key: WEEKS_KEY.single(id) })
+
+      const weeks =
+        queryCache.getQueryData<WeekPreview[]>(WEEKS_KEY.all()) || []
+
+      queryCache.setQueryData(
+        WEEKS_KEY.all(),
         weeks.filter((week) => week.id !== id),
       )
-      return { previous }
+      return { previous: weeks }
     },
-    onError: (error, _id, context) => {
-      if (context?.previous) {
-        queryCache.setQueryData(WEEKS_KEY.all(), context.previous)
+    onError: (error, _id, { previous }) => {
+      if (previous) {
+        queryCache.setQueryData(WEEKS_KEY.all(), previous)
       }
       show(error.message)
     },
-    onSettled: (_response, _error, id, _context) => {
-      queryCache.invalidateQueries({ key: WEEKS_KEY.all() })
-      queryCache.invalidateQueries({ key: WEEKS_KEY.single(id) })
-    },
+    onSettled: (_response, _error, id) =>
+      Promise.allSettled([
+        queryCache.invalidateQueries({ key: WEEKS_KEY.all() }),
+        queryCache.invalidateQueries({ key: WEEKS_KEY.single(id) }),
+      ]),
   })
 }

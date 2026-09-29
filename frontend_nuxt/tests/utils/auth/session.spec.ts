@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
+
 import {
   getRedirectTarget,
   isPublicRoute,
@@ -70,7 +71,7 @@ describe('getRedirectTarget', () => {
     '/\\evil.test',
     '/\n/evil.test',
     '/my/recipes\t',
-    '/my/recipes\u0000',
+    '/my/recipes\u{0}',
     '/my recipes',
   ])('falls back to My Weeks for an invalid return URL: %j', (value) => {
     expect(getRedirectTarget(value)).toBe('/my/weeks')

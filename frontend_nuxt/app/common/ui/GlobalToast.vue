@@ -1,14 +1,11 @@
 <script setup lang="ts">
   import { useGlobalToast } from '@/common/composables/useGlobalToast'
+  import { useToastAutoDismiss } from '@/common/composables/useToastAutoDismiss'
   import BaseAlert from '@/common/ui/BaseAlert.vue'
 
   const { dismiss, toasts } = useGlobalToast()
 
-  onMounted(() => {
-    for (const toast of toasts.value) {
-      setTimeout(() => dismiss(toast.id), toast.duration)
-    }
-  })
+  useToastAutoDismiss(toasts, dismiss)
 </script>
 
 <template>

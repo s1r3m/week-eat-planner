@@ -1,41 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { PiniaColada, useMutation } from '@pinia/colada'
-import { renderToString } from '@vue/server-renderer'
-import { createPinia, disposePinia } from 'pinia'
-import { createSSRApp, defineComponent, h, ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { useSignupForm } from '@/modules/auth/composables/useSignupForm'
 
-const api = mock()
-let pinia: ReturnType<typeof createPinia> | undefined
+import { mountComposable } from '../../helpers/composable'
 
-async function createForm() {
-  let form!: ReturnType<typeof useSignupForm>
-  const app = createSSRApp(
-    defineComponent({
-      setup() {
-        form = useSignupForm()
-        return () => h('form')
-      },
-    }),
-  )
-  pinia = createPinia()
-  app.use(pinia).use(PiniaColada)
-  await renderToString(app)
-  return form
-}
+const api = vi.fn()
+const createForm = () => mountComposable(useSignupForm).result
 
 beforeEach(() => {
-  api.mockReset()
-  api.mockResolvedValue({})
-  Object.assign(globalThis, {
-    ref,
-    useMutation,
-    useNuxtApp: () => ({ $api: api }),
-  })
-})
-afterEach(() => {
-  if (pinia) disposePinia(pinia)
-  pinia = undefined
+  api.mockReset().mockResolvedValue({})
+  vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 })
 
 describe('useSignupForm', () => {
@@ -123,4 +97,24 @@ describe('useSignupForm', () => {
     expect(form.serverError.value).toBe(message)
     expect(form.isLoading.value).toBe(false)
   })
+})
+
+it('clears the previous server error when retrying', async () => {
+  const form = createForm()
+  const error = new Error('offline')
+  api.mockRejectedValueOnce(error)
+  await expect(
+    form.register({
+      email: 'test@example.com',
+      username: 'tester',
+      password: 'password123',
+    }),
+  ).rejects.toBe(error)
+  expect(form.serverError.value).toBe('Something went wrong')
+  await form.register({
+    email: 'test@example.com',
+    username: 'tester',
+    password: 'password123',
+  })
+  expect(form.serverError.value).toBeNull()
 })

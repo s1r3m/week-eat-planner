@@ -1,4 +1,4 @@
-export const useWeekDialog = () => {
+export const useWeekCreateDialog = () => {
   const isOpen = useState<boolean>('week-create-dialog-open', () => false)
 
   const open = () => {
