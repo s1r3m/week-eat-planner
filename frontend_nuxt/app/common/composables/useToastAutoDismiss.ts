@@ -15,7 +15,7 @@ export const useToastAutoDismiss = (
         const ids = new Set(current.map((toast) => toast.id))
         for (const [id, timer] of timers) {
           if (ids.has(id)) {
-          	continue;
+            continue
           }
 
           clearTimeout(timer)

@@ -87,22 +87,16 @@ describe('useDeleteWeek', () => {
       const error = new Error('offline')
       const failure = expect(result.mutateAsync('week-1')).rejects.toBe(error)
       await started.promise
-      const current =
-        change === 'changed'
-          ? [week('other')]
-          : change === 'missing'
-            ? undefined
-            : [week('week-1', 'Updated')]
+      let current: undefined | WeekPreview[]
+      if (change === 'changed') {
+        current = [week('other')]
+      } else if (change === 'already restored') {
+        current = [week('week-1', 'Updated')]
+      }
       cache.setQueryData(WEEKS_KEY.all(), current)
       response.reject(error)
       await failure
-      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual(
-        change === 'changed'
-          ? [week()]
-          : change === 'missing'
-            ? [week()]
-            : [week()],
-      )
+      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
     },
   )
 

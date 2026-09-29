@@ -26,7 +26,14 @@ export default withNuxt(
       name: 'app/files-to-lint',
     },
 
-    globalIgnores(['.nuxt', '.output', 'node_modules', 'dist', 'coverage', '.cache']),
+    globalIgnores([
+      '.nuxt',
+      '.output',
+      'node_modules',
+      'dist',
+      'coverage',
+      '.cache',
+    ]),
 
     vue.configs['flat/recommended'],
     vueA11y.configs['flat/recommended'],

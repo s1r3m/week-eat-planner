@@ -30,8 +30,9 @@ beforeEach(() => {
     definePageMeta: vi.fn(),
     navigateTo: vi.fn(),
   }
-  for (const [name, value] of Object.entries(globals))
+  for (const [name, value] of Object.entries(globals)) {
     vi.stubGlobal(name, value)
+  }
 })
 
 afterEach(() => {

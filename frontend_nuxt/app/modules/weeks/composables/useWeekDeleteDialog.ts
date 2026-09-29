@@ -7,19 +7,16 @@ export const useWeekDeleteDialog = () => {
     'week-delete-dialog:week',
     () => null,
   )
-  const isOpen = computed({
-    get: () => week.value !== null,
-    set: (value: boolean) => {
-      if (!value) close()
-    },
-  })
+  const isOpen = useState<boolean>('week-delete-dialog:isOpen', () => false)
 
   const open = ({ id, name }: SelectedWeek) => {
     week.value = { id, name }
+    isOpen.value = true
   }
 
   const close = () => {
     week.value = null
+    isOpen.value = false
   }
 
   return { close, isOpen, open, week: readonly(week) }
