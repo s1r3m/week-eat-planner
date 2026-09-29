@@ -5,20 +5,19 @@
   import AppLogo from '@/modules/main/ui/AppLogo.vue'
 
   const { close, isOpen } = useMobileSidebar()
-
-  const onNavigate = () => {
-    close()
-  }
 </script>
 
 <template>
   <BaseSidePanel v-model="isOpen">
     <template #title>
-      <AppLogo aria-label="Navigation" />
+      <AppLogo
+        aria-label="Navigation"
+        @navigate="close"
+      />
     </template>
 
     <div class="guest-sidebar">
-      <AppAuthControls @navigate="onNavigate" />
+      <AppAuthControls @navigate="close" />
     </div>
   </BaseSidePanel>
 </template>

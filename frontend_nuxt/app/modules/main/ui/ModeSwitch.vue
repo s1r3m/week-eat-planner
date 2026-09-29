@@ -36,6 +36,7 @@
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'dark' }"
       @click="colorMode.preference = 'dark'"
     >
       <Icon
@@ -47,6 +48,7 @@
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'light' }"
       @click="colorMode.preference = 'light'"
     >
       <Icon
@@ -58,6 +60,7 @@
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'system' }"
       @click="colorMode.preference = 'system'"
     >
       <Icon

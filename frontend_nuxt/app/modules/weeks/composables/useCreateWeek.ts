@@ -20,6 +20,7 @@ export const useCreateWeek = () => {
 
       const previous = queryCache.getQueryData<WeekPreview[]>(WEEKS_KEY.all())
       const creatingWeek: WeekPreview = {
+        /* eslint-disable camelcase */
         id: crypto.randomUUID(),
         name: body.name,
         user_id: user.value?.id,

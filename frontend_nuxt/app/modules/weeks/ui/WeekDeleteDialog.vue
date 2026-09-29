@@ -9,10 +9,10 @@
   const { close, isOpen, week } = useWeekDeleteDialog()
   const { mutate: remove, isLoading } = useDeleteWeek()
 
-  const onConfirm = async () => {
+  const onConfirm = () => {
     if (!week.value) return
     try {
-      await remove(week.value.id)
+      remove(week.value.id)
       close()
       navigateTo({ name: 'my-weeks' })
     } catch {

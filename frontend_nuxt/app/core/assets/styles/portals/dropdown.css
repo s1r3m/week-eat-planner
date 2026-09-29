@@ -23,6 +23,10 @@
   }
 }
 
+.dropdown__item--selected {
+  color: var(--brand-primary);
+}
+
 .dropdown__item--active {
   background-color: color-mix(in srgb, var(--brand-primary) 10%, transparent);
   color: var(--brand-primary);

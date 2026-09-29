@@ -9,12 +9,17 @@
     collapsed?: boolean
   }>()
 
+  const emits = defineEmits<{
+    navigate: []
+  }>()
+
   const { data: user } = useCurrentUser()
-  const { isLoading, mutate: logout } = useLogout()
+  const { isLoading, mutateAsync: logout } = useLogout()
 
   const onLogout = async () => {
     try {
       await logout()
+      emits('navigate')
       navigateTo({ name: 'index' })
     } catch {
       // Ignore
@@ -23,7 +28,7 @@
 </script>
 
 <template>
-  <BaseDropdown class="user-info__menu">
+  <BaseDropdown>
     <template #trigger>
       <div class="user-info">
         <Icon
@@ -41,17 +46,8 @@
       </div>
     </template>
 
-    <DropdownMenuItem class="dropdown__item">
-      <Icon
-        name="lucide:circle-user"
-        :size="24"
-      />
-
-      Profile
-    </DropdownMenuItem>
-
     <DropdownMenuItem
-      class="dropdown__item"
+      class="dropdown__item user-info__logout"
       @click="onLogout"
     >
       <Icon
@@ -85,5 +81,9 @@
   .user-info__name--collapsed {
     max-width: 0;
     opacity: 0;
+  }
+
+  .user-info__logout {
+    color: var(--danger);
   }
 </style>

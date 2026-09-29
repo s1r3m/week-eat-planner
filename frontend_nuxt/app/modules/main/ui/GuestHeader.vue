@@ -6,17 +6,20 @@
   import GuestMobileSidePanel from '@/modules/main/ui/GuestMobileSidePanel.vue'
   import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
-  const { open } = useMobileSidebar()
+  const { close, open } = useMobileSidebar()
 </script>
 
 <template>
   <header class="guest-header">
-    <AppLogo />
+    <AppLogo @navigate="close" />
 
     <div class="guest-header__controls-wrapper">
       <ModeSwitch />
 
-      <AppAuthControls class="guest-header__controls" />
+      <AppAuthControls
+        class="guest-header__controls"
+        @navigate="close"
+      />
 
       <BaseButton
         class="guest-header__mobile-menu"
@@ -43,7 +46,7 @@
     inset: 0;
     position: sticky;
     z-index: 2;
-    padding: var(--space-2);
+    padding: var(--space-4);
     height: var(--header-height);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(var(--blur));
@@ -52,6 +55,7 @@
   .guest-header__controls-wrapper {
     display: flex;
     align-items: center;
+    gap: var(--space-2);
   }
 
   .guest-header__mobile-menu {

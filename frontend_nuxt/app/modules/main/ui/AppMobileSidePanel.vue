@@ -6,28 +6,29 @@
   import AppUser from '@/modules/main/ui/AppUser.vue'
 
   const { close, isOpen } = useMobileSidebar()
-
-  const onNavigate = () => {
-    close()
-  }
 </script>
 
 <template>
   <BaseSidePanel v-model="isOpen">
     <template #title>
-      <AppLogo aria-label="Navigation" />
+      <AppLogo
+        aria-label="Navigation"
+        @navigate="close"
+      />
     </template>
 
     <div class="app-sidebar">
       <div class="app-sidebar__navigation">
         <span class="app-sidebar__navigation-title">Navigation</span>
 
-        <AppNavigation @navigate="onNavigate" />
+        <AppNavigation @navigate="close" />
       </div>
     </div>
 
     <template #footer>
-      <AppUser />
+      <div class="app-sidebar__footer">
+        <AppUser @navigate="close" />
+      </div>
     </template>
   </BaseSidePanel>
 </template>
@@ -48,5 +49,9 @@
 
   .app-sidebar__navigation-title {
     padding: var(--space-2);
+  }
+
+  .app-sidebar__footer {
+    border-top: 1px solid var(--border);
   }
 </style>
