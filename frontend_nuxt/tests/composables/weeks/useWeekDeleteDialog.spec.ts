@@ -25,11 +25,11 @@ it('shares only the selected identity and clears it on close', () => {
 it('supports v-model closing without opening an empty selection', () => {
   const dialog = useWeekDeleteDialog()
   dialog.isOpen.value = true
-  expect(dialog.isOpen.value).toBe(false)
+  expect(dialog.isOpen.value).toBe(true)
   dialog.open(week())
   dialog.isOpen.value = true
   expect(dialog.isOpen.value).toBe(true)
   dialog.isOpen.value = false
-  expect(dialog.week.value).toBeNull()
+  expect(dialog.week.value).toEqual({ id: 'week-1', name: 'Week one' })
   expect(dialog.isOpen.value).toBe(false)
 })

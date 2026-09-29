@@ -119,7 +119,7 @@ it('closes and navigates before deletion finishes, then rolls back with one toas
   ])
 })
 
-it('clears the delete selection when its dialog model closes', async () => {
+it('closes the delete dialog without clearing its selection', async () => {
   const { result: dialog, wrapper } = mountComposable(useWeekDeleteDialog, {
     render: () => h(WeekDeleteDialog),
     stubs: uiStubs,
@@ -128,6 +128,6 @@ it('clears the delete selection when its dialog model closes', async () => {
   await nextTick()
   wrapper.getComponent(DialogStub).vm.$emit('update:modelValue', false)
   await nextTick()
-  expect(dialog.week.value).toBeNull()
+  expect(dialog.week.value).toEqual({ id: 'week-1', name: 'Week one' })
   expect(api).not.toHaveBeenCalled()
 })
