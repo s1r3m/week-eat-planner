@@ -2,12 +2,17 @@
   const { collapsed = false } = defineProps<{
     collapsed?: boolean
   }>()
+
+  defineEmits<{
+    navigate: []
+  }>()
 </script>
 
 <template>
   <NuxtLink
     :to="{ name: 'index' }"
     class="app_logo"
+    @click="$emit('navigate')"
   >
     <img
       class="app_logo__icon"
@@ -30,8 +35,8 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    padding: var(--space-2);
-    text-decoration: none;
+    padding: 0 var(--space-2);
+    height: var(--header-height);
   }
 
   .app_logo__icon {
@@ -46,7 +51,7 @@
     overflow: hidden;
     opacity: 1;
     color: var(--brand-primary);
-    font-size: var(--text-14);
+    font-size: var(--text-20);
     white-space: nowrap;
     transition:
       opacity,

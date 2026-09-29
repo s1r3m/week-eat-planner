@@ -1,42 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { PiniaColada, useMutation, useQueryCache } from '@pinia/colada'
-import { renderToString } from 'vue/server-renderer'
-import { createPinia, disposePinia } from 'pinia'
-import { createSSRApp, defineComponent, h, ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { useLoginForm } from '@/modules/auth/composables/useLoginForm'
 
-const api = mock()
-let pinia: ReturnType<typeof createPinia> | undefined
+import { mountComposable } from '../../helpers/composable'
 
-async function createForm() {
-  let form!: ReturnType<typeof useLoginForm>
-  const app = createSSRApp(
-    defineComponent({
-      setup() {
-        form = useLoginForm()
-        return () => h('form')
-      },
-    }),
-  )
-  pinia = createPinia()
-  app.use(pinia).use(PiniaColada)
-  await renderToString(app)
-  return form
-}
+const api = vi.fn()
+const createForm = () => mountComposable(useLoginForm).result
 
 beforeEach(() => {
-  api.mockReset()
-  api.mockResolvedValue({})
-  Object.assign(globalThis, {
-    ref,
-    useMutation,
-    useQueryCache,
-    useNuxtApp: () => ({ $api: api }),
-  })
-})
-afterEach(() => {
-  if (pinia) disposePinia(pinia)
-  pinia = undefined
+  api.mockReset().mockResolvedValue({})
+  vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 })
 
 describe('useLoginForm', () => {
@@ -110,4 +83,16 @@ describe('useLoginForm', () => {
       expect(form.isLoading.value).toBe(false)
     },
   )
+})
+
+it('clears the previous server error when retrying', async () => {
+  const form = createForm()
+  const error = new Error('offline')
+  api.mockRejectedValueOnce(error)
+  await expect(
+    form.login({ email: 'test@example.com', password: 'password123' }),
+  ).rejects.toBe(error)
+  expect(form.serverError.value).toBe('Something went wrong')
+  await form.login({ email: 'test@example.com', password: 'password123' })
+  expect(form.serverError.value).toBeNull()
 })

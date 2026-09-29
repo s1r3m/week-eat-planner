@@ -40,7 +40,7 @@
   .week-card__bg {
     grid-area: 1 / 1;
     width: 100%;
-    background: color-mix(in oklab, var(--brand-primary) 30%, white);
+    background: color-mix(in oklab, var(--brand-primary) 30%, var(--bg));
   }
 
   .week-card__name {

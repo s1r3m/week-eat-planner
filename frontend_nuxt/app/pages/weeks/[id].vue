@@ -6,14 +6,19 @@
   import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
   import { useWeek } from '@/modules/weeks/composables/useWeek'
   import SlotGrid from '@/modules/weeks/ui/SlotGrid.vue'
+  import WeekDeleteDialog from '@/modules/weeks/ui/WeekDeleteDialog.vue'
+  import { useWeekDeleteDialog } from '~/modules/weeks/composables/useWeekDeleteDialog'
 
   definePageMeta({
     layout: 'app',
+    middleware: 'shared',
   })
 
   const route = useRoute()
   const { data: week, error, refetch } = useWeek(route.params.id as string)
   const { data: user } = useCurrentUser()
+
+  const { open } = useWeekDeleteDialog()
 </script>
 
 <template>
@@ -37,9 +42,8 @@
 
         <BaseButton
           variant="danger"
-          disabled
           aria-label="Delete week"
-          @click="() => {}"
+          @click="open(week)"
         >
           <Icon
             name="lucide:trash"
@@ -67,14 +71,12 @@
       v-if="week"
       :week="week"
     />
+
+    <WeekDeleteDialog />
   </div>
 </template>
 
 <style scoped>
-  .page-container {
-    padding: var(--space-2);
-  }
-
   @media (--mobile) {
     .page-title__button-label {
       display: none;

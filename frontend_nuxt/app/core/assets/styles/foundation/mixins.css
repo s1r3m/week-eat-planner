@@ -2,3 +2,9 @@
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+@define-mixin overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay);
+}

@@ -2,15 +2,19 @@
   import { useAppNavigation } from '@/modules/main/composables/useAppNavigation'
 
   defineProps<{
-    collapsed: boolean
+    collapsed?: boolean
+  }>()
+
+  defineEmits<{
+    navigate: []
   }>()
 
   const { navLinks } = useAppNavigation()
 </script>
 
 <template>
-  <div class="nav">
-    <div
+  <ul class="nav">
+    <li
       v-for="link in navLinks"
       :key="link.id"
       class="nav__item"
@@ -18,11 +22,12 @@
       <NuxtLink
         class="nav__link"
         :to="link.to"
-        :aria-label="link.title"
+        @click="$emit('navigate')"
       >
         <Icon
           v-if="link.icon"
           :name="link.icon"
+          :size="24"
         />
 
         <span
@@ -33,21 +38,26 @@
         </span>
       </NuxtLink>
 
-      <div
+      <ul
         v-if="link.child?.length && !collapsed"
         class="nav__children"
       >
-        <NuxtLink
+        <li
           v-for="child in link.child"
           :key="child.id"
           class="nav__child-link"
-          :to="child.to"
         >
-          {{ child.title }}
-        </NuxtLink>
-      </div>
-    </div>
-  </div>
+          <NuxtLink
+            class="nav__link"
+            :to="child.to"
+            @click="$emit('navigate')"
+          >
+            {{ child.title }}
+          </NuxtLink>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </template>
 
 <style scoped>
@@ -61,14 +71,14 @@
   .nav__item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
 
   .nav__link {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1);
+    padding: var(--space-2);
     border-radius: var(--radius-xl);
     color: var(--text);
     font-size: var(--text-14);
@@ -77,13 +87,14 @@
       background-color var(--duration-base) ease;
 
     &:hover {
-      background-color: var(--bg-elevated);
-    }
-
-    &.router-link-active {
-      background-color: var(--bg-elevated);
+      background-color: var(--bg-green-hover);
       color: var(--brand-primary);
     }
+  }
+
+  .nav__link.router-link-active {
+    background-color: var(--bg-green-active);
+    color: var(--brand-primary);
   }
 
   .nav__title {
@@ -91,6 +102,7 @@
     overflow: hidden;
     opacity: 1;
     text-overflow: ellipsis;
+    font-size: var(--text-16);
     white-space: nowrap;
     transition:
       opacity,
@@ -105,30 +117,13 @@
   .nav__children {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    padding-left: var(--space-8);
+    gap: var(--space-2);
+    padding-left: var(--space-6);
   }
 
   .nav__child-link {
-    padding: var(--space-1) var(--space-2);
     overflow: hidden;
-    border-radius: var(--radius-xl);
-    color: var(--text);
-    text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
-    transition: all var(--duration-base) ease;
-
-    &:hover,
-    &.router-link-exact-active {
-      background-color: var(--bg-elevated);
-      color: var(--brand-primary);
-    }
-  }
-
-  .nav__child-link--inactive {
-    opacity: 0.5;
-    color: var(--text);
-    cursor: not-allowed;
   }
 </style>

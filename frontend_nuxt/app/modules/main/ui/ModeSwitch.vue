@@ -36,25 +36,37 @@
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'dark' }"
       @click="colorMode.preference = 'dark'"
     >
-      <Icon name="lucide:moon" />
+      <Icon
+        name="lucide:moon"
+        :size="24"
+      />
       Dark
     </DropdownMenuItem>
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'light' }"
       @click="colorMode.preference = 'light'"
     >
-      <Icon name="lucide:sun" />
+      <Icon
+        name="lucide:sun"
+        :size="24"
+      />
       Light
     </DropdownMenuItem>
 
     <DropdownMenuItem
       class="dropdown__item"
+      :class="{ 'dropdown__item--selected': colorMode.preference === 'system' }"
       @click="colorMode.preference = 'system'"
     >
-      <Icon name="lucide:palette" />
+      <Icon
+        name="lucide:palette"
+        :size="24"
+      />
       System
     </DropdownMenuItem>
   </BaseDropdown>

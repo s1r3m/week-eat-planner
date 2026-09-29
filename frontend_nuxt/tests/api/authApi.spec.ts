@@ -1,11 +1,14 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { useAuthApi } from '@/modules/auth/api/authApi'
 
-const api = mock()
+import { stubGlobals } from '../helpers/globals'
+
+const api = vi.fn()
 
 beforeEach(() => {
   api.mockReset()
-  Object.assign(globalThis, {
+  stubGlobals({
     useNuxtApp: () => ({ $api: api }),
   })
 })

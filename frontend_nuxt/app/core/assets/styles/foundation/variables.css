@@ -44,7 +44,7 @@ html.dark {
   --bg-blue-active: light-dark(rgb(43 127 255 / 20%), rgb(81 162 255 / 20%));
 
   /* Overlay */
-  --overlay: light-dark(rgb(15 23 43 / 20%), rgb(15 23 43 / 20%));
+  --overlay: light-dark(rgb(15 23 43 / 40%), rgb(15 23 43 / 40%));
 
   /* Border */
   --border: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 20%));

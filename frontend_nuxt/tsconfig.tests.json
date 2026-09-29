@@ -1,19 +1,9 @@
 {
+  "extends": "./.nuxt/tsconfig.app.json",
   "compilerOptions": {
     "composite": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "types": ["bun-types", "node"],
-    "paths": {
-      "@/*": ["./app/*"],
-      "~/*": ["./app/*"]
-    }
+    "tsBuildInfoFile": "./.cache/tsconfig.tests.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["app/**/*", "tests/**/*", ".nuxt/nuxt.d.ts"]
+  "include": ["app/**/*", "tests/**/*", "vitest.config.ts", ".nuxt/nuxt.d.ts"]
 }

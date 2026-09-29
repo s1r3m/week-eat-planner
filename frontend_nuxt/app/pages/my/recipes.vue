@@ -44,10 +44,6 @@
 </template>
 
 <style scoped>
-  .page-container {
-    padding: var(--space-2);
-  }
-
   @media (--mobile) {
     .page-title__button-label {
       display: none;

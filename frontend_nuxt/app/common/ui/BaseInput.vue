@@ -3,13 +3,13 @@
 
   const {
     autocomplete = 'off',
-    id,
+    id = useId(),
     placeholder = '',
     type = 'text',
   } = defineProps<{
     autocomplete?: string
     error?: string
-    id: string
+    id?: string
     label: string
     placeholder?: string
     type?: InputType

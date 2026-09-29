@@ -1,19 +1,40 @@
 <script setup lang="ts">
+  import BaseButton from '@/common/ui/BaseButton.vue'
+  import { useMobileSidebar } from '@/modules/main/composables/useMobileSidebar'
   import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
   import AppLogo from '@/modules/main/ui/AppLogo.vue'
+  import GuestMobileSidePanel from '@/modules/main/ui/GuestMobileSidePanel.vue'
+  import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
+
+  const { close, open } = useMobileSidebar()
 </script>
 
 <template>
   <header class="guest-header">
-    <AppLogo />
+    <AppLogo @navigate="close" />
 
-    <AppAuthControls class="guest-header__controls" />
+    <div class="guest-header__controls-wrapper">
+      <ModeSwitch />
 
-    <Icon
-      class="guest-header__mobile-controls"
-      name="lucide:menu"
-      :size="24"
-    />
+      <AppAuthControls
+        class="guest-header__controls"
+        @navigate="close"
+      />
+
+      <BaseButton
+        class="guest-header__mobile-menu"
+        variant="icon"
+        aria-label="Open mobile menu"
+        @click="open"
+      >
+        <Icon
+          name="lucide:menu"
+          :size="24"
+        />
+      </BaseButton>
+    </div>
+
+    <GuestMobileSidePanel />
   </header>
 </template>
 
@@ -25,18 +46,25 @@
     inset: 0;
     position: sticky;
     z-index: 2;
+    padding: var(--space-4);
     height: var(--header-height);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(var(--blur));
   }
 
-  .guest-header__mobile-controls {
+  .guest-header__controls-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .guest-header__mobile-menu {
     display: none;
   }
 
   @media (--mobile) {
-    .guest-header__mobile-controls {
-      display: block;
+    .guest-header__mobile-menu {
+      display: flex;
     }
 
     .guest-header__controls {

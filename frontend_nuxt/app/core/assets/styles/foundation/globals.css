@@ -28,5 +28,4 @@ a {
 
 .page-container {
   padding: var(--space-4);
-  container-type: inline-size;
 }
