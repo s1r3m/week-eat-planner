@@ -15,6 +15,14 @@ export default defineNuxtConfig({
         },
       ],
     },
+    pageTransition: {
+      name: 'fade',
+      mode: 'out-in',
+    },
+    layoutTransition: {
+      name: 'fade',
+      mode: 'out-in',
+    },
   },
 
   compatibilityDate: '2025-07-15',

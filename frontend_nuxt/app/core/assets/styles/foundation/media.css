@@ -1,4 +1,4 @@
-@custom-media --tablet (width < 600px);
-@custom-media --mobile (width < 450px);
+@custom-media --tablet (width < 900px);
+@custom-media --mobile (width < 600px);
 
-@custom-media --sidebar-show (width > 449px);
+@custom-media --sidebar-show (width > 599px);
