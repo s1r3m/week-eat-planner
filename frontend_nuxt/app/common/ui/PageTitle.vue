@@ -19,6 +19,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-height: 3rem;
   }
 
   .page-title__name {

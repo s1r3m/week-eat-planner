@@ -10,7 +10,8 @@ export const isUnauthorized = (error: unknown): boolean => {
 }
 
 export const isPublicRoute = (path: string): boolean =>
-  ['/', '/login', '/signup'].includes(path) || /^\/weeks\/[^/]+\/?$/.test(path)
+  ['/', '/login', '/signup'].includes(path) ||
+  /^\/(weeks|recipes)\/[^/]+\/?$/.test(path)
 
 export const getRedirectTarget = (value: unknown): string =>
   typeof value === 'string' &&

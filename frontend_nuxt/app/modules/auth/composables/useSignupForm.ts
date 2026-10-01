@@ -1,14 +1,14 @@
 import type { SignupForm } from '@/modules/auth/schemas/signup'
 import type { SignupPayload } from '@/modules/auth/types'
 
-import { useSignup } from '@/modules/auth/composables/useSignup'
+import { registerMutation } from '@/modules/auth/api/authApi'
 import { useSignupValidation } from '@/modules/auth/schemas/signup'
 import { getFormErrorMessage } from '@/modules/auth/utils/formError'
 
 export const useSignupForm = () => {
   const { email, errors, handleSubmit, meta, password, username } =
     useSignupValidation()
-  const { isLoading, mutateAsync: signup } = useSignup()
+  const { isLoading, mutateAsync: signup } = registerMutation()
 
   const serverError = ref<null | string>(null)
 

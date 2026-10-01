@@ -3,18 +3,18 @@
 
   import BaseAlertDialog from '@/common/ui/BaseAlertDialog.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
-  import { useDeleteWeek } from '@/modules/weeks/composables/useDeleteWeek'
+  import { deleteWeekMutation } from '@/modules/weeks/api/weeksApi'
   import { useWeekDeleteDialog } from '@/modules/weeks/composables/useWeekDeleteDialog'
 
   const { close, isOpen, week } = useWeekDeleteDialog()
-  const { mutate: remove, isLoading } = useDeleteWeek()
+  const { mutate: remove, isLoading } = deleteWeekMutation()
 
   const onConfirm = () => {
     if (!week.value) return
 
     remove(week.value.id)
-    close()
     navigateTo({ name: 'my-weeks' })
+    close()
   }
 </script>
 

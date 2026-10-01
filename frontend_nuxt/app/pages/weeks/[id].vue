@@ -3,20 +3,24 @@
   import PageErrorState from '@/common/ui/PageErrorState.vue'
   import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageTitle from '@/common/ui/PageTitle.vue'
-  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
-  import { useWeek } from '@/modules/weeks/composables/useWeek'
+  import { getUser } from '@/modules/auth/api/authApi'
+  import { getWeekQuery } from '@/modules/weeks/api/weeksApi'
+  import { useWeekDeleteDialog } from '@/modules/weeks/composables/useWeekDeleteDialog'
   import SlotGrid from '@/modules/weeks/ui/SlotGrid.vue'
   import WeekDeleteDialog from '@/modules/weeks/ui/WeekDeleteDialog.vue'
-  import { useWeekDeleteDialog } from '~/modules/weeks/composables/useWeekDeleteDialog'
 
   definePageMeta({
-    layout: 'app',
-    middleware: 'shared',
+    middleware: 'layout',
   })
 
   const route = useRoute()
-  const { data: week, error, refetch } = useWeek(route.params.id as string)
-  const { data: user } = useCurrentUser()
+  const {
+    data: week,
+    error,
+    refetch,
+  } = useQuery(getWeekQuery(route.params.id as string))
+
+  const { data: user } = getUser()
 
   const { open } = useWeekDeleteDialog()
 </script>

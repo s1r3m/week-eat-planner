@@ -1,9 +1,9 @@
 import type { NavLink } from '@/modules/main/types'
 
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import { getWeeks } from '@/modules/weeks/api/weeksApi'
 
 export const useAppNavigation = () => {
-  const { data: weeks } = useWeeks()
+  const { data: weeks } = getWeeks()
 
   const navLinks = computed<NavLink[]>(() => [
     {

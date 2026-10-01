@@ -6,17 +6,13 @@
   import BaseButton from '@/common/ui/BaseButton.vue'
   import BaseDialog from '@/common/ui/BaseDialog.vue'
   import BaseInput from '@/common/ui/BaseInput.vue'
-  import { useCreateWeek } from '@/modules/weeks/composables/useCreateWeek'
+  import { createWeekMutation } from '@/modules/weeks/api/weeksApi'
   import { useWeekCreateDialog } from '@/modules/weeks/composables/useWeekCreateDialog'
 
   const { close, isOpen } = useWeekCreateDialog()
-  const { mutate: create, isLoading } = useCreateWeek()
+  const { mutate: create, isLoading } = createWeekMutation()
 
   const form = ref<WeekCreatePayload>({ name: '' })
-
-  watch(isOpen, (open) => {
-    if (open) form.value = { name: '' }
-  })
 
   const onSubmit = () => {
     create({ name: form.value.name.trim() })
