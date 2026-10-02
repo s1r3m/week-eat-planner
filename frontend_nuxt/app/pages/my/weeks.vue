@@ -12,7 +12,7 @@
     layout: 'app',
   })
 
-  const { data: weeks, error, refresh } = getWeeks()
+  const { data: weeks, error, refresh } = useQuery(getWeeks())
   const { open } = useWeekCreateDialog()
 </script>
 

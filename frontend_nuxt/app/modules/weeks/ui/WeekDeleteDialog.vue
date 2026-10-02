@@ -13,8 +13,8 @@
     if (!week.value) return
 
     remove(week.value.id)
-    navigateTo({ name: 'my-weeks' })
     close()
+    navigateTo({ name: 'my-weeks' })
   }
 </script>
 
@@ -23,7 +23,6 @@
     v-model="isOpen"
     title="Delete week"
     :description="`Are you sure you want to delete ${week?.name}?`"
-    title-hidden
   >
     <AlertDialogCancel as-child>
       <BaseButton variant="secondary">No</BaseButton>

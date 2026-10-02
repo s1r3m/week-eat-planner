@@ -22,7 +22,10 @@
       <DialogPortal>
         <DialogOverlay class="base-dialog__overlay" />
 
-        <DialogContent class="base-dialog__content">
+        <DialogContent
+          class="base-dialog__content"
+          :aria-describedby="description ? description : undefined"
+        >
           <DialogTitle class="base-dialog__title">{{ title }}</DialogTitle>
 
           <DialogDescription

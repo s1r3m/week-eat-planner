@@ -1,3 +1,8 @@
+.alert-dialog__title {
+  color: var(--error);
+  text-align: center;
+}
+
 .alert-dialog__content {
   display: flex;
   flex-direction: column;

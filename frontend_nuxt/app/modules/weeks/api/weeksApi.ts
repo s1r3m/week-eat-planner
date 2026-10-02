@@ -8,13 +8,13 @@ import { useGlobalToast } from '@/common/composables/useGlobalToast'
 import { useAuth } from '@/modules/auth/composables/useAuth'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 
-export const getWeeks = defineQuery(() => {
+export const getWeeks = defineQueryOptions(() => {
   const { $api } = useNuxtApp()
 
-  return useQuery({
+  return {
     key: WEEKS_KEY.all(),
     query: () => $api<WeekPreview[]>('/weeks'),
-  })
+  }
 })
 
 export const getWeekQuery = defineQueryOptions((weekId: string) => {
