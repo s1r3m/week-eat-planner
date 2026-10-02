@@ -1,11 +1,13 @@
+import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WeekPreview } from '@/modules/weeks/types'
 
-import { useGlobalToast } from '@/common/composables/useGlobalToast'
-import { useDeleteWeek } from '@/modules/weeks/composables/useDeleteWeek'
-import { useWeek } from '@/modules/weeks/composables/useWeek'
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import {
+  deleteWeekMutation,
+  getWeekQuery,
+  getWeeks,
+} from '@/modules/weeks/api/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../../helpers/composable'
@@ -19,99 +21,82 @@ beforeEach(() => {
 
 function setup(initial: undefined | WeekPreview[]) {
   const response = Promise.withResolvers<null>()
-  const started = Promise.withResolvers<void>()
-  api.mockImplementation(() => {
-    started.resolve()
-    return response.promise
-  })
-  const harness = mountComposable(useDeleteWeek, {
+  api.mockReturnValue(response.promise)
+  const harness = mountComposable(deleteWeekMutation, {
     seed: (cache) => {
       if (initial !== undefined) cache.setQueryData(WEEKS_KEY.all(), initial)
     },
   })
-  return { ...harness, response, started }
+  return { ...harness, response }
 }
 
-describe('useDeleteWeek', () => {
-  it.each([undefined, [], [week('other')], [week(), week('other')]])(
-    'deletes from the cached list: %j',
-    async (initial) => {
-      const { result, cache, response, started } = setup(initial)
-      const cancel = vi.spyOn(cache, 'cancelQueries')
-      const invalidate = vi.spyOn(cache, 'invalidateQueries')
-      const request = result.mutateAsync('week-1')
-      await started.promise
-      expect(result.isLoading.value).toBe(true)
-      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual(
-        (initial ?? []).filter((item) => item.id !== 'week-1'),
+describe('deleteWeekMutation', () => {
+  it.each([undefined, [], [week('other')]].map((initial) => ({ initial })))(
+    'rejects a missing week before sending DELETE: $initial',
+    async ({ initial }) => {
+      const { result, cache } = setup(initial)
+      await expect(result.mutateAsync('week-1')).rejects.toThrow(
+        'Week to delete was not found.',
       )
-      expect(cancel).toHaveBeenCalledWith({ key: WEEKS_KEY.all() })
-      expect(cancel).toHaveBeenCalledWith({ key: WEEKS_KEY.single('week-1') })
-      expect(api).toHaveBeenCalledExactlyOnceWith('/weeks/week-1', {
-        method: 'DELETE',
-      })
-      response.resolve(null)
-      await request
+      expect(api).not.toHaveBeenCalled()
+      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual(initial)
       expect(result.isLoading.value).toBe(false)
-      expect(invalidate).toHaveBeenCalledWith({ key: WEEKS_KEY.all() })
-      expect(invalidate).toHaveBeenCalledWith({
-        key: WEEKS_KEY.single('week-1'),
-      })
-      expect(useGlobalToast().toasts.value).toEqual([])
     },
   )
 
-  it.each([
-    undefined,
-    [],
-    [week('other')],
-    [week('before'), week(), week('after')],
-  ])('rolls back a failed deletion: %j', async (initial) => {
-    const { result, cache, response, started } = setup(initial)
-    const error = new Error('Delete failed')
-    const failure = expect(result.mutateAsync('week-1')).rejects.toBe(error)
-    await started.promise
-    response.reject(error)
-    await failure
-    expect(cache.getQueryData(WEEKS_KEY.all())).toEqual(initial ?? [])
+  it('removes the selected week immediately and cancels list and detail requests on settlement', async () => {
+    const { result, cache, response } = setup([week(), week('other')])
+    const cancel = vi.spyOn(cache, 'cancelQueries')
+    const invalidate = vi.spyOn(cache, 'invalidateQueries')
+    const request = result.mutateAsync('week-1')
+    await flushPromises()
+    expect(result.isLoading.value).toBe(true)
+    expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week('other')])
+    expect(api).toHaveBeenCalledExactlyOnceWith('/weeks/week-1', {
+      method: 'DELETE',
+    })
+    response.resolve(null)
+    await expect(request).resolves.toBeNull()
     expect(result.isLoading.value).toBe(false)
-    expect(useGlobalToast().toasts.value).toMatchObject([
-      { message: error.message },
+    expect(cancel.mock.calls).toEqual([
+      [{ key: WEEKS_KEY.all() }],
+      [{ key: WEEKS_KEY.single('week-1') }],
+      [{ key: WEEKS_KEY.all() }],
+      [{ key: WEEKS_KEY.single('week-1') }],
     ])
+    expect(invalidate).not.toHaveBeenCalled()
   })
 
-  it.each(['changed', 'missing', 'already restored'] as const)(
-    'restores the optimistic snapshot during rollback: %s',
-    async (change) => {
-      const { result, cache, response, started } = setup([week()])
-      const error = new Error('offline')
+  it.each([undefined, [], [week('other')]].map((current) => ({ current })))(
+    'restores the removed week while retaining concurrent changes: $current',
+    async ({ current }) => {
+      const { result, cache, response } = setup([
+        week('before'),
+        week(),
+        week('after'),
+      ])
+      const error = new Error('Delete failed')
       const failure = expect(result.mutateAsync('week-1')).rejects.toBe(error)
-      await started.promise
-      let current: undefined | WeekPreview[]
-      if (change === 'changed') {
-        current = [week('other')]
-      } else if (change === 'already restored') {
-        current = [week('week-1', 'Updated')]
-      }
+      await flushPromises()
       cache.setQueryData(WEEKS_KEY.all(), current)
       response.reject(error)
       await failure
-      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
+      expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([
+        ...(current ?? []),
+        week(),
+      ])
+      expect(result.isLoading.value).toBe(false)
+      expect(result.error.value).toBe(error)
     },
   )
 
-  it('keeps deletion successful when list and deleted-detail refetches fail', async () => {
-    const error = new Error('Not found')
-    api.mockImplementation((_path, options) =>
-      options?.method === 'DELETE'
-        ? Promise.resolve(null)
-        : Promise.reject(error),
-    )
+  it('preserves active list and detail data without issuing a refetch after deletion', async () => {
+    api.mockResolvedValue(null)
     const { result } = mountComposable(
       () => ({
-        remove: useDeleteWeek(),
-        list: useWeeks(),
-        detail: useWeek('week-1'),
+        remove: deleteWeekMutation(),
+        list: useQuery(getWeeks()),
+        detail: useQuery(getWeekQuery('week-1')),
       }),
       {
         seed: (cache) => {
@@ -120,37 +105,11 @@ describe('useDeleteWeek', () => {
         },
       },
     )
-    await expect(result.remove.mutateAsync('week-1')).resolves.toBeNull()
-    expect(result.remove.status.value).toBe('success')
-    expect(result.remove.isLoading.value).toBe(false)
+    await result.remove.mutateAsync('week-1')
     expect(result.list.data.value).toEqual([])
-    expect(result.list.error.value).toBe(error)
-    expect(result.detail.error.value).toBe(error)
-    expect(useGlobalToast().toasts.value).toEqual([])
-  })
-
-  it('shows an error without restoring a missing snapshot', () => {
-    type MutationOptions = {
-      onError: (
-        error: Error,
-        id: string,
-        context: { previous?: WeekPreview[] },
-      ) => void
-    }
-    const mutation = vi.fn((_options: MutationOptions) => ({}))
-    vi.stubGlobal('useMutation', mutation)
-    const { cache } = mountComposable(useDeleteWeek)
-    const setQueryData = vi.spyOn(cache, 'setQueryData')
-    const error = new Error('Delete failed')
-    const call = mutation.mock.calls.at(0)
-
-    if (!call) throw new Error('useMutation was not called')
-
-    call[0].onError(error, 'week-1', {})
-
-    expect(setQueryData).not.toHaveBeenCalled()
-    expect(useGlobalToast().toasts.value).toMatchObject([
-      { message: error.message },
-    ])
+    expect(result.detail.data.value).toEqual(week())
+    expect(api).toHaveBeenCalledExactlyOnceWith('/weeks/week-1', {
+      method: 'DELETE',
+    })
   })
 })

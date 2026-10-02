@@ -5,8 +5,8 @@ import type { WeekFull, WeekPreview } from '@/modules/weeks/types'
 
 import { useGlobalToast } from '@/common/composables/useGlobalToast'
 import { AUTH_KEY } from '@/modules/auth/constants'
-import { useCreateWeek } from '@/modules/weeks/composables/useCreateWeek'
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import { createWeekMutation } from '@/modules/weeks/api/weeksApi'
+import { getWeeks } from '@/modules/weeks/api/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../../helpers/composable'
@@ -26,7 +26,7 @@ function setup(initial: undefined | WeekPreview[]) {
     started.resolve()
     return response.promise
   })
-  const harness = mountComposable(useCreateWeek, {
+  const harness = mountComposable(createWeekMutation, {
     seed: (cache) => {
       cache.setQueryData(AUTH_KEY.user(), user)
       if (initial !== undefined) cache.setQueryData(WEEKS_KEY.all(), initial)
@@ -35,10 +35,10 @@ function setup(initial: undefined | WeekPreview[]) {
   return { ...harness, response, started }
 }
 
-describe('useCreateWeek', () => {
-  it.each([undefined, [], [week()]])(
+describe('createWeekMutation', () => {
+  it.each([undefined, [], [week()]].map((initial) => ({ initial })))(
     'optimistically creates with initial cache %j',
-    async (initial) => {
+    async ({ initial }) => {
       const { result, cache, response, started } = setup(initial)
       const cancel = vi.spyOn(cache, 'cancelQueries')
       const invalidate = vi.spyOn(cache, 'invalidateQueries')
@@ -67,9 +67,9 @@ describe('useCreateWeek', () => {
     },
   )
 
-  it.each([undefined, [], [week()]])(
+  it.each([undefined, [], [week()]].map((initial) => ({ initial })))(
     'rolls back failure with the current cache behavior: %j',
-    async (initial) => {
+    async ({ initial }) => {
       const { result, cache, response, started } = setup(initial)
       const error = new Error('Creation failed')
       const request = result.mutateAsync({ name: 'New' })
@@ -142,20 +142,24 @@ describe('useCreateWeek', () => {
     const { result, cache } = setup([week()])
     cache.setQueryData(AUTH_KEY.user(), null)
     await expect(result.mutateAsync({ name: 'New' })).rejects.toThrow(
-      'User is required',
+      'User must be defined at this stage!',
     )
     expect(api).not.toHaveBeenCalled()
     expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
     expect(useGlobalToast().toasts.value).toHaveLength(1)
   })
 
-  it('propagates a failed user refresh despite cached user data', async () => {
+  it('keeps cached authentication when a background user refresh fails', async () => {
     const { result, cache } = setup([week()])
     const error = new Error('Session check failed')
     await cache.invalidateQueries({ key: AUTH_KEY.user() }, false)
     api.mockRejectedValue(error)
     await expect(result.mutateAsync({ name: 'New' })).rejects.toBe(error)
-    expect(api).toHaveBeenCalledExactlyOnceWith('/user')
+    expect(api).toHaveBeenCalledWith('/user')
+    expect(api).toHaveBeenCalledWith('/weeks', {
+      method: 'POST',
+      body: { name: 'New' },
+    })
     expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
     expect(useGlobalToast().toasts.value).toMatchObject([
       { message: error.message },
@@ -171,7 +175,7 @@ describe('useCreateWeek', () => {
         : Promise.resolve([week(), created]),
     )
     const { result, cache } = mountComposable(
-      () => ({ create: useCreateWeek(), list: useWeeks() }),
+      () => ({ create: createWeekMutation(), list: useQuery(getWeeks()) }),
       {
         seed: (cache) => {
           cache.setQueryData(AUTH_KEY.user(), user)
@@ -193,13 +197,15 @@ describe('useCreateWeek', () => {
 
   it('preserves successful creation when the subsequent list refresh fails', async () => {
     const error = new Error('Refetch failed')
-    api.mockImplementation((_path, options) =>
-      options?.method === 'POST'
-        ? Promise.resolve(created)
-        : Promise.reject(error),
+    api.mockImplementation((path, options) =>
+      path === '/user'
+        ? Promise.resolve(user)
+        : options?.method === 'POST'
+          ? Promise.resolve(created)
+          : Promise.reject(error),
     )
-    const { result } = mountComposable(
-      () => ({ create: useCreateWeek(), list: useWeeks() }),
+    const { result, cache } = mountComposable(
+      () => ({ create: createWeekMutation(), list: useQuery(getWeeks()) }),
       {
         seed: (cache) => {
           cache.setQueryData(AUTH_KEY.user(), user)
@@ -207,13 +213,38 @@ describe('useCreateWeek', () => {
         },
       },
     )
+    const invalidate = vi.spyOn(cache, 'invalidateQueries')
     await expect(result.create.mutateAsync({ name: 'New' })).resolves.toEqual(
       created,
     )
+    await expect(invalidate.mock.results[0]!.value).rejects.toBe(error)
     expect(result.create.status.value).toBe('success')
     expect(result.create.isLoading.value).toBe(false)
     expect(result.list.error.value).toBe(error)
     expect(result.list.data.value).toEqual([created])
     expect(useGlobalToast().toasts.value).toEqual([])
   })
+})
+
+it('does not overwrite the list when a success callback has no optimistic entry', () => {
+  type Options = {
+    onSuccess: (
+      createdWeek: WeekPreview,
+      body: { name: string },
+      context: { temporaryWeek?: WeekPreview },
+    ) => void
+  }
+  const mutation = vi.fn((_options: Options) => ({}))
+  vi.stubGlobal('useMutation', mutation)
+  const { cache } = mountComposable(createWeekMutation, {
+    seed: (cache) => {
+      cache.setQueryData(AUTH_KEY.user(), user)
+      cache.setQueryData(WEEKS_KEY.all(), [week()])
+    },
+  })
+  const setQueryData = vi.spyOn(cache, 'setQueryData')
+  const options = mutation.mock.calls[0]![0]
+  options.onSuccess(created, { name: 'New' }, {})
+  expect(setQueryData).not.toHaveBeenCalled()
+  expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
 })

@@ -20,7 +20,7 @@ beforeEach(() => {
   vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 })
 
-it('disables blank names, sends a trimmed copy, closes immediately, and starts fresh', async () => {
+it('disables blank names, sends a trimmed copy, closes immediately, and resets submitted drafts', async () => {
   const response = Promise.withResolvers<ReturnType<typeof week>>()
   api.mockReturnValue(response.promise)
   const { result: dialog, wrapper } = mountComposable(useWeekCreateDialog, {
@@ -52,12 +52,12 @@ it('disables blank names, sends a trimmed copy, closes immediately, and starts f
   response.resolve(week('created', 'New week'))
   await flushPromises()
   expect(submit().element.disabled).toBe(false)
-  // Closing through the model also discards the draft on the next opening.
+  // Closing through the model preserves an unsubmitted draft.
   wrapper.getComponent(DialogStub).vm.$emit('update:modelValue', false)
   await nextTick()
   dialog.open()
   await nextTick()
-  expect(wrapper.get<HTMLInputElement>('input').element.value).toBe('')
+  expect(wrapper.get<HTMLInputElement>('input').element.value).toBe('Another')
 })
 
 it('keeps a failed create closed and lets the mutation show one toast', async () => {
@@ -81,7 +81,7 @@ it('keeps a failed create closed and lets the mutation show one toast', async ()
   ])
 })
 
-it('closes and navigates before deletion finishes, then rolls back with one toast on failure', async () => {
+it('closes and navigates before deletion finishes, then rolls back on failure', async () => {
   const response = Promise.withResolvers<null>()
   api.mockReturnValue(response.promise)
   const navigate = vi.fn()
@@ -114,9 +114,7 @@ it('closes and navigates before deletion finishes, then rolls back with one toas
   response.reject(new Error('Deletion failed'))
   await flushPromises()
   expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
-  expect(useGlobalToast().toasts.value).toMatchObject([
-    { message: 'Deletion failed' },
-  ])
+  expect(useGlobalToast().toasts.value).toEqual([])
 })
 
 it('closes the delete dialog without clearing its selection', async () => {
@@ -130,4 +128,19 @@ it('closes the delete dialog without clearing its selection', async () => {
   await nextTick()
   expect(dialog.week.value).toEqual({ id: 'week-1', name: 'Week one' })
   expect(api).not.toHaveBeenCalled()
+})
+
+it('ignores a stale confirmation click after the delete selection has been cleared', async () => {
+  const { result: dialog, wrapper } = mountComposable(useWeekDeleteDialog, {
+    render: () => h(WeekDeleteDialog),
+    stubs: uiStubs,
+  })
+  dialog.open(week())
+  await nextTick()
+  const confirm = wrapper.get('button.btn--danger')
+  // A queued click can arrive after state changes but before the DOM updates.
+  dialog.close()
+  await confirm.trigger('click')
+  expect(api).not.toHaveBeenCalled()
+  expect(navigateTo).not.toHaveBeenCalled()
 })

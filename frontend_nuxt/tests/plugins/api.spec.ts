@@ -328,3 +328,23 @@ describe('API session renewal', () => {
     ).toHaveLength(2)
   })
 })
+
+it('ignores malformed cookie pairs while retaining cookie values containing equals signs', async () => {
+  serverRequest(' ; invalid; =bad; valid=value=extra')
+  await setup().provide.api('/user')
+  expect(requestCookie(0)).toBe('valid=value=extra')
+})
+
+it('accepts Request objects as protected requests', async () => {
+  const request = new Request('http://api.test/backend/user')
+  await setup().provide.api(request)
+  expect(fetch.mock.calls[0]![0]).toBe(request)
+})
+
+it('honors an explicit zero-retry request on an unauthorized response', async () => {
+  fetch.mockResolvedValueOnce(response(401))
+  await expect(
+    setup().provide.api('/user', { retry: 0 }),
+  ).rejects.toMatchObject({ status: 401 })
+  expect(fetch).toHaveBeenCalledTimes(1)
+})

@@ -1,12 +1,12 @@
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, expect, it, vi } from 'vitest'
 
-import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
-import { useLogin } from '@/modules/auth/composables/useLogin'
-import { useLogout } from '@/modules/auth/composables/useLogout'
-import { useSignup } from '@/modules/auth/composables/useSignup'
+import { getUser } from '@/modules/auth/api/authApi'
+import { loginMutation } from '@/modules/auth/api/authApi'
+import { logoutMutation } from '@/modules/auth/api/authApi'
+import { registerMutation } from '@/modules/auth/api/authApi'
 import { AUTH_KEY } from '@/modules/auth/constants'
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import { getWeeks } from '@/modules/weeks/api/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../../helpers/composable'
@@ -18,11 +18,11 @@ beforeEach(() => {
   vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 })
 
-it('login refreshes the active user query after successful authentication', async () => {
+it('login updates the shared user cache from the authentication response', async () => {
   const nextUser = { ...user, username: 'Updated' }
   api.mockResolvedValue(nextUser)
   const { result, cache } = mountComposable(
-    () => ({ login: useLogin(), current: useCurrentUser() }),
+    () => ({ login: loginMutation(), current: getUser() }),
     {
       seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
     },
@@ -32,14 +32,14 @@ it('login refreshes the active user query after successful authentication', asyn
     username: user.email,
     password: 'password123',
   })
-  expect(api.mock.calls.map(([path]) => path)).toEqual(['/auth/login', '/user'])
+  expect(api.mock.calls.map(([path]) => path)).toEqual(['/auth/login'])
   expect(cache.getQueryData(AUTH_KEY.user())).toEqual(nextUser)
 })
 
-it('logout clears the user and refetches active weeks with the existing behavior', async () => {
+it('logout invalidates the user query while preserving the weeks cache', async () => {
   api.mockImplementation(async (path) => (path === '/weeks' ? [] : null))
   const { result, cache } = mountComposable(
-    () => ({ logout: useLogout(), weeks: useWeeks() }),
+    () => ({ logout: logoutMutation(), weeks: useQuery(getWeeks()) }),
     {
       seed: (cache) => {
         cache.setQueryData(AUTH_KEY.user(), user)
@@ -47,25 +47,24 @@ it('logout clears the user and refetches active weeks with the existing behavior
       },
     },
   )
+  const invalidate = vi.spyOn(cache, 'invalidateQueries')
   await result.logout.mutateAsync()
   await flushPromises()
-  expect(api.mock.calls.map(([path]) => path)).toEqual([
-    '/auth/logout',
-    '/weeks',
-  ])
-  expect(cache.getQueryData(AUTH_KEY.user())).toBeNull()
-  expect(result.weeks.data.value).toEqual([])
+  expect(api.mock.calls.map(([path]) => path)).toEqual(['/auth/logout'])
+  expect(cache.getQueryData(AUTH_KEY.user())).toEqual(user)
+  expect(result.weeks.data.value).toEqual([week()])
+  expect(invalidate).toHaveBeenCalledExactlyOnceWith({ key: AUTH_KEY.user() })
 })
 
 it.each([
   [
     'login',
-    () => useLogin(),
+    () => loginMutation(),
     { username: user.email, password: 'password123' },
   ],
   [
     'signup',
-    () => useSignup(),
+    () => registerMutation(),
     { email: user.email, username: user.username, password: 'password123' },
   ],
 ] as const)(
@@ -74,7 +73,7 @@ it.each([
     const error = new Error('offline')
     api.mockRejectedValue(error)
     const { result, cache } = mountComposable<
-      ReturnType<typeof useLogin> | ReturnType<typeof useSignup>
+      ReturnType<typeof loginMutation> | ReturnType<typeof registerMutation>
     >(composable, {
       seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
     })
@@ -95,7 +94,7 @@ it.each([
 it('failed logout preserves the user and weeks cache', async () => {
   const error = new Error('offline')
   api.mockRejectedValue(error)
-  const { result, cache } = mountComposable(useLogout, {
+  const { result, cache } = mountComposable(logoutMutation, {
     seed: (cache) => {
       cache.setQueryData(AUTH_KEY.user(), user)
       cache.setQueryData(WEEKS_KEY.all(), [week()])
@@ -107,4 +106,23 @@ it('failed logout preserves the user and weeks cache', async () => {
   expect(api).toHaveBeenCalledExactlyOnceWith('/auth/logout', {
     method: 'POST',
   })
+})
+
+it('registration stores the returned user without an extra session request', async () => {
+  api.mockResolvedValue(user)
+  const { result, cache } = mountComposable(registerMutation)
+  await result.mutateAsync({
+    email: user.email,
+    username: user.username,
+    password: 'password123',
+  })
+  expect(api).toHaveBeenCalledExactlyOnceWith('/auth/signup', {
+    method: 'POST',
+    body: {
+      email: user.email,
+      username: user.username,
+      password: 'password123',
+    },
+  })
+  expect(cache.getQueryData(AUTH_KEY.user())).toEqual(user)
 })
