@@ -11,7 +11,7 @@ export default defineNuxtPlugin(() => {
   let refreshing = false
 
   const rememberCookie = (cookie: string) => {
-    const pair = cookie.split(';', 1)[0]?.trim() ?? ''
+    const pair = cookie.split(';', 1)[0]!.trim()
     const separator = pair.indexOf('=')
 
     if (separator > 0) {
@@ -61,11 +61,10 @@ export default defineNuxtPlugin(() => {
     retryStatusCodes: [401],
 
     async onRequest({ options, request }) {
-      const path =
-        (typeof request === 'string' ? request : request.url).split(
-          /[?#]/,
-          1,
-        )[0] ?? ''
+      const path = (typeof request === 'string' ? request : request.url).split(
+        /[?#]/,
+        1,
+      )[0]!
 
       const isAuthRequest =
         /\/auth\/(?:login|signup|refresh|google\/exchange)\/?$/.test(path)

@@ -95,6 +95,8 @@ describe('API session renewal', () => {
     '/auth/signup',
     '/auth/google/exchange',
     '/auth/refresh',
+    '/auth/login#form',
+    '/auth/signup?redirect=/my/weeks',
     'http://api.test/backend/auth/login/?redirect=/my/weeks',
   ])('does not renew a failed authentication request to %s', async (path) => {
     fetch.mockResolvedValueOnce(response(401))
@@ -339,6 +341,25 @@ it('accepts Request objects as protected requests', async () => {
   const request = new Request('http://api.test/backend/user')
   await setup().provide.api(request)
   expect(fetch.mock.calls[0]![0]).toBe(request)
+})
+
+it('does not renew a failed authentication Request with a query and fragment', async () => {
+  const request = new Request(
+    'http://api.test/backend/auth/login?redirect=/my/weeks#form',
+    { method: 'POST' },
+  )
+  fetch.mockResolvedValueOnce(response(401))
+
+  await expect(setup().provide.api(request)).rejects.toMatchObject({
+    status: 401,
+  })
+  expect(fetch).toHaveBeenCalledExactlyOnceWith(request, expect.any(Object))
+})
+
+it('forwards an empty cookie header for an SSR request without cookies', async () => {
+  serverRequest('')
+  await setup().provide.api('/user')
+  expect(requestCookie(0)).toBe('')
 })
 
 it('honors an explicit zero-retry request on an unauthorized response', async () => {
