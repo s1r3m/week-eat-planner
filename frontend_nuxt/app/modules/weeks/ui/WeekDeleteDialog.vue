@@ -9,12 +9,13 @@
   const { close, isOpen, week } = useWeekDeleteDialog()
   const { mutate: remove, isLoading } = deleteWeekMutation()
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!week.value) return
 
     remove(week.value.id)
     close()
-    navigateTo({ name: 'my-weeks' })
+
+    await navigateTo({ name: 'my-weeks' })
   }
 </script>
 

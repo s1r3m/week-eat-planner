@@ -41,11 +41,11 @@ export const createWeekMutation = defineMutation(() => {
       if (!user) throw new Error('User must be defined at this stage!')
 
       queryCache.cancelQueries({ key: WEEKS_KEY.all() })
-      const temporaryWeek = {
+      const temporaryWeek: WeekPreview = {
         id: crypto.randomUUID(),
         user_id: user.id,
         name: body.name,
-      } satisfies WeekPreview
+      }
       queryCache.setQueryData(WEEKS_KEY.all(), (weeks: WeekPreview[] = []) => [
         ...weeks,
         temporaryWeek,
