@@ -1,5 +1,6 @@
 html {
   scrollbar-gutter: stable;
+  font-size: var(--text-base);
 }
 
 @media (prefers-reduced-motion: no-preference) {

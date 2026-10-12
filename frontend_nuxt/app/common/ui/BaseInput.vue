@@ -92,10 +92,10 @@
   }
 
   .base-input__error {
-    color: var(--error);
+    color: var(--danger);
   }
 
   .base-input__wrapper:has(+ .base-input__error) {
-    border-color: var(--error);
+    border-color: var(--danger);
   }
 </style>

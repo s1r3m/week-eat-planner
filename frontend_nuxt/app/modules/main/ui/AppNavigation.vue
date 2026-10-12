@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { useAppNavigation } from '@/modules/main/composables/useAppNavigation'
+  import BaseButton from '~/common/ui/BaseButton.vue'
 
   defineProps<{
     collapsed?: boolean
@@ -36,6 +37,19 @@
         >
           {{ link.title }}
         </span>
+
+        <BaseButton
+          v-if="link.child && !collapsed"
+          class="nav__link-collapse-btn"
+          :class="{ 'nav__item-toggle--collapsed': collapsed }"
+          variant="icon"
+          @click.stop=""
+        >
+          <Icon
+            :name="collapsed ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+            :size="24"
+          />
+        </BaseButton>
       </NuxtLink>
 
       <ul
@@ -72,6 +86,18 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+  }
+
+  .nav__item-toggle {
+    max-width: 100%;
+    transition:
+      opacity,
+      max-width var(--duration-base) ease;
+  }
+
+  .nav__item-toggle--collapsed {
+    max-width: 0;
+    opacity: 0;
   }
 
   .nav__link {
@@ -122,6 +148,8 @@
   }
 
   .nav__child-link {
+    border-left: 1px solid var(--border);
+    padding-left: var(--space-4);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

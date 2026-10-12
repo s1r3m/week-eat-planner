@@ -62,7 +62,7 @@
   }
 
   .alert--error {
-    background-color: var(--error);
+    background-color: var(--danger);
     color: var(--text-highlighted-2);
   }
 

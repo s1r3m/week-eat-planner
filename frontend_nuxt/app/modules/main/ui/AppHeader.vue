@@ -51,7 +51,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-2);
     border-bottom: 1px solid var(--border);
     background-color: color-mix(in srgb, var(--bg) 70%, transparent);
     backdrop-filter: blur(16px);

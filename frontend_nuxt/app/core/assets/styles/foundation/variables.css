@@ -12,17 +12,17 @@ html.dark {
 
 :root {
   /* Font */
-  --font-family: 'Nunito Sans', system-ui, -apple-system, sans-serif;
+  --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 
   /* Brand / Primary */
-  --brand-primary: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
-  --brand-hover-button: light-dark(rgb(59 184 169 / 100%), rgb(74 207 191 / 100%));
+  --brand-primary: light-dark(rgb(25 128 118 / 100%), rgb(74 207 191 / 100%));
+  --brand-hover-button: light-dark(rgb(25 128 118 / 100%), rgb(74 207 191 / 100%));
   --brand-link: light-dark(rgb(43 127 255 / 100%), rgb(81 162 255 / 100%));
 
   /* Text Colors */
   --text-highlighted: light-dark(rgb(26 26 26 / 100%), rgb(231 242 241 / 100%));
   --text-highlighted-2: light-dark(rgb(255 255 255 / 100%), rgb(255 255 255 / 100%));
-  --text-highlighted-3: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
+  --text-highlighted-3: light-dark(rgb(214 48 54 / 100%), rgb(255 111 115 / 100%));
   --text: light-dark(rgb(49 65 88 / 100%), rgb(226 232 240 / 100%));
   --text-toned: light-dark(rgb(69 85 108 / 100%), rgb(202 213 226 / 100%));
   --text-muted: light-dark(rgb(98 116 142 / 100%), rgb(144 161 185 / 100%));
@@ -35,10 +35,10 @@ html.dark {
   --bg-elevated: light-dark(rgb(244 246 246 / 100%), rgb(26 37 35 / 100%));
   --bg-accented: light-dark(rgb(242 244 245 / 100%), rgb(28 39 37 / 100%));
   --bg-inverted: light-dark(rgb(19 27 41 / 100%), rgb(255 255 255 / 100%));
-  --bg-red-hover: light-dark(rgb(229 72 77 / 10%), rgb(255 111 115 / 10%));
-  --bg-red-active: light-dark(rgb(229 72 77 / 20%), rgb(255 111 115 / 20%));
-  --bg-green-hover: light-dark(rgb(59 184 169 / 10%), rgb(74 207 191 / 10%));
-  --bg-green-active: light-dark(rgb(59 184 169 / 20%), rgb(74 207 191 / 20%));
+  --bg-red-hover: light-dark(rgb(214 48 54 / 10%), rgb(255 111 115 / 10%));
+  --bg-red-active: light-dark(rgb(214 48 54 / 20%), rgb(255 111 115 / 20%));
+  --bg-green-hover: light-dark(rgb(25 128 118 / 10%), rgb(74 207 191 / 10%));
+  --bg-green-active: light-dark(rgb(25 128 118 / 20%), rgb(74 207 191 / 20%));
   --bg-grey-pressed: light-dark(rgb(144 161 185 / 15%), rgb(98 116 142 / 15%));
   --bg-blue-hover: light-dark(rgb(43 127 255 / 10%), rgb(81 162 255 / 10%));
   --bg-blue-active: light-dark(rgb(43 127 255 / 20%), rgb(81 162 255 / 20%));
@@ -51,7 +51,7 @@ html.dark {
   --border-2: light-dark(rgb(212 222 221 / 100%), rgb(231 242 241 / 20%));
 
   /* Error */
-  --error: light-dark(rgb(229 72 77 / 100%), rgb(255 111 115 / 100%));
+  --danger: light-dark(rgb(214 48 54 / 100%), rgb(255 111 115 / 100%));
 
   /* Warning */
   --warning: rgb(239 177 0 / 100%);
