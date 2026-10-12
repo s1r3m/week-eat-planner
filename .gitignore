@@ -18,7 +18,7 @@
 
 .coverage
 
-sandbox.py
+sandbox*
 wep_db.bck.sql
 **/htmlcov/
 
