@@ -1,5 +1,8 @@
 name: Frontend linters
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
