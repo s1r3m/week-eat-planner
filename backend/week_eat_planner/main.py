@@ -13,7 +13,7 @@ from week_eat_planner.db.session_maker import db
 
 
 @asynccontextmanager
-async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None]:
     """Manages the application lifespan.
 
     Initializes the database connection pool on startup and closes it, along with

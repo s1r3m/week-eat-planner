@@ -46,4 +46,4 @@ class MealSlotRead(MealSlotId):
 
     day_of_week: DayOfWeek
     meal_type: MealType
-    recipe: 'RecipeReadMinimal | None' = None
+    recipe: RecipeReadMinimal | None = None

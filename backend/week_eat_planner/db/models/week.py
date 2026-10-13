@@ -28,10 +28,10 @@ class Week(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
-    user: Mapped['User'] = relationship(back_populates='weeks')
-    meal_slots: Mapped[list['MealSlot']] = relationship(
+    user: Mapped[User] = relationship(back_populates='weeks')
+    meal_slots: Mapped[list[MealSlot]] = relationship(
         back_populates='week', cascade='all, delete-orphan', lazy='selectin'
     )
-    shopping_list: Mapped['ShoppingList | None'] = relationship(
+    shopping_list: Mapped[ShoppingList | None] = relationship(
         back_populates='week', cascade='all, delete-orphan', uselist=False
     )

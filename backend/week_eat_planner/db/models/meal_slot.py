@@ -55,7 +55,7 @@ class MealSlot(Base):
         ForeignKey('recipes.id', ondelete='SET NULL'), nullable=True, unique=False
     )
 
-    week: Mapped['Week'] = relationship(back_populates='meal_slots', lazy='selectin')
-    recipe: Mapped['Recipe'] = relationship(back_populates='meal_slots', lazy='selectin', foreign_keys=[recipe_id])
+    week: Mapped[Week] = relationship(back_populates='meal_slots', lazy='selectin')
+    recipe: Mapped[Recipe] = relationship(back_populates='meal_slots', lazy='selectin', foreign_keys=[recipe_id])
 
     __table_args__ = (UniqueConstraint('week_id', 'day_of_week', 'meal_type', name='_week_day_meal_uc'),)

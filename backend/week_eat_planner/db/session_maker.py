@@ -59,7 +59,7 @@ class DatabaseSession:
             raise RuntimeError('Database not connected. Call init() first.')
         return self._session_maker
 
-    async def get_db(self) -> AsyncGenerator[AsyncSession, None]:
+    async def get_db(self) -> AsyncGenerator[AsyncSession]:
         """FastAPI dependency to get a database session for read-only operations.
 
         Yields:
@@ -73,7 +73,7 @@ class DatabaseSession:
                 await session.rollback()
                 raise
 
-    async def get_db_commit(self) -> AsyncGenerator[AsyncSession, None]:
+    async def get_db_commit(self) -> AsyncGenerator[AsyncSession]:
         """FastAPI dependency to get a database session and commit changes.
 
         Yields:

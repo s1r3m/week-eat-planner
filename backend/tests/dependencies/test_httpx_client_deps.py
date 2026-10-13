@@ -8,7 +8,7 @@ from week_eat_planner.clients.async_client import http_client_manager
 
 
 @pytest.fixture(autouse=True)
-async def closed_client() -> AsyncGenerator[None, None]:
+async def closed_client() -> AsyncGenerator[None]:
     yield
 
     await http_client_manager.close_client()

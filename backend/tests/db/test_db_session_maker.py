@@ -17,7 +17,7 @@ async def mock_session_maker(mocker, mocked_session) -> None:
 
 
 @pytest_asyncio.fixture
-async def inited_db() -> AsyncGenerator[None, None]:
+async def inited_db() -> AsyncGenerator[None]:
     await db.init()
     yield
     await db.close()

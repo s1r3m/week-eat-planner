@@ -20,5 +20,5 @@ class UserFavorite(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     recipe_id: Mapped[UUID] = mapped_column(ForeignKey('recipes.id', ondelete='CASCADE'), nullable=False)
 
-    user: Mapped['User'] = relationship(back_populates='favorites')
-    recipe: Mapped['Recipe'] = relationship(back_populates='favorites', lazy='selectin')
+    user: Mapped[User] = relationship(back_populates='favorites')
+    recipe: Mapped[Recipe] = relationship(back_populates='favorites', lazy='selectin')

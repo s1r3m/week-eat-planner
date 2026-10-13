@@ -34,8 +34,8 @@ from week_eat_planner.services.recipe_service import RecipeService
 from week_eat_planner.services.week_service import WeekService
 
 T = TypeVar('T')
-AsyncYieldFixture = AsyncGenerator[T, None]
-YieldFixture = Generator[T, None, None]
+AsyncYieldFixture = AsyncGenerator[T]
+YieldFixture = Generator[T]
 
 
 @pytest_asyncio.fixture
@@ -63,7 +63,7 @@ async def db_session(db_connection: None) -> AsyncYieldFixture[AsyncSession]:
 
 @pytest_asyncio.fixture
 async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
-    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+    async def override_get_db() -> AsyncGenerator[AsyncSession]:
         yield db_session
 
     app.dependency_overrides[db.get_db] = override_get_db

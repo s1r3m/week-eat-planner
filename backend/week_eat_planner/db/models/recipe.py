@@ -38,9 +38,9 @@ class Recipe(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     image_key: Mapped[str | None] = mapped_column(nullable=True)
 
-    user: Mapped['User'] = relationship(back_populates='recipes', lazy='selectin')
-    meal_slots: Mapped[list['MealSlot']] = relationship(back_populates='recipe')
-    favorites: Mapped[list['UserFavorite']] = relationship(back_populates='recipe', cascade='all, delete-orphan')
+    user: Mapped[User] = relationship(back_populates='recipes', lazy='selectin')
+    meal_slots: Mapped[list[MealSlot]] = relationship(back_populates='recipe')
+    favorites: Mapped[list[UserFavorite]] = relationship(back_populates='recipe', cascade='all, delete-orphan')
 
     is_favorite: bool = False
 

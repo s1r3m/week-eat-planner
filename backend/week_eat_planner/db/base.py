@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Generic, TypeVar
 from uuid import UUID
 
 from loguru import logger
@@ -32,10 +31,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     )
 
 
-T = TypeVar('T', bound=Base)
-
-
-class BaseDAO(Generic[T]):
+class BaseDAO[T: Base]:
     """Generic Data Access Object for database operations."""
 
     model: type[T] = None  # type: ignore
@@ -248,4 +244,4 @@ class BaseDAO(Generic[T]):
             logger.exception(f'Error while deleting {self.model.__name__} record by {filter_by}: {exc}')
             raise exc
 
-        return result.rowcount
+        return result.rowcount  # type: ignore
