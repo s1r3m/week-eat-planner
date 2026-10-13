@@ -1,0 +1,168 @@
+[build-system]
+# Specifies the build tools needed. hatchling is a modern, fast backend.
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "week_eat_planner"
+version = "0.1.0"
+description = "My Menu Planner app to get a shopping list for a week in a click."
+license = {text = "MIT"}
+requires-python = ">=3.11,<3.12"
+authors = [
+    { name = "Filipp Aleksandrov", email = "s1r3m@yahoo.com" },
+]
+
+classifiers = [                     # Standard classifiers for PyPI
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+
+dependencies = [
+    "asyncpg==0.30.0",
+    "fastapi[standard]==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.5",
+    "pydantic-settings==2.7.1",
+    "alembic==1.14.0",
+    "sqlalchemy[asyncio]==2.0.37",
+    "psycopg[binary]==3.2.4",
+    "httpx==0.28.1",
+    "loguru==0.7.3",
+    "python-jose[cryptography]==3.3.0",
+    "passlib==1.7.4",
+    "bcrypt==3.2.0",
+    "gevent==25.9.1",
+    "uuid-utils==0.11.0",
+    "boto3==1.42.77",
+    "python-multipart==0.0.20",
+]
+
+[project.urls] # Optional: Links for PyPI
+Homepage = "https://github.com/s1r3m/week-eat-planner" # Example URL
+Repository = "https://github.com/s1r3m/week-eat-planner" # Example URL
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.2.0",
+    "pytest-asyncio==0.25.0",
+    "pytest-cov==5.0.0",
+    "pytest-mock==3.14.0",
+    "ruff==0.14.*",
+    "mypy==1.13.0",
+    "types-ujson==5.10.0.20240515",
+    "freezegun>=1.5.5",
+]
+
+# --- ENTRY POINT DEFINITION ---
+[project.scripts]
+# This creates an executable command when the package is installed.
+# Format: command_name = "path.to.module:function_or_object"
+# We need a way to *run* the uvicorn server.
+# Let's point it to a function that starts uvicorn.
+week-eat-planner-server = "week_eat_planner.main:start_app"
+
+[tool.ruff]
+exclude = [
+    ".venv*",
+    "migrations",
+]
+line-length = 120
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ['week_eat_planner']
+case-sensitive = true
+combine-as-imports = true
+order-by-type = false
+
+[tool.ruff.lint]
+select = [
+    'E',   # pycodestyle: PEP8 style & formatting rules
+    'W',   # pycodestyle: warnings
+    'F',   # pyflakes: syntax and logical errors
+    'I',   # isort: import sorting
+    'B',   # flake8-bugbear: common bug patterns
+    'UP',  # pyupgrade: modernize Python code
+    'N',   # pep8-naming: naming conventions
+    'PT',  # flake8-pytest-style: pytest-specific rules
+    'SIM', # flake8-simplify: simplify expressions & control flow
+    'PL',  # pylint (subset): useful pylint-like checks
+]
+ignore = [
+    'PT011',
+    'B017',
+    'PLR0913',
+]
+
+fixable = ['ALL']
+unfixable = []
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--tb=short -vv --cache-clear"
+xfail_strict = true
+
+[tool.mypy]
+python_version = "3.11"
+plugins = "pydantic.mypy"
+
+exclude = [
+    '/test_.*',
+    '/migrations/*',
+]
+
+ignore_missing_imports = true
+show_column_numbers = true
+show_absolute_path = true
+
+allow_redefinition = true
+no_implicit_reexport = true
+strict_equality = true
+
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+
+warn_unused_ignores = true
+warn_unused_configs = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unreachable = true
+show_error_codes = true
+
+no_implicit_optional = true
+
+[tool.coverage.run]
+source = ["week_eat_planner"]
+branch = true
+concurrency = ["gevent", "thread"]
+omit = [
+    "tests/*",  # Exclude all test files and directories
+    # Omit files that are primarily configuration or startup logic
+    "week_eat_planner/main.py",
+    "week_eat_planner/config.py",
+    "week_eat_planner/exceptions.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.isort]
+profile = 'black'
+line_length = 120
+case_sensitive = true
+combine_as_imports = true
+order_by_type = false
+known_first_party = ['week_eat_planner']

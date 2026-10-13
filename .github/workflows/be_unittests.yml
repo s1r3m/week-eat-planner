@@ -1,0 +1,69 @@
+name: BE Unittests
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      clean_workspace:
+        description: "Clean workspace before checkout"
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  be_unittests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean workspace (Manual)
+        if: inputs.clean_workspace == true
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf ./* || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all branches and tags to enable merging.
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.6.11"
+          enable-cache: true
+
+      - name: Merge base branch into PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
+          git merge "origin/${{ github.event.pull_request.base.ref }}"
+          echo "Merge successful."
+        # This step will automatically fail if there are merge conflicts,
+        # correctly indicating that the PR is not ready.
+
+      - name: Install dependencies
+        run: |
+          make install
+
+      - name: Run the env
+        run: |
+          make test_env
+
+      - name: Run tests
+        run: |
+          make be_test
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: make logs
+
+      - name: Stop the DB and clean up
+        # This step will run even if the tests fail, ensuring Docker containers are stopped.
+        if: always()
+        run: make stop

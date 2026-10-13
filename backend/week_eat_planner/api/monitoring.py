@@ -1,0 +1,19 @@
+"""Monitoring and health check endpoints."""
+
+from fastapi import APIRouter, Response
+from loguru import logger
+
+from week_eat_planner.constants import AppUrl
+
+router = APIRouter(tags=['Monitoring'])
+
+
+@router.get(AppUrl.PING)
+async def ping() -> Response:
+    """A health check endpoint.
+
+    Returns:
+        A response with the content 'pong'.
+    """
+    logger.info(f'Got GET {AppUrl.PING} request.')
+    return Response(content='pong', status_code=200)
