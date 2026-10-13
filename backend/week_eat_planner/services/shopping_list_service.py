@@ -76,7 +76,7 @@ class ShoppingListService:
         """
         recipe_counts: dict[Recipe, int] = {}
         for meal_slot in week.meal_slots:
-            if meal_slot.recipe_id is None:
+            if meal_slot.recipe is None:
                 continue
 
             slot_portions: int = getattr(meal_slot, 'portions', 1)  # TODO: implement porions

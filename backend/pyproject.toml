@@ -32,7 +32,6 @@ dependencies = [
     "httpx==0.28.*",
     "loguru==0.7.*",
     "python-jose[cryptography]==3.5.*",
-    "passlib==1.7.*",
     "gevent==26.9.*",
     "uuid-utils==1.*",
     "boto3==1.43.*",
