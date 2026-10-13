@@ -1,100 +1,101 @@
 import { appendResponseHeader } from 'h3'
 
 export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig()
-  const event = useRequestEvent()
-  const requestHeaders = useRequestHeaders(['cookie'])
-  const cookies = new Map<string, string>()
-  const requestRefreshes = new WeakMap<object, Promise<void> | undefined>()
+	const config = useRuntimeConfig()
+	const event = useRequestEvent()
+	const requestHeaders = useRequestHeaders(['cookie'])
+	const cookies = new Map<string, string>()
+	const requestRefreshes = new WeakMap<object, Promise<void> | undefined>()
 
-  let refreshPromise: Promise<void> | undefined
-  let refreshing = false
+	let refreshPromise: Promise<void> | undefined
+	let refreshing = false
 
-  const rememberCookie = (cookie: string) => {
-    const pair = cookie.split(';', 1)[0]!.trim()
-    const separator = pair.indexOf('=')
+	const rememberCookie = (cookie: string) => {
+		const pair = cookie.replace(/;.*/s, '').trim()
+		const separator = pair.indexOf('=')
 
-    if (separator > 0) {
-      cookies.set(pair.slice(0, separator), pair)
-    }
-  }
+		if (separator > 0) {
+			cookies.set(pair.slice(0, separator), pair)
+		}
+	}
 
-  const responseCookies = (requestHeaders.cookie ?? '').split(';')
-  for (const cookie of responseCookies) {
-    rememberCookie(cookie)
-  }
+	const responseCookies = (requestHeaders.cookie ?? '').split(';')
+	for (const cookie of responseCookies) {
+		rememberCookie(cookie)
+	}
 
-  const getCookieHeader = () => cookies.values().toArray().join('; ')
+	const getCookieHeader = () => cookies.values().toArray().join('; ')
 
-  const transport = $fetch.create({
-    baseURL: config.public.apiUrl,
-    credentials: 'include',
-    retry: 0,
-  })
+	const transport = $fetch.create({
+		baseURL: config.public.apiUrl,
+		credentials: 'include',
+		retry: 0,
+	})
 
-  const refreshSession = async () => {
-    const headers = event ? { cookie: getCookieHeader() } : undefined
-    refreshing = true
+	const refreshSession = async () => {
+		const headers = event ? { cookie: getCookieHeader() } : undefined
+		refreshing = true
 
-    try {
-      const response = await transport.raw('/auth/refresh', {
-        headers,
-        method: 'POST',
-        parseResponse: () => undefined,
-      })
+		try {
+			const response = await transport.raw('/auth/refresh', {
+				headers,
+				method: 'POST',
+				parseResponse: () => {
+					// Session renewal consumes response headers and ignores the body.
+				},
+			})
 
-      if (!event) return
+			if (!event) return
 
-      for (const cookie of response.headers.getSetCookie()) {
-        appendResponseHeader(event, 'set-cookie', cookie)
-        rememberCookie(cookie)
-      }
-    } finally {
-      refreshing = false
-    }
-  }
+			for (const cookie of response.headers.getSetCookie()) {
+				appendResponseHeader(event, 'set-cookie', cookie)
+				rememberCookie(cookie)
+			}
+		} finally {
+			refreshing = false
+		}
+	}
 
-  const api = $fetch.create({
-    baseURL: config.public.apiUrl,
-    credentials: 'include',
-    retry: 1,
-    retryStatusCodes: [401],
+	const api = $fetch.create({
+		baseURL: config.public.apiUrl,
+		credentials: 'include',
+		retry: 1,
+		retryStatusCodes: [401],
 
-    async onRequest({ options, request }) {
-      const path = (typeof request === 'string' ? request : request.url).split(
-        /[?#]/,
-        1,
-      )[0]!
+		async onRequest({ options, request }) {
+			const path = (
+				typeof request === 'string' ? request : request.url
+			).replace(/[?#].*/s, '')
 
-      const isAuthRequest =
-        /\/auth\/(?:login|signup|refresh|google\/exchange)\/?$/.test(path)
+			const isAuthRequest =
+				/\/auth\/(?:login|signup|refresh|google\/exchange)\/?$/.test(path)
 
-      options.retry = isAuthRequest ? 0 : Math.min(Number(options.retry), 1)
-      options.retryStatusCodes = [401]
+			options.retry = isAuthRequest ? 0 : Math.min(Number(options.retry), 1)
+			options.retryStatusCodes = [401]
 
-      if (!isAuthRequest && refreshing) {
-        await refreshPromise
-      }
+			if (!isAuthRequest && refreshing) {
+				await refreshPromise
+			}
 
-      requestRefreshes.set(options, refreshPromise)
+			requestRefreshes.set(options, refreshPromise)
 
-      if (event) {
-        options.headers.set('cookie', getCookieHeader())
-      }
-    },
+			if (event) {
+				options.headers.set('cookie', getCookieHeader())
+			}
+		},
 
-    async onResponseError({ options, response }) {
-      if (response.status !== 401 || !options.retry) return
+		async onResponseError({ options, response }) {
+			if (response.status !== 401 || !options.retry) return
 
-      if (requestRefreshes.get(options) === refreshPromise) {
-        refreshPromise = refreshSession()
-      }
+			if (requestRefreshes.get(options) === refreshPromise) {
+				refreshPromise = refreshSession()
+			}
 
-      await refreshPromise
-    },
-  })
+			await refreshPromise
+		},
+	})
 
-  return {
-    provide: { api },
-  }
+	return {
+		provide: { api },
+	}
 })

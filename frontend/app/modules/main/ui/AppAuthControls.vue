@@ -1,49 +1,49 @@
 <script setup lang="ts">
-  import BaseButton from '@/common/ui/BaseButton.vue'
+	import BaseButton from '@/common/ui/BaseButton.vue'
 
-  const emits = defineEmits<{
-    navigate: []
-  }>()
+	const emits = defineEmits<{
+		navigate: []
+	}>()
 
-  const route = useRoute()
+	const route = useRoute()
 
-  const showLogin = computed(() => route.name !== 'login')
-  const showSignup = computed(() => route.name !== 'signup')
+	const showLogin = computed(() => route.name !== 'login')
+	const showSignup = computed(() => route.name !== 'signup')
 
-  const navigate = async (name: string) => {
-    await navigateTo({ name })
-    emits('navigate')
-  }
+	const navigate = async (name: string) => {
+		await navigateTo({ name })
+		emits('navigate')
+	}
 </script>
 
 <template>
-  <div class="header-controls">
-    <BaseButton
-      v-if="showLogin"
-      variant="secondary"
-      @click="navigate('login')"
-    >
-      Login
-    </BaseButton>
+	<div class="header-controls">
+		<BaseButton
+			v-if="showLogin"
+			variant="secondary"
+			@click="navigate('login')"
+		>
+			Login
+		</BaseButton>
 
-    <BaseButton
-      v-if="showSignup"
-      @click="navigate('signup')"
-    >
-      Register
-    </BaseButton>
-  </div>
+		<BaseButton
+			v-if="showSignup"
+			@click="navigate('signup')"
+		>
+			Register
+		</BaseButton>
+	</div>
 </template>
 
 <style scoped>
-  .header-controls {
-    display: flex;
-    align-items: center;
-    padding: var(--space-4);
-    gap: var(--space-4);
-  }
+	.header-controls {
+		display: flex;
+		align-items: center;
+		padding: var(--space-4);
+		gap: var(--space-4);
+	}
 
-  .header-controls > * {
-    width: 100%;
-  }
+	.header-controls > * {
+		width: 100%;
+	}
 </style>

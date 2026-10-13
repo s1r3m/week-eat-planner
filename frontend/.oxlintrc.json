@@ -1,8 +1,8 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "rules": {
-    "eslint/curly": ["warn", "multi-line"],
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"rules": {
+		"eslint/curly": ["warn", "multi-line"],
 
-    "unicorn/no-null": "off"
-  }
+		"unicorn/no-null": "off"
+	}
 }

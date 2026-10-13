@@ -1,51 +1,51 @@
 <script setup lang="ts">
-  import {
-    DialogClose,
-    DialogContent,
-    DialogOverlay,
-    DialogPortal,
-    DialogRoot,
-    DialogTitle,
-  } from 'reka-ui'
+	import {
+		DialogClose,
+		DialogContent,
+		DialogOverlay,
+		DialogPortal,
+		DialogRoot,
+		DialogTitle,
+	} from 'reka-ui'
 
-  import BaseButton from '@/common/ui/BaseButton.vue'
+	import BaseButton from '@/common/ui/BaseButton.vue'
 
-  const open = defineModel<boolean>({ default: false })
+	const open = defineModel<boolean>({ default: false })
 </script>
 
 <template>
-  <DialogRoot v-model:open="open">
-    <DialogPortal>
-      <DialogOverlay class="side-panel__overlay" />
+	<DialogRoot v-model:open="open">
+		<DialogPortal>
+			<DialogOverlay class="side-panel__overlay" />
 
-      <DialogContent
-        class="side-panel"
-        :aria-describedby="undefined"
-      >
-        <div class="side-panel__header">
-          <DialogTitle class="sr-only">
-            <slot name="title"></slot>
-          </DialogTitle>
+			<DialogContent
+				class="side-panel"
+				:aria-describedby="undefined"
+			>
+				<div class="side-panel__header">
+					<DialogTitle class="sr-only">
+						<slot name="title"></slot>
+					</DialogTitle>
 
-          <DialogClose
-            aria-label="close"
-            as-child
-          >
-            <BaseButton variant="icon">
-              <Icon
-                name="lucide:x"
-                :size="24"
-              />
-            </BaseButton>
-          </DialogClose>
-        </div>
+					<DialogClose
+						aria-label="close"
+						as-child
+					>
+						<BaseButton variant="icon">
+							<Icon
+								name="lucide:x"
+								:size="24"
+							/>
+						</BaseButton>
+					</DialogClose>
+				</div>
 
-        <div class="side-panel__content">
-          <slot></slot>
+				<div class="side-panel__content">
+					<slot></slot>
 
-          <slot name="footer"></slot>
-        </div>
-      </DialogContent>
-    </DialogPortal>
-  </DialogRoot>
+					<slot name="footer"></slot>
+				</div>
+			</DialogContent>
+		</DialogPortal>
+	</DialogRoot>
 </template>

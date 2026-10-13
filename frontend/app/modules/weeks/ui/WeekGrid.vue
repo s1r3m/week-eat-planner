@@ -1,37 +1,37 @@
 <script setup lang="ts">
-  import type { WeekPreview } from '@/modules/weeks/types'
+	import type { WeekPreview } from '@/modules/weeks/types'
 
-  import PageEmptyState from '@/common/ui/PageEmptyState.vue'
-  import WeekCard from '@/modules/weeks/ui/WeekCard.vue'
+	import PageEmptyState from '@/common/ui/PageEmptyState.vue'
+	import WeekCard from '@/modules/weeks/ui/WeekCard.vue'
 
-  defineProps<{
-    weeks: WeekPreview[]
-  }>()
+	defineProps<{
+		weeks: WeekPreview[]
+	}>()
 </script>
 
 <template>
-  <div
-    v-if="weeks.length"
-    class="week-grid"
-  >
-    <WeekCard
-      v-for="week in weeks"
-      :key="week.id"
-      :week="week"
-    />
-  </div>
+	<div
+		v-if="weeks.length > 0"
+		class="week-grid"
+	>
+		<WeekCard
+			v-for="week in weeks"
+			:key="week.id"
+			:week="week"
+		/>
+	</div>
 
-  <PageEmptyState
-    v-else
-    name="weeks"
-  />
+	<PageEmptyState
+		v-else
+		name="weeks"
+	/>
 </template>
 
 <style scoped>
-  .week-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-    gap: var(--space-4);
-    margin: var(--space-2) 0;
-  }
+	.week-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+		gap: var(--space-4);
+		margin: var(--space-2) 0;
+	}
 </style>
