@@ -14,15 +14,12 @@ UV_VERSION = 0.6.11
 PROJECT_PATH = $(CURDIR)
 BE_PATH = $(PROJECT_PATH)/backend
 FE_PATH = $(PROJECT_PATH)/frontend
-NUXT_PATH = $(PROJECT_PATH)/frontend_nuxt
 
 ENV_FILE = $(BE_PATH)/.env
 BE_TEST_ENV_FILE = $(BE_PATH)/.env.be_test
 
 FE_ENV_FILE = $(FE_PATH)/.env
 FE_TEST_ENV_FILE = $(FE_PATH)/.env.fe_test
-NUXT_ENV_FILE = $(NUXT_PATH)/.env
-NUXT_TEST_ENV_FILE = $(NUXT_PATH)/.env.fe_test
 
 export VIRTUAL_ENV = $(PROJECT_PATH)/.venv_$(PYTHON)
 
@@ -158,62 +155,32 @@ coverage:
 $(FE_ENV_FILE):
 	cp $(FE_TEST_ENV_FILE) $(FE_ENV_FILE)
 
-# @FE Install requirements
+## @FE Install requirements
 fe_install: $(FE_ENV_FILE)
 	@echo "🚀 Installing the packages..."
-	cd $(FE_PATH) && yarn install
+	cd $(FE_PATH) && bun install --frozen-lockfile
 
 ## @FE Start the app
-fe_start:
-	@echo "🏃 Starting Vue app on port 3000..."
-	cd $(FE_PATH) && yarn dev --port 3000
+fe_start: $(FE_ENV_FILE)
+	@echo "🏃 Starting Nuxt app on port 3000..."
+	cd $(FE_PATH) && bun run dev --port 3000
 
 ## @FE Run linters
 fe_lint:
-	@echo "Run ESlint"
-	cd $(FE_PATH) && yarn lint
-	cd $(FE_PATH) && yarn format:check
+	@echo "Run frontend linters"
+	cd $(FE_PATH) && bun run lint
+	cd $(FE_PATH) && bun run format:check
 
 
+## @FE Fix style
 fe_style:
-	@echo "Run ESlint"
-	cd $(FE_PATH) && yarn format
-	cd $(FE_PATH) && yarn lint:fix
+	@echo "Fix frontend style"
+	cd $(FE_PATH) && bun run format
+	cd $(FE_PATH) && bun run lint:fix
 
 ## @Tests Run fe unittests.
 fe_test:
-	cd $(FE_PATH) && yarn test:coverage
-
-## ------------------------------------------------- Nuxt --------------------------------------------------------------
-## @Nuxt Prepare env file for fe nuxt unittests
-$(NUXT_ENV_FILE):
-	cp $(NUXT_TEST_ENV_FILE) $(NUXT_ENV_FILE)
-
-# @FE Install requirements
-nuxt_install: $(NUXT_ENV_FILE)
-	@echo "🚀 Installing the packages..."
-	cd $(NUXT_PATH) && bun install
-
-## @Nuxt Start the app
-nuxt_start:
-	@echo "🏃 Starting Vue app on port 3001..."
-	cd $(NUXT_PATH) && bun run dev --port 3001
-
-## @Nuxt Run linters
-nuxt_lint:
-	@echo "Run Linters"
-	cd $(NUXT_PATH) && bun run lint
-	cd $(NUXT_PATH) && bun run format:check
-
-## @Nuxt Fix style
-nuxt_style:
-	@echo "Run Style"
-	cd $(NUXT_PATH) && bun run format
-	cd $(NUXT_PATH) && bun run lint:fix
-
-## @Nuxt Run fe unittests.
-nuxt_test:
-	cd $(NUXT_PATH) && bun run test:coverage
+	cd $(FE_PATH) && bun run test:coverage
 
 ## ----------------------------------------------- Overall -------------------------------------------------------------
 lint: be_lint fe_lint

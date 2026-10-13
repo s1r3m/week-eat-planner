@@ -2,9 +2,6 @@ name: Frontend linters
 permissions:
   contents: read
 
-permissions:
-  contents: read
-
 on:
   workflow_dispatch:
     inputs:
@@ -43,48 +40,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: frontend/yarn.lock
+          node-version: "24"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
 
       - name: Install frontend dependencies
         run: |
           make fe_install
 
-      - name: Analysing the code with ESLint
+      - name: Run frontend linters and formatting checks
         run: |
           make fe_lint
-
-  nuxt_linters:
-    runs-on: ubuntu-latest
-    container:
-      image: oven/bun:1.3.14
-    steps:
-      - name: Clean workspace (Manual)
-        if: inputs.clean_workspace == true
-        run: |
-          echo "Cleaning workspace..."
-          rm -rf ./* || true
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Set up env
-        run: |
-          cp frontend_nuxt/.env.fe_test frontend_nuxt/.env
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend_nuxt && bun install
-
-      - name: Analysing the code with ESLint
-        run: |
-          cd frontend_nuxt && bun run lint

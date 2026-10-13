@@ -1,18 +1,27 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["src/**/*", "src/**/*.vue", "src/**/__tests__/*"],
-  "exclude": [],
-  "compilerOptions": {
-    "composite": true,
-    "moduleResolution": "bundler",
-    "types": ["vite/client", "vitest/globals", "google.accounts"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+	"compilerOptions": {
+		"paths": {
+			"@/*": ["./app/*"],
+			"~/*": ["./app/*"]
+		},
+		"types": ["node"]
+	},
+	"files": [],
+	"references": [
+		{
+			"path": "./.nuxt/tsconfig.app.json"
+		},
+		{
+			"path": "./.nuxt/tsconfig.server.json"
+		},
+		{
+			"path": "./.nuxt/tsconfig.shared.json"
+		},
+		{
+			"path": "./.nuxt/tsconfig.node.json"
+		},
+		{
+			"path": "./tsconfig.tests.json"
+		}
+	]
 }

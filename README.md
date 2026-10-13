@@ -8,13 +8,15 @@ A menu planner for a week. Get a shopping list in one click.
 - User authentication and management
 - Integration with PostgreSQL for data storage
 - RESTful API with FastAPI
-- Frontend with Vue.js
+- Frontend with Nuxt and Vue.js
 
 ## Prerequisites
 
 - Python 3.11
 - [uv](https://github.com/astral-sh/uv)
 - Docker
+- Node.js 24 and Bun 1.3.14
+- GNU Make 3.82 or newer
 
 ## Installation
 
@@ -27,19 +29,23 @@ A menu planner for a week. Get a shopping list in one click.
 2.  **Install dependencies:**
     ```bash
     make install
+    make fe_install
     ```
 
 ## Usage
 
 The `Makefile` contains all the necessary commands to run and manage the application.
 
--   **`make install`**: Installs all the required dependencies.
--   **`make start`**: Starts the application and its services.
+-   **`make install`**: Installs backend dependencies.
+-   **`make fe_install`**: Installs frontend dependencies and prepares Nuxt.
+-   **`make start`**: Starts the backend and its services.
+-   **`make fe_start`**: Starts the Nuxt frontend on port 3000.
 -   **`make stop`**: Stops the application and its services.
 -   **`make lint`**: Runs the linters to check the code for style and errors.
--   **`make style`**: Formats the code according to the project's style guidelines.
+-   **`make fe_lint`**: Checks frontend code, styles, and formatting without fixing files.
+-   **`make fe_style`**: Formats frontend files and applies automatic lint fixes.
 -   **`make be_test`**: Runs the backend unit tests.
--   **`make fe_test`**: Runs the frontend unit tests (not yet implemented).
+-   **`make fe_test`**: Runs frontend unit tests with enforced coverage thresholds.
 
 For a full list of commands, run `make help`.
 
@@ -63,9 +69,9 @@ week-eat-planner/
 │   ├── alembic/              # Database migrations
 │   ├── tests/                # Unit tests
 │   └── week_eat_planner/     # Application source code
-├── frontend/                 # Vue.js application
+├── frontend/                 # Nuxt application
 │   ├── public/               # Public assets
-│   ├── src/                  # Vue.js source code
+│   ├── app/                  # Vue.js source code
 │   └── tests/                # Frontend tests
 ├── qa/                       # QA and testing
 │   ├── docker/               # Docker-compose files for tests

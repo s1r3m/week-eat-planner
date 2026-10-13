@@ -1,38 +1,69 @@
-# week-eat-planner-fe
+# Week Eat Planner frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+The frontend uses Nuxt 4 and Vue 3. Use Node.js 24 and Bun 1.3.14.
 
-## Recommended IDE Setup
+## Setup and development
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+From the repository root:
 
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```bash
+make fe_install
+make fe_start
 ```
 
-### Compile and Hot-Reload for Development
+`fe_install` installs dependencies from `bun.lock` and prepares Nuxt. It copies
+`.env.fe_test` to `.env` only when `.env` is absent. Keep the backend running on
+port 8000: Nuxt uses its live OpenAPI schema for generated API types. The frontend
+runs at `http://localhost:3000`.
 
-```sh
-npm run dev
+Application code lives in `app/`, public assets in `public/`, and tests in
+`tests/`. Nuxt generates `.nuxt/`; do not commit generated files.
+
+## Checks and formatting
+
+From the repository root:
+
+```bash
+make fe_lint   # Oxlint, ESLint, Stylelint, and Prettier checks
+make fe_style  # formatting and automatic lint fixes
+make fe_test   # tests with coverage thresholds
 ```
 
-### Compile and Minify for Production
+Lint commands only check files. Use `fe_style` to apply automatic fixes.
 
-```sh
-npm run build
+## Unit tests
+
+Bun installs dependencies; Vitest runs the tests under Node. From `frontend/`:
+
+```bash
+bun run test
+bun run test:watch
+bun run test:coverage
+bun run test:typecheck
+bun run test -- tests/composables/weeks/useCreateWeek.spec.ts
 ```
+
+Coverage requires 100% statements, branches, functions, and lines per file for
+runtime TypeScript modules and Vue components under `app/`. Type-only modules
+are excluded. Reports are written to `coverage/`, including HTML, LCOV, and JSON.
+The optional TypeScript check requires Nuxt's generated API declarations; it is
+separate from `fe_lint` and CI.
+
+Composable and UI tests run in jsdom; API, plugin, and utility tests run in Node.
+The helpers mount real Vue, Pinia, and Colada instances while mocking the HTTP
+boundary and Nuxt globals. See [the test guide](tests/README.md) for details.
+
+## Production
+
+From `frontend/`:
+
+```bash
+bun run build
+bun run preview
+```
+
+## Docker
+
+The frontend Dockerfile uses Node.js 24 and Bun 1.3.14 and starts Nuxt's
+development server on `0.0.0.0:3000`. Both the root Compose configuration and
+the QA Compose configuration use this image and mount `frontend/` at `/app`.
