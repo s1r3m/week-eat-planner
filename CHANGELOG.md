@@ -4,21 +4,21 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org).
 
-### [Unreleased]
+## [Unreleased]
 
-#### Breaking Changes
+### Breaking Changes
 
-#### Added
+### Added
 
-#### Changed
+### Changed
 
-#### Fixed
+### Fixed
 
-#### Deprecated
+### Deprecated
 
-### [0.1.0] - 2026-10-13
+## [0.1.0] - 2026-10-13
 
-#### Added
+### Added
 
 - Initial MVP built with TailwindCSS, Vue 3, FastAPI, and Python 3.11.
 
