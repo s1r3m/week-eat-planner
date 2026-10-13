@@ -5,15 +5,12 @@
 
 	defineProps<{ week: WeekFull }>()
 
-	const mealTypeOrder: Record<MealType, number> = {
-		BREAKFAST: 0,
-		DINNER: 3,
-		LUNCH: 1,
-		SNACK: 2,
-	}
+	const mealTypeOrder: MealType[] = ['BREAKFAST', 'LUNCH', 'SNACK', 'DINNER']
+
 	const sortSlots = (slots: MealSlot[]) => {
 		return [...slots].toSorted(
-			(a, b) => mealTypeOrder[a.meal_type]! - mealTypeOrder[b.meal_type]!,
+			(a, b) =>
+				mealTypeOrder.indexOf(a.meal_type) - mealTypeOrder.indexOf(b.meal_type),
 		)
 	}
 </script>
