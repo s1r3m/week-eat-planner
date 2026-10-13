@@ -6,9 +6,9 @@ ifeq ($(MAKE_OK),)
 endif
 
 # Versions.
-PYTHON_VERSION = 3.11
+PYTHON_VERSION = 3.14
 PYTHON = python$(PYTHON_VERSION)
-UV_VERSION = 0.6.11
+UV_VERSION = 0.12.23
 
 # Paths.
 PROJECT_PATH = $(shell dirname $(CURDIR))
