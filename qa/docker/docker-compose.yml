@@ -50,11 +50,14 @@ services:
     build:
       context: ../../frontend
       dockerfile: Dockerfile
+    environment:
+      - NUXT_PUBLIC_API_URL=http://app.dev.local/api
     expose:
       - 3000
     volumes:
       - ../../frontend:/app
       - /app/node_modules
+    command: bun run dev --port 3000 --host 0.0.0.0
   db:
     image: postgres:13
     environment:

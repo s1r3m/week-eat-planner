@@ -53,6 +53,7 @@ app = create_app()
 
 origins = [
     'http://localhost:3000',
+    'http://localhost:3001',
     'https://yourproductionfrontend.com',
 ]
 

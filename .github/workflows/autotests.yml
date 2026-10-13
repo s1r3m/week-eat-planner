@@ -1,5 +1,4 @@
 name: autotests.yml
-
 permissions:
   contents: read
 

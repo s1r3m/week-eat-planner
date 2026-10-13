@@ -18,6 +18,9 @@ from week_eat_planner.api.schemas import (
 )
 from week_eat_planner.api.schemas.shopping_list import ShoppingListRead, ShoppingListUpdate
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.db.models.meal_slot import MealSlot
+from week_eat_planner.db.models.shopping_list import ShoppingList
+from week_eat_planner.db.models.week import Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.shopping_list_service import ShoppingListService
 from week_eat_planner.services.week_service import WeekService
@@ -30,7 +33,7 @@ async def create_week(
     week_data: WeekCreate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> WeekReadMinimal:
+) -> Week:
     """Creates a new week for the current user.
 
     Also initiates seven days for the week with meal slots.
@@ -46,14 +49,14 @@ async def create_week(
     logger.info(f'Got POST {AppUrl.WEEKS} request for user {user_id}')
     week = await WeekService(session).create_week_with_slots(user_id, week_data)
 
-    return WeekReadMinimal.model_validate(week)
+    return week
 
 
 @router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
 async def get_user_weeks(
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> list[WeekReadMinimal]:
+) -> list[Week]:
     """Retrieves all weeks for the current user.
 
     Args:
@@ -66,7 +69,7 @@ async def get_user_weeks(
     logger.info(f'Got GET {AppUrl.WEEKS} request for user {user_id}')
     weeks = await WeekService(session).get_weeks(user_id)
 
-    return [WeekReadMinimal.model_validate(week) for week in weeks]
+    return weeks
 
 
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
@@ -74,7 +77,7 @@ async def get_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     user_id: Annotated[UUID | None, Depends(get_optional_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> WeekRead:
+) -> Week:
     """Retrieves a specific week by its ID.
 
     The week must belong to the currently authenticated user.
@@ -90,7 +93,7 @@ async def get_week(
     logger.info(f'Got GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user_id)
 
-    return WeekRead.model_validate(week)
+    return week
 
 
 @router.patch(AppUrl.WEEKS_TPL, response_model=WeekReadMinimal)
@@ -99,7 +102,7 @@ async def update_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> WeekReadMinimal:
+) -> Week:
     """Updates a specific week.
 
     The week must belong to the currently authenticated user.
@@ -118,7 +121,7 @@ async def update_week(
     week = await week_service.get_week_for_edit(week_id, user_id)
     updated_week = await week_service.update_week(week, new_data)
 
-    return WeekReadMinimal.model_validate(updated_week)
+    return updated_week
 
 
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
@@ -149,7 +152,7 @@ async def assign_recipe_to_meal_slot(
     slots_data: list[MealSlotAssign],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> list[MealSlotRead]:
+) -> list[MealSlot]:
     """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
 
     Args:
@@ -168,7 +171,7 @@ async def assign_recipe_to_meal_slot(
     week = await week_service.get_week_for_edit(week_id, user_id)
     updated_slots = await week_service.assign_recipes_to_meal_slots(week, *slots_data)
 
-    return [MealSlotRead.model_validate(meal_slot) for meal_slot in updated_slots]
+    return updated_slots
 
 
 @router.post(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead, status_code=status.HTTP_201_CREATED)
@@ -176,7 +179,7 @@ async def create_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> ShoppingListRead:
+) -> ShoppingList:
     """Creates a new shopping list for the specified week.
 
     Args:
@@ -191,7 +194,7 @@ async def create_shopping_list(
     week = await WeekService(session).get_visible_week(week_id, user_id)
     shopping_list = await ShoppingListService(session).create(week)
 
-    return ShoppingListRead.model_validate(shopping_list)
+    return shopping_list
 
 
 @router.get(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
@@ -199,7 +202,7 @@ async def get_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to get a shopping list for')],
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> ShoppingListRead:
+) -> ShoppingList:
     """Retrieves the shopping list for a specific week.
 
     Args:
@@ -214,7 +217,7 @@ async def get_shopping_list(
     week = await WeekService(session).get_visible_week(week_id, user_id)
     shopping_list = await ShoppingListService(session).get_by_week(week)
 
-    return ShoppingListRead.model_validate(shopping_list)
+    return shopping_list
 
 
 @router.put(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
@@ -223,7 +226,7 @@ async def update_shopping_list(
     new_data: ShoppingListUpdate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> ShoppingListRead:
+) -> ShoppingList:
     """Updates an existing shopping list.
 
     Args:
@@ -241,7 +244,7 @@ async def update_shopping_list(
     shopping_list = await shopping_list_service.get_by_week_for_update(week)
     updated_shopping_list = await shopping_list_service.update(shopping_list, new_data)
 
-    return ShoppingListRead.model_validate(updated_shopping_list)
+    return updated_shopping_list
 
 
 @router.delete(AppUrl.SHOPPING_LIST_TPL, status_code=status.HTTP_204_NO_CONTENT)

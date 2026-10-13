@@ -20,6 +20,7 @@ from week_eat_planner.constants import (
     REFRESH_TOKEN_COOKIE_NAME,
     REFRESH_TOKEN_COOKIE_PATH,
 )
+from week_eat_planner.db.models.user import User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.exceptions import (
     RefreshTokenMissingException,
@@ -39,7 +40,7 @@ async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> UserRead:
+) -> User:
     """Registers a new user and authenticates them.
 
     Args:
@@ -59,7 +60,7 @@ async def create_user(
     set_refresh_cookie(response, refresh_token)
     set_access_cookies(response, access_token)
 
-    return UserRead.model_validate(created_user)
+    return created_user
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=SuccessResponse)

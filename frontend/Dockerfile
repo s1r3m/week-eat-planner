@@ -1,19 +1,15 @@
-FROM node:22-alpine
+FROM oven/bun:1.3.14 AS bun
+FROM node:24-bookworm-slim
 
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 
-# Copy only package files first for better caching
-COPY package.json yarn.lock ./
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --ignore-scripts
 
-# Install dependencies (using Yarn)
-RUN corepack enable && yarn install
-
-# Copy rest of the project
 COPY . .
 
-# Default Vite dev port overrideable by ENV
-ENV PORT=3000
+ENV NODE_ENV=development
 EXPOSE 3000
 
-# The default command will be overridden by Makefile or compose
-CMD ["yarn", "dev", "--port", "3000", "--host", "0.0.0.0"]
+CMD ["bun", "run", "dev", "--port", "3000", "--host", "0.0.0.0"]

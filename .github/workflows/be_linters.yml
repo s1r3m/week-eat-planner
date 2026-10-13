@@ -1,5 +1,4 @@
 name: Python linters
-
 permissions:
   contents: read
 

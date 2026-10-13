@@ -1,0 +1,9 @@
+{
+	"extends": "./.nuxt/tsconfig.app.json",
+	"compilerOptions": {
+		"composite": true,
+		"tsBuildInfoFile": "./.cache/tsconfig.tests.tsbuildinfo",
+		"types": ["node", "vitest/globals"]
+	},
+	"include": ["app/**/*", "tests/**/*", "vitest.config.ts", ".nuxt/nuxt.d.ts"]
+}

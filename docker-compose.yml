@@ -28,7 +28,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    command: yarn dev --port 3000 --host 0.0.0.0
+    command: bun run dev --port 3000 --host 0.0.0.0
 
   minio:
     image: rustfs/rustfs:1.0.0

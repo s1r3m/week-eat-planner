@@ -36,6 +36,18 @@ class WeekReadMinimal(WeekBase, OwnerId, RecordId):
     model_config = ConfigDict(from_attributes=True)
 
 
+class WeekDayRead(BaseModel):
+    """Schema for a single day with meal_slots.
+
+    Attributes:
+        name: a day that it represents.
+        slots: actual slots of the day.
+    """
+
+    name: DayOfWeek
+    slots: list[MealSlotRead]
+
+
 class WeekRead(WeekReadMinimal):
     """Schema for a detailed representation of a week, including meal slots.
 
@@ -43,25 +55,24 @@ class WeekRead(WeekReadMinimal):
         week_days: A structured list of days, each containing its assigned meal slots.
     """
 
-    week_days: list[dict[str, DayOfWeek | list[MealSlotRead]]]
+    week_days: list[WeekDayRead]
 
     model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode='before')
     @classmethod
-    def structure_week_days(cls, data: Week) -> dict[str, Any]:
+    def structure_week_days(cls, week: Week) -> dict[str, Any]:
         """Transforms flat meal_slots into structured week_days."""
-        structured_slots = [
-            {
-                'name': day,
-                'slots': [slot for slot in data.meal_slots if slot.day_of_week == day],
-            }
-            for day in DayOfWeek
-        ]
 
         return {
-            'id': data.id,
-            'user_id': data.user_id,
-            'name': data.name,
-            'week_days': structured_slots,
+            'id': week.id,
+            'user_id': week.user_id,
+            'name': week.name,
+            'week_days': [
+                {
+                    'name': day,
+                    'slots': [slot for slot in week.meal_slots if slot.day_of_week == day],
+                }
+                for day in DayOfWeek
+            ],
         }

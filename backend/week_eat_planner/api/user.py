@@ -12,6 +12,7 @@ from week_eat_planner.api.schemas import UserRead
 from week_eat_planner.api.schemas.common import SuccessResponse
 from week_eat_planner.api.schemas.user import UserChangePassword, UserUpdate
 from week_eat_planner.constants import AppUrl
+from week_eat_planner.db.models.user import User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.helpers import set_access_cookies, set_refresh_cookie
 from week_eat_planner.services.auth_service import AuthService
@@ -24,7 +25,7 @@ router = APIRouter(tags=['User'])
 async def get_user(
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
-) -> UserRead:
+) -> User:
     """Get the current user profile.
 
     Args:
@@ -35,7 +36,7 @@ async def get_user(
     """
     logger.info(f'Got GET {AppUrl.USER} request for user {user_id}')
     user = await UserService(session).get_user(user_id)
-    return UserRead.model_validate(user)
+    return user
 
 
 @router.patch(AppUrl.USER, response_model=UserRead)
@@ -43,7 +44,7 @@ async def update_user(
     new_data: UserUpdate,
     user_id: Annotated[UUID, Depends(get_active_user_id)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> UserRead:
+) -> User:
     """Update the current user's profile.
 
     Args:
@@ -57,7 +58,7 @@ async def update_user(
     logger.info(f'Got PATCH {AppUrl.USER} request for user {user_id}')
     updated_user = await UserService(session).update_user(user_id, new_data)
     logger.info(f'User {user_id} updated successfully')
-    return UserRead.model_validate(updated_user)
+    return updated_user
 
 
 @router.patch(AppUrl.USER_PASSWORD, response_model=SuccessResponse)
