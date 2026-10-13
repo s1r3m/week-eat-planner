@@ -2,6 +2,9 @@ name: Frontend unittests
 permissions:
   contents: read
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
