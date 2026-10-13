@@ -8,53 +8,52 @@ name = "week_eat_planner"
 version = "0.2.0"
 description = "My Menu Planner app to get a shopping list for a week in a click."
 license = {text = "MIT"}
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.14,<3.15"
 authors = [
     { name = "Filipp Aleksandrov", email = "s1r3m@yahoo.com" },
 ]
 
 classifiers = [                     # Standard classifiers for PyPI
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
     "Framework :: FastAPI",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
 ]
 
 dependencies = [
-    "asyncpg==0.30.0",
-    "fastapi[standard]==0.115.6",
-    "uvicorn[standard]==0.34.0",
-    "pydantic==2.10.5",
-    "pydantic-settings==2.7.1",
-    "alembic==1.14.0",
-    "sqlalchemy[asyncio]==2.0.37",
-    "psycopg[binary]==3.2.4",
-    "httpx==0.28.1",
-    "loguru==0.7.3",
-    "python-jose[cryptography]==3.3.0",
-    "passlib==1.7.4",
-    "bcrypt==3.2.0",
-    "gevent==25.9.1",
-    "uuid-utils==0.11.0",
-    "boto3==1.42.77",
-    "python-multipart==0.0.20",
+    "asyncpg==0.32.0",
+    "fastapi[standard]==0.143.*",
+    "uvicorn[standard]==0.54.*",
+    "pydantic==2.14.*",
+    "pydantic-settings==2.15.*",
+    "alembic==1.20.*",
+    "sqlalchemy[asyncio]==2.1.*",
+    "psycopg[binary]==3.3.*",
+    "httpx==0.28.*",
+    "loguru==0.7.*",
+    "python-jose[cryptography]==3.5.*",
+    "gevent==26.9.*",
+    "uuid-utils==1.*",
+    "boto3==1.43.*",
+    "python-multipart==0.0.32",
+    "bcrypt>=5.0.0",
+    "argon2-cffi>=25.1.0",
 ]
 
-[project.urls] # Optional: Links for PyPI
-Homepage = "https://github.com/s1r3m/week-eat-planner" # Example URL
-Repository = "https://github.com/s1r3m/week-eat-planner" # Example URL
+[project.urls]
+Homepage = "https://github.com/s1r3m/week-eat-planner"
+Repository = "https://github.com/s1r3m/week-eat-planner"
 
 [project.optional-dependencies]
 dev = [
-    "pytest==8.2.0",
-    "pytest-asyncio==0.25.0",
-    "pytest-cov==5.0.0",
-    "pytest-mock==3.14.0",
-    "ruff==0.14.*",
-    "mypy==1.13.0",
-    "types-ujson==5.10.0.20240515",
-    "freezegun>=1.5.5",
+    "pytest==9.1.*",
+    "pytest-asyncio==1.4.*",
+    "pytest-cov==7.1.*",
+    "pytest-mock==3.16.*",
+    "ruff==0.17.*",
+    "mypy==2.4.*",
+    "types-ujson==5.10.0.20250822",
+    "freezegun==1.5.*",
 ]
 
 # --- ENTRY POINT DEFINITION ---
@@ -72,7 +71,7 @@ exclude = [
 ]
 line-length = 120
 indent-width = 4
-target-version = "py311"
+target-version = "py314"
 
 [tool.ruff.format]
 quote-style = "single"
@@ -103,6 +102,7 @@ ignore = [
     'PT011',
     'B017',
     'PLR0913',
+    'PLR0917',
 ]
 
 fixable = ['ALL']
@@ -115,7 +115,7 @@ addopts = "--tb=short -vv --cache-clear"
 xfail_strict = true
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 plugins = "pydantic.mypy"
 
 exclude = [

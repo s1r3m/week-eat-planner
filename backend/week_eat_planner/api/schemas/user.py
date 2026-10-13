@@ -110,7 +110,7 @@ class UserChangePassword(BaseModel):
     new_password: str = Field(min_length=MIN_PASSWORD_LENGTH)
 
     @model_validator(mode='after')
-    def passwords_dont_match(self) -> 'UserChangePassword':
+    def passwords_dont_match(self) -> UserChangePassword:
         """Checks that new_password is not the same as old_password.
 
         Raises:

@@ -18,7 +18,7 @@ def loop():
 
 
 @pytest_asyncio.fixture
-async def manager() -> AsyncGenerator[HttpClientManager, None]:
+async def manager() -> AsyncGenerator[HttpClientManager]:
     manager = HttpClientManager()
 
     yield manager

@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Update and install packages.
 RUN apt-get update && apt-get install -y \
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Create venv.
-RUN pip install uv==0.6.13
+RUN pip install uv==0.12.23
 RUN uv venv venv
 
 # Add  wait-for-it.sh.
@@ -20,7 +20,7 @@ COPY backend/dist/*.whl .
 RUN uv pip install *.whl --no-cache-dir --python /app/venv/bin/python
 
 
-FROM python:3.11-slim AS final
+FROM python:3.14-slim AS final
 
 # Add a user to run the code.
 RUN groupadd --system app && useradd --system --gid app app

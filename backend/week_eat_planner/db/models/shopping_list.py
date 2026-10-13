@@ -31,4 +31,4 @@ class ShoppingList(Base):
     )
     items: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
 
-    week: Mapped['Week'] = relationship(back_populates='shopping_list')
+    week: Mapped[Week] = relationship(back_populates='shopping_list')

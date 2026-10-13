@@ -53,9 +53,9 @@ class User(Base):
     hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
 
-    weeks: Mapped[list['Week']] = relationship(back_populates='user', cascade='all, delete-orphan')
-    recipes: Mapped[list['Recipe']] = relationship(back_populates='user', cascade='all, delete-orphan')
-    favorites: Mapped[list['UserFavorite']] = relationship(back_populates='user', cascade='all, delete-orphan')
+    weeks: Mapped[list[Week]] = relationship(back_populates='user', cascade='all, delete-orphan')
+    recipes: Mapped[list[Recipe]] = relationship(back_populates='user', cascade='all, delete-orphan')
+    favorites: Mapped[list[UserFavorite]] = relationship(back_populates='user', cascade='all, delete-orphan')
 
 
 class RefreshToken(Base):
@@ -79,4 +79,4 @@ class RefreshToken(Base):
     revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
     replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
 
-    user: Mapped['User'] = relationship(lazy='selectin')
+    user: Mapped[User] = relationship(lazy='selectin')
