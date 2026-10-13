@@ -44,9 +44,9 @@
   }
 
   .btn--danger {
-    border-color: var(--error);
+    border-color: var(--danger);
     background-color: var(--bg);
-    color: var(--error);
+    color: var(--danger);
   }
 
   .btn--secondary {

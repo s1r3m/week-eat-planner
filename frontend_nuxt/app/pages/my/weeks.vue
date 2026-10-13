@@ -4,15 +4,15 @@
   import PageLoadingState from '@/common/ui/PageLoadingState.vue'
   import PageTitle from '@/common/ui/PageTitle.vue'
   import { useWeekCreateDialog } from '@/modules/weeks/composables/useWeekCreateDialog'
-  import { useWeeks } from '@/modules/weeks/composables/useWeeks'
   import WeekCreateDialog from '@/modules/weeks/ui/WeekCreateDialog.vue'
   import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
+  import { getWeeks } from '~/modules/weeks/api/weeksApi'
 
   definePageMeta({
     layout: 'app',
   })
 
-  const { data: weeks, error, refresh } = useWeeks()
+  const { data: weeks, error, refresh } = useQuery(getWeeks())
   const { open } = useWeekCreateDialog()
 </script>
 

@@ -3,18 +3,19 @@
 
   import BaseAlertDialog from '@/common/ui/BaseAlertDialog.vue'
   import BaseButton from '@/common/ui/BaseButton.vue'
-  import { useDeleteWeek } from '@/modules/weeks/composables/useDeleteWeek'
+  import { deleteWeekMutation } from '@/modules/weeks/api/weeksApi'
   import { useWeekDeleteDialog } from '@/modules/weeks/composables/useWeekDeleteDialog'
 
   const { close, isOpen, week } = useWeekDeleteDialog()
-  const { mutate: remove, isLoading } = useDeleteWeek()
+  const { mutate: remove, isLoading } = deleteWeekMutation()
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!week.value) return
 
     remove(week.value.id)
     close()
-    navigateTo({ name: 'my-weeks' })
+
+    await navigateTo({ name: 'my-weeks' })
   }
 </script>
 
@@ -23,7 +24,6 @@
     v-model="isOpen"
     title="Delete week"
     :description="`Are you sure you want to delete ${week?.name}?`"
-    title-hidden
   >
     <AlertDialogCancel as-child>
       <BaseButton variant="secondary">No</BaseButton>

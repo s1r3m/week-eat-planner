@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useAuthApi } from '@/modules/auth/api/authApi'
+import { logoutMutation } from '@/modules/auth/api/authApi'
 
+import { withAppContext } from '../helpers/context'
 import { stubGlobals } from '../helpers/globals'
 
 const api = vi.fn()
@@ -13,11 +14,11 @@ beforeEach(() => {
   })
 })
 
-describe('useAuthApi.logout', () => {
+describe('logoutMutation', () => {
   it('posts to the logout endpoint and returns the response', async () => {
     api.mockResolvedValue(null)
 
-    expect(await useAuthApi().logout()).toBeNull()
+    expect(await withAppContext(logoutMutation).mutateAsync()).toBeNull()
     expect(api).toHaveBeenCalledTimes(1)
     expect(api).toHaveBeenCalledWith('/auth/logout', { method: 'POST' })
   })
@@ -26,7 +27,9 @@ describe('useAuthApi.logout', () => {
     const error = new Error('Network error')
     api.mockRejectedValue(error)
 
-    await expect(useAuthApi().logout()).rejects.toBe(error)
+    await expect(withAppContext(logoutMutation).mutateAsync()).rejects.toBe(
+      error,
+    )
     expect(api).toHaveBeenCalledTimes(1)
   })
 })

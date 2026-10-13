@@ -35,10 +35,8 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: [
-        'app/**/composables/**/*.ts',
-        'app/modules/auth/utils/formError.ts',
-      ],
+      include: ['app/**/*.{ts,vue}'],
+      exclude: ['app/**/types/**'],
       reporter: ['text', 'html', 'lcov', 'json'],
       thresholds: {
         perFile: true,

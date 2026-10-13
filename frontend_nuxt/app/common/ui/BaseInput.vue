@@ -1,21 +1,21 @@
 <script setup lang="ts">
-  type InputType = 'password' | 'text'
+  type InputType = 'number' | 'password' | 'text'
 
-  const {
-    autocomplete = 'off',
-    id = useId(),
-    placeholder = '',
-    type = 'text',
-  } = defineProps<{
-    autocomplete?: string
-    error?: string
-    id?: string
-    label: string
-    placeholder?: string
-    type?: InputType
-  }>()
+  const props = withDefaults(
+    defineProps<{
+      autocomplete?: string
+      error?: string
+      id?: string
+      label: string
+      min?: number
+      placeholder?: string
+      type?: InputType
+    }>(),
+    { autocomplete: 'off', placeholder: '', type: 'text' },
+  )
 
-  const model = defineModel<string>({ default: '' })
+  const model = defineModel<number | string>({ default: '' })
+  const id = props.id ?? useId()
 </script>
 
 <template>
@@ -37,6 +37,7 @@
         :type="type"
         :autocomplete="autocomplete"
         :placeholder="placeholder"
+        :min="min"
       />
 
       <slot name="icon-right"></slot>
@@ -91,10 +92,10 @@
   }
 
   .base-input__error {
-    color: var(--error);
+    color: var(--danger);
   }
 
   .base-input__wrapper:has(+ .base-input__error) {
-    border-color: var(--error);
+    border-color: var(--danger);
   }
 </style>

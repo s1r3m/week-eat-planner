@@ -2,8 +2,7 @@
   import { DropdownMenuItem } from 'reka-ui'
 
   import BaseDropdown from '@/common/ui/BaseDropdown.vue'
-  import { useCurrentUser } from '@/modules/auth/composables/useCurrentUser'
-  import { useLogout } from '@/modules/auth/composables/useLogout'
+  import { getUser, logoutMutation } from '@/modules/auth/api/authApi'
 
   defineProps<{
     collapsed?: boolean
@@ -13,8 +12,8 @@
     navigate: []
   }>()
 
-  const { data: user } = useCurrentUser()
-  const { isLoading, mutateAsync: logout } = useLogout()
+  const { data: user } = getUser()
+  const { isLoading, mutateAsync: logout } = logoutMutation()
 
   const onLogout = async () => {
     try {
@@ -30,14 +29,16 @@
 <template>
   <BaseDropdown>
     <template #trigger>
-      <div class="user-info">
+      <div
+        v-if="user"
+        class="user-info"
+      >
         <Icon
           name="lucide:circle-user"
           :size="24"
         />
 
         <p
-          v-if="user?.username"
           class="user-info__name"
           :class="{ 'user-info__name--collapsed': collapsed }"
         >

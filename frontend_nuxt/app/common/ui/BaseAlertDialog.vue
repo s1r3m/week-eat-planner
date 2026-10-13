@@ -25,10 +25,17 @@
 
         <AlertDialogContent class="alert-dialog__content">
           <VisuallyHidden v-if="titleHidden">
-            <AlertDialogTitle>{{ title }}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {{ title }}
+            </AlertDialogTitle>
           </VisuallyHidden>
 
-          <AlertDialogTitle v-else>{{ title }}</AlertDialogTitle>
+          <AlertDialogTitle
+            v-else
+            class="alert-dialog__title"
+          >
+            {{ title }}
+          </AlertDialogTitle>
 
           <AlertDialogDescription class="alert-dialog__description">
             {{ description }}

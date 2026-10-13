@@ -1,8 +1,16 @@
-import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+import {
+  defineMutation,
+  defineQuery,
+  defineQueryOptions,
+  useMutation,
+  useQuery,
+  useQueryCache,
+} from '@pinia/colada'
 import { afterEach, beforeEach, vi } from 'vitest'
 import {
   computed,
   onMounted,
+  onServerPrefetch,
   onUnmounted,
   readonly,
   ref,
@@ -13,10 +21,19 @@ import {
 
 import { createNuxtState } from './helpers/nuxtState'
 
+// Query factories are evaluated when modules are imported, before test hooks run.
+vi.stubGlobal('defineQuery', defineQuery)
+vi.stubGlobal('defineQueryOptions', defineQueryOptions)
+vi.stubGlobal('defineMutation', defineMutation)
+
 beforeEach(() => {
   const globals = {
+    defineQuery,
+    defineQueryOptions,
+    defineMutation,
     computed,
     onMounted,
+    onServerPrefetch,
     onUnmounted,
     readonly,
     ref,

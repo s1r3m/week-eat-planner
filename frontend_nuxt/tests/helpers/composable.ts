@@ -48,6 +48,7 @@ export function mountComposable<T>(
           ],
         ],
         stubs: options.stubs,
+        mocks: { navigateTo },
       },
     },
   )

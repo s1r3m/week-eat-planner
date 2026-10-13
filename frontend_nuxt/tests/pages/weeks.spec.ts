@@ -5,7 +5,7 @@ import { h, nextTick } from 'vue'
 import PageEmptyState from '@/common/ui/PageEmptyState.vue'
 import PageErrorState from '@/common/ui/PageErrorState.vue'
 import PageLoadingState from '@/common/ui/PageLoadingState.vue'
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import { getWeeks } from '@/modules/weeks/api/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
 import WeeksPage from '@/pages/my/weeks.vue'
@@ -21,7 +21,7 @@ beforeEach(() => {
 })
 
 function setup() {
-  return mountComposable(useWeeks, {
+  return mountComposable(() => useQuery(getWeeks()), {
     render: () => h(WeeksPage),
     stubs: { ...uiStubs, WeekCreateDialog: true },
   })

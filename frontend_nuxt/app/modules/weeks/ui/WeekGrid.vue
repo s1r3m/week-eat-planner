@@ -30,7 +30,7 @@
 <style scoped>
   .week-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
     gap: var(--space-4);
     margin: var(--space-2) 0;
   }

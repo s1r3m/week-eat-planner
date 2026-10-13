@@ -26,3 +26,6 @@ wep_db.bck.sql
 
 # Other tests
 **/.hypothesis
+
+CLAUDE.md
+AGENTS.md

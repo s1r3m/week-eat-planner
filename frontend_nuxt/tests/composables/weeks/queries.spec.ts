@@ -1,13 +1,15 @@
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, expect, it, vi } from 'vitest'
 
-import { useWeek } from '@/modules/weeks/composables/useWeek'
-import { useWeeks } from '@/modules/weeks/composables/useWeeks'
+import { getWeekQuery } from '@/modules/weeks/api/weeksApi'
+import { getWeeks } from '@/modules/weeks/api/weeksApi'
 import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../../helpers/composable'
 import { week } from '../../helpers/fixtures'
 
+const detailQuery = () => useQuery(getWeekQuery('one'))
+const listQuery = () => useQuery(getWeeks())
 const api = vi.fn()
 beforeEach(() => {
   api.mockReset()
@@ -17,7 +19,7 @@ beforeEach(() => {
 it('shares a list request and retains populated or empty data while refetching', async () => {
   const first = Promise.withResolvers<ReturnType<typeof week>[]>()
   api.mockReturnValueOnce(first.promise)
-  const { result, cache } = mountComposable(() => [useWeeks(), useWeeks()])
+  const { result, cache } = mountComposable(() => [listQuery(), listQuery()])
   const query = result[0]!
   expect(query.data.value).toBeUndefined()
   expect(query.isLoading.value).toBe(true)
@@ -42,8 +44,8 @@ it('shares a list request and retains populated or empty data while refetching',
 it('uses separate detail cache entries for each week', async () => {
   api.mockImplementation(async (path: string) => week(path.split('/').at(-1)))
   const { result, cache } = mountComposable(() => [
-    useWeek('one'),
-    useWeek('two'),
+    useQuery(getWeekQuery('one')),
+    useQuery(getWeekQuery('two')),
   ])
   await flushPromises()
   expect(api).toHaveBeenCalledWith('/weeks/one')
@@ -53,15 +55,15 @@ it('uses separate detail cache entries for each week', async () => {
 })
 
 it.each([
-  ['list', () => useWeeks()],
-  ['detail', () => useWeek('one')],
+  ['list', listQuery],
+  ['detail', () => useQuery(getWeekQuery('one'))],
 ] as const)(
   'propagates %s query errors on explicit refetch',
   async (_name, setup) => {
     const error = new Error('offline')
     api.mockRejectedValue(error)
     const { result } = mountComposable<
-      ReturnType<typeof useWeek> | ReturnType<typeof useWeeks>
+      ReturnType<typeof detailQuery> | ReturnType<typeof listQuery>
     >(setup)
     await flushPromises()
     expect(result.error.value).toBe(error)

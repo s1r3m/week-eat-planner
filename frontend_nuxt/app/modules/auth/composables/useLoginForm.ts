@@ -1,13 +1,13 @@
 import type { LoginForm } from '@/modules/auth/schemas/login'
 import type { LoginPayload } from '@/modules/auth/types'
 
-import { useLogin } from '@/modules/auth/composables/useLogin'
+import { loginMutation } from '@/modules/auth/api/authApi'
 import { useLoginValidation } from '@/modules/auth/schemas/login'
 import { getFormErrorMessage } from '@/modules/auth/utils/formError'
 
 export const useLoginForm = () => {
   const { email, errors, handleSubmit, meta, password } = useLoginValidation()
-  const { isLoading, mutateAsync: loginRequest } = useLogin()
+  const { isLoading, mutateAsync: loginRequest } = loginMutation()
 
   const serverError = ref<null | string>(null)
 

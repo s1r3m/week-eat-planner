@@ -42,7 +42,7 @@
   }
 
   .error-state__title {
-    color: var(--error);
+    color: var(--danger);
     font-size: var(--text-24);
   }
 

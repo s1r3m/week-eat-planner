@@ -18,14 +18,16 @@
   <div class="page-container">
     <PageTitle name="My Recipes">
       <template #controls>
-        <BaseButton aria-label="Create recipe">
-          <Icon
-            name="lucide:plus"
-            :size="24"
-          />
+        <NuxtLink :to="{ name: 'recipes-create' }">
+          <BaseButton aria-label="Create recipe">
+            <Icon
+              name="lucide:plus"
+              :size="24"
+            />
 
-          <span class="page-title__button-label">Create recipe</span>
-        </BaseButton>
+            <span class="page-title__button-label">Create recipe</span>
+          </BaseButton>
+        </NuxtLink>
       </template>
     </PageTitle>
 
