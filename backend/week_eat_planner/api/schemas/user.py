@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from week_eat_planner.api.schemas.common import RecordId
@@ -14,16 +16,18 @@ class Email(BaseModel):
     email: EmailStr
 
 
-class UserCreate(Email):
+class UserLogin(Email):
+    password: Annotated[str, Field(min_length=MIN_PASSWORD_LENGTH)]
+
+
+class UserCreate(UserLogin):
     """Schema for creating a new user.
 
     Attributes:
-        password: The user's plain-text password.
         username: The user's chosen display name.
     """
 
-    password: str = Field(min_length=MIN_PASSWORD_LENGTH)
-    username: str = Field(min_length=1)
+    username: Annotated[str, Field(min_length=1)]
 
 
 class UserRead(Email, RecordId):

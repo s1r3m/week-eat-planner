@@ -30,7 +30,7 @@ services:
       - JWT_ISSUER=wep-auth
       - JWT_AUDIENCE=wep-api
       - ACCESS_TOKEN_TTL=900
-      - REFRESH_TOKEN_TTL=30
+      - SESSION_TTL_DAYS=30
       - ROTATE_TOKEN_EXPIRE_DELTA=15
       - ADMIN_IDS=[193191236]
       - BOT_TOKEN=your_bot_token

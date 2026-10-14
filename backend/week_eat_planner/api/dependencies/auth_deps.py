@@ -1,27 +1,37 @@
 """Authentication dependencies for FastAPI endpoints."""
 
-from uuid import UUID
+from typing import Annotated
 
-from fastapi import Request
+from fastapi import Depends, Request
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME
-from week_eat_planner.exceptions import NoAccessTokenException
-from week_eat_planner.security.token_provider import get_user_id_from_token
-
-
-async def get_active_user_id(request: Request) -> UUID:
-    access_token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
-    if not access_token:
-        raise NoAccessTokenException()
-
-    user_id = get_user_id_from_token(access_token)
-    return user_id
+from week_eat_planner.constants import SESSION_COOIKE_NAME
+from week_eat_planner.db.models import Session, User
+from week_eat_planner.db.session_maker import db
+from week_eat_planner.exceptions import NoSessionTokenException, UserNotFoundException
+from week_eat_planner.services.session_service import SessionService
 
 
-async def get_optional_user_id(request: Request) -> UUID | None:
-    access_token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
-    if not access_token:
+async def get_current_auth_session(
+    request: Request,
+    session: Annotated[AsyncSession, Depends(db.get_db)],
+) -> Session | None:
+    session_token = request.cookies.get(SESSION_COOIKE_NAME)
+    if not session_token:
         return None
 
-    user_id = get_user_id_from_token(access_token)
-    return user_id
+    auth_session = await SessionService(session).get_sesion_by_token(session_token)
+    return auth_session
+
+
+async def get_current_active_user(
+    auth_session: Annotated[Session, Depends(get_current_auth_session)],
+) -> User:
+    if not auth_session:
+        raise NoSessionTokenException()
+
+    user = auth_session.user
+    if not user.is_active:
+        raise UserNotFoundException(user_id=user.id)
+
+    return user

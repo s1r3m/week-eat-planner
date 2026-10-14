@@ -16,7 +16,7 @@ from week_eat_planner.db.dao import RefreshTokenDAO
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
     InvalidEmailException,
-    NoAccessTokenException,
+    NoSessionTokenException,
     OAuthAccountException,
     OAuthInvalidCodeException,
     OAuthProviderException,
@@ -31,7 +31,7 @@ from week_eat_planner.exceptions import (
 @pytest_asyncio.fixture
 async def expired_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
     db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFilter(user_id=created_user.id))
-    new_expires_at = datetime.now(UTC) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
+    new_expires_at = datetime.now(UTC) - timedelta(days=settings.SESSION_TTL_DAYS + 1)
     token = RefreshTokenFilter.model_validate(db_token)
     await RefreshTokenDAO(db_session).update(token, TokenUpdate(expires_at=new_expires_at))
     await db_session.flush()
@@ -158,7 +158,7 @@ async def test_refresh_token__refresh_token_far_from_expire__new_token_in_cookie
 async def test_refresh_token__refresh_token_about_to_expire__new_token_in_cookies(auth_client_for_created_user):
     old_token = auth_client_for_created_user.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
     time_in_future = datetime.now(UTC) + timedelta(
-        days=settings.REFRESH_TOKEN_TTL, minutes=-settings.ROTATE_TOKEN_EXPIRE_DELTA + 1
+        days=settings.SESSION_TTL_DAYS, minutes=-settings.ROTATE_TOKEN_EXPIRE_DELTA + 1
     )
 
     with freeze_time(time_in_future):
@@ -202,7 +202,7 @@ async def test_logout__no_cookie_in_request__error_raised(auth_client_for_create
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 

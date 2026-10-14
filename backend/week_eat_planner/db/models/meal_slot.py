@@ -47,6 +47,7 @@ class MealSlot(Base):
     """
 
     __tablename__ = 'meal_slots'
+    __table_args__ = (UniqueConstraint('week_id', 'day_of_week', 'meal_type', name='_week_day_meal_uc'),)
 
     week_id: Mapped[UUID] = mapped_column(ForeignKey('weeks.id', ondelete='CASCADE'), nullable=False, index=True)
     day_of_week: Mapped[DayOfWeek] = mapped_column(nullable=False)
@@ -57,5 +58,3 @@ class MealSlot(Base):
 
     week: Mapped[Week] = relationship(back_populates='meal_slots', lazy='selectin')
     recipe: Mapped[Recipe | None] = relationship(back_populates='meal_slots', lazy='selectin', foreign_keys=[recipe_id])
-
-    __table_args__ = (UniqueConstraint('week_id', 'day_of_week', 'meal_type', name='_week_day_meal_uc'),)

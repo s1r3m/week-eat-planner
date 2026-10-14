@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
-from week_eat_planner.db.models.meal_slot import MealSlot
+from week_eat_planner.db.models import MealSlot
 
 if TYPE_CHECKING:
     from .user import User

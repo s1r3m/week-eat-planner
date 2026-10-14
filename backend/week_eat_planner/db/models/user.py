@@ -1,8 +1,6 @@
-from datetime import datetime
 from typing import TYPE_CHECKING
-from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
@@ -52,31 +50,8 @@ class User(Base):
     oauth_id: Mapped[str | None] = mapped_column(nullable=True)
     hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
+    is_email_verified: Mapped[bool] = mapped_column(default=False)
 
     weeks: Mapped[list[Week]] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list[Recipe]] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list[UserFavorite]] = relationship(back_populates='user', cascade='all, delete-orphan')
-
-
-class RefreshToken(Base):
-    """Represents a JWT refresh token stored in the database.
-
-    Attributes:
-        id: The unique identifier for the token.
-        token_hash: The hashed value of the refresh token.
-        user_id: The ID of the user who owns this token.
-        expires_at: The timestamp when the token expires.
-        revoked: A flag indicating if the token has been revoked.
-        replaced_by: The ID of the token that replaced this one during rotation.
-        user: The SQLAlchemy relationship to the owner of this token.
-    """
-
-    __tablename__ = 'refresh_tokens'
-
-    token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
-    replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
-
-    user: Mapped[User] = relationship(lazy='selectin')

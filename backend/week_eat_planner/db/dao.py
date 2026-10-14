@@ -1,9 +1,7 @@
 """Data Access Objects for database operations."""
 
 from week_eat_planner.db.base import BaseDAO
-from week_eat_planner.db.models import MealSlot, Recipe, RefreshToken, User, Week
-from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.db.models.user_favorites import UserFavorite
+from week_eat_planner.db.models import MealSlot, Recipe, Session, ShoppingList, User, UserFavorite, Week
 
 
 class MealSlotDAO(BaseDAO[MealSlot]):
@@ -15,6 +13,12 @@ class MealSlotDAO(BaseDAO[MealSlot]):
     model = MealSlot
 
 
+class SessionDAO(BaseDAO[Session]):
+    """Data Access Object for managing user auth sessions in db."""
+
+    model = Session
+
+
 class RecipeDAO(BaseDAO[Recipe]):
     """Data Access Object for managing 'Recipe' records in the database.
 
@@ -22,15 +26,6 @@ class RecipeDAO(BaseDAO[Recipe]):
     """
 
     model = Recipe
-
-
-class RefreshTokenDAO(BaseDAO[RefreshToken]):
-    """Data Access Object for managing 'RefreshToken' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for refresh tokens.
-    """
-
-    model = RefreshToken
 
 
 class ShoppingListDAO(BaseDAO[ShoppingList]):

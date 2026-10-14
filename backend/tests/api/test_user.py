@@ -3,7 +3,7 @@ from fastapi import status
 
 from tests.constants import PASSWORD
 from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, REFRESH_TOKEN_COOKIE_NAME
-from week_eat_planner.exceptions import NoAccessTokenException
+from week_eat_planner.exceptions import NoSessionTokenException
 
 NEW_PASSWORD = 'new_password'
 
@@ -26,7 +26,7 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
 async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
     response = await logout_client_for_created_user.get(AppUrl.USER)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -60,7 +60,7 @@ async def test_update_user__empty_payload__422_returned(auth_client_for_created_
 async def test_update_user__no_auth__401_returned(client):
     response = await client.patch(AppUrl.USER, json={'username': 'new_username'})
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 

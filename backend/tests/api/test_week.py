@@ -4,16 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.api.conftest import WEEK_1_NAME
 from tests.test_security import PASSWORD
-from week_eat_planner.api.schemas import WeekCreate, WeekReadMinimal
-from week_eat_planner.api.schemas.meal_slot import MealSlotAssign
-from week_eat_planner.api.schemas.week import WeekRead
+from week_eat_planner.api.schemas import MealSlotAssign, WeekCreate, WeekRead, WeekReadMinimal
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.models.recipe import Recipe
-from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import Recipe, ShoppingList, Week
 from week_eat_planner.exceptions import (
     MealSlotAssignException,
-    NoAccessTokenException,
+    NoSessionTokenException,
     WeekForbiddenException,
     WeekNotFoundException,
 )
@@ -65,7 +61,7 @@ async def test_get_weeks__week_exists__week_in_response(auth_client_for_created_
 async def test_get_weeks__no_auth__error_in_response(client):
     response = await client.get(AppUrl.WEEKS)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -115,7 +111,7 @@ async def test_update_week__new_name__week_in_response(auth_client_for_created_u
 async def test_update_week__no_auth__error_in_response(client, created_week):
     response = await client.patch(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}', json={'name': 'new_name'})
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -136,7 +132,7 @@ async def test_update_week__user_without_week__error_in_response(auth_client_for
 async def test_delete_week__no_auth__error_in_response(client, created_week):
     response = await client.delete(f'{AppUrl.WEEKS_TPL.format(week_id=created_week.id)}')
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 

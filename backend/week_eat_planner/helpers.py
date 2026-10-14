@@ -6,14 +6,7 @@ from fastapi import Response, UploadFile
 from uuid_utils import uuid7
 
 from week_eat_planner.config import settings
-from week_eat_planner.constants import (
-    ACCESS_TOKEN_COOKIE_NAME,
-    ACCESS_TOKEN_COOKIE_PATH,
-    ALLOWED_IMAGE_TYPES,
-    MAX_IMAGE_SIZE_BYTES,
-    REFRESH_TOKEN_COOKIE_NAME,
-    REFRESH_TOKEN_COOKIE_PATH,
-)
+from week_eat_planner.constants import ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import (
     ImageContentTypeMissingException,
     ImageTooLargeException,
@@ -59,37 +52,13 @@ async def check_image_suitable(image: UploadFile) -> None:
     await image.seek(0)
 
 
-def set_refresh_cookie(response: Response, refresh_token: str) -> None:
-    """Set the refresh token as an HTTP-only cookie.
-
-    Args:
-        response: The FastAPI response object to set the cookie on.
-        refresh_token: The refresh token value to store in the cookie.
-    """
+def set_session_cookie(response: Response, token: str) -> None:
     response.set_cookie(
-        key=REFRESH_TOKEN_COOKIE_NAME,
-        value=refresh_token,
+        key=SESSION_COOIKE_NAME,
+        value=token,
         httponly=True,
-        secure=not settings.IS_DEBUG,
-        samesite='lax' if settings.IS_DEBUG else 'strict',
-        max_age=settings.REFRESH_TOKEN_TTL * 24 * 60 * 60,
-        path=REFRESH_TOKEN_COOKIE_PATH,
-    )
-
-
-def set_access_cookies(response: Response, access_token: str) -> None:
-    """Set the access token as an HTTP-only cookie.
-
-    Args:
-        response: The FastAPI response object to set the cookie on.
-        access_token: The access token value to store in the cookie.
-    """
-    response.set_cookie(
-        key=ACCESS_TOKEN_COOKIE_NAME,
-        value=access_token,
-        httponly=True,
-        secure=not settings.IS_DEBUG,
-        samesite='lax' if settings.IS_DEBUG else 'strict',
-        max_age=settings.ACCESS_TOKEN_TTL * 60,
-        path=ACCESS_TOKEN_COOKIE_PATH,
+        secure=True,
+        samesite='lax',
+        max_age=settings.SESSION_TTL_DAYS * 24 * 60 * 60,
+        path='/',
     )

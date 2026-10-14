@@ -87,7 +87,7 @@ def other_user_recipe() -> Recipe:
 
 async def test_create_week__name__week_created(mocked_week_dao, mocked_session, user_read, db_week):
     mocked_week_dao.add.return_value = db_week
-    week = await WeekService(mocked_session).create_week_with_slots(user_read.id, WeekCreate(name=WEEK_1_NAME))
+    week = await WeekService(mocked_session).create_week_with_slots(user_read, WeekCreate(name=WEEK_1_NAME))
     assert week == db_week
 
 
@@ -95,7 +95,7 @@ async def test_get_visible_week__week_with_auth__week_returned(mocked_week_dao, 
     str_week_id = str(db_week.id)
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
-    week = await WeekService(mocked_session).get_visible_week(str_week_id, user_read.id)
+    week = await WeekService(mocked_session).get_visible_week(str_week_id, user_read)
 
     assert week == db_week
     mocked_week_dao.find_one_or_none_by_id.assert_awaited_once_with(db_week.id, for_update=False)
@@ -106,7 +106,7 @@ async def test_get_visible_week__no_week__error_raised(mocked_week_dao, mocked_s
     mocked_week_dao.find_one_or_none_by_id.return_value = None
 
     with pytest.raises(WeekNotFoundException) as exc:
-        await WeekService(mocked_session).get_visible_week(str_week_id, user_read.id)
+        await WeekService(mocked_session).get_visible_week(str_week_id, user_read)
 
     error = WeekNotFoundException(str_week_id)
     assert exc.value.status_code == error.status_code
@@ -119,7 +119,7 @@ async def test_get_visible_week__week_not_owned__error_raised(mocked_week_dao, m
     mocked_week_dao.find_one_or_none_by_id.return_value = db_week
 
     with pytest.raises(WeekForbiddenException) as exc:
-        await WeekService(mocked_session).get_visible_week(str_week_id, user_read_2.id)
+        await WeekService(mocked_session).get_visible_week(str_week_id, user_read_2)
 
     error = WeekForbiddenException(db_week.id)
     assert exc.value.status_code == error.status_code
@@ -131,7 +131,7 @@ async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_
     bad_uuid = 'not_uuid'
 
     with pytest.raises(WeekNotFoundException) as exc:
-        await WeekService(mocked_session).get_visible_week(bad_uuid, user_read.id)
+        await WeekService(mocked_session).get_visible_week(bad_uuid, user_read)
 
     error = WeekNotFoundException(bad_uuid)
     assert exc.value.status_code == error.status_code
@@ -141,13 +141,13 @@ async def test_get_visible_week__not_uuid__error_raised(mocked_week_dao, mocked_
 
 async def test_get_weeks__user_no_weeks__empty_list_returned(mocked_week_dao, mocked_session, user_read):
     mocked_week_dao.find_all.return_value = []
-    weeks = await WeekService(mocked_session).get_weeks(user_read.id)
+    weeks = await WeekService(mocked_session).get_weeks(user_read)
     assert weeks == []
 
 
 async def test_get_weeks__user_with_weeks__weeks_returned(mocked_week_dao, mocked_session, user_read, db_week):
     mocked_week_dao.find_all.return_value = [db_week]
-    weeks = await WeekService(mocked_session).get_weeks(user_read.id)
+    weeks = await WeekService(mocked_session).get_weeks(user_read)
     assert weeks == [db_week]
 
 

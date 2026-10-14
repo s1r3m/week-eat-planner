@@ -33,10 +33,7 @@ class AppUrl(StrEnum):
     USER_PASSWORD = '/user/password'
 
 
-ACCESS_TOKEN_COOKIE_NAME = 'access_token'
-ACCESS_TOKEN_COOKIE_PATH = '/'
-REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
-REFRESH_TOKEN_COOKIE_PATH = '/'
+SESSION_COOIKE_NAME = 'wep_session'
 
 
 class StorageBucket(StrEnum):

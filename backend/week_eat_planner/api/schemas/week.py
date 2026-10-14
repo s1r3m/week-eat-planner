@@ -4,8 +4,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
-from week_eat_planner.db.models.meal_slot import DayOfWeek
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import DayOfWeek, Week
 
 
 class WeekBase(BaseModel):

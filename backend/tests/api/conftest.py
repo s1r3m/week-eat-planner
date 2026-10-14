@@ -25,8 +25,8 @@ from week_eat_planner.api.schemas import (
     WeekCreate,
 )
 from week_eat_planner.constants import AppUrl, StorageBucket
-from week_eat_planner.db.models.recipe import Recipe
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import Recipe, Week
+from week_eat_planner.db.models.user import User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
 from week_eat_planner.services.auth_service import AuthService
@@ -96,8 +96,8 @@ async def logout_client_for_created_user(auth_client_factory: Callable, created_
 
 @pytest.fixture
 def created_week_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user: UserRead, week_data: WeekCreate) -> Week:
-        week = await WeekService(db_session).create_week_with_slots(user.id, week_data)
+    async def _factory(user: User, week_data: WeekCreate) -> Week:
+        week = await WeekService(db_session).create_week_with_slots(user, week_data)
         await db_session.flush()
         return week
 
@@ -116,8 +116,8 @@ def user_factory(db_session: AsyncSession) -> Callable:
 
 @pytest.fixture
 def created_recipe_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user: UserRead, recipe_data: RecipeCreate) -> Recipe:
-        recipe = await RecipeService(db_session).create_recipe(recipe_data, user.id)
+    async def _factory(user: User, recipe_data: RecipeCreate) -> Recipe:
+        recipe = await RecipeService(db_session).create_recipe(recipe_data, user)
         await db_session.flush()
         return recipe
 

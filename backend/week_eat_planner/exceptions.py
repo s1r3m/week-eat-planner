@@ -51,7 +51,7 @@ class WeekNotFoundException(NotFoundException):
 
 
 # Bad JWT exceptions.
-class TokenException(HTTPException):
+class SessionException(HTTPException):
     """Base exception for authentication token-related errors.
 
     Args:
@@ -62,53 +62,41 @@ class TokenException(HTTPException):
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
-class InvalidJwtTokenException(TokenException):
+class InvalidJwtTokenException(SessionException):
     """Exception raised when a JWT token is invalid."""
 
     def __init__(self) -> None:
         super().__init__(detail='Invalid JWT token')
 
 
-class RefreshTokenRevokedException(TokenException):
+class RefreshTokenRevokedException(SessionException):
     """Exception raised when a refresh token has been revoked."""
 
     def __init__(self) -> None:
         super().__init__(detail='Refresh token revoked')
 
 
-class NoSubInTokenException(TokenException):
+class NoSubInTokenException(SessionException):
     """Exception raised when a JWT token does not contain a 'sub' (user_id) claim."""
 
     def __init__(self) -> None:
         super().__init__(detail='No sub in JWT token')
 
 
-class RefreshTokenMissingException(TokenException):
-    """Exception raised when a refresh token is missing from the request."""
+class SessionNotFoundException(SessionException):
+    """Exception raised when a session token is not found in the database."""
 
     def __init__(self) -> None:
-        super().__init__(detail='Refresh Token missing')
+        super().__init__(detail='Session not found')
 
 
-class RefreshTokenNotFoundException(TokenException):
-    """Exception raised when a refresh token is not found in the database."""
+class SessionExpiredException(SessionException):
+    """Exception raised when a session token has expired."""
 
-    def __init__(self) -> None:
-        super().__init__(detail='Token not found')
-
-
-class TokenExpiredException(TokenException):
-    """Exception raised when an authentication token has expired."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='Token expired')
-
-
-class TokenRevokedException(TokenException):
-    """Exception raised when an authentication token has been revoked."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='Token revoked')
+    def __init__(
+        self,
+    ) -> None:
+        super().__init__(detail='Session expired')
 
 
 # Logic exceptions.
@@ -200,13 +188,6 @@ class MealSlotForbiddenException(AccessForbiddenException):
         super().__init__(detail=f'Meal slot {meal_slot_id} forbidden')
 
 
-class TokenForbidden(AccessForbiddenException):
-    """Exception raised when a token is forbidden."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='Token forbidden')
-
-
 # Validation Exceptions.
 class ValidationException(HTTPException):
     """Base exception for data validation errors.
@@ -291,9 +272,9 @@ class InvalidCredentialsException(HTTPException):
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
 
 
-class NoAccessTokenException(HTTPException):
+class NoSessionTokenException(HTTPException):
     def __init__(self) -> None:
-        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='No access token in request')
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail='No session token in request')
 
 
 class OAuthAccountException(LogicException):

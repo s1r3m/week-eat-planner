@@ -15,7 +15,7 @@ JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'wep-auth'
 JWT_AUDIENCE = 'wep-api'
 ACCESS_TOKEN_TTL = 15
-REFRESH_TOKEN_TTL = 900
+SESSION_TTL_DAYS = 3
 ADMIN_IDS = [1]
 BOT_TOKEN = 'dummy_token'
 TG_API_SITE = 'http://api.telegram.org'
@@ -37,8 +37,7 @@ def mocked_settings(mocker):
     mocker.patch.object(settings, 'JWT_ALGORITHM', JWT_ALGORITHM)
     mocker.patch.object(settings, 'JWT_ISSUER', JWT_ISSUER)
     mocker.patch.object(settings, 'JWT_AUDIENCE', JWT_AUDIENCE)
-    mocker.patch.object(settings, 'ACCESS_TOKEN_TTL', ACCESS_TOKEN_TTL)
-    mocker.patch.object(settings, 'REFRESH_TOKEN_TTL', REFRESH_TOKEN_TTL)
+    mocker.patch.object(settings, 'SESSION_TTL_DAYS', SESSION_TTL_DAYS)
     mocker.patch.object(settings, 'ADMIN_IDS', ADMIN_IDS)
     mocker.patch.object(settings, 'BOT_TOKEN', BOT_TOKEN)
     mocker.patch.object(settings, 'TG_API_SITE', TG_API_SITE)

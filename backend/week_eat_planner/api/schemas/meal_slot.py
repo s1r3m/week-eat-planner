@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict
 
 from week_eat_planner.api.schemas.common import RecordId
-from week_eat_planner.db.models.meal_slot import DayOfWeek, MealType
+from week_eat_planner.db.models import DayOfWeek, MealType
 
 if TYPE_CHECKING:
     from .recipe import RecipeReadMinimal

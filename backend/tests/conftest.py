@@ -18,11 +18,8 @@ from tests.constants import (
     WEEK_1_NAME,
 )
 from week_eat_planner.api.schemas import UserRead, WeekRead
-from week_eat_planner.db.models import Recipe, User
-from week_eat_planner.db.models.meal_slot import DayOfWeek, MealSlot, MealType
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Recipe, User, Week
 from week_eat_planner.helpers import generate_uuid7
-from week_eat_planner.security.token_provider import TokenProvider
 
 
 @pytest_asyncio.fixture
@@ -31,11 +28,6 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
     mock_session.__aenter__.return_value = mock_session
     mock_session.__aexit__.return_value = None
     return mock_session
-
-
-@pytest.fixture
-def encoded_token() -> str:
-    return TokenProvider.create_access_token(USER_ID)
 
 
 @pytest.fixture

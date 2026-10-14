@@ -12,7 +12,7 @@ A menu planner for a week. Get a shopping list in one click.
 
 ## Prerequisites
 
-- Python 3.11
+- Python 3.14
 - [uv](https://github.com/astral-sh/uv)
 - Docker
 - Node.js 24 and Bun 1.3.14
@@ -21,6 +21,7 @@ A menu planner for a week. Get a shopping list in one click.
 ## Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/yourusername/week-eat-planner.git
     cd week-eat-planner/
@@ -36,52 +37,31 @@ A menu planner for a week. Get a shopping list in one click.
 
 The `Makefile` contains all the necessary commands to run and manage the application.
 
--   **`make install`**: Installs backend dependencies.
--   **`make fe_install`**: Installs frontend dependencies and prepares Nuxt.
--   **`make start`**: Starts the backend and its services.
--   **`make fe_start`**: Starts the Nuxt frontend on port 3000.
--   **`make stop`**: Stops the application and its services.
--   **`make lint`**: Runs the linters to check the code for style and errors.
--   **`make fe_lint`**: Checks frontend code, styles, and formatting without fixing files.
--   **`make fe_style`**: Formats frontend files and applies automatic lint fixes.
--   **`make be_test`**: Runs the backend unit tests.
--   **`make fe_test`**: Runs frontend unit tests with enforced coverage thresholds.
+- **`make install`**: Installs backend dependencies.
+- **`make fe_install`**: Installs frontend dependencies and prepares Nuxt.
+- **`make start`**: Starts the backend and its services.
+- **`make fe_start`**: Starts the Nuxt frontend on port 3000.
+- **`make stop`**: Stops the application and its services.
+- **`make lint`**: Runs the linters to check the code for style and errors.
+- **`make fe_lint`**: Checks frontend code, styles, and formatting without fixing files.
+- **`make fe_style`**: Formats frontend files and applies automatic lint fixes.
+- **`make be_test`**: Runs the backend unit tests.
+- **`make fe_test`**: Runs frontend unit tests with enforced coverage thresholds.
 
 For a full list of commands, run `make help`.
 
 ## Running Tests
 
--   **Backend:**
-    ```bash
-    make be_test
-    ```
+- **Backend:**
 
--   **Frontend:**
-    ```bash
-    make fe_test
-    ```
+  ```bash
+  make be_test
+  ```
 
-## Project Structure
-
-```
-week-eat-planner/
-├── backend/                  # FastAPI application
-│   ├── alembic/              # Database migrations
-│   ├── tests/                # Unit tests
-│   └── week_eat_planner/     # Application source code
-├── frontend/                 # Nuxt application
-│   ├── public/               # Public assets
-│   ├── app/                  # Vue.js source code
-│   └── tests/                # Frontend tests
-├── qa/                       # QA and testing
-│   ├── docker/               # Docker-compose files for tests
-│   ├── tests/                # Autotests
-│   └── wep_qa/               # Autotests infrastructure
-├── .gitignore
-├── docker-compose.yml
-├── Makefile
-└── README.md
-```
+- **Frontend:**
+  ```bash
+  make fe_test
+  ```
 
 ## Contributing
 

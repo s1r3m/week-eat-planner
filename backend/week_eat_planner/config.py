@@ -30,8 +30,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_ISSUER: str
     JWT_AUDIENCE: str
-    ACCESS_TOKEN_TTL: int  # Access token time to live in minutes
-    REFRESH_TOKEN_TTL: int  # Refresh token time to live in days
+    SESSION_TTL_DAYS: int  # Refresh token time to live in days
     ROTATE_TOKEN_EXPIRE_DELTA: int  # Time delta in minutes to rotate refresh token if it's close to expiration
 
     # Logger settings.

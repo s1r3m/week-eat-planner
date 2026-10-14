@@ -8,15 +8,21 @@ from starlette.datastructures import Headers
 
 from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_1_IS_PUBLIC, RECIPE_1_NAME, RECIPE_1_STEPS
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
-from week_eat_planner.api.schemas import RecipeCreate, RecipeReadMinimal, RecipeUpdate
-from week_eat_planner.api.schemas.recipe import CookingStep, Ingredient, RecipeRead
+from week_eat_planner.api.schemas import (
+    CookingStep,
+    Ingredient,
+    RecipeCreate,
+    RecipeRead,
+    RecipeReadMinimal,
+    RecipeUpdate,
+)
 from week_eat_planner.clients.storage_client import StorageClient
 from week_eat_planner.constants import AppUrl, MAX_IMAGE_SIZE_BYTES, StorageBucket, Unit
-from week_eat_planner.db.models.recipe import Recipe
+from week_eat_planner.db.models import Recipe
 from week_eat_planner.exceptions import (
     ImageContentTypeMissingException,
     ImageTooLargeException,
-    NoAccessTokenException,
+    NoSessionTokenException,
     RecipeForbiddenException,
     RecipeNotFoundException,
     UnsupportedImageTypeException,
@@ -184,7 +190,7 @@ async def test_get_my_recipes__several_recipes__recipe_in_response(
 async def test_get_my_recipes__no_auth__error_in_response(client):
     response = await client.get(AppUrl.RECIPES_MY)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -229,7 +235,7 @@ async def test_update_recipe__no_auth__error_in_response(client, created_recipe)
         f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}', json=update_data.model_dump(mode='json')
     )
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -256,7 +262,7 @@ async def test_update_recipe__recipe_not_exists__error_in_response(auth_client_f
 async def test_delete_recipe__no_auth__error_in_response(client, created_recipe):
     response = await client.delete(f'{AppUrl.RECIPES_TPL.format(recipe_id=created_recipe.id)}')
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -397,7 +403,7 @@ async def test_upload_image__unauthenticated__returns_401(client, created_recipe
         files=files,
     )
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -552,6 +558,6 @@ async def test_get_user_favorites__some_recipes__recipes_in_response(
 async def test_get_user_favorites__no_auth__error_in_response(client):
     response = await client.get(AppUrl.RECIPES_FAVORITES)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
