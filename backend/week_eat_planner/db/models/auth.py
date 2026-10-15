@@ -27,7 +27,7 @@ class Session(Base):
     __tablename__ = 'sessions'
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    hashed_token: Mapped[str] = mapped_column(nullable=False, index=True)
+    hashed_token: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
     last_used_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 

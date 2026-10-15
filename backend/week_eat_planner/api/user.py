@@ -89,8 +89,8 @@ async def change_password(
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user.id}')
     updated_user = await UserService(session).change_password(user, data.old_password, data.new_password)
     await SessionService(session).revoke_all_sessions(user)
-    session_token = await AuthService(session).login(UserLogin(email=updated_user.email, password=data.new_password))
+    logged_in_user = await AuthService(session).login(UserLogin(email=updated_user.email, password=data.new_password))
+    session_token = await SessionService(session).create_session_token(logged_in_user)
     logger.info('Password change is successful')
-
     set_session_cookie(response, session_token)
     return SuccessResponse()

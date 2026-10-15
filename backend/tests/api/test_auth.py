@@ -34,7 +34,7 @@ async def test_create_user__valid_data__user_created(client):
 async def test_create_user__bad_username__unprocessable_entity_error(client, username):
     signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
@@ -49,7 +49,7 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
 async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
     signup_data = {'email': 'not-email', 'password': PASSWORD, 'username': USERNAME}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_login__valid_credentials__session_returned(client, created_user):
@@ -65,7 +65,7 @@ async def test_login__valid_credentials__session_returned(client, created_user):
 async def test_login__invalid_email_format__conflict_error(client):
     login_data = {'email': 'not-email', 'password': PASSWORD}
     response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_login__invalid_password__not_found_error(client, created_user):

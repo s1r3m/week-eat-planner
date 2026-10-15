@@ -84,10 +84,10 @@ async def test_register_user__user_exists__error_raised(mocked_user_dao, mocked_
     assert exc.value.detail == error.detail
 
 
-async def test_login__valid_credentials__token_returned(mocked_user_dao, mocked_session, db_user):
+async def test_login__valid_credentials__user_returned(mocked_user_dao, mocked_session, db_user):
     mocked_user_dao.find_one_or_none.return_value = db_user
-    session_token = await AuthService(mocked_session).login(UserLogin(email=db_user.email, password=PASSWORD))
-    assert session_token
+    user = await AuthService(mocked_session).login(UserLogin(email=db_user.email, password=PASSWORD))
+    assert user == db_user
 
 
 async def test_login__no_user_with_email__error_raised(mocked_user_dao, mocked_session, db_user):
@@ -122,15 +122,15 @@ async def test_login__oauth_account_no_password__error_raised(mocked_user_dao, m
     assert exc.value.detail == error.detail
 
 
-async def test_login_with_google__existing_user__tokens_returned(
+async def test_login_with_google__existing_user__user_returned(
     mocked_user_dao, mocked_session, db_user, oauth_user_data, mocked_google_auth_client
 ):
     mocked_google_auth_client.get_oauth_user.return_value = oauth_user_data
     mocked_user_dao.find_one_or_none.return_value = db_user
 
-    session_token = await AuthService(mocked_session).login_with_google(GoogleCode(code='auth_code'), AsyncMock())
+    user = await AuthService(mocked_session).login_with_google(GoogleCode(code='auth_code'), AsyncMock())
 
-    assert session_token
+    assert user == db_user
 
 
 async def test_login_with_google__new_user__user_created_and_tokens_returned(

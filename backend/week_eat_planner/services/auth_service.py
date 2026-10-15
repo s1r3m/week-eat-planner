@@ -1,14 +1,11 @@
 """Service layer for authentication and user registration logic."""
 
-from datetime import UTC, datetime, timedelta
-
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import Email, GoogleCode, UserCreate, UserFilter, UserLogin, UserSession
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
-from week_eat_planner.config import settings
 from week_eat_planner.db.dao import SessionDAO, UserDAO
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.exceptions import (
@@ -18,7 +15,6 @@ from week_eat_planner.exceptions import (
     UserAlreadyExistsException,
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
-from week_eat_planner.security.token_provider import TokenProvider
 
 
 class AuthService:
@@ -64,14 +60,14 @@ class AuthService:
 
         return created_user
 
-    async def login(self, user_data: UserLogin) -> str:
+    async def login(self, user_data: UserLogin) -> User:
         """Authenticate password credentials and create a stored session.
 
         Args:
             user_data: Email address and plain-text password to verify.
 
         Returns:
-            A new opaque session token whose hash is stored in the database.
+            A User that is logged in.
 
         Raises:
             OAuthAccountException: If the email belongs to an account without a password.
@@ -87,12 +83,10 @@ class AuthService:
             logger.error('Invalid credentials')
             raise InvalidCredentialsException()
 
-        token = await self._generate_session_token(db_user)
-
         logger.info('User logged in successfully')
-        return token
+        return db_user
 
-    async def login_with_google(self, data: GoogleCode, httpx_client: AsyncClient) -> str:
+    async def login_with_google(self, data: GoogleCode, httpx_client: AsyncClient) -> User:
         """Authenticates a user via Google OAuth 2.0 authorization code flow.
 
         Exchanges the authorization code for verified user identity, then either
@@ -104,7 +98,7 @@ class AuthService:
             httpx_client: An async HTTP client passed to the Google OAuth client.
 
         Returns:
-            A session token.
+            A db user.
 
         Raises:
             PasswordAccountException: If the email from Google is already registered
@@ -134,34 +128,8 @@ class AuthService:
         else:
             logger.info('Existing Google OAuth user logged in')
 
-        session_token = await self._generate_session_token(db_user)
-        return session_token
-
-    async def _generate_session_token(self, db_user: User) -> str:
-        """Generate an opaque token and persist a session containing its hash.
-
-        The session records the current UTC time and expires SESSION_TTL_DAYS
-        later. The caller manages the transaction and cookie delivery.
-
-        Args:
-            db_user: User who owns the new session.
-
-        Returns:
-            The plain-text session token.
-        """
-        token = TokenProvider.get_session_token()
-        hashed_token = TokenProvider.hash_token(token)
-        now = datetime.now(UTC)
-        auth_session = Session(
-            user_id=db_user.id,
-            hashed_token=hashed_token,
-            last_used_at=now,
-            expires_at=now + timedelta(days=settings.SESSION_TTL_DAYS),
-        )
-
-        await self._session_dao.add(auth_session)
-
-        return token
+        logger.info('User logged in successfully')
+        return db_user
 
     async def logout(self, auth_session: Session) -> None:
         """Logs out a user by revoking their session.

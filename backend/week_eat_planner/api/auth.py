@@ -16,6 +16,7 @@ from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.helpers import set_session_cookie
 from week_eat_planner.services.auth_service import AuthService
+from week_eat_planner.services.session_service import SessionService
 
 router = APIRouter(tags=['Auth'])
 
@@ -68,7 +69,8 @@ async def login(
         InvalidCredentialsException: If the credentials are incorrect (HTTP 401).
     """
     logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request with {user_data.email=}')
-    session_token = await AuthService(session).login(user_data)
+    user = await AuthService(session).login(user_data)
+    session_token = await SessionService(session).create_session_token(user)
     set_session_cookie(response, session_token)
     return SuccessResponse()
 
@@ -125,7 +127,7 @@ async def google_auth(
         OAuthProviderException: If communication or identity verification fails.
     """
     logger.info(f'Got POST {AppUrl.AUTH_GOOGLE_EXCHANGE} request')
-    session_token = await AuthService(session).login_with_google(data, httpx_client)
-
+    user = await AuthService(session).login_with_google(data, httpx_client)
+    session_token = await SessionService(session).create_session_token(user)
     set_session_cookie(response, session_token)
     return SuccessResponse()

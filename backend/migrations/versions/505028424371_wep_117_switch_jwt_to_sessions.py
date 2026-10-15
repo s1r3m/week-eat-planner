@@ -31,7 +31,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_sessions_hashed_token'), 'sessions', ['hashed_token'], unique=False)
+    op.create_index(op.f('ix_sessions_hashed_token'), 'sessions', ['hashed_token'], unique=True)
     op.create_index(op.f('ix_sessions_user_id'), 'sessions', ['user_id'], unique=False)
     op.drop_index(op.f('ix_refresh_tokens_token_hash'), table_name='refresh_tokens')
     op.drop_table('refresh_tokens')
