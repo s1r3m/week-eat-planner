@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException, status
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
-from week_eat_planner.api.schemas.user import OAuthUserData, UserCreate, UserLogin, UserRead
+from week_eat_planner.api.schemas.user import OAuthUserData, UserCreate, UserLogin
 from week_eat_planner.constants import AppUrl, OAuthProvider, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,

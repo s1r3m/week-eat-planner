@@ -62,7 +62,7 @@ async def login(
         response: Response to receive the session cookie.
 
     Returns:
-        A success response for the authenticated request.
+        A logged in user.
 
     Raises:
         OAuthAccountException: If the account has no password (HTTP 409).
