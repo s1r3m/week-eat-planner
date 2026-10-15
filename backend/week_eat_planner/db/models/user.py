@@ -1,8 +1,8 @@
-from datetime import datetime
-from typing import TYPE_CHECKING
-from uuid import UUID
+"""User accounts, login methods, profile fields, and owned records."""
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint
+from typing import TYPE_CHECKING
+
+from sqlalchemy import CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from week_eat_planner.db.base import Base
@@ -22,10 +22,11 @@ class User(Base):
         username: The user's chosen display name.
         avatar_url: The URL to the user's avatar image.
         avatar_key: The storage key for the user's avatar (used for deletion/replacement).
-        oauth_provider: The OAuth provider name (e.g. 'google'), or None for local accounts.
+        oauth_provider: The OAuth provider name (e.g. 'GOOGLE'), or None for local accounts.
         oauth_id: The provider-scoped user identifier, or None for local accounts.
-        hashed_password: The hashed version of the user's password.
+        hashed_password: Password hash, or None for an OAuth-only account.
         is_active: A flag indicating if the user account is active.
+        is_email_verified: Whether the user's email has been verified.
         weeks: The SQLAlchemy relationship to the user's weeks.
         recipes: The SQLAlchemy relationship to the user's recipes.
         favorites: The SQLAlchemy relationship to the user's favourite recipes.
@@ -52,31 +53,16 @@ class User(Base):
     oauth_id: Mapped[str | None] = mapped_column(nullable=True)
     hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
+    is_email_verified: Mapped[bool] = mapped_column(default=False, server_default='false')
 
     weeks: Mapped[list[Week]] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list[Recipe]] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list[UserFavorite]] = relationship(back_populates='user', cascade='all, delete-orphan')
 
+    def __repr__(self) -> str:
+        """Return the user ID, email address, and email verification flag.
 
-class RefreshToken(Base):
-    """Represents a JWT refresh token stored in the database.
-
-    Attributes:
-        id: The unique identifier for the token.
-        token_hash: The hashed value of the refresh token.
-        user_id: The ID of the user who owns this token.
-        expires_at: The timestamp when the token expires.
-        revoked: A flag indicating if the token has been revoked.
-        replaced_by: The ID of the token that replaced this one during rotation.
-        user: The SQLAlchemy relationship to the owner of this token.
-    """
-
-    __tablename__ = 'refresh_tokens'
-
-    token_hash: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    revoked: Mapped[bool] = mapped_column(default=False, nullable=False)
-    replaced_by: Mapped[UUID | None] = mapped_column(ForeignKey('refresh_tokens.id'), nullable=True, default=None)
-
-    user: Mapped[User] = relationship(lazy='selectin')
+        Returns:
+            A diagnostic string describing the record.
+        """
+        return f'<User> (id={self.id}, email={self.email}, is_email_activated={self.is_email_verified})'

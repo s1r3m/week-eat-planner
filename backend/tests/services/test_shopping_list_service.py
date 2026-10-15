@@ -7,11 +7,9 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from tests.constants import RECIPE_1_INGREDIENTS, RECIPE_2_INGREDIENTS
 
-from week_eat_planner.api.schemas.common import RecordId, WeekId
-from week_eat_planner.api.schemas.recipe import Ingredient
-from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
+from week_eat_planner.api.schemas import Ingredient, RecordId, ShoppingListItem, ShoppingListUpdate, WeekId
 from week_eat_planner.constants import Unit
-from week_eat_planner.db.models.shopping_list import ShoppingList
+from week_eat_planner.db.models import ShoppingList
 from week_eat_planner.exceptions import ShoppingListAlreadyExistsException, ShoppingListNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.services.shopping_list_service import ShoppingListService

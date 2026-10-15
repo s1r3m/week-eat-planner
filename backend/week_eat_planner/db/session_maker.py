@@ -11,6 +11,7 @@ class DatabaseSession:
     """Manages the creation and lifecycle of database sessions."""
 
     def __init__(self) -> None:
+        """Initialize the manager without an engine or session factory."""
         self._engine: AsyncEngine | None = None
         self._session_maker: async_sessionmaker[AsyncSession] | None = None
 
@@ -23,9 +24,10 @@ class DatabaseSession:
         self._session_maker = async_sessionmaker(self._engine, class_=AsyncSession)
 
     async def close(self) -> None:
-        """Closes the database connection.
+        """Dispose of the database engine and clear the engine and session factory.
 
-        Disposes of the asynchronous engine and resets internal state.
+        Raises:
+            RuntimeError: If the manager has not been initialized or has already been closed.
         """
         await self.engine.dispose()
         self._engine = None
@@ -60,12 +62,17 @@ class DatabaseSession:
         return self._session_maker
 
     async def get_db(self) -> AsyncGenerator[AsyncSession]:
-        """FastAPI dependency to get a database session for read-only operations.
+        """Provide a database session without committing changes automatically.
+
+        Rollback and propagate exceptions raised while using the session. The
+        session is closed when the dependency exits.
 
         Yields:
             An asynchronous database session.
-        """
 
+        Raises:
+            RuntimeError: If the manager has not been initialized.
+        """
         async with self.session_maker() as session:
             try:
                 yield session
@@ -74,12 +81,17 @@ class DatabaseSession:
                 raise
 
     async def get_db_commit(self) -> AsyncGenerator[AsyncSession]:
-        """FastAPI dependency to get a database session and commit changes.
+        """Provide a database session and commit after successful use.
+
+        Rollback and propagate exceptions raised during use or commit. The session
+        is closed when the dependency exits.
 
         Yields:
-            An asynchronous database session.
-        """
+            An asynchronous database session whose transaction is managed here.
 
+        Raises:
+            RuntimeError: If the manager has not been initialized.
+        """
         async with self.session_maker() as session:
             try:
                 yield session

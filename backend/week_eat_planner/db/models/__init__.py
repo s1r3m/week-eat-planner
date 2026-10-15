@@ -1,9 +1,10 @@
 """Database models for the application."""
 
+from .auth import Session
 from .meal_slot import DayOfWeek, MealSlot, MealType
 from .recipe import Recipe
 from .shopping_list import ShoppingList
-from .user import RefreshToken, User
+from .user import User
 from .user_favorites import UserFavorite
 from .week import Week
 
@@ -12,7 +13,7 @@ __all__ = [
     'MealSlot',
     'MealType',
     'Recipe',
-    'RefreshToken',
+    'Session',
     'ShoppingList',
     'User',
     'UserFavorite',

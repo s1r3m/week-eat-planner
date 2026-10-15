@@ -1,26 +1,24 @@
 """API router for week-related endpoints."""
 
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Path, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_active_user_id, get_optional_user_id
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     MealSlotRead,
+    ShoppingListRead,
+    ShoppingListUpdate,
     WeekCreate,
     WeekRead,
     WeekReadMinimal,
     WeekUpdate,
 )
-from week_eat_planner.api.schemas.shopping_list import ShoppingListRead, ShoppingListUpdate
 from week_eat_planner.constants import AppUrl
-from week_eat_planner.db.models.meal_slot import MealSlot
-from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import MealSlot, ShoppingList, User, Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.services.shopping_list_service import ShoppingListService
 from week_eat_planner.services.week_service import WeekService
@@ -31,7 +29,7 @@ router = APIRouter(tags=['Weeks'])
 @router.post(AppUrl.WEEKS, response_model=WeekReadMinimal, status_code=status.HTTP_201_CREATED)
 async def create_week(
     week_data: WeekCreate,
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Creates a new week for the current user.
@@ -40,34 +38,34 @@ async def create_week(
 
     Args:
         week_data: Data to create a new week, primarily the week's name.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The created week object.
     """
-    logger.info(f'Got POST {AppUrl.WEEKS} request for user {user_id}')
-    week = await WeekService(session).create_week_with_slots(user_id, week_data)
+    logger.info(f'Got POST {AppUrl.WEEKS} request for user {user.id}')
+    week = await WeekService(session).create_week_with_slots(user, week_data)
 
     return week
 
 
 @router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
 async def get_user_weeks(
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[Week]:
     """Retrieves all weeks for the current user.
 
     Args:
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         A list of weeks belonging to the user.
     """
-    logger.info(f'Got GET {AppUrl.WEEKS} request for user {user_id}')
-    weeks = await WeekService(session).get_weeks(user_id)
+    logger.info(f'Got GET {AppUrl.WEEKS} request for user {user.id}')
+    weeks = await WeekService(session).get_weeks(user)
 
     return weeks
 
@@ -75,7 +73,7 @@ async def get_user_weeks(
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
 async def get_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user_id: Annotated[UUID | None, Depends(get_optional_user_id)],
+    user: Annotated[User | None, Depends(get_optional_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> Week:
     """Retrieves a specific week by its ID.
@@ -84,14 +82,18 @@ async def get_week(
 
     Args:
         week_id: The ID of the week to retrieve.
-        user_id: The ID of the authenticated user or None for public access (TODO).
-        session: The database session.
+        user: The requesting user, or None; access requires ownership.
+        session: Database session without automatic commit.
 
     Returns:
         The requested week object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
     logger.info(f'Got GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
-    week = await WeekService(session).get_visible_week(week_id, user_id)
+    week = await WeekService(session).get_visible_week(week_id, user)
 
     return week
 
@@ -100,7 +102,7 @@ async def get_week(
 async def update_week(
     new_data: WeekUpdate,
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Updates a specific week.
@@ -110,15 +112,19 @@ async def update_week(
     Args:
         new_data: The new data for the week.
         week_id: The ID of the week to update.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated week object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
     logger.info(f'Got PATCH {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week_service = WeekService(session)
-    week = await week_service.get_week_for_edit(week_id, user_id)
+    week = await week_service.get_week_for_edit(week_id, user)
     updated_week = await week_service.update_week(week, new_data)
 
     return updated_week
@@ -127,7 +133,7 @@ async def update_week(
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.
@@ -136,12 +142,16 @@ async def delete_week(
 
     Args:
         week_id: The ID of the week to delete.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
-    logger.info(f'Got DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} for user {user_id}')
+    logger.info(f'Got DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} for user {user.id}')
     week_service = WeekService(session)
-    week = await week_service.get_week_for_edit(week_id, user_id)
+    week = await week_service.get_week_for_edit(week_id, user)
 
     await week_service.delete_week(week)
 
@@ -150,7 +160,7 @@ async def delete_week(
 async def assign_recipe_to_meal_slot(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     slots_data: list[MealSlotAssign],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> list[MealSlot]:
     """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
@@ -158,17 +168,22 @@ async def assign_recipe_to_meal_slot(
     Args:
         week_id: The ID of the week containing the slots.
         slots_data: A list of slot assignments, each containing a slot ID and an optional recipe ID.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         A list of updated meal slot objects.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        MealSlotAssignException: If any slot or recipe assignment is invalid.
     """
     logger.info(
-        f'Got PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {len(slots_data)} slots for user {user_id}'
+        f'Got PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {len(slots_data)} slots for user {user.id}'
     )
     week_service = WeekService(session)
-    week = await week_service.get_week_for_edit(week_id, user_id)
+    week = await week_service.get_week_for_edit(week_id, user)
     updated_slots = await week_service.assign_recipes_to_meal_slots(week, *slots_data)
 
     return updated_slots
@@ -177,21 +192,26 @@ async def assign_recipe_to_meal_slot(
 @router.post(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead, status_code=status.HTTP_201_CREATED)
 async def create_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> ShoppingList:
     """Creates a new shopping list for the specified week.
 
     Args:
         week_id: The ID of the week for which to create the shopping list.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The created shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListAlreadyExistsException: If the week already has a shopping list.
     """
     logger.info(f'Got POST {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
-    week = await WeekService(session).get_visible_week(week_id, user_id)
+    week = await WeekService(session).get_visible_week(week_id, user)
     shopping_list = await ShoppingListService(session).create(week)
 
     return shopping_list
@@ -200,21 +220,26 @@ async def create_shopping_list(
 @router.get(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
 async def get_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to get a shopping list for')],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> ShoppingList:
     """Retrieves the shopping list for a specific week.
 
     Args:
         week_id: The ID of the week.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         The shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got GET {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
-    week = await WeekService(session).get_visible_week(week_id, user_id)
+    week = await WeekService(session).get_visible_week(week_id, user)
     shopping_list = await ShoppingListService(session).get_by_week(week)
 
     return shopping_list
@@ -224,7 +249,7 @@ async def get_shopping_list(
 async def update_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to edit a shopping list for')],
     new_data: ShoppingListUpdate,
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> ShoppingList:
     """Updates an existing shopping list.
@@ -232,14 +257,19 @@ async def update_shopping_list(
     Args:
         week_id: The ID of the week the shopping list belongs to.
         new_data: The new shopping list items.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got PUT {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)} with {new_data}')
-    week = await WeekService(session).get_visible_week(week_id, user_id)
+    week = await WeekService(session).get_visible_week(week_id, user)
     shopping_list_service = ShoppingListService(session)
     shopping_list = await shopping_list_service.get_by_week_for_update(week)
     updated_shopping_list = await shopping_list_service.update(shopping_list, new_data)
@@ -250,17 +280,23 @@ async def update_shopping_list(
 @router.delete(AppUrl.SHOPPING_LIST_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to delete a shopping list for')],
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Deletes an existing shopping list.
+    """Delete the shopping list belonging to a week owned by the current user.
 
     Args:
-    Returns:
-        None
+        week_id: UUID string identifying the week whose shopping list is deleted.
+        user: Authenticated, active user who must own the week.
+        session: Database session committed by the dependency after the endpoint returns.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got DELETE {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
-    week = await WeekService(session).get_visible_week(week_id, user_id)
+    week = await WeekService(session).get_visible_week(week_id, user)
     shopping_list_service = ShoppingListService(session)
     shopping_list = await shopping_list_service.get_by_week_for_update(week)
     await shopping_list_service.delete(shopping_list)

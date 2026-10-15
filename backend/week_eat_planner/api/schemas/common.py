@@ -1,3 +1,5 @@
+"""Shared identifier, ownership, and success response schemas."""
+
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -34,10 +36,10 @@ class SuccessResponse(BaseModel):
 
 
 class WeekId(BaseModel):
-    """Schema for identifying a record belong to a week.
+    """Identify a record associated with a week.
 
     Attributes:
-        week_id: The ID of a week that the record belong to.
+        week_id: ID of the week the record belongs to.
     """
 
     week_id: UUID

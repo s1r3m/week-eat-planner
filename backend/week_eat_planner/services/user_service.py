@@ -5,22 +5,36 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas.common import RecordId
-from week_eat_planner.api.schemas.user import HashedPassword, UserUpdate
+from week_eat_planner.api.schemas import HashedPassword, RecordId, UserUpdate
 from week_eat_planner.db.dao import UserDAO
-from week_eat_planner.db.models.user import User
+from week_eat_planner.db.models import User
 from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFoundException
 from week_eat_planner.security.hashing import get_password_hash, verify_password
-from week_eat_planner.security.token_provider import get_user_id_from_token
 
 
 class UserService:
     """Service for handling user-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize database access using the provided session.
+
+        Args:
+            session: Database session whose transaction is managed by the caller.
+        """
         self._user_dao = UserDAO(session)
 
     async def get_user(self, user_id: UUID) -> User:
+        """Retrieve an active user by ID.
+
+        Args:
+            user_id: ID of the user to retrieve.
+
+        Returns:
+            The active user record.
+
+        Raises:
+            UserNotFoundException: If the user does not exist or is inactive.
+        """
         logger.debug(f'Retrieving user with {user_id=}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
@@ -29,34 +43,11 @@ class UserService:
 
         return user
 
-    async def get_user_by_token(self, token: str) -> User:
-        """Retrieves a user based on their authentication token.
-        DEPRECATED as no longer used anywhere in the app.
-
-        Args:
-            token: The JWT access token.
-
-        Returns:
-            The User object.
-
-        Raises:
-            InvalidCredentialsException: If the user is not found or is not active.
-        """
-        user_id = get_user_id_from_token(token)
-        logger.info(f'Retrieving user for {user_id=}')
-        user = await self._user_dao.find_one_or_none(RecordId(id=user_id))
-        if not user or not user.is_active:
-            logger.error(f'User not found for {user_id=}')
-            raise InvalidCredentialsException()
-
-        logger.info(f'Retrieved User(id={user.id}) from DB')
-        return user
-
-    async def update_user(self, user_id: UUID, values: UserUpdate) -> User:
+    async def update_user(self, user: User, values: UserUpdate) -> User:
         """Updates a user's profile with the provided values.
 
         Args:
-            user_id: The ID of the current user.
+            user: The user requesting the operation.
             values: The fields to update.
 
         Returns:
@@ -65,21 +56,21 @@ class UserService:
         Raises:
             UserNotFoundException: If the user record is missing in the database.
         """
-        logger.debug(f'Updating user {user_id}')
-        user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user or not user.is_active:
-            logger.error(f'User {user_id} was not found!')
-            raise UserNotFoundException(user_id)
+        logger.debug(f'Updating user {user.id}')
+        db_user = await self._user_dao.find_one_or_none_by_id(user.id)
+        if not db_user:
+            logger.error(f'User {user.id} was not found!')
+            raise UserNotFoundException(user.id)
 
-        updated_user = await self._user_dao.update(RecordId(id=user_id), values)
-        logger.debug(f'User {user.id} was successfully updated')
+        updated_user = await self._user_dao.update(RecordId(id=user.id), values)
+        logger.debug(f'User {updated_user.id} was successfully updated')
         return updated_user
 
-    async def change_password(self, user_id: UUID, old_password: str, new_password: str) -> User:
+    async def change_password(self, user: User, old_password: str, new_password: str) -> User:
         """Changes User's password if old_password matches the hash.
 
         Args:
-            user_id: The ID of the current user.
+            user: The user requesting the operation.
             old_password: The current password of the user.
             new_password: The new desired password.
 
@@ -91,20 +82,19 @@ class UserService:
             OAuthAccountException: If the user is an OAuth account and has no password.
             InvalidCredentialsException: If the old password does not match.
         """
-        logger.debug(f'Changing password for user {user_id}')
-        user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user or not user.is_active:
-            logger.error(f'User {user_id} was not found!')
-            raise UserNotFoundException(user_id)
+        logger.debug(f'Changing password for user {user.id}')
+        db_user = await self._user_dao.find_one_or_none_by_id(user.id)
+        if not db_user:
+            logger.error(f'User {user.id} was not found!')
+            raise UserNotFoundException(user.id)
 
-        if not user.hashed_password:
+        if not db_user.hashed_password:
             logger.error(f'User {user.id} was registered with {user.oauth_provider}')
             raise OAuthAccountException()
 
-        if not verify_password(old_password, user.hashed_password):
-            msg = 'Old password does not match!'
-            logger.error(msg)
-            raise InvalidCredentialsException(msg)
+        if not verify_password(old_password, db_user.hashed_password):
+            logger.error(f'Old password mismatch for user {user.id}')
+            raise InvalidCredentialsException()
 
         new_hash = get_password_hash(new_password)
         updated_user = await self._user_dao.update(RecordId(id=user.id), HashedPassword(hashed_password=new_hash))

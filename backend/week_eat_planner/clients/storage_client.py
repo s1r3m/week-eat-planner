@@ -32,15 +32,19 @@ class StorageClient:
         )
 
     async def upload_image(self, upload_file: UploadFile, bucket: StorageBucket, obj_id: UUID) -> str:
-        """Uploads an image to the specified bucket.
+        """Upload an image under a generated UUID filename in the specified bucket.
+
+        The upload runs in a worker thread. The filename extension is lowercased;
+        obj_id is accepted but is not used to construct the key. Validation of the
+        file's MIME type and size is the caller's responsibility.
 
         Args:
-            upload_file: The file object to upload.
-            bucket: The storage bucket where the file should be uploaded.
-            obj_id: The ID of the object (e.g., recipe ID) the image belongs to.
+            upload_file: File whose content is uploaded from its current stream position.
+            bucket: Destination storage bucket.
+            obj_id: Associated record ID; currently unused.
 
         Returns:
-            The key to the uploaded file in the bucket.
+            Storage reference in bucket/key format, rather than a public URL.
 
         Raises:
             ValueError: If the uploaded file has no filename.
@@ -66,10 +70,15 @@ class StorageClient:
         return f'{bucket}/{file_key}'
 
     async def delete_file(self, file_key: str) -> None:
-        """Deletes a file from the storage bucket.
+        """Delete an object identified by a bucket/key storage reference.
+
+        The blocking storage request runs in a worker thread.
 
         Args:
-            file_key: The key of the file to delete (expected format "bucket/key").
+            file_key: Storage reference containing a bucket and object key separated by /.
+
+        Raises:
+            ValueError: If file_key contains no / separator.
         """
         _client = self._get_client()
         try:

@@ -1,3 +1,5 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 import pytest_asyncio
 from pytest_mock import MockerFixture
@@ -18,9 +20,8 @@ from tests.constants import (
     WEEK_1_NAME,
 )
 from week_eat_planner.api.schemas import UserRead, WeekRead
-from week_eat_planner.db.models import Recipe, User
-from week_eat_planner.db.models.meal_slot import DayOfWeek, MealSlot, MealType
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Recipe, User, Week
+from week_eat_planner.db.models.auth import Session
 from week_eat_planner.helpers import generate_uuid7
 from week_eat_planner.security.token_provider import TokenProvider
 
@@ -31,11 +32,6 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
     mock_session.__aenter__.return_value = mock_session
     mock_session.__aexit__.return_value = None
     return mock_session
-
-
-@pytest.fixture
-def encoded_token() -> str:
-    return TokenProvider.create_access_token(USER_ID)
 
 
 @pytest.fixture
@@ -121,3 +117,17 @@ def db_meal_slots() -> list[MealSlot]:
             )
             slots.append(slot)
     return slots
+
+
+@pytest.fixture
+def session_token() -> str:
+    return TokenProvider.get_session_token()
+
+
+@pytest.fixture
+def auth_session(db_user: User, session_token: str) -> Session:
+    hashed_token = TokenProvider.hash_token(session_token)
+    expires_at = datetime.now(UTC) + timedelta(minutes=1)
+    session = Session(user_id=db_user.id, hashed_token=hashed_token, user=db_user, expires_at=expires_at)
+
+    return session

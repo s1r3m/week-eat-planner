@@ -1,3 +1,5 @@
+"""Recipe input, output, image, ingredient, and favorite filter schemas."""
+
 from decimal import Decimal
 from uuid import UUID
 
@@ -69,14 +71,17 @@ class RecipeCreate(RecipeBase):
 
 
 class RecipeUpdate(BaseModel):
-    """Schema for updating an existing recipe.
+    """Partial update fields for an existing recipe.
+
+    Only explicitly provided fields are applied by database updates. Fields
+    default to None; explicitly passing None remains an update value.
 
     Attributes:
-        name: The new name of the recipe.
-        is_public: The new public/private status.
-        steps: The updated list of cooking steps.
-        ingredients: The updated list of ingredients.
-        image_key: The new storage key for the recipe image.
+        name: Replacement name.
+        is_public: Replacement public/private flag.
+        steps: Replacement cooking steps.
+        ingredients: Replacement ingredient list.
+        image_key: Replacement bucket/key reference for the image.
     """
 
     name: str | None = None
@@ -87,10 +92,11 @@ class RecipeUpdate(BaseModel):
 
 
 class ImageMixin(BaseModel):
-    """Mixin for schemas with image support.
+    """Add an internal image key and a computed public image URL to a schema.
 
     Attributes:
-        image_key: The storage key for the image.
+        image_key: Optional bucket/key reference, excluded from serialized output.
+        image_url: Public URL computed from STORAGE_HOST and image_key, or None.
     """
 
     image_key: str | None = Field(default=None, exclude=True)
@@ -108,11 +114,11 @@ class ImageMixin(BaseModel):
 
 
 class RecipeRead(RecipeBase, RecordId, OwnerId, ImageMixin):
-    """Schema for reading a recipe, including the database ID and user ID.
+    """Full recipe response with inherited content, IDs, and computed image URL.
 
     Attributes:
-        author: The username or email of the recipe's author.
-        is_favorite: Whether the recipe is marked as favorite by the current user.
+        author: Display name of the recipe's author.
+        is_favorite: Whether the recipe is a favorite of the requesting user.
     """
 
     author: str
@@ -122,12 +128,12 @@ class RecipeRead(RecipeBase, RecordId, OwnerId, ImageMixin):
 
 
 class RecipeReadMinimal(RecordId, ImageMixin):
-    """A minimal schema for recipe previews, showing only the ID and name.
+    """Recipe preview containing its ID, name, author, favorite flag, and image URL.
 
     Attributes:
-        name: The name of the recipe.
-        author: The username or email of the recipe's author.
-        is_favorite: Whether the recipe is marked as favorite by the current user.
+        name: Name of the recipe.
+        author: Display name of the recipe's author.
+        is_favorite: Whether the recipe is a favorite of the requesting user.
     """
 
     name: str

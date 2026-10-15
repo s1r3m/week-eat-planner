@@ -1,5 +1,4 @@
 from settings import APP_URL
-
 from wep_qa.clients.api_client import WepApiClient
 
 

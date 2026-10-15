@@ -1,59 +1,27 @@
-from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
-import pytest_asyncio
 from fastapi import HTTPException, status
-from freezegun import freeze_time
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
-from week_eat_planner.api.schemas import RefreshTokenFilter, TokenUpdate, UserRead
-from week_eat_planner.api.schemas.user import OAuthUserData
-from week_eat_planner.config import settings
-from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, OAuthProvider, REFRESH_TOKEN_COOKIE_NAME
-from week_eat_planner.db.dao import RefreshTokenDAO
+from week_eat_planner.api.schemas.user import OAuthUserData, UserCreate, UserLogin
+from week_eat_planner.constants import AppUrl, OAuthProvider, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
-    InvalidEmailException,
-    NoAccessTokenException,
     OAuthAccountException,
     OAuthInvalidCodeException,
     OAuthProviderException,
     PasswordAccountException,
-    RefreshTokenMissingException,
-    RefreshTokenRevokedException,
-    TokenExpiredException,
     UserAlreadyExistsException,
 )
 
 
-@pytest_asyncio.fixture
-async def expired_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFilter(user_id=created_user.id))
-    new_expires_at = datetime.now(UTC) - timedelta(days=settings.REFRESH_TOKEN_TTL + 1)
-    token = RefreshTokenFilter.model_validate(db_token)
-    await RefreshTokenDAO(db_session).update(token, TokenUpdate(expires_at=new_expires_at))
-    await db_session.flush()
-    return created_user
-
-
-@pytest_asyncio.fixture
-async def revoked_refresh_token_user(db_session: AsyncSession, created_user: UserRead) -> UserRead:
-    db_token = await RefreshTokenDAO(db_session).find_one_or_none(RefreshTokenFilter(user_id=created_user.id))
-    token = RefreshTokenFilter.model_validate(db_token)
-    await RefreshTokenDAO(db_session).update(token, TokenUpdate(revoked=True))
-    await db_session.flush()
-    return created_user
-
-
-async def test_create_user__valid_data__user_created_and_logged_in(client):
-    signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': USERNAME}
+async def test_create_user__valid_data__user_created(client):
+    signup_data = UserCreate(email=EMAIL, password=PASSWORD, username=USERNAME).model_dump(mode='json')
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    assert not response.cookies.get(SESSION_COOIKE_NAME)
 
 
 @pytest.mark.parametrize(
@@ -66,13 +34,12 @@ async def test_create_user__valid_data__user_created_and_logged_in(client):
 async def test_create_user__bad_username__unprocessable_entity_error(client, username):
     signup_data = {'email': EMAIL, 'password': PASSWORD, 'username': username}
     response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_create_user__duplicate_email__conflict_error(client, created_user):
-    login_data = {'email': created_user.email, 'password': PASSWORD, 'username': USERNAME}
-    response = await client.post(AppUrl.AUTH_SIGNUP, json=login_data)
+    signup_data = UserCreate(email=created_user.email, password=PASSWORD, username=USERNAME).model_dump(mode='json')
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
 
     error = UserAlreadyExistsException()
     assert response.status_code == error.status_code
@@ -80,37 +47,31 @@ async def test_create_user__duplicate_email__conflict_error(client, created_user
 
 
 async def test_create_user__invalid_email_format__unprocessable_entity_error(client):
-    invalid_login_data = {'email': 'not-a-valid-email', 'password': 'password', 'username': USERNAME}
-    response = await client.post(AppUrl.AUTH_SIGNUP, json=invalid_login_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    signup_data = {'email': 'not-email', 'password': PASSWORD, 'username': USERNAME}
+    response = await client.post(AppUrl.AUTH_SIGNUP, json=signup_data)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_login__valid_credentials__token_returned(client, created_user):
-    token_data = {'username': created_user.email, 'password': PASSWORD}
+async def test_login__valid_credentials__session_returned(client, created_user):
+    login_data = UserLogin(email=created_user.email, password=PASSWORD).model_dump(mode='json')
 
-    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+    response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'status': 'success'}
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(SESSION_COOIKE_NAME)
 
 
 async def test_login__invalid_email_format__conflict_error(client):
-    bad_email = 'not-a-valid-email'
-    token_data = {'username': bad_email, 'password': 'password'}
-
-    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
-
-    error = InvalidEmailException()
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
+    login_data = {'email': 'not-email', 'password': PASSWORD}
+    response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_login__invalid_password__not_found_error(client, created_user):
-    token_data = {'username': created_user.email, 'password': 'wrong-password'}
+    login_data = UserLogin(email=created_user.email, password='wrong-pass').model_dump(mode='json')
 
-    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+    response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
 
     error = InvalidCredentialsException()
     assert response.status_code == error.status_code
@@ -118,73 +79,11 @@ async def test_login__invalid_password__not_found_error(client, created_user):
 
 
 async def test_login__nonexistent_user__not_found_error(client):
-    token_data = {'username': 'email@not.exist', 'password': PASSWORD}
+    login_data = UserLogin(email='other@email.com', password=PASSWORD).model_dump(mode='json')
 
-    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+    response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
 
     error = InvalidCredentialsException()
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
-
-
-async def test_refresh_token__valid_user__new_token_returned(auth_client_for_created_user):
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'status': 'success'}
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
-
-
-async def test_refresh_token__no_cookies_in_request__error_raised(auth_client_for_created_user):
-    auth_client_for_created_user.cookies = []
-
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    error = RefreshTokenMissingException()
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
-
-
-async def test_refresh_token__refresh_token_far_from_expire__new_token_in_cookies(auth_client_for_created_user):
-    old_token = auth_client_for_created_user.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'status': 'success'}
-    assert old_token != response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-
-
-async def test_refresh_token__refresh_token_about_to_expire__new_token_in_cookies(auth_client_for_created_user):
-    old_token = auth_client_for_created_user.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    time_in_future = datetime.now(UTC) + timedelta(
-        days=settings.REFRESH_TOKEN_TTL, minutes=-settings.ROTATE_TOKEN_EXPIRE_DELTA + 1
-    )
-
-    with freeze_time(time_in_future):
-        response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'status': 'success'}
-    assert old_token != response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-
-
-async def test_refresh_token__expired_refresh_token__error_raised(
-    auth_client_for_created_user, expired_refresh_token_user
-):
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    error = TokenExpiredException()
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
-
-
-async def test_refresh_token__revoked_refresh_token__error_raised(
-    auth_client_for_created_user, revoked_refresh_token_user
-):
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_REFRESH)
-
-    error = RefreshTokenRevokedException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -194,7 +93,7 @@ async def test_logout__valid_user__no_cookie_in_response(auth_client_for_created
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
-    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+    assert SESSION_COOIKE_NAME not in response.cookies
 
 
 async def test_logout__no_cookie_in_request__error_raised(auth_client_for_created_user):
@@ -202,27 +101,9 @@ async def test_logout__no_cookie_in_request__error_raised(auth_client_for_create
 
     response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
 
-    error = NoAccessTokenException()
-    assert response.status_code == error.status_code
-    assert response.json() == {'detail': error.detail}
-
-
-async def test_logout__no_refresh_token_in_request__no_error_raised(auth_client_for_created_user):
-    auth_client_for_created_user.cookies.pop(REFRESH_TOKEN_COOKIE_NAME)
-
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
-
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not response.text
-    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
-
-
-async def test_logout__revoked_refresh_token__no_error_raised(auth_client_for_created_user, revoked_refresh_token_user):
-    response = await auth_client_for_created_user.post(AppUrl.AUTH_LOGOUT)
-
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert not response.text
-    assert REFRESH_TOKEN_COOKIE_NAME not in response.cookies
+    assert SESSION_COOIKE_NAME not in response.cookies
 
 
 async def test_logout__unexpected_http_exception__error_raised(mocker, auth_client_for_created_user):
@@ -246,9 +127,9 @@ async def test_login__oauth_account__error_raised(mocker, client, created_user):
         'week_eat_planner.api.auth.AuthService.login',
         side_effect=OAuthAccountException(),
     )
-    token_data = {'username': created_user.email, 'password': PASSWORD}
+    login_data = {'email': created_user.email, 'password': PASSWORD}
 
-    response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+    response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
 
     error = OAuthAccountException()
     assert response.status_code == error.status_code
@@ -272,8 +153,7 @@ async def test_google_auth__valid_code__tokens_returned(mocker, client):
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'status': 'success'}
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(SESSION_COOIKE_NAME)
 
 
 async def test_google_auth__invalid_code__error_raised(mocker, client):

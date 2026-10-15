@@ -6,15 +6,27 @@ from uuid import UUID
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import MealSlotAssign, OwnerId, RecordId, WeekCreate, WeekUpdate
-from week_eat_planner.api.schemas.meal_slot import MealSlotId, MealSlotUpdate
+from week_eat_planner.api.schemas import (
+    MealSlotAssign,
+    MealSlotId,
+    MealSlotUpdate,
+    OwnerId,
+    RecordId,
+    WeekCreate,
+    WeekUpdate,
+)
 from week_eat_planner.db.dao import MealSlotDAO, RecipeDAO, WeekDAO
-from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, Week
+from week_eat_planner.db.models import DayOfWeek, MealSlot, MealType, User, Week
 from week_eat_planner.exceptions import MealSlotAssignException, WeekForbiddenException, WeekNotFoundException
 
 
 class ValidatedAssignments(NamedTuple):
-    """A meal slot and its new recipe assignment after passing all validation checks."""
+    """A validated meal slot ID and its replacement recipe reference.
+
+    Attributes:
+        meal_slot: Identifier of the validated meal slot.
+        recipe: New recipe reference, or None in recipe_id to clear the slot.
+    """
 
     meal_slot: MealSlotId
     recipe: MealSlotUpdate
@@ -24,25 +36,30 @@ class WeekService:
     """Service layer for handling week-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize database access using the provided session.
+
+        Args:
+            session: Database session whose transaction is managed by the caller.
+        """
         self._meal_slot_dao = MealSlotDAO(session)
         self._recipe_dao = RecipeDAO(session)
         self._week_dao = WeekDAO(session)
 
-    async def create_week_with_slots(self, user_id: UUID, week_data: WeekCreate) -> Week:
-        """Creates a new week with its initial meal slots for a user.
+    async def create_week_with_slots(self, user: User, week_data: WeekCreate) -> Week:
+        """Create a week and a slot for every day and meal type.
 
-        This now builds the object graph in memory and persists it in one go,
-        relying on the relationship's cascade behavior.
+        Persist the week and slots through relationship cascades within the
+        caller's transaction; this method does not commit.
 
         Args:
-            user_id: The ID of the user for whom to create the week.
-            week_data: The data for the new week.
+            user: Owner of the new week.
+            week_data: Name of the week to create.
 
         Returns:
-            The newly created Week object, with its slots attached.
+            The created week with all meal slots attached.
         """
-        logger.info(f'Creating a new week named "{week_data.name}" for user {user_id}')
-        new_week = Week(user_id=user_id, name=week_data.name)
+        logger.info(f'Creating a new week named "{week_data.name}" for user {user.id}')
+        new_week = Week(user_id=user.id, name=week_data.name)
         new_week.meal_slots = [
             MealSlot(day_of_week=day, meal_type=meal_type) for day in DayOfWeek for meal_type in MealType
         ]
@@ -50,37 +67,36 @@ class WeekService:
         logger.info(f'Successfully created week {week.id} and initialized its meal slots')
         return week
 
-    async def get_visible_week(self, week_id: str, user_id: UUID | None) -> Week:
-        """Retrieves a single week by its ID.
-        Now weeks are only private.
+    async def get_visible_week(self, week_id: str, user: User | None) -> Week:
+        """Retrieve a private week for its owner.
 
         Args:
-            week_id: The ID of the week to retrieve.
-            user_id: The ID of the user for whom to retrieve the week.
+            week_id: UUID string identifying the week.
+            user: Requesting user, or None for an anonymous request.
 
         Returns:
-            The Week object if found.
+            The requested week.
 
         Raises:
-            WeekNotFoundException: If the week does not exist or the ID is invalid.
-            WeekForbiddenException: If the week does not belong to the user.
+            WeekNotFoundException: If the ID is invalid or the week does not exist.
+            WeekForbiddenException: If the user is absent or does not own the week.
         """
         week = await self._get_week(week_id, for_update=False)
 
-        if user_id != week.user_id:
-            logger.error(f'User {user_id} cannot access week {week.id}')
+        if not (user and user.id == week.user_id):
+            logger.error(f'User {user.id if user else None} cannot access week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
 
-    async def get_week_for_edit(self, week_id: str, user_id: UUID) -> Week:
+    async def get_week_for_edit(self, week_id: str, user: User) -> Week:
         """Retrieves a week for editing.
 
         Ensures the user owns the week and locks it for update.
 
         Args:
             week_id: The ID of the week to retrieve.
-            user_id: The ID of the user requesting the week for edit.
+            user: The user requesting the operation.
 
         Returns:
             The requested Week object.
@@ -90,8 +106,8 @@ class WeekService:
             WeekForbiddenException: If the user does not own the week.
         """
         week = await self._get_week(week_id, for_update=True)
-        if week.user_id != user_id:
-            logger.error(f'User {user_id} cannot edit week {week.id}')
+        if week.user_id != user.id:
+            logger.error(f'User {user.id} cannot edit week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week
@@ -123,18 +139,18 @@ class WeekService:
 
         return week
 
-    async def get_weeks(self, user_id: UUID) -> list[Week]:
+    async def get_weeks(self, user: User) -> list[Week]:
         """Retrieves all weeks for a specific user.
 
         Args:
-            user_id: The ID of the user whose weeks to retrieve.
+            user: The user requesting the operation.
 
         Returns:
             A list of the user's weeks.
         """
-        logger.info(f'Retrieving all weeks for user {user_id}')
-        weeks = await self._week_dao.find_all(OwnerId(user_id=user_id))
-        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user_id}')
+        logger.info(f'Retrieving all weeks for user {user.id}')
+        weeks = await self._week_dao.find_all(OwnerId(user_id=user.id))
+        logger.info(f'Successfully retrieved {len(weeks)} weeks for user {user.id}')
 
         return weeks
 
@@ -163,24 +179,22 @@ class WeekService:
         logger.info(f'Successfully deleted week {week.id}')
 
     async def assign_recipes_to_meal_slots(self, week: Week, *slots_data: MealSlotAssign) -> list[MealSlot]:
-        """Assigns recipes to meal slots in a single transaction.
+        """Validate all assignments, then update meal slots in the caller's transaction.
 
-        This method processes multiple recipe-to-slot assignments at once. It ensures that all
-        provided data is valid—including UUID formats, existence of slots and recipes, and user
-        permissions—before committing any changes to the database. The entire operation is atomic;
-        if any single assignment fails validation, no changes are made.
+        Validate UUID formats, slot membership, recipe existence, and recipe
+        visibility before applying updates. Slots are locked during validation.
+        The caller is responsible for committing or rolling back the transaction.
 
         Args:
-            week: The week containing the meal slots to be updated.
-            slots_data: A variable number of `MealSlotAssign` objects, each specifying a
-                `slot_id` and the `recipe_id` to be assigned.
+            week: Week whose slots are being updated; access must be checked by the caller.
+            slots_data: Assignments specifying slot IDs and recipe IDs, or None to clear slots.
 
         Returns:
-            A list of `MealSlot` objects representing the newly updated meal slots.
+            Updated meal slots in assignment order, or an empty list for no assignments.
 
         Raises:
-            MealSlotAssignException: If there are any validation errors, containing a list
-                of all the issues found.
+            MealSlotAssignException: If validation finds invalid identifiers, missing
+                records, slots from another week, or inaccessible private recipes.
         """
         valid_assignments = await self._validate_slot_and_recipe_data(week, *slots_data)
         logger.info(f'Updating {len(slots_data)} slots for week {week.id}')

@@ -1,11 +1,12 @@
+"""Week schemas and conversion of flat meal slots into daily groups."""
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from week_eat_planner.api.schemas.common import OwnerId, RecordId
 from week_eat_planner.api.schemas.meal_slot import MealSlotRead
-from week_eat_planner.db.models.meal_slot import DayOfWeek
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import DayOfWeek, Week
 
 
 class WeekBase(BaseModel):
@@ -62,8 +63,15 @@ class WeekRead(WeekReadMinimal):
     @model_validator(mode='before')
     @classmethod
     def structure_week_days(cls, week: Week) -> dict[str, Any]:
-        """Transforms flat meal_slots into structured week_days."""
+        """Group an ORM week's flat meal slots into one entry per day.
 
+        Args:
+            week: ORM week with its meal_slots relationship loaded.
+
+        Returns:
+            Week identifiers and name, plus daily groups in DayOfWeek order. Each
+            group contains the slots matching that day, including unassigned slots.
+        """
         return {
             'id': week.id,
             'user_id': week.user_id,

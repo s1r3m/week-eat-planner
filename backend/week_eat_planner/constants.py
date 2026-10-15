@@ -6,7 +6,7 @@ MIN_PASSWORD_LENGTH = 8
 
 
 class AppUrl(StrEnum):
-    """Enumeration of API endpoint URLs."""
+    """API path constants, including the currently unregistered legacy refresh path."""
 
     AUTH_GOOGLE_EXCHANGE = '/auth/google/exchange'
     AUTH_LOGIN = '/auth/login'
@@ -33,10 +33,7 @@ class AppUrl(StrEnum):
     USER_PASSWORD = '/user/password'
 
 
-ACCESS_TOKEN_COOKIE_NAME = 'access_token'
-ACCESS_TOKEN_COOKIE_PATH = '/'
-REFRESH_TOKEN_COOKIE_NAME = 'refresh_token'
-REFRESH_TOKEN_COOKIE_PATH = '/'
+SESSION_COOIKE_NAME = 'wep_session'
 
 
 class StorageBucket(StrEnum):
@@ -45,12 +42,6 @@ class StorageBucket(StrEnum):
     RECIPES = 'recipes'
     USERS = 'users'
     WEEKS = 'weeks'
-
-
-class TokenType(StrEnum):
-    """Enumeration of token types."""
-
-    BEARER = 'bearer'
 
 
 class Unit(StrEnum):

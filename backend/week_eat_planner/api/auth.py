@@ -1,36 +1,22 @@
 """API router for authentication-related endpoints."""
 
 from typing import Annotated
-from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, Response, status
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_active_user_id
+from week_eat_planner.api.dependencies.auth_deps import get_current_auth_session
 from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
 from week_eat_planner.api.schemas import SuccessResponse, UserCreate, UserRead
-from week_eat_planner.api.schemas.user import GoogleCode
-from week_eat_planner.constants import (
-    ACCESS_TOKEN_COOKIE_NAME,
-    ACCESS_TOKEN_COOKIE_PATH,
-    AppUrl,
-    REFRESH_TOKEN_COOKIE_NAME,
-    REFRESH_TOKEN_COOKIE_PATH,
-)
-from week_eat_planner.db.models.user import User
+from week_eat_planner.api.schemas.user import GoogleCode, UserLogin
+from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
+from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.exceptions import (
-    RefreshTokenMissingException,
-    RefreshTokenNotFoundException,
-    TokenExpiredException,
-    TokenForbidden,
-    TokenRevokedException,
-)
-from week_eat_planner.helpers import set_access_cookies, set_refresh_cookie
+from week_eat_planner.helpers import set_session_cookie
 from week_eat_planner.services.auth_service import AuthService
+from week_eat_planner.services.session_service import SessionService
 
 router = APIRouter(tags=['Auth'])
 
@@ -39,122 +25,77 @@ router = APIRouter(tags=['Auth'])
 async def create_user(
     user_data: UserCreate,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-    response: Response,
 ) -> User:
-    """Registers a new user and authenticates them.
+    """Register a user with an email address, password, and display name.
 
     Args:
-        user_data: The user's email and password.
+        user_data: Password account details for the new user.
+        session: Database session committed by the dependency after the endpoint returns.
 
     Returns:
-        UserRead object with created user info.
+        The created user record, serialized as UserRead.
 
     Raises:
-        SignUpWithAuthException: If the request contains an Authorization header.
-        HTTPException: 409 Conflict if a user with the same email already exists.
+        UserAlreadyExistsException: If the email is already registered (HTTP 409).
     """
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request for {user_data.email}')
     auth_service = AuthService(session)
     created_user = await auth_service.register_user(user_data)
-    access_token, refresh_token = await auth_service.login(created_user.email, user_data.password)
-    set_refresh_cookie(response, refresh_token)
-    set_access_cookies(response, access_token)
 
     return created_user
 
 
 @router.post(AppUrl.AUTH_LOGIN, response_model=SuccessResponse)
 async def login(
-    user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_data: UserLogin,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
 ) -> SuccessResponse:
-    """Authenticates a user and returns an access token.
+    """Authenticate password credentials and set a session cookie.
 
-    On successful authentication, an access token is returned in the response body,
-    and a refresh token is set as an HTTP-only cookie.
+    The response body contains a success status. The opaque session token is
+    sent only in an HTTP-only cookie, with its hash stored in the database.
 
     Args:
-        user_data: The user's login credentials (username and password).
+        user_data: Email address and password to verify.
+        session: Database session committed by the dependency after the endpoint returns.
+        response: Response to receive the session cookie.
 
     Returns:
-        A SuccessResponse indicating successful authentication.
+        A success response for the authenticated request.
 
     Raises:
-        LoginWithAuthException: If the request contains an Authorization header.
-        HTTPException: 401 Unauthorized if credentials are invalid or the email format is incorrect.
+        OAuthAccountException: If the account has no password (HTTP 409).
+        InvalidCredentialsException: If the credentials are incorrect (HTTP 401).
     """
-    logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request for {user_data.username=}')
-    access_token, refresh_token = await AuthService(session).login(user_data.username, user_data.password)
-    set_refresh_cookie(response, refresh_token)
-    set_access_cookies(response, access_token)
-    return SuccessResponse()
-
-
-@router.post(AppUrl.AUTH_REFRESH, response_model=SuccessResponse)
-async def refresh_tokens(
-    request: Request,
-    response: Response,
-    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
-) -> SuccessResponse:
-    """Generates a new access token using a refresh token.
-
-    This endpoint requires a valid refresh token to be present in an HTTP-only cookie.
-    If the refresh token is valid, a new access token is returned and a new
-    refresh token is set in the cookie.
-
-    Returns:
-        A SuccessResponse indicating successful token refresh.
-
-    Raises:
-        HTTPException: 401 Unauthorized if the refresh token is missing, invalid, or expired.
-    """
-    logger.info(f'Got POST {AppUrl.AUTH_REFRESH} request')
-    cookie_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    if not cookie_token:
-        logger.error('No refresh token in request cookies')
-        raise RefreshTokenMissingException()
-
-    access_token, refresh_token = await AuthService(session).refresh_tokens(cookie_token)
-    set_refresh_cookie(response, refresh_token)
-    set_access_cookies(response, access_token)
+    logger.info(f'Got POST {AppUrl.AUTH_LOGIN} request with {user_data.email=}')
+    user = await AuthService(session).login(user_data)
+    session_token = await SessionService(session).create_session_token(user)
+    set_session_cookie(response, session_token)
     return SuccessResponse()
 
 
 @router.post(AppUrl.AUTH_LOGOUT, status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
-    request: Request,
     response: Response,
-    user_id: Annotated[UUID, Depends(get_active_user_id)],
+    auth_session: Annotated[Session | None, Depends(get_current_auth_session)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Logs out the current user by invalidating their session.
+    """Delete the current stored session and clear the session cookie.
 
-    This endpoint invalidates the user's refresh token and removes the
-    corresponding cookie from the client, effectively ending the session.
+    Missing, unknown, or expired session cookies still result in HTTP 204.
 
-    Calling this endpoint when already logged out (e.g., with a missing or
-    invalid refresh token) will still result in a successful response.
-
-    Returns:
-        None. A 204 No Content status code is returned on success.
+    Args:
+        response: Response whose session cookie will be cleared.
+        auth_session: Valid session resolved from the cookie, or None.
+        session: Database session committed by the dependency after the endpoint returns.
     """
-    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for user {user_id}')
-    refresh_token = request.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    if not refresh_token:
-        logger.warning(f'No refresh token in request cookies for user {user_id}')
-        return
-
-    try:
-        await AuthService(session).logout(user_id, refresh_token)
-    except (TokenExpiredException, TokenForbidden, RefreshTokenNotFoundException, TokenRevokedException) as exc:
-        # If the token was already expired, revoked, or not found, the user
-        # is effectively logged out, so we can return a success response.
-        logger.warning(f'Logout attempted for user {user_id} with already invalid refresh token: {exc.detail}')
-
-    response.delete_cookie(key=REFRESH_TOKEN_COOKIE_NAME, path=REFRESH_TOKEN_COOKIE_PATH)
-    response.delete_cookie(key=ACCESS_TOKEN_COOKIE_NAME, path=ACCESS_TOKEN_COOKIE_PATH)
-    return
+    logger.info(f'Got POST {AppUrl.AUTH_LOGOUT} request for with session.')
+    if not auth_session:
+        logger.warning('A logout request with missing session is registered')
+    else:
+        await AuthService(session).logout(auth_session)
+    response.delete_cookie(key=SESSION_COOIKE_NAME)
 
 
 @router.post(AppUrl.AUTH_GOOGLE_EXCHANGE, response_model=SuccessResponse)
@@ -164,27 +105,29 @@ async def google_auth(
     httpx_client: Annotated[AsyncClient, Depends(get_httpx_client)],
     response: Response,
 ) -> SuccessResponse:
-    """Authenticates a user via the Google OAuth 2.0 authorization code flow.
+    """Authenticate a verified Google identity and set a session cookie.
 
-    Accepts the one-time authorization code from the frontend, exchanges it
-    with Google, and returns an access token. A refresh token is set as an
-    HTTP-only cookie. Creates a new user account on first login.
+    Create an account on first login, or reuse the account matching the Google
+    provider and user ID. The body contains a success status; the opaque
+    session token is sent in an HTTP-only cookie.
 
     Args:
-        data: The authorization code payload received from the Google consent screen.
+        data: One-time authorization code from the Google consent screen.
+        session: Database session committed by the dependency after the endpoint returns.
+        httpx_client: Shared HTTP client used for Google token and signing-key requests.
+        response: Response to receive the session cookie.
 
     Returns:
-        A SuccessResponse indicating successful authentication.
+        A success response after creating the authentication session.
 
     Raises:
-        PasswordAccountException: If the Google email is already registered with
-            a password account.
+        PasswordAccountException: If the Google email belongs to a password account.
+        OAuthAccountException: If the email belongs to a different OAuth identity.
         OAuthInvalidCodeException: If Google rejects the authorization code.
-        OAuthProviderException: If the Google token exchange or JWT verification fails.
+        OAuthProviderException: If communication or identity verification fails.
     """
     logger.info(f'Got POST {AppUrl.AUTH_GOOGLE_EXCHANGE} request')
-    access_token, refresh_token = await AuthService(session).login_with_google(data, httpx_client)
-
-    set_refresh_cookie(response, refresh_token)
-    set_access_cookies(response, access_token)
+    user = await AuthService(session).login_with_google(data, httpx_client)
+    session_token = await SessionService(session).create_session_token(user)
+    set_session_cookie(response, session_token)
     return SuccessResponse()

@@ -5,11 +5,11 @@ from httpx import Client, HTTPStatusError, Response
 
 class UnexpectedStatusCodeError(HTTPStatusError):
     """Exception raised when the API returns an unexpected status code."""
-    pass
 
 
 class BaseApiClient:
     """Base class for API clients."""
+
     def __init__(self, base_url: str) -> None:
         """Initialize the API client.
 
@@ -58,6 +58,7 @@ class BaseApiClient:
 
 class WepApiClient(BaseApiClient):
     """Client for the WEP API."""
+
     PING = '/api/ping'
 
     def get_ping(self) -> Response:

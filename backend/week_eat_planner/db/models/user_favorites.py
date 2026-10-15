@@ -1,3 +1,5 @@
+"""Unique associations between users and their favorite recipes."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -12,7 +14,14 @@ if TYPE_CHECKING:
 
 
 class UserFavorite(Base):
-    """Join table recording which recipes a user has marked as favorites."""
+    """Unique association between a user and a favorite recipe.
+
+    Attributes:
+        user_id: ID of the user who marked the recipe as a favorite.
+        recipe_id: ID of the favorite recipe.
+        user: User who owns the association.
+        recipe: Eagerly loaded recipe associated with the favorite.
+    """
 
     __tablename__ = 'user_favorites'
     __table_args__ = (UniqueConstraint('user_id', 'recipe_id', name='uq_user_favorites_user_recipe'),)

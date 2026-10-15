@@ -7,26 +7,31 @@ ph = PasswordHasher()
 
 
 def get_password_hash(password: str) -> str:
-    """Hashes a plain text password.
+    """Hash a plain-text password using Argon2 with the configured hasher defaults.
 
     Args:
-        password: The plain text password to hash.
+        password: Plain-text password to hash.
 
     Returns:
-        The hashed password as a string.
+        An encoded Argon2 password hash, including its salt and parameters.
     """
     return ph.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plain text password against a hashed password.
+    """Verify a plain-text password against an encoded Argon2 hash.
 
     Args:
-        plain_password: The plain text password to verify.
-        hashed_password: The hashed password to compare against.
+        plain_password: Plain-text password to verify.
+        hashed_password: Encoded Argon2 hash to compare against.
 
     Returns:
-        True if the passwords match, False otherwise.
+        True if verification succeeds. Return False for a password mismatch or
+        an invalid hash format.
+
+    Raises:
+        VerificationError: If Argon2 verification fails for a reason other than
+            a password mismatch or an invalid hash format.
     """
     try:
         ph.verify(hashed_password, plain_password)

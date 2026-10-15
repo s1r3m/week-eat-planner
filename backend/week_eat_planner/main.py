@@ -14,13 +14,13 @@ from week_eat_planner.db.session_maker import db
 
 @asynccontextmanager
 async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None]:
-    """Manages the application lifespan.
-
-    Initializes the database connection pool on startup and closes it, along with
-    any other global resources like the HTTP client, on shutdown.
+    """Initialize database resources and close shared resources on normal shutdown.
 
     Args:
-        fast_app: The FastAPI application instance.
+        fast_app: FastAPI application using this lifespan context.
+
+    Yields:
+        None while the application serves requests.
     """
     await db.init()
 
@@ -31,12 +31,13 @@ async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None]:
 
 
 def create_app() -> FastAPI:
-    """Creates and configures the FastAPI application.
+    """Create a FastAPI application with its lifespan and API routers.
 
-    Includes all API routers and adds CORS middleware.
+    CORS middleware is attached separately to the module-level app instance.
 
     Returns:
-        The configured FastAPI application instance.
+        A new FastAPI application with authentication, monitoring, recipe, user,
+        and week routers.
     """
     fast_app = FastAPI(title='Week-Eat-Planner', lifespan=lifespan)
 
@@ -53,7 +54,6 @@ app = create_app()
 
 origins = [
     'http://localhost:3000',
-    'http://localhost:3001',
     'https://yourproductionfrontend.com',
 ]
 
@@ -67,9 +67,10 @@ app.add_middleware(
 
 
 def start_app() -> None:
-    """Starts the application using uvicorn.
+    """Run a newly created application with Uvicorn on 0.0.0.0:8000.
 
-    This function is used as an entry point for the application.
+    This console entry point calls create_app(), whose result does not include
+    the CORS middleware attached separately to the module-level app.
     """
     fast_app = create_app()
     uvicorn.run(fast_app, host='0.0.0.0', port=8000)

@@ -2,8 +2,8 @@ import pytest
 from fastapi import status
 
 from tests.constants import PASSWORD
-from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, REFRESH_TOKEN_COOKIE_NAME
-from week_eat_planner.exceptions import NoAccessTokenException
+from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
+from week_eat_planner.exceptions import InvalidCredentialsException, NoSessionTokenException
 
 NEW_PASSWORD = 'new_password'
 
@@ -26,7 +26,7 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
 async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
     response = await logout_client_for_created_user.get(AppUrl.USER)
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -60,7 +60,7 @@ async def test_update_user__empty_payload__422_returned(auth_client_for_created_
 async def test_update_user__no_auth__401_returned(client):
     response = await client.patch(AppUrl.USER, json={'username': 'new_username'})
 
-    error = NoAccessTokenException()
+    error = NoSessionTokenException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
 
@@ -72,8 +72,7 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'status': 'success'}
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(SESSION_COOIKE_NAME)
 
 
 @pytest.mark.parametrize(
@@ -88,3 +87,14 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 async def test_change_password__bad_data__validation_failed(auth_client_for_created_user, body):
     response = await auth_client_for_created_user.patch(AppUrl.USER_PASSWORD, json=body)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_change_password__old_password_mismatch__error_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.patch(
+        AppUrl.USER_PASSWORD, json={'old_password': 'wrong_password', 'new_password': NEW_PASSWORD}
+    )
+
+    error = InvalidCredentialsException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+    assert not response.cookies.get(SESSION_COOIKE_NAME)

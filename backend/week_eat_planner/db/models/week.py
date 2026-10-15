@@ -1,3 +1,5 @@
+"""User-owned weekly meal plans with meal slots and an optional shopping list."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -13,14 +15,14 @@ if TYPE_CHECKING:
 
 
 class Week(Base):
-    """Represents a week-long meal plan for a user.
+    """Private weekly meal plan belonging to a user.
 
     Attributes:
-        id: The unique identifier for the week.
-        name: The name or label given to the week.
-        user_id: The foreign key linking to the owner of this week.
-        user: The SQLAlchemy relationship to the User who owns this week.
-        meal_slots: The SQLAlchemy relationship to the MealSlots associated with this week.
+        name: Name or label of the week.
+        user_id: ID of the week's owner.
+        user: Owner account.
+        meal_slots: Eagerly loaded slots, deleted with the week or when orphaned.
+        shopping_list: Optional shopping list, deleted with the week or when orphaned.
     """
 
     __tablename__ = 'weeks'

@@ -7,14 +7,10 @@ from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas.common import RecordId, WeekId
-from week_eat_planner.api.schemas.recipe import Ingredient
-from week_eat_planner.api.schemas.shopping_list import ShoppingListItem, ShoppingListUpdate
+from week_eat_planner.api.schemas import Ingredient, RecordId, ShoppingListItem, ShoppingListUpdate, WeekId
 from week_eat_planner.constants import Unit
 from week_eat_planner.db.dao import ShoppingListDAO
-from week_eat_planner.db.models.recipe import Recipe
-from week_eat_planner.db.models.shopping_list import ShoppingList
-from week_eat_planner.db.models.week import Week
+from week_eat_planner.db.models import Recipe, ShoppingList, Week
 from week_eat_planner.exceptions import ShoppingListAlreadyExistsException, ShoppingListNotFoundException
 from week_eat_planner.helpers import generate_uuid7
 
@@ -31,16 +27,20 @@ class ShoppingListService:
         self._shopping_list_dao = ShoppingListDAO(session)
 
     async def create(self, week: Week) -> ShoppingList:
-        """Creates a shopping list for given week.
+        """Persist a snapshot of aggregated ingredients from a week's assigned recipes.
+
+        The week and recipe relationships must be loaded. New items start
+        unchecked; the list does not automatically track subsequent recipe changes.
 
         Args:
-            week: The week for which to create the shopping list.
+            week: Week whose meal slots supply the shopping list ingredients.
 
         Returns:
-            The newly created ShoppingList object.
+            The newly created shopping list, possibly containing no items.
 
         Raises:
-            ShoppingListAlreadyExistsException: If a shopping list for the week already exists.
+            ShoppingListAlreadyExistsException: If the week already has a shopping
+                list, including when a concurrent insert triggers IntegrityError.
         """
         logger.info(f'Creating a shopping list for week {week.id}')
         existing_list = await self._shopping_list_dao.find_one_or_none(WeekId(week_id=week.id))
@@ -66,13 +66,17 @@ class ShoppingListService:
         return created
 
     async def _get_aggregated_ingredients(self, week: Week) -> list[ShoppingListItem]:
-        """Aggregates all ingredients from all assigned recipes from a given week.
+        """Sum ingredients from recipes assigned to the week's meal slots.
+
+        Skip empty slots and combine amounts by exact ingredient name and unit
+        without unit conversion. Scale by slot portions divided by recipe portions;
+        missing portions attributes default to one. New items are unchecked.
 
         Args:
-            week: The week from which to aggregate ingredients.
+            week: Week whose slots and their assigned recipe data are loaded.
 
         Returns:
-            A list of ShoppingListItem objects representing the aggregated ingredients.
+            Aggregated shopping list items, or an empty list if no recipes are assigned.
         """
         recipe_counts: dict[Recipe, int] = {}
         for meal_slot in week.meal_slots:
@@ -116,16 +120,16 @@ class ShoppingListService:
         return list
 
     async def get_by_week_for_update(self, week: Week) -> ShoppingList:
-        """Retrieves a shopping list for updating.
+        """Retrieve a week's shopping list and lock its row for update.
 
         Args:
-            week: The week the shopping list belongs to.
+            week: Week the shopping list belongs to.
 
         Returns:
-            The requested ShoppingList object.
+            The shopping list locked within the caller's transaction.
 
         Raises:
-            ShoppingListNotFoundException: If the shopping list does not exist.
+            ShoppingListNotFoundException: If the week has no shopping list.
         """
         logger.info(f'Getting a shopping list for update {week.id}')
         list = await self._get_shopping_list(week.id, for_update=True)
@@ -171,9 +175,6 @@ class ShoppingListService:
 
         Args:
             shopping_list: The shopping list to delete.
-
-        Returns:
-            None.
         """
         logger.info(f'Deleting the shopping list {shopping_list.id}')
         count = await self._shopping_list_dao.delete(RecordId(id=shopping_list.id))

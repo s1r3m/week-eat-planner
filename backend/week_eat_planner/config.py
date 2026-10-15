@@ -10,7 +10,31 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    """Application settings loaded from environment variables and backend/.env.
+
+    Attributes:
+        IS_DEBUG: Whether debug mode is enabled; disables the session cookie's Secure flag.
+        DB_URL: SQLAlchemy database connection URL.
+        BE_HOST: Backend base URL used to construct the Telegram webhook URL.
+        FE_HOST: Frontend host setting.
+        STORAGE_HOST: S3-compatible endpoint and public image URL base.
+        STORAGE_ACCESS_KEY_ID: Object storage access key ID.
+        STORAGE_SECRET_ACCESS_KEY: Object storage secret access key.
+        STORAGE_REGION: Object storage region setting.
+        JWT_SECRET: Legacy JWT signing secret unused by current session authentication.
+        JWT_ALGORITHM: Legacy JWT signing algorithm setting.
+        JWT_ISSUER: Legacy JWT issuer setting.
+        JWT_AUDIENCE: Legacy JWT audience setting.
+        SESSION_TTL_DAYS: Stored session lifetime and cookie max-age in days.
+        ROTATE_TOKEN_EXPIRE_DELTA: Legacy refresh-token rotation setting, currently unused.
+        FORMAT_LOG: Log message format, with a timestamp, level, and message by default.
+        LOG_ROTATION: Log rotation size, defaulting to 10 MB.
+        ADMIN_IDS: Telegram administrator IDs.
+        BOT_TOKEN: Telegram bot token.
+        TG_API_SITE: Telegram API base URL.
+        GOOGLE_CLIENT_ID: OAuth client ID and expected Google ID-token audience.
+        GOOGLE_CLIENT_SECRET: OAuth client secret used for the Google code exchange.
+    """
 
     IS_DEBUG: bool
 
@@ -30,8 +54,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_ISSUER: str
     JWT_AUDIENCE: str
-    ACCESS_TOKEN_TTL: int  # Access token time to live in minutes
-    REFRESH_TOKEN_TTL: int  # Refresh token time to live in days
+    SESSION_TTL_DAYS: int  # Refresh token time to live in days
     ROTATE_TOKEN_EXPIRE_DELTA: int  # Time delta in minutes to rotate refresh token if it's close to expiration
 
     # Logger settings.
