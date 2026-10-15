@@ -8,9 +8,10 @@ import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
 import AppNavigation from '@/modules/main/ui/AppNavigation.vue'
 import AppUser from '@/modules/main/ui/AppUser.vue'
 import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
+import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../helpers/composable'
-import { user } from '../helpers/fixtures'
+import { user, week } from '../helpers/fixtures'
 import { uiStubs } from '../helpers/ui'
 
 const api = vi.fn()
@@ -153,6 +154,35 @@ it('renders an optional navigation item without requiring an icon or children', 
 	expect(wrapper.get('a').text()).toBe('Settings')
 	expect(wrapper.find('icon-stub').exists()).toBe(false)
 	expect(wrapper.find('.nav__children').exists()).toBe(false)
+})
+
+it('renders week links, emits navigation, and hides children when collapsed', async () => {
+	const collapsed = ref(false)
+	const { wrapper, cache } = mountComposable(() => null, {
+		render: () => h(AppNavigation, { collapsed: collapsed.value }),
+		stubs,
+		seed: (cache) => cache.setQueryData(WEEKS_KEY.all(), [week()]),
+	})
+	const component = wrapper.getComponent(AppNavigation)
+	expect(wrapper.get('.nav__children').text()).toBe('Week one')
+	expect(
+		wrapper.findAll('icon-stub').map((icon) => icon.attributes('name')),
+	).toEqual(['lucide:calendar-days', 'lucide:chevron-down', 'lucide:utensils'])
+	await wrapper.get('.nav__link-collapse-btn').trigger('click')
+	expect(component.emitted('navigate')).toBeUndefined()
+	await wrapper.get('.nav__link').trigger('click')
+	await wrapper.get('.nav__children .nav__link').trigger('click')
+	expect(component.emitted('navigate')).toEqual([[], []])
+	collapsed.value = true
+	await flushPromises()
+	expect(wrapper.find('.nav__children').exists()).toBe(false)
+	expect(wrapper.find('.nav__link-collapse-btn').exists()).toBe(false)
+	expect(wrapper.findAll('.nav__title--collapsed')).toHaveLength(2)
+	collapsed.value = false
+	cache.setQueryData(WEEKS_KEY.all(), [])
+	await flushPromises()
+	expect(wrapper.find('.nav__children').exists()).toBe(false)
+	expect(wrapper.find('.nav__link-collapse-btn').exists()).toBe(true)
 })
 
 it('renders a neutral theme icon during the ClientOnly placeholder phase', () => {

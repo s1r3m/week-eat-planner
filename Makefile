@@ -170,6 +170,7 @@ fe_lint:
 	@echo "Run frontend linters"
 	cd $(FE_PATH) && bun run lint
 	cd $(FE_PATH) && bun run format:check
+	cd $(FE_PATH) && bun run test:typecheck
 
 
 ## @FE Fix style
