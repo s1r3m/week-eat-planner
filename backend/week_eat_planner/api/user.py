@@ -45,11 +45,14 @@ async def update_user(
 
     Args:
         new_data: Fields to update (username).
-        user_id: The ID of the current authenticated user.
-        session: Database session with auto-commit.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated user profile.
+
+    Raises:
+        UserNotFoundException: If the user record no longer exists.
     """
     logger.info(f'Got PATCH {AppUrl.USER} request for user {user.id}')
     updated_user = await UserService(session).update_user(user, new_data)
@@ -64,19 +67,24 @@ async def change_password(
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
 ) -> SuccessResponse:
-    """Changes the current user's password.
+    """Change the password, revoke all sessions, and set a new session cookie.
 
-    Validates the old password before setting the new one. On success,
-    it re-authenticates the user and sets new access and refresh token cookies.
+    Verify the old password, update the stored password hash, delete the user's
+    existing sessions, and authenticate again to create the replacement session.
 
     Args:
-        data: Schema containing old and new passwords.
-        user_id: The ID of the currently authenticated user.
-        session: Database session.
-        response: FastAPI response object for setting cookies.
+        data: Current and replacement passwords.
+        user: Current authenticated, active user.
+        session: Database session committed by the dependency after the endpoint returns.
+        response: Response to receive the new HTTP-only session cookie.
 
     Returns:
-        A SuccessResponse indicating successful password change.
+        A success response after changing the password and creating the new session.
+
+    Raises:
+        UserNotFoundException: If the user record is missing.
+        OAuthAccountException: If the account has no password.
+        InvalidCredentialsException: If the current password is incorrect.
     """
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user.id}')
     updated_user = await UserService(session).change_password(user, data.old_password, data.new_password)

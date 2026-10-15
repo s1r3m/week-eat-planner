@@ -1,3 +1,5 @@
+"""Meal slots identified by a week, day, and meal type."""
+
 from enum import StrEnum
 from typing import TYPE_CHECKING
 from uuid import UUID

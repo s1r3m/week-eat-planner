@@ -1,3 +1,5 @@
+"""Recipes, their authors, image references, meal slots, and favorites."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -14,18 +16,19 @@ if TYPE_CHECKING:
 
 
 class Recipe(Base):
-    """Represents a recipe created by a user.
+    """Recipe content owned by a user, with optional public visibility.
 
     Attributes:
-        id: The unique identifier for the recipe.
-        name: The name of the recipe.
-        is_public: A flag indicating if the recipe is visible to other users.
-        steps: A JSON object storing the cooking steps.
-        ingredients: A JSON object storing the ingredients and their quantities.
-        user_id: The foreign key linking to the user who created this recipe.
-        image_key: The key to the recipe image in storage.
-        user: The SQLAlchemy relationship to the User object.
-        meal_slots: The SQLAlchemy relationship to the MealSlot objects.
+        name: Name of the recipe.
+        is_public: Whether users other than the owner may view the recipe.
+        steps: JSON array of cooking step dictionaries.
+        ingredients: JSON array of ingredient dictionaries with amounts and units.
+        user_id: ID of the user who created the recipe.
+        image_key: Optional bucket/key reference to the recipe image.
+        user: Eagerly loaded author account.
+        meal_slots: Meal slots referencing the recipe.
+        favorites: Favorite associations deleted when the recipe is deleted.
+        is_favorite: Unmapped flag populated for the requesting user by recipe services.
     """
 
     __tablename__ = 'recipes'

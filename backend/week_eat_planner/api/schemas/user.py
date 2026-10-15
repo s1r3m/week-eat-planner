@@ -1,3 +1,5 @@
+"""User profile, password authentication, and OAuth identity schemas."""
+
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
@@ -17,6 +19,12 @@ class Email(BaseModel):
 
 
 class UserLogin(Email):
+    """Password login credentials with an inherited email address.
+
+    Attributes:
+        password: Plain-text password with at least MIN_PASSWORD_LENGTH characters.
+    """
+
     password: Annotated[str, Field(min_length=MIN_PASSWORD_LENGTH)]
 
 

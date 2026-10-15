@@ -38,8 +38,8 @@ async def create_week(
 
     Args:
         week_data: Data to create a new week, primarily the week's name.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The created week object.
@@ -58,8 +58,8 @@ async def get_user_weeks(
     """Retrieves all weeks for the current user.
 
     Args:
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         A list of weeks belonging to the user.
@@ -82,11 +82,15 @@ async def get_week(
 
     Args:
         week_id: The ID of the week to retrieve.
-        user_id: The ID of the authenticated user or None for public access (TODO).
-        session: The database session.
+        user: The requesting user, or None; access requires ownership.
+        session: Database session without automatic commit.
 
     Returns:
         The requested week object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
     logger.info(f'Got GET {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user)
@@ -108,11 +112,15 @@ async def update_week(
     Args:
         new_data: The new data for the week.
         week_id: The ID of the week to update.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated week object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
     logger.info(f'Got PATCH {AppUrl.WEEKS_TPL.format(week_id=week_id)}')
     week_service = WeekService(session)
@@ -134,8 +142,12 @@ async def delete_week(
 
     Args:
         week_id: The ID of the week to delete.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
     """
     logger.info(f'Got DELETE {AppUrl.WEEKS_TPL.format(week_id=week_id)} for user {user.id}')
     week_service = WeekService(session)
@@ -156,11 +168,16 @@ async def assign_recipe_to_meal_slot(
     Args:
         week_id: The ID of the week containing the slots.
         slots_data: A list of slot assignments, each containing a slot ID and an optional recipe ID.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         A list of updated meal slot objects.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        MealSlotAssignException: If any slot or recipe assignment is invalid.
     """
     logger.info(
         f'Got PATCH {AppUrl.WEEK_SLOTS_TPL.format(week_id=week_id)} with {len(slots_data)} slots for user {user.id}'
@@ -182,11 +199,16 @@ async def create_shopping_list(
 
     Args:
         week_id: The ID of the week for which to create the shopping list.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The created shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListAlreadyExistsException: If the week already has a shopping list.
     """
     logger.info(f'Got POST {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user)
@@ -205,11 +227,16 @@ async def get_shopping_list(
 
     Args:
         week_id: The ID of the week.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         The shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got GET {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user)
@@ -230,11 +257,16 @@ async def update_shopping_list(
     Args:
         week_id: The ID of the week the shopping list belongs to.
         new_data: The new shopping list items.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated shopping list object.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the requesting user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got PUT {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)} with {new_data}')
     week = await WeekService(session).get_visible_week(week_id, user)
@@ -251,11 +283,17 @@ async def delete_shopping_list(
     user: Annotated[User, Depends(get_current_active_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Deletes an existing shopping list.
+    """Delete the shopping list belonging to a week owned by the current user.
 
     Args:
-    Returns:
-        None
+        week_id: UUID string identifying the week whose shopping list is deleted.
+        user: Authenticated, active user who must own the week.
+        session: Database session committed by the dependency after the endpoint returns.
+
+    Raises:
+        WeekNotFoundException: If the ID is invalid or the week does not exist.
+        WeekForbiddenException: If the user does not own the week.
+        ShoppingListNotFoundException: If the week has no shopping list.
     """
     logger.info(f'Got DELETE {AppUrl.SHOPPING_LIST_TPL.format(week_id=week_id)}')
     week = await WeekService(session).get_visible_week(week_id, user)

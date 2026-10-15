@@ -17,6 +17,11 @@ class RecipeService:
     """Service for handling recipe-related operations."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize database access using the provided session.
+
+        Args:
+            session: Database session whose transaction is managed by the caller.
+        """
         self._session = session
         self._recipe_dao = RecipeDAO(session)
         self._user_favorites_dao = UserFavoriteDAO(session)
@@ -26,7 +31,7 @@ class RecipeService:
 
         Args:
             recipe: The data for the new recipe.
-            user_id: The ID of the user creating the recipe.
+            user: The user requesting the operation.
 
         Returns:
             The created recipe.
@@ -39,18 +44,21 @@ class RecipeService:
         return created_recipe
 
     async def get_visible_recipe(self, recipe_id: str, user: User | None = None) -> Recipe:
-        """Retrieves a single recipe by its ID.
+        """Retrieve a public recipe or a recipe owned by the requesting user.
+
+        For an authenticated user, populate the recipe's is_favorite flag from
+        their favorite records.
 
         Args:
-            recipe_id: The ID of the recipe to retrieve.
-            user_id: The ID of the user requesting the recipe.
+            recipe_id: UUID string identifying the recipe.
+            user: Requesting user, defaulting to None for anonymous access to public recipes.
 
         Returns:
-            The requested recipe object.
+            The visible recipe with its requesting user's favorite status, when applicable.
 
         Raises:
             RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
-            RecipeForbiddenException: If the recipe is private and does not belong to the user.
+            RecipeForbiddenException: If the recipe is private and the user is absent or not its owner.
         """
         logger.info(f'Getting visible recipe {recipe_id} for user {user}')
         recipe = await self._get_recipe(recipe_id, for_update=False)
@@ -74,7 +82,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to retrieve.
-            user_id: The ID of the user requesting the recipe for edit.
+            user: The user requesting the operation.
 
         Returns:
             The requested recipe object.
@@ -118,17 +126,13 @@ class RecipeService:
         return recipe
 
     async def get_all_user_recipes(self, user: User) -> list[Recipe]:
-        """Retrieves all recipes for a given user.
+        """Retrieve recipes owned by a user and populate their favorite flags.
 
         Args:
-            user_id: The ID of the user whose recipes to retrieve.
+            user: User whose recipes and favorites should be queried.
 
         Returns:
-            A list of the user's recipes.
-
-        Raises:
-            RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
-            RecipeForbiddenException: If the recipe is private and does not belong to the user.
+            The user's recipes, or an empty list if the user has no recipes.
         """
         logger.info(f'Getting all recipes for user {user.id}')
         recipes = await self._recipe_dao.find_all(OwnerId(user_id=user.id))
@@ -172,18 +176,22 @@ class RecipeService:
         return count
 
     async def add_favorite(self, recipe_id: str, user: User) -> Recipe:
-        """Marks a recipe as a favorite for the user.
+        """Mark a visible recipe as a favorite, tolerating an existing association.
+
+        Return immediately if the favorite is already present. If insertion
+        raises IntegrityError, roll back the supplied session and reload the recipe
+        before returning it with is_favorite set to True.
 
         Args:
-            recipe_id: The ID of the recipe to favorite.
-            user_id: The ID of the user who is favoriting the recipe.
+            recipe_id: UUID string identifying the recipe to favorite.
+            user: User who will own the favorite association.
 
         Returns:
-            The recipe object with is_favorite=True.
+            The recipe with is_favorite set to True.
 
         Raises:
             RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
-            RecipeForbiddenException: If the recipe is private and does not belong to the user.
+            RecipeForbiddenException: If the recipe is private and not owned by the user.
         """
         logger.info(f'Marking recipe {recipe_id} favorite for user {user.id}')
         recipe = await self.get_visible_recipe(recipe_id, user)
@@ -211,7 +219,7 @@ class RecipeService:
 
         Args:
             recipe_id: The ID of the recipe to remove from favorites.
-            user_id: The ID of the user who is removing the favorite.
+            user: The user requesting the operation.
 
         Returns:
             The number of deleted favorite records (0 or 1).
@@ -231,13 +239,16 @@ class RecipeService:
         return count
 
     async def get_user_favorite_recipes(self, user: User) -> list[Recipe]:
-        """Retrieves all recipes favorited by a user.
+        """Retrieve a user's favorite recipes that remain visible to them.
+
+        Skip recipes made private by another owner and mark returned recipes with
+        is_favorite set to True.
 
         Args:
-            user_id: The ID of the user whose favorites to retrieve.
+            user: User whose favorite associations should be queried.
 
         Returns:
-            A list of favorited recipes.
+            Visible favorite recipes, or an empty list if none remain accessible.
         """
         logger.info(f'Getting all user_favorites for user {user.id}')
         favorites = await self._user_favorites_dao.find_all(

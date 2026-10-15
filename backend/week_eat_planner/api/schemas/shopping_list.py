@@ -1,3 +1,5 @@
+"""Schemas for reading and replacing shopping list items."""
+
 from pydantic import BaseModel, ConfigDict
 
 from week_eat_planner.api.schemas.common import WeekId

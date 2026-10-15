@@ -1,3 +1,5 @@
+"""Public request, response, and database filter schemas."""
+
 from .common import OwnerId, RecordId, SuccessResponse, WeekId
 from .meal_slot import MealSlotAssign, MealSlotId, MealSlotRead, MealSlotUpdate
 from .recipe import (

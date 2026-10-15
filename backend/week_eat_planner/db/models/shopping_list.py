@@ -1,3 +1,5 @@
+"""One persistent shopping list per week, with items stored as a JSON array."""
+
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -12,13 +14,12 @@ if TYPE_CHECKING:
 
 
 class ShoppingList(Base):
-    """Represents a shopping list with items from a corresponding week.
+    """A week's unique shopping list stored independently of later recipe changes.
 
     Attributes:
-        id: The unique identifier for the shopping_list.
-        week_id: The foreign key linking to the week from which it was created.
-        items: A JSON object storing the ingredients.
-        week: The SQLAlchemy relationship to the Week object.
+        week_id: ID of the associated week, with at most one list per week.
+        items: JSON array of ingredient dictionaries with checked flags.
+        week: Week from which the list was created.
     """
 
     __tablename__ = 'shopping_lists'

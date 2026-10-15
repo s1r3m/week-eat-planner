@@ -1,3 +1,5 @@
+"""Shared ORM identifiers and timestamps, and generic asynchronous database operations."""
+
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from uuid import UUID
@@ -14,7 +16,13 @@ from week_eat_planner.helpers import generate_uuid7
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    """Abstract base model for all database models."""
+    """Abstract ORM model with UUID v7 identifiers and UTC timestamps.
+
+    Attributes:
+        id: UUID v7 primary key, generated on insertion when not supplied.
+        created_at: Time of record creation, defaulting to the current UTC time.
+        updated_at: Time of creation or the latest SQLAlchemy-managed update.
+    """
 
     __abstract__ = True
     id: Mapped[UUID] = mapped_column(primary_key=True, default=generate_uuid7)
@@ -31,11 +39,23 @@ class Base(AsyncAttrs, DeclarativeBase):
     )
 
     def __repr__(self) -> str:
+        """Return the model class name and record ID.
+
+        Returns:
+            A diagnostic string describing the record.
+        """
         return f'<{type(self).__name__}> (id={self.id})'
 
 
 class BaseDAO[T: Base]:
-    """Generic Data Access Object for database operations."""
+    """Perform asynchronous CRUD operations for a configured ORM model.
+
+    Writes use the supplied session and do not commit. The caller manages
+    transaction completion and rollback after failures.
+
+    Attributes:
+        model: ORM model configured by each concrete DAO subclass.
+    """
 
     model: type[T] = None  # type: ignore
 
@@ -53,16 +73,16 @@ class BaseDAO[T: Base]:
             raise ValueError('A model must be specified in child classes!')
 
     async def add(self, instance: T) -> T:
-        """Adds a new instance of the model to the database.
+        """Add, flush, and refresh an instance without committing the transaction.
 
         Args:
-            instance: The model instance to add.
+            instance: Model instance to add.
 
         Returns:
             The added model instance, refreshed from the database.
 
         Raises:
-            SQLAlchemyError: If a database error occurs.
+            SQLAlchemyError: If insertion, flushing, or refreshing fails.
         """
         logger.debug(f'Adding {self.model.__name__}: {instance}')
         try:
@@ -118,6 +138,9 @@ class BaseDAO[T: Base]:
         Returns:
             A list of found model instances. Returns an empty list if no IDs
             are provided or none are found.
+
+        Raises:
+            SQLAlchemyError: If the query fails.
         """
         logger.debug(f'Getting {self.model.__name__} by IDs={obj_ids}')
         if not obj_ids:
@@ -140,7 +163,7 @@ class BaseDAO[T: Base]:
         """Fetches a single record from the database or None if not found.
 
         Args:
-            filters: A Pydantic model containing the filter criteria.
+            filters: Filter fields; only explicitly supplied values, including None, are applied.
             for_update: If True, applies a "FOR UPDATE" lock to the selected row. Defaults to False.
 
         Returns:
@@ -175,7 +198,7 @@ class BaseDAO[T: Base]:
         """Retrieves all records matching the given filters.
 
         Args:
-            filters: A Pydantic model containing filter criteria. If None, all records are returned.
+            filters: Explicitly supplied filter fields; None or an empty model selects all records.
             options: SQLAlchemy loader/execution options applied to the select query.
 
         Returns:
@@ -199,17 +222,22 @@ class BaseDAO[T: Base]:
         return list(records)
 
     async def update(self, filters: BaseModel, values: BaseModel) -> T:
-        """Updates records matching the given filters with new values.
+        """Update matching records and return the single affected model instance.
+
+        Use only explicitly supplied filter and update fields, including explicit
+        None values. Flush and refresh the result without committing. Filters
+        must match exactly one record for a successful return.
 
         Args:
-            filters: A Pydantic model containing the filter criteria for the records to update.
-            values: A Pydantic model containing the new values to apply.
+            filters: Pydantic model containing the filter criteria.
+            values: Pydantic model containing replacement field values.
 
         Returns:
-            The updated model instance.
+            The updated model instance, refreshed from the database.
 
         Raises:
-            SQLAlchemyError: If a database error occurs.
+            SQLAlchemyError: If the database operation fails, including when no
+                record or multiple records are returned.
         """
         filter_by = filters.model_dump(exclude_unset=True)
         values_dict = values.model_dump(exclude_unset=True)
@@ -230,7 +258,7 @@ class BaseDAO[T: Base]:
         """Deletes records matching the given filters.
 
         Args:
-            filters: A Pydantic model containing the filter criteria for the records to delete.
+            filters: Explicitly supplied filter fields; an empty model selects all records for deletion.
 
         Returns:
             The number of deleted records.

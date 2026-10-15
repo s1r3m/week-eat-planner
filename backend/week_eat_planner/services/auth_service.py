@@ -25,6 +25,11 @@ class AuthService:
     """Service for handling authentication-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize database access using the provided session.
+
+        Args:
+            session: Database session whose transaction is managed by the caller.
+        """
         self._user_dao = UserDAO(session)
         self._session_dao = SessionDAO(session)
 
@@ -60,20 +65,17 @@ class AuthService:
         return created_user
 
     async def login(self, user_data: UserLogin) -> str:
-        """Logs a user in.
-
-        Validates user credentials and returns access and refresh tokens upon success.
+        """Authenticate password credentials and create a stored session.
 
         Args:
-            username: The user's email.
-            password: The user's password.
+            user_data: Email address and plain-text password to verify.
 
         Returns:
-            A session token.
+            A new opaque session token whose hash is stored in the database.
 
         Raises:
-            InvalidEmailException: If the email format is invalid.
-            InvalidCredentialsException: If the user is not registered or the password is incorrect.
+            OAuthAccountException: If the email belongs to an account without a password.
+            InvalidCredentialsException: If the user is missing or the password is incorrect.
         """
         logger.info(f'Login attempt for user: {user_data.email}')
         db_user = await self._user_dao.find_one_or_none(Email(email=user_data.email))
@@ -136,6 +138,17 @@ class AuthService:
         return session_token
 
     async def _generate_session_token(self, db_user: User) -> str:
+        """Generate an opaque token and persist a session containing its hash.
+
+        The session records the current UTC time and expires SESSION_TTL_DAYS
+        later. The caller manages the transaction and cookie delivery.
+
+        Args:
+            db_user: User who owns the new session.
+
+        Returns:
+            The plain-text session token.
+        """
         token = TokenProvider.get_session_token()
         hashed_token = TokenProvider.hash_token(token)
         now = datetime.now(UTC)

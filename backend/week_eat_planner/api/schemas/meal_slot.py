@@ -1,3 +1,5 @@
+"""Schemas for reading meal slots and assigning or clearing their recipes."""
+
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict
@@ -36,12 +38,12 @@ class MealSlotId(RecordId):
 
 
 class MealSlotRead(MealSlotId):
-    """Schema for a meal slot representation.
+    """Meal slot response with its ID, schedule, and optional recipe preview.
 
     Attributes:
-        day_of_week: The day of the week for this slot.
-        meal_type: The type of meal (breakfast, lunch, dinner).
-        recipe: The recipe assigned to this slot, or None.
+        day_of_week: Day of the week for this slot.
+        meal_type: Meal type: breakfast, lunch, dinner, or snack.
+        recipe: Assigned recipe preview, defaulting to None.
     """
 
     day_of_week: DayOfWeek

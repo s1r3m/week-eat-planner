@@ -1,3 +1,5 @@
+"""Persistent authentication sessions containing hashed opaque tokens."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -12,13 +14,14 @@ if TYPE_CHECKING:
 
 
 class Session(Base):
-    """Represents a session in DB.
+    """Stored authentication session containing a hashed opaque token.
 
     Attributes:
-        user_id: An ID of a user that owns the session.
-        hashed_token: A hash of a session token of the session.
-        last_used_at: Datetime of the last usage.
-        expires_at: Datetime when the session will expire.
+        user_id: ID of the user who owns the session.
+        hashed_token: SHA-256 hex digest used to look up the session.
+        last_used_at: Recorded usage time, set on creation and not updated by token lookup.
+        expires_at: UTC expiration time used to reject expired sessions.
+        user: Eagerly loaded user associated with the session.
     """
 
     __tablename__ = 'sessions'
@@ -31,4 +34,9 @@ class Session(Base):
     user: Mapped[User] = relationship(lazy='selectin')
 
     def __repr__(self) -> str:
+        """Return the session ID, owner ID, and expiration time.
+
+        Returns:
+            A diagnostic string describing the record.
+        """
         return f'<Session>(id={self.id}, user_id={self.user_id}, expires_at={self.expires_at})'

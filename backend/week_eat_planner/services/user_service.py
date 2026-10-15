@@ -16,9 +16,25 @@ class UserService:
     """Service for handling user-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        """Initialize database access using the provided session.
+
+        Args:
+            session: Database session whose transaction is managed by the caller.
+        """
         self._user_dao = UserDAO(session)
 
     async def get_user(self, user_id: UUID) -> User:
+        """Retrieve an active user by ID.
+
+        Args:
+            user_id: ID of the user to retrieve.
+
+        Returns:
+            The active user record.
+
+        Raises:
+            UserNotFoundException: If the user does not exist or is inactive.
+        """
         logger.debug(f'Retrieving user with {user_id=}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
         if not user or not user.is_active:
@@ -31,7 +47,7 @@ class UserService:
         """Updates a user's profile with the provided values.
 
         Args:
-            user_id: The ID of the current user.
+            user: The user requesting the operation.
             values: The fields to update.
 
         Returns:
@@ -54,7 +70,7 @@ class UserService:
         """Changes User's password if old_password matches the hash.
 
         Args:
-            user_id: The ID of the current user.
+            user: The user requesting the operation.
             old_password: The current password of the user.
             new_password: The new desired password.
 

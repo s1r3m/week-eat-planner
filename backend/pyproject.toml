@@ -87,6 +87,7 @@ order-by-type = false
 
 [tool.ruff.lint]
 select = [
+    'D',   # pydocstyle: Google-style application docstrings
     'E',   # pycodestyle: PEP8 style & formatting rules
     'W',   # pycodestyle: warnings
     'F',   # pyflakes: syntax and logical errors
@@ -107,6 +108,13 @@ ignore = [
 
 fixable = ['ALL']
 unfixable = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"*/tests/**" = ["D"]
+"settings.py" = ["D"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

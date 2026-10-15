@@ -29,8 +29,8 @@ async def create_recipe(
 
     Args:
         recipe_data: The data for the new recipe.
-        user_id: The ID of the authenticated user, injected by dependency.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The newly created recipe.
@@ -50,8 +50,8 @@ async def get_my_recipes(
     """Retrieves all recipes created by the current user.
 
     Args:
-        user_id: The ID of the authenticated user, injected by dependency.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         A list of recipes belonging to the user.
@@ -71,8 +71,8 @@ async def get_favorites(
     """Retrieves all favorite recipes for the current user.
 
     Args:
-        user_id: The ID of the authenticated user, injected by dependency.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session without automatic commit.
 
     Returns:
         A list of the user's favorite recipes.
@@ -96,11 +96,15 @@ async def get_recipe(
 
     Args:
         recipe_id: ID of the recipe to get.
-        user_id: The ID of the authenticated user or None, injected by dependency.
-        session: The database session.
+        user: The authenticated user, or None for an anonymous request.
+        session: Database session without automatic commit.
 
     Returns:
         The requested recipe.
+
+    Raises:
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the requesting user cannot access the recipe.
     """
     logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user}')
     recipe = await RecipeService(session).get_visible_recipe(recipe_id, user)
@@ -121,11 +125,15 @@ async def update_recipe(
     Args:
         new_data: The new data to update the recipe with.
         recipe_id: ID of the recipe to update.
-        user_id: The ID of the authenticated user, injected by dependency.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The updated recipe.
+
+    Raises:
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the requesting user does not own the recipe.
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_TPL} for recipe {recipe_id}')
     recipe_service = RecipeService(session)
@@ -141,18 +149,21 @@ async def delete_recipe(
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
-    """Deletes a recipe and its associated image.
+    """Delete a recipe owned by the current user and its stored image, if present.
 
-    The user must be the owner of the recipe to delete it.
+    Unlike image replacement, a storage deletion failure propagates to the
+    caller. Successful requests return HTTP 204.
 
     Args:
-        recipe_id: ID of the recipe to delete.
-        user_id: The ID of the authenticated user, injected by dependency.
-        storage: The storage client for deleting the recipe's image.
-        session: The database session.
+        recipe_id: UUID string identifying the recipe to delete.
+        user: Authenticated, active user who must own the recipe.
+        storage: Object storage client used to delete the associated image.
+        session: Database session committed by the dependency after the endpoint returns.
 
-    Returns:
-        None. A 204 No Content status code is returned on success.
+    Raises:
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the user does not own the recipe.
+        ValueError: If the stored image reference lacks a bucket/key separator.
     """
     logger.info(f'Got DELETE {AppUrl.RECIPES_TPL} for recipe {recipe_id}')
     recipe_service = RecipeService(session)
@@ -171,17 +182,30 @@ async def upload_image(
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
 ) -> Recipe:
-    """The endpoint to upload an image to the recipe.
+    """Upload a replacement image for a recipe owned by the current user.
+
+    Validate the upload, store the image, and update the recipe's bucket/key
+    reference. Deleting a previous image is best effort; failures are logged
+    without rejecting the replacement. The response serializes a recipe preview
+    with a computed image URL.
 
     Args:
-        recipe_id: The recipe_id to update.
-        user_id: The ID of the authenticated user, injected by dependency.
-        session: The database session.
-        storage: The storage client, injected by dependency.
-        image: The image file to upload.
+        recipe_id: UUID string identifying the recipe to update.
+        user: Authenticated, active user who must own the recipe.
+        session: Database session committed by the dependency after the endpoint returns.
+        storage: Object storage client used to upload and delete images.
+        image: Image file with an allowed MIME type and a size of at most 5 MiB.
 
     Returns:
-        The updated recipe containing the new image URL.
+        The updated recipe record, serialized as RecipeReadMinimal.
+
+    Raises:
+        ImageContentTypeMissingException: If the upload has no content type.
+        UnsupportedImageTypeException: If the MIME type is not allowed.
+        ImageTooLargeException: If the image exceeds the maximum size.
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the user does not own the recipe.
+        ValueError: If the uploaded file has no filename.
     """
     logger.info(f'Got PATCH {AppUrl.RECIPES_IMAGE_TPL} for recipe {recipe_id} with {image.filename}')
 
@@ -214,11 +238,15 @@ async def create_favorite(
 
     Args:
         recipe_id: The ID of the recipe to favorite.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
     Returns:
         The favorited recipe.
+
+    Raises:
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the requesting user cannot access the recipe.
     """
     logger.info(f'Got POST {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for user {user.id}')
     recipe = await RecipeService(session).add_favorite(recipe_id, user)
@@ -237,11 +265,12 @@ async def remove_favorite(
 
     Args:
         recipe_id: The ID of the recipe to unfavorite.
-        user_id: The ID of the authenticated user.
-        session: The database session.
+        user: The user requesting the operation.
+        session: Database session committed after the endpoint returns.
 
-    Returns:
-        None.
+    Raises:
+        RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
+        RecipeForbiddenException: If the requesting user cannot access the recipe.
     """
     logger.info(f'Got DELETE {AppUrl.RECIPES_FAVORITES_TPL.format(recipe_id=recipe_id)} for user {user.id}')
     await RecipeService(session).delete_favorite(recipe_id, user)

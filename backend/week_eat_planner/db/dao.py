@@ -5,60 +5,42 @@ from week_eat_planner.db.models import MealSlot, Recipe, Session, ShoppingList, 
 
 
 class MealSlotDAO(BaseDAO[MealSlot]):
-    """Data Access Object for managing 'MealSlot' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for meal slots.
-    """
+    """Data access for meal slots using inherited asynchronous CRUD operations."""
 
     model = MealSlot
 
 
 class SessionDAO(BaseDAO[Session]):
-    """Data Access Object for managing user auth sessions in db."""
+    """Data access for authentication sessions using inherited asynchronous CRUD operations."""
 
     model = Session
 
 
 class RecipeDAO(BaseDAO[Recipe]):
-    """Data Access Object for managing 'Recipe' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for recipes.
-    """
+    """Data access for recipes using inherited asynchronous CRUD operations."""
 
     model = Recipe
 
 
 class ShoppingListDAO(BaseDAO[ShoppingList]):
-    """Data Access Object for managing 'ShoppingList' records in the database.
-
-    Provides methods for CRUD operations on shopping lists.
-    """
+    """Data access for shopping lists using inherited asynchronous CRUD operations."""
 
     model = ShoppingList
 
 
 class UserDAO(BaseDAO[User]):
-    """Data Access Object for managing 'User' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for users.
-    """
+    """Data access for users using inherited asynchronous CRUD operations."""
 
     model = User
 
 
 class UserFavoriteDAO(BaseDAO[UserFavorite]):
-    """Data Access Object for managing 'UserFavorite' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for user favorites.
-    """
+    """Data access for user favorites using inherited asynchronous CRUD operations."""
 
     model = UserFavorite
 
 
 class WeekDAO(BaseDAO[Week]):
-    """Data Access Object for managing 'Week' records in the database.
-
-    Provides methods for CRUD operations and specialized queries for weeks.
-    """
+    """Data access for weeks using inherited asynchronous CRUD operations."""
 
     model = Week

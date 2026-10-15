@@ -53,6 +53,15 @@ async def check_image_suitable(image: UploadFile) -> None:
 
 
 def set_session_cookie(response: Response, token: str) -> None:
+    """Attach the opaque session token to the HTTP response as a cookie.
+
+    The cookie is HTTP-only, uses SameSite=Lax and path /, and is secure
+    outside debug mode. Its max-age is SESSION_TTL_DAYS expressed in seconds.
+
+    Args:
+        response: Response whose Set-Cookie header will be updated.
+        token: Plain-text session token to send to the client.
+    """
     response.set_cookie(
         key=SESSION_COOIKE_NAME,
         value=token,

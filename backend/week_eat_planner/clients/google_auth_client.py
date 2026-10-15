@@ -39,25 +39,24 @@ class GoogleAuthClient:
         self._client = httpx_client
 
     async def get_oauth_user(self, code: str) -> OAuthUserData:
-        """Exchanges a Google authorization code for verified user identity data.
+        """Exchange a Google authorization code for verified identity data.
 
-        Performs the authorization code exchange against Google's token endpoint,
-        fetches Google's public JWKS, and verifies the returned ID token's
-        signature, audience, issuer, and expiry before extracting the user claims.
+        Request tokens using the configured OAuth credentials and postmessage
+        redirect URI. Fetch Google's JWKS to verify the ID token and access-token
+        hash, then require sub, email, name, and a verified email claim.
 
         Args:
-            code: The one-time authorization code received from the Google OAuth
-                consent screen.
+            code: One-time authorization code received from the Google consent screen.
 
         Returns:
-            An OAuthUserData instance populated with the verified claims from
-            Google's ID token.
+            Google identity data including the provider, subject ID, email, display
+            name, and optional picture URL.
 
         Raises:
-            OAuthInvalidCodeException: If Google rejects the code with a 400 or
-                401 (expired, already used, or malformed code).
-            OAuthProviderException: If Google returns a 5xx error, a network
-                error occurs, or the ID token fails JWT verification.
+            OAuthInvalidCodeException: If an HTTP request returns status 400 or 401.
+            OAuthProviderException: If another HTTP error or a network error occurs,
+                tokens or required identity claims are missing, the email is unverified,
+                or JWT verification fails.
         """
         logger.info('Exchanging Google authorization code for user identity.')
         try:

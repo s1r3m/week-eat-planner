@@ -1,3 +1,5 @@
+"""User accounts, login methods, profile fields, and owned records."""
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, UniqueConstraint
@@ -20,10 +22,11 @@ class User(Base):
         username: The user's chosen display name.
         avatar_url: The URL to the user's avatar image.
         avatar_key: The storage key for the user's avatar (used for deletion/replacement).
-        oauth_provider: The OAuth provider name (e.g. 'google'), or None for local accounts.
+        oauth_provider: The OAuth provider name (e.g. 'GOOGLE'), or None for local accounts.
         oauth_id: The provider-scoped user identifier, or None for local accounts.
-        hashed_password: The hashed version of the user's password.
+        hashed_password: Password hash, or None for an OAuth-only account.
         is_active: A flag indicating if the user account is active.
+        is_email_verified: Whether the user's email has been verified.
         weeks: The SQLAlchemy relationship to the user's weeks.
         recipes: The SQLAlchemy relationship to the user's recipes.
         favorites: The SQLAlchemy relationship to the user's favourite recipes.
@@ -57,4 +60,9 @@ class User(Base):
     favorites: Mapped[list[UserFavorite]] = relationship(back_populates='user', cascade='all, delete-orphan')
 
     def __repr__(self) -> str:
+        """Return the user ID, email address, and email verification flag.
+
+        Returns:
+            A diagnostic string describing the record.
+        """
         return f'<User> (id={self.id}, email={self.email}, is_email_activated={self.is_email_verified})'
