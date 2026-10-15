@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.constants import SESSION_COOIKE_NAME
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.exceptions import NoSessionTokenException, UserNotFoundException
+from week_eat_planner.exceptions import NoSessionTokenException, SessionException, UserNotFoundException
 from week_eat_planner.services.session_service import SessionService
 
 
@@ -20,7 +20,11 @@ async def get_current_auth_session(
     if not session_token:
         return None
 
-    auth_session = await SessionService(session).get_sesion_by_token(session_token)
+    try:
+        auth_session = await SessionService(session).get_sesion_by_token(session_token)
+    except SessionException:
+        return None
+
     return auth_session
 
 

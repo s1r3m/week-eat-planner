@@ -13,6 +13,7 @@ from week_eat_planner.db.models import User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.helpers import set_session_cookie
 from week_eat_planner.services.auth_service import AuthService
+from week_eat_planner.services.session_service import SessionService
 from week_eat_planner.services.user_service import UserService
 
 router = APIRouter(tags=['User'])
@@ -79,6 +80,7 @@ async def change_password(
     """
     logger.info(f'Got PATCH {AppUrl.USER_PASSWORD} request for user {user.id}')
     updated_user = await UserService(session).change_password(user, data.old_password, data.new_password)
+    await SessionService(session).revoke_all_sessions(user)
     session_token = await AuthService(session).login(UserLogin(email=updated_user.email, password=data.new_password))
     logger.info('Password change is successful')
 

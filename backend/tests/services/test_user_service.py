@@ -6,7 +6,7 @@ from fastapi import status
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.api.schemas.user import UserUpdate
 from week_eat_planner.constants import OAuthProvider
-from week_eat_planner.exceptions import OAuthAccountException, UserNotFoundException
+from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFoundException
 from week_eat_planner.security.hashing import get_password_hash
 from week_eat_planner.services.user_service import UserService
 
@@ -81,6 +81,21 @@ async def test_change_password__oauth_provider_user__error_raised(mocked_user_da
 
     assert exc.value.status_code == status.HTTP_409_CONFLICT
     assert exc.value.detail == 'This email is registered via a social login'
+
+
+async def test_change_password__old_password_mismatch__error_raised(
+    mocked_user_dao, mocked_session, user_read, db_user
+):
+    db_user.hashed_password = get_password_hash(OLD_PASSWORD)
+    mocked_user_dao.find_one_or_none_by_id.return_value = db_user
+    mocked_user_dao.update.return_value = db_user
+
+    with pytest.raises(InvalidCredentialsException) as exc:
+        await UserService(mocked_session).change_password(user_read, 'wrong_password', NEW_PASSWORD)
+
+    error = InvalidCredentialsException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
 
 
 async def test_change_password__valid_data__password_changed(mocked_user_dao, mocked_session, user_read, db_user):

@@ -3,7 +3,7 @@ from fastapi import status
 
 from tests.constants import PASSWORD
 from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
-from week_eat_planner.exceptions import NoSessionTokenException
+from week_eat_planner.exceptions import InvalidCredentialsException, NoSessionTokenException
 
 NEW_PASSWORD = 'new_password'
 
@@ -87,3 +87,14 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 async def test_change_password__bad_data__validation_failed(auth_client_for_created_user, body):
     response = await auth_client_for_created_user.patch(AppUrl.USER_PASSWORD, json=body)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_change_password__old_password_mismatch__error_response(auth_client_for_created_user):
+    response = await auth_client_for_created_user.patch(
+        AppUrl.USER_PASSWORD, json={'old_password': 'wrong_password', 'new_password': NEW_PASSWORD}
+    )
+
+    error = InvalidCredentialsException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+    assert not response.cookies.get(SESSION_COOIKE_NAME)

@@ -1,12 +1,13 @@
 from datetime import UTC, datetime, timedelta
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import SessionToken
+from week_eat_planner.api.schemas import OwnerId, SessionToken
 from week_eat_planner.config import settings
 from week_eat_planner.db.dao import SessionDAO
 from week_eat_planner.db.models import Session, User
-from week_eat_planner.exceptions import SessionNotFoundException
+from week_eat_planner.exceptions import SessionExpiredException, SessionNotFoundException
 from week_eat_planner.security.token_provider import TokenProvider
 
 
@@ -37,4 +38,14 @@ class SessionService:
         if not auth_session:
             raise SessionNotFoundException()
 
+        if auth_session.expires_at <= datetime.now(UTC):
+            raise SessionExpiredException()
+
         return auth_session
+
+    async def revoke_all_sessions(self, user: User) -> int:
+        logger.debug(f'Revoking all user {user.id} sessions')
+        count = await self._session_dao.delete(OwnerId(user_id=user.id))
+        logger.info(f'Revoked {count} sessions for {user.id}')
+
+        return count

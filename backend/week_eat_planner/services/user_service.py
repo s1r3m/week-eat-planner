@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.api.schemas import HashedPassword, RecordId, UserUpdate
 from week_eat_planner.db.dao import UserDAO
 from week_eat_planner.db.models import User
-from week_eat_planner.exceptions import OAuthAccountException, UserNotFoundException
-from week_eat_planner.security.hashing import get_password_hash
+from week_eat_planner.exceptions import InvalidCredentialsException, OAuthAccountException, UserNotFoundException
+from week_eat_planner.security.hashing import get_password_hash, verify_password
 
 
 class UserService:
@@ -75,6 +75,10 @@ class UserService:
         if not db_user.hashed_password:
             logger.error(f'User {user.id} was registered with {user.oauth_provider}')
             raise OAuthAccountException()
+
+        if not verify_password(old_password, db_user.hashed_password):
+            logger.error(f'Old password mismatch for user {user.id}')
+            raise InvalidCredentialsException()
 
         new_hash = get_password_hash(new_password)
         updated_user = await self._user_dao.update(RecordId(id=user.id), HashedPassword(hashed_password=new_hash))

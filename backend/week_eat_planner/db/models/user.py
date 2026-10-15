@@ -50,7 +50,7 @@ class User(Base):
     oauth_id: Mapped[str | None] = mapped_column(nullable=True)
     hashed_password: Mapped[str | None] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
-    is_email_verified: Mapped[bool] = mapped_column(default=False)
+    is_email_verified: Mapped[bool] = mapped_column(default=False, server_default='false')
 
     weeks: Mapped[list[Week]] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list[Recipe]] = relationship(back_populates='user', cascade='all, delete-orphan')

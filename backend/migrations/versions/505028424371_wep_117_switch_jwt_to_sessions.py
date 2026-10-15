@@ -7,8 +7,8 @@ Create Date: 2026-10-14 21:10:02.622799
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
@@ -37,7 +37,7 @@ def upgrade() -> None:
     op.drop_table('refresh_tokens')
     op.drop_constraint(op.f('shopping_lists_week_id_key'), 'shopping_lists', type_='unique')
     op.create_index(op.f('ix_shopping_lists_week_id'), 'shopping_lists', ['week_id'], unique=True)
-    op.add_column('users', sa.Column('is_email_verified', sa.Boolean(), nullable=False))
+    op.add_column('users', sa.Column('is_email_verified', sa.Boolean(), nullable=False, server_default=sa.false()))
     # ### end Alembic commands ###
 
 

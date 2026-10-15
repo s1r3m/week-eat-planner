@@ -31,7 +31,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     )
 
     def __repr__(self) -> str:
-        return f'<{type(self).__class__}> (id={self.id})'
+        return f'<{type(self).__name__}> (id={self.id})'
 
 
 class BaseDAO[T: Base]:
