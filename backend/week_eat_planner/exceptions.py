@@ -50,7 +50,7 @@ class WeekNotFoundException(NotFoundException):
         super().__init__(detail=f'Week {week_id} not found')
 
 
-# Bad JWT exceptions.
+# Session exceptions.
 class SessionException(HTTPException):
     """Base exception for authentication token-related errors.
 
@@ -60,27 +60,6 @@ class SessionException(HTTPException):
 
     def __init__(self, detail: str) -> None:
         super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
-
-
-class InvalidJwtTokenException(SessionException):
-    """Exception raised when a JWT token is invalid."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='Invalid JWT token')
-
-
-class RefreshTokenRevokedException(SessionException):
-    """Exception raised when a refresh token has been revoked."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='Refresh token revoked')
-
-
-class NoSubInTokenException(SessionException):
-    """Exception raised when a JWT token does not contain a 'sub' (user_id) claim."""
-
-    def __init__(self) -> None:
-        super().__init__(detail='No sub in JWT token')
 
 
 class SessionNotFoundException(SessionException):
