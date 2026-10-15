@@ -55,3 +55,6 @@ class User(Base):
     weeks: Mapped[list[Week]] = relationship(back_populates='user', cascade='all, delete-orphan')
     recipes: Mapped[list[Recipe]] = relationship(back_populates='user', cascade='all, delete-orphan')
     favorites: Mapped[list[UserFavorite]] = relationship(back_populates='user', cascade='all, delete-orphan')
+
+    def __repr__(self) -> str:
+        return f'<User> (id={self.id}, email={self.email}, is_email_activated={self.is_email_verified})'

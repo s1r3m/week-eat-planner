@@ -159,6 +159,6 @@ class AuthService:
         logger.info(f'Logout attempt for user {auth_session.user.id}')
 
         await self._session_dao.delete(
-            UserSession(user_id=auth_session.user.id, session_token=auth_session.hashed_token)
+            UserSession(user_id=auth_session.user.id, hashed_token=auth_session.hashed_token)
         )
         logger.info(f'User {auth_session.user.id} logged out successfully')

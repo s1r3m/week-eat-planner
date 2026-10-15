@@ -1,6 +1,5 @@
-from collections.abc import AsyncGenerator, Callable, Generator
+from collections.abc import AsyncGenerator, Callable
 from http import HTTPStatus
-from typing import TypeVar
 
 import pytest
 import pytest_asyncio
@@ -21,32 +20,28 @@ from week_eat_planner.api.schemas import (
     RecipeCreate,
     RecipeUpdate,
     UserCreate,
+    UserLogin,
     UserRead,
     WeekCreate,
 )
 from week_eat_planner.constants import AppUrl, StorageBucket
-from week_eat_planner.db.models import Recipe, Week
-from week_eat_planner.db.models.user import User
+from week_eat_planner.db.models import Recipe, User, Week
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.main import app
 from week_eat_planner.services.auth_service import AuthService
 from week_eat_planner.services.recipe_service import RecipeService
 from week_eat_planner.services.week_service import WeekService
 
-T = TypeVar('T')
-AsyncYieldFixture = AsyncGenerator[T]
-YieldFixture = Generator[T]
-
 
 @pytest_asyncio.fixture
-async def db_connection() -> AsyncYieldFixture[None]:
+async def db_connection() -> AsyncGenerator[None]:
     await db.init()
     yield
     await db.close()
 
 
 @pytest_asyncio.fixture
-async def db_session(db_connection: None) -> AsyncYieldFixture[AsyncSession]:
+async def db_session(db_connection: None) -> AsyncGenerator[AsyncSession]:
     connection = await db.engine.connect()
     trans = await connection.begin()
 
@@ -62,14 +57,14 @@ async def db_session(db_connection: None) -> AsyncYieldFixture[AsyncSession]:
 
 
 @pytest_asyncio.fixture
-async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
     async def override_get_db() -> AsyncGenerator[AsyncSession]:
         yield db_session
 
     app.dependency_overrides[db.get_db] = override_get_db
     app.dependency_overrides[db.get_db_commit] = override_get_db
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test.local') as ac:
         yield ac
 
     del app.dependency_overrides[db.get_db]
@@ -79,8 +74,9 @@ async def client(db_session: AsyncSession) -> AsyncYieldFixture[AsyncClient]:
 @pytest.fixture
 def auth_client_factory(client: AsyncClient) -> Callable:
     async def _factory(user: UserRead, password: str) -> AsyncClient:
-        token_data = {'username': user.email, 'password': password}
-        response = await client.post(AppUrl.AUTH_LOGIN, data=token_data)
+        response = await client.post(
+            AppUrl.AUTH_LOGIN, json=UserLogin(email=user.email, password=password).model_dump(mode='json')
+        )
         assert response.status_code == HTTPStatus.OK, f'{response.status_code}: {response.text}'
         return client
 

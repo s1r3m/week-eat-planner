@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     MealSlotRead,
@@ -73,7 +73,7 @@ async def get_user_weeks(
 @router.get(AppUrl.WEEKS_TPL, response_model=WeekRead)
 async def get_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User | None, Depends(get_optional_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> Week:
     """Retrieves a specific week by its ID.

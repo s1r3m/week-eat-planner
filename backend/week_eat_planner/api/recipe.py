@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, Path, UploadFile, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.clients.storage_client import StorageClient
@@ -87,7 +87,7 @@ async def get_favorites(
 @router.get(AppUrl.RECIPES_TPL, response_model=RecipeRead)
 async def get_recipe(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User | None, Depends(get_optional_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> Recipe:
     """Retrieves a single recipe by its ID.
@@ -102,7 +102,7 @@ async def get_recipe(
     Returns:
         The requested recipe.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user.id}')
+    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user}')
     recipe = await RecipeService(session).get_visible_recipe(recipe_id, user)
     return recipe
 

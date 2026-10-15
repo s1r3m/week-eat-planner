@@ -30,6 +30,9 @@ class Base(AsyncAttrs, DeclarativeBase):
         nullable=False,
     )
 
+    def __repr__(self) -> str:
+        return f'<{type(self).__class__}> (id={self.id})'
+
 
 class BaseDAO[T: Base]:
     """Generic Data Access Object for database operations."""
@@ -61,7 +64,7 @@ class BaseDAO[T: Base]:
         Raises:
             SQLAlchemyError: If a database error occurs.
         """
-        logger.debug(f'Adding {self.model.__name__}: {instance.id}')
+        logger.debug(f'Adding {self.model.__name__}: {instance}')
         try:
             self._session.add(instance)
             await self._session.flush()

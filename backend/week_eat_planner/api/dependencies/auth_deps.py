@@ -24,13 +24,17 @@ async def get_current_auth_session(
     return auth_session
 
 
-async def get_current_active_user(
-    auth_session: Annotated[Session, Depends(get_current_auth_session)],
-) -> User:
+async def get_optional_user(auth_session: Annotated[Session | None, Depends(get_current_auth_session)]) -> User | None:
     if not auth_session:
+        return None
+
+    return auth_session.user
+
+
+async def get_current_active_user(user: Annotated[User | None, Depends(get_optional_user)]) -> User:
+    if not user:
         raise NoSessionTokenException()
 
-    user = auth_session.user
     if not user.is_active:
         raise UserNotFoundException(user_id=user.id)
 

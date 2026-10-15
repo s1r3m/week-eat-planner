@@ -1,11 +1,10 @@
-from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class SessionToken(BaseModel):
-    session_token: Annotated[str, Field(min_length=1)]
+    hashed_token: str
 
 
 class UserSession(SessionToken):

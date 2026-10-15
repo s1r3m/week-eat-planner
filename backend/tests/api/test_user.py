@@ -2,7 +2,7 @@ import pytest
 from fastapi import status
 
 from tests.constants import PASSWORD
-from week_eat_planner.constants import ACCESS_TOKEN_COOKIE_NAME, AppUrl, REFRESH_TOKEN_COOKIE_NAME
+from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import NoSessionTokenException
 
 NEW_PASSWORD = 'new_password'
@@ -72,8 +72,7 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'status': 'success'}
-    assert response.cookies.get(REFRESH_TOKEN_COOKIE_NAME)
-    assert response.cookies.get(ACCESS_TOKEN_COOKIE_NAME)
+    assert response.cookies.get(SESSION_COOIKE_NAME)
 
 
 @pytest.mark.parametrize(

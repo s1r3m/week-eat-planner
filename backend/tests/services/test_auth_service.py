@@ -179,5 +179,5 @@ async def test_logout__valid_token__token_revoked(mocked_session_dao, mocked_ses
     await AuthService(mocked_session).logout(auth_session)
 
     mocked_session_dao.delete.assert_awaited_once_with(
-        UserSession(user_id=auth_session.user.id, session_token=auth_session.hashed_token)
+        UserSession(user_id=auth_session.user.id, hashed_token=auth_session.hashed_token)
     )

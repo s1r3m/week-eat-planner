@@ -1,18 +1,18 @@
 """WEP-117_switch_jwt_to_sessions
 
-Revision ID: c561cb06aa49
+Revision ID: 505028424371
 Revises: 3c7c45f22d60
-Create Date: 2026-10-14 14:08:29.839650
+Create Date: 2026-10-14 21:10:02.622799
 
 """
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'c561cb06aa49'
+revision: str = '505028424371'
 down_revision: Union[str, None] = '3c7c45f22d60'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,8 +23,8 @@ def upgrade() -> None:
     op.create_table('sessions',
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('hashed_token', sa.String(), nullable=False),
-    sa.Column('last_used_at', sa.DateTime(), nullable=False),
-    sa.Column('expires_at', sa.DateTime(), nullable=False),
+    sa.Column('last_used_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),

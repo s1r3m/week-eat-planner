@@ -46,9 +46,9 @@ class Recipe(Base):
 
     @property
     def author(self) -> str:
-        """The author of the recipe, prioritizing username over email.
+        """The author of the recipe.
 
         Returns:
-            The username if set, otherwise the email of the recipe's author.
+            The username of the recipe's author.
         """
-        return self.user.username or self.user.email
+        return self.user.username

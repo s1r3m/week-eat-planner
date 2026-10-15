@@ -32,7 +32,7 @@ class SessionService:
 
     async def get_sesion_by_token(self, token: str) -> Session:
         token_hash = TokenProvider.hash_token(token)
-        auth_session = await self._session_dao.find_one_or_none(SessionToken(session_token=token_hash))
+        auth_session = await self._session_dao.find_one_or_none(SessionToken(hashed_token=token_hash))
 
         if not auth_session:
             raise SessionNotFoundException()
