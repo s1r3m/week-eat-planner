@@ -17,7 +17,7 @@ export const useLoginForm = () => {
 		try {
 			await loginRequest({
 				password: form.password,
-				username: form.email,
+				email: form.email,
 			} satisfies LoginPayload)
 		} catch (error) {
 			password.value = ''

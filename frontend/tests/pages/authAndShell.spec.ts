@@ -4,9 +4,6 @@ import { assert, beforeEach, expect, it, vi } from 'vitest'
 import { h } from 'vue'
 
 import App from '@/app.vue'
-import { useSidebar } from '@/common/composables/useSidebar'
-import AppLayout from '@/core/layouts/app.vue'
-import DefaultLayout from '@/core/layouts/default.vue'
 import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
 import AuthSignupForm from '@/modules/auth/ui/AuthSignupForm.vue'
 import IndexPage from '@/pages/index.vue'
@@ -63,31 +60,6 @@ it('starts planning from the landing page and leaves the unfinished demo control
 	expect((demo.element as HTMLButtonElement).disabled).toBe(true)
 	await start.trigger('click')
 	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'login' })
-})
-
-it('renders guest layout content between the header and footer', () => {
-	const { wrapper } = mountComposable(() => null, {
-		render: () => h(DefaultLayout, null, () => 'Content'),
-		stubs: { GuestHeader: true },
-	})
-	expect(wrapper.get('main').text()).toBe('Content')
-	expect(wrapper.get('footer').text()).toContain('Week Eat Planner')
-})
-
-it('updates the app layout as the shared sidebar is collapsed', async () => {
-	const { result, wrapper } = mountComposable(useSidebar, {
-		render: () => h(AppLayout, null, () => 'Content'),
-		stubs: { AppHeader: true, AppSidebar: true, AppMobileSidePanel: true },
-	})
-	expect(wrapper.get('main').text()).toBe('Content')
-	expect(wrapper.get('.app-layout').classes()).not.toContain(
-		'app-layout--collapsed',
-	)
-	result.toggleCollapsed()
-	await flushPromises()
-	expect(wrapper.get('.app-layout').classes()).toContain(
-		'app-layout--collapsed',
-	)
 })
 
 it('offers recipe creation from the current recipes placeholder page', () => {

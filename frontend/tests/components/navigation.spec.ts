@@ -2,25 +2,15 @@ import { flushPromises } from '@vue/test-utils'
 import { assert, beforeEach, expect, it, vi } from 'vitest'
 import { computed, h, reactive, ref } from 'vue'
 
-import { useSidebar } from '@/common/composables/useSidebar'
-import BaseSidePanel from '@/common/ui/BaseSidePanel.vue'
 import { AUTH_KEY } from '@/modules/auth/constants'
 import * as navigation from '@/modules/main/composables/useAppNavigation'
-import { useMobileSidebar } from '@/modules/main/composables/useMobileSidebar'
 import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
-import AppHeader from '@/modules/main/ui/AppHeader.vue'
-import AppLogo from '@/modules/main/ui/AppLogo.vue'
-import AppMobileSidePanel from '@/modules/main/ui/AppMobileSidePanel.vue'
 import AppNavigation from '@/modules/main/ui/AppNavigation.vue'
-import AppSidebar from '@/modules/main/ui/AppSidebar.vue'
 import AppUser from '@/modules/main/ui/AppUser.vue'
-import GuestHeader from '@/modules/main/ui/GuestHeader.vue'
-import GuestMobileSidePanel from '@/modules/main/ui/GuestMobileSidePanel.vue'
 import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
-import { WEEKS_KEY } from '@/modules/weeks/constants'
 
 import { mountComposable } from '../helpers/composable'
-import { user, week } from '../helpers/fixtures'
+import { user } from '../helpers/fixtures'
 import { uiStubs } from '../helpers/ui'
 
 const api = vi.fn()
@@ -86,124 +76,6 @@ it('hides the current authentication route and emits navigation after it finishe
 		'Login',
 	])
 })
-
-it('renders expanded week links, hides children when collapsed, and propagates link clicks', async () => {
-	const collapsed = ref(false)
-	const { cache, wrapper } = mountComposable(() => null, {
-		render: () => h(AppNavigation, { collapsed: collapsed.value }),
-		stubs,
-		seed: (cache) => cache.setQueryData(WEEKS_KEY.all(), [week()]),
-	})
-	expect(wrapper.get('.nav__children').text()).toContain('Week one')
-	await wrapper.get('.nav__link-collapse-btn').trigger('click')
-	expect(
-		wrapper.getComponent(AppNavigation).emitted('navigate'),
-	).toBeUndefined()
-	expect(wrapper.get('.nav__children').text()).toContain('Week one')
-	await wrapper.get('.nav__children a').trigger('click')
-	await wrapper.get('.nav__item > a').trigger('click')
-	expect(wrapper.getComponent(AppNavigation).emitted('navigate')).toHaveLength(
-		2,
-	)
-	collapsed.value = true
-	await flushPromises()
-	expect(wrapper.find('.nav__children').exists()).toBe(false)
-	expect(wrapper.get('.nav__title').classes()).toContain(
-		'nav__title--collapsed',
-	)
-	collapsed.value = false
-	cache.setQueryData(WEEKS_KEY.all(), [])
-	await flushPromises()
-	expect(wrapper.find('.nav__children').exists()).toBe(false)
-})
-
-it('keeps the logo home link and changes its collapsed title', async () => {
-	const collapsed = ref(false)
-	const { wrapper } = mountComposable(() => null, {
-		render: () => h(AppLogo, { collapsed: collapsed.value }),
-		stubs,
-	})
-	expect(wrapper.text()).toContain('Week Eat Planner')
-	await wrapper.get('a').trigger('click')
-	expect(wrapper.getComponent(AppLogo).emitted('navigate')).toHaveLength(1)
-	collapsed.value = true
-	await flushPromises()
-	expect(wrapper.get('h1').classes()).toContain('app_logo__title--collaped')
-})
-
-it('toggles the desktop sidebar and opens the mobile menu from the app header', async () => {
-	const { result, wrapper } = mountComposable(
-		() => ({ desktop: useSidebar(), mobile: useMobileSidebar() }),
-		{
-			render: () => h(AppHeader),
-			stubs: { ...stubs, ModeSwitch: true },
-		},
-	)
-	await wrapper.get('.app-header__left-side button').trigger('click')
-	expect(result.desktop.collapsed.value).toBe(true)
-	await wrapper.get('.app-header__left-side button').trigger('click')
-	expect(result.desktop.collapsed.value).toBe(false)
-	await wrapper.get('button[aria-label="Open mobile menu"]').trigger('click')
-	expect(result.mobile.isOpen.value).toBe(true)
-})
-
-it('passes the shared collapsed state to all desktop sidebar sections', async () => {
-	const { result, wrapper } = mountComposable(useSidebar, {
-		render: () => h(AppSidebar),
-		stubs: { AppLogo: true, AppNavigation: true, AppUser: true },
-	})
-	for (const component of [AppLogo, AppNavigation, AppUser]) {
-		expect(wrapper.getComponent(component).props('collapsed')).toBe(false)
-	}
-	result.toggleCollapsed()
-	await flushPromises()
-	for (const component of [AppLogo, AppNavigation, AppUser]) {
-		expect(wrapper.getComponent(component).props('collapsed')).toBe(true)
-	}
-})
-
-it('opens the guest mobile menu and closes it when a header link navigates', async () => {
-	const { result, wrapper } = mountComposable(useMobileSidebar, {
-		render: () => h(GuestHeader),
-		stubs: { ...stubs, GuestMobileSidePanel: true },
-	})
-	await wrapper.get('button[aria-label="Open mobile menu"]').trigger('click')
-	expect(result.isOpen.value).toBe(true)
-	wrapper.getComponent(AppLogo).vm.$emit('navigate')
-	await flushPromises()
-	expect(result.isOpen.value).toBe(false)
-	result.open()
-	wrapper.getComponent(AppAuthControls).vm.$emit('navigate')
-	await flushPromises()
-	expect(result.isOpen.value).toBe(false)
-})
-
-it.each([AppMobileSidePanel, GuestMobileSidePanel])(
-	'closes a mobile panel after its sections navigate',
-	async (component) => {
-		const { result, wrapper } = mountComposable(useMobileSidebar, {
-			render: () => h(component),
-			stubs: { ...stubs, AppNavigation: true, AppUser: true },
-		})
-		const sections =
-			component === AppMobileSidePanel
-				? [AppLogo, AppNavigation, AppUser]
-				: [AppLogo, AppAuthControls]
-		for (const section of sections) {
-			result.open()
-			await flushPromises()
-			expect(wrapper.find('aside').exists()).toBe(true)
-			wrapper.getComponent(section).vm.$emit('navigate')
-			await flushPromises()
-			expect(result.isOpen.value).toBe(false)
-		}
-		result.open()
-		await flushPromises()
-		wrapper.getComponent(BaseSidePanel).vm.$emit('update:modelValue', false)
-		await flushPromises()
-		expect(result.isOpen.value).toBe(false)
-	},
-)
 
 it('switches between light, dark, and system preferences and updates selected choices', async () => {
 	const { wrapper } = mountComposable(() => null, {

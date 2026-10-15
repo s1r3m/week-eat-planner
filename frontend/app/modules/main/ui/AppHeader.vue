@@ -1,38 +1,28 @@
 <script setup lang="ts">
-	import { useSidebar } from '@/common/composables/useSidebar'
 	import BaseButton from '@/common/ui/BaseButton.vue'
 	import { useMobileSidebar } from '@/modules/main/composables/useMobileSidebar'
+	import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
+	import AppLogo from '@/modules/main/ui/AppLogo.vue'
+	import GuestMobileSidePanel from '@/modules/main/ui/GuestMobileSidePanel.vue'
 	import ModeSwitch from '@/modules/main/ui/ModeSwitch.vue'
 
-	const { collapsed, toggleCollapsed } = useSidebar()
-	const { open } = useMobileSidebar()
+	const { close, open } = useMobileSidebar()
 </script>
 
 <template>
-	<header class="app-header">
-		<div class="app-header__left-side">
-			<BaseButton
-				variant="icon"
-				@click="toggleCollapsed"
-			>
-				<Icon
-					:name="
-						collapsed ? 'lucide:panel-left-open' : 'lucide:panel-left-close'
-					"
-					:size="24"
-				/>
-			</BaseButton>
-		</div>
+	<header class="guest-header">
+		<AppLogo @navigate="close" />
 
-		<div class="app-header__center">
-			<div class="breadcrumbs">My Weeks -> temp</div>
-		</div>
-
-		<div class="app-header__right-side">
+		<div class="guest-header__controls-wrapper">
 			<ModeSwitch />
 
+			<AppAuthControls
+				class="guest-header__controls"
+				@navigate="close"
+			/>
+
 			<BaseButton
-				class="app-header__mobile-menu"
+				class="guest-header__mobile-menu"
 				variant="icon"
 				aria-label="Open mobile menu"
 				@click="open"
@@ -43,46 +33,41 @@
 				/>
 			</BaseButton>
 		</div>
+
+		<GuestMobileSidePanel />
 	</header>
 </template>
 
 <style scoped>
-	.app-header {
+	.guest-header {
 		display: flex;
+		position: sticky;
+		z-index: 2;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-4) var(--space-2);
+		height: var(--header-height);
+		padding: var(--space-4) var(--space-1);
 		border-bottom: 1px solid var(--border);
-		background-color: color-mix(in srgb, var(--bg) 70%, transparent);
-		backdrop-filter: blur(16px);
+		inset: 0;
+		backdrop-filter: blur(var(--blur));
 	}
 
-	.app-header__left-side {
+	.guest-header__controls-wrapper {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
 	}
 
-	.app-header__right-side {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-	}
-
-	.app-header__center {
-		flex: 1;
-	}
-
-	.app-header__mobile-menu {
+	.guest-header__mobile-menu {
 		display: none;
 	}
 
 	@media (--mobile) {
-		.app-header__mobile-menu {
+		.guest-header__mobile-menu {
 			display: flex;
 		}
 
-		.app-header__left-side {
+		.guest-header__controls {
 			display: none;
 		}
 	}

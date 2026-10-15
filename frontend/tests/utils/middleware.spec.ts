@@ -1,14 +1,10 @@
-import { useQueryCache } from '@pinia/colada'
 import { beforeEach, expect, it, vi } from 'vitest'
-
-import { AUTH_KEY } from '@/modules/auth/constants'
 
 import { withAppContext } from '../helpers/context'
 import { user } from '../helpers/fixtures'
 
 vi.stubGlobal('defineNuxtRouteMiddleware', (middleware: unknown) => middleware)
 const { default: auth } = await import('@/core/router/middleware/auth.global')
-const { default: layout } = await import('@/core/router/middleware/layout')
 
 const api = vi.fn()
 beforeEach(() => {
@@ -43,18 +39,3 @@ it('allows an authenticated user into a protected page', async () => {
 	await withAppContext(() => auth(route('/my/weeks'), route('/')))
 	expect(navigateTo).not.toHaveBeenCalled()
 })
-
-it.each([
-	{ currentUser: user, expectedLayout: 'app' },
-	{ currentUser: null, expectedLayout: 'default' },
-])(
-	'sets $expectedLayout for the resolved user',
-	async ({ currentUser, expectedLayout }) => {
-		await withAppContext(() => {
-			useQueryCache().setQueryData(AUTH_KEY.user(), currentUser)
-			return layout(route('/weeks/shared'), route('/'))
-		})
-		expect(setPageLayout).toHaveBeenCalledExactlyOnceWith(expectedLayout)
-		expect(api).not.toHaveBeenCalled()
-	},
-)

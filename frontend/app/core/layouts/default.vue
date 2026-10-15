@@ -1,17 +1,17 @@
 <script setup lang="ts">
-	import GuestFooter from '@/modules/main/ui/GuestFooter.vue'
-	import GuestHeader from '@/modules/main/ui/GuestHeader.vue'
+	import AppFooter from '@/modules/main/ui/AppFooter.vue'
+	import AppHeader from '@/modules/main/ui/AppHeader.vue'
 </script>
 
 <template>
 	<div class="layout-container">
-		<GuestHeader />
+		<AppHeader />
 
-		<main class="guest-main">
+		<main class="main">
 			<slot></slot>
 		</main>
 
-		<GuestFooter />
+		<AppFooter />
 	</div>
 </template>
 
@@ -24,7 +24,7 @@
 		margin: 0 auto;
 	}
 
-	.guest-main {
+	.main {
 		flex: 1 1 auto;
 	}
 </style>

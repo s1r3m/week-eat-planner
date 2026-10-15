@@ -3,10 +3,6 @@
 	import AuthLoginForm from '@/modules/auth/ui/AuthLoginForm.vue'
 	import { getRedirectTarget } from '@/modules/auth/utils/session'
 
-	definePageMeta({
-		layout: 'default',
-	})
-
 	const route = useRoute()
 
 	const onSuccess = async () => {
