@@ -51,7 +51,7 @@ of `fe_lint`, including in CI. Coverage remains a separate check under `fe_test`
 
 Composable and UI tests run in jsdom; API, plugin, and utility tests run in Node.
 The helpers mount real Vue, Pinia, and Colada instances while mocking the HTTP
-boundary and Nuxt globals. See [the test guide](tests/README.md) for details.
+boundary and Nuxt globals.
 
 ## Production
 
