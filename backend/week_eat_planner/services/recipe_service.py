@@ -60,7 +60,7 @@ class RecipeService:
             RecipeNotFoundException: If the recipe does not exist or the ID is invalid.
             RecipeForbiddenException: If the recipe is private and the user is absent or not its owner.
         """
-        logger.info(f'Getting visible recipe {recipe_id} for user {user}')
+        logger.info(f'Getting visible recipe {recipe_id} for user {user.id if user else None}')
         recipe = await self._get_recipe(recipe_id, for_update=False)
 
         if not recipe.is_public and (not user or recipe.user_id != user.id):

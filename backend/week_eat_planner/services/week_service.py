@@ -83,8 +83,8 @@ class WeekService:
         """
         week = await self._get_week(week_id, for_update=False)
 
-        if not user or user.id != week.user_id:
-            logger.error(f'User {user} cannot access week {week.id}')
+        if not (user and user.id == week.user_id):
+            logger.error(f'User {user.id if user else None} cannot access week {week.id}')
             raise WeekForbiddenException(week.id)
 
         return week

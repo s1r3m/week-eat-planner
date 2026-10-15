@@ -249,7 +249,7 @@ async def test_add_favorite__my_private_recipe__recipe_favorited(
     mocked_session, mocked_user_favorites_dao, mocked_recipe_dao, db_private_recipe, user_read
 ):
     str_recipe_id = str(db_private_recipe.id)
-    user_favorite = UserFavorite(user_id=user_read, recipe_id=db_private_recipe.id, id=generate_uuid7())
+    user_favorite = UserFavorite(user_id=user_read.id, recipe_id=db_private_recipe.id, id=generate_uuid7())
     mocked_recipe_dao.find_one_or_none_by_id.return_value = db_private_recipe
     mocked_user_favorites_dao.find_one_or_none.return_value = None
     mocked_user_favorites_dao.add.return_value = user_favorite

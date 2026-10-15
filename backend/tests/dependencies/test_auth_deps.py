@@ -73,10 +73,10 @@ async def test_get_optional_user__no_session__none_returned(request_wo_session_t
 
 
 async def test_get_current_active_user__old_session__none_returned(
-    request_wo_session_token, mocked_session_service, mocked_session
+    request_with_session_token, mocked_session_service, mocked_session
 ):
     mocked_session_service.get_sesion_by_token.side_effect = [SessionExpiredException]
-    auth_session = await get_current_auth_session(request_wo_session_token, mocked_session)
+    auth_session = await get_current_auth_session(request_with_session_token, mocked_session)
 
     result = await get_optional_user(auth_session)
 

@@ -106,7 +106,7 @@ async def get_recipe(
         RecipeNotFoundException: If the ID is invalid or the recipe does not exist.
         RecipeForbiddenException: If the requesting user cannot access the recipe.
     """
-    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user}')
+    logger.info(f'Got GET {AppUrl.RECIPES_TPL} request for user {user.id if user else None}')
     recipe = await RecipeService(session).get_visible_recipe(recipe_id, user)
     return recipe
 
