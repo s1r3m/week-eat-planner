@@ -45,12 +45,12 @@ async def create_user(
     return created_user
 
 
-@router.post(AppUrl.AUTH_LOGIN, response_model=SuccessResponse)
+@router.post(AppUrl.AUTH_LOGIN, response_model=UserRead)
 async def login(
     user_data: UserLogin,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
-) -> SuccessResponse:
+) -> User:
     """Authenticate password credentials and set a session cookie.
 
     The response body contains a success status. The opaque session token is
@@ -62,7 +62,7 @@ async def login(
         response: Response to receive the session cookie.
 
     Returns:
-        A success response for the authenticated request.
+        A logged in user.
 
     Raises:
         OAuthAccountException: If the account has no password (HTTP 409).
@@ -72,7 +72,7 @@ async def login(
     user = await AuthService(session).login(user_data)
     session_token = await SessionService(session).create_session_token(user)
     set_session_cookie(response, session_token)
-    return SuccessResponse()
+    return user
 
 
 @router.post(AppUrl.AUTH_LOGOUT, status_code=status.HTTP_204_NO_CONTENT)

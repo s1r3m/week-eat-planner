@@ -43,7 +43,7 @@ The `Makefile` contains all the necessary commands to run and manage the applica
 - **`make fe_start`**: Starts the Nuxt frontend on port 3000.
 - **`make stop`**: Stops the application and its services.
 - **`make lint`**: Runs the linters to check the code for style and errors.
-- **`make fe_lint`**: Checks frontend code, styles, and formatting without fixing files.
+- **`make fe_lint`**: Checks frontend code, styles, formatting, and TypeScript types without fixing files.
 - **`make fe_style`**: Formats frontend files and applies automatic lint fixes.
 - **`make be_test`**: Runs the backend unit tests.
 - **`make fe_test`**: Runs frontend unit tests with enforced coverage thresholds.

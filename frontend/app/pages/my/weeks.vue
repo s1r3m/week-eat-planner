@@ -8,10 +8,6 @@
 	import WeekGrid from '@/modules/weeks/ui/WeekGrid.vue'
 	import { getWeeks } from '~/modules/weeks/api/weeksApi'
 
-	definePageMeta({
-		layout: 'app',
-	})
-
 	const { data: weeks, error, refresh } = useQuery(getWeeks())
 	const { open } = useWeekCreateDialog()
 </script>

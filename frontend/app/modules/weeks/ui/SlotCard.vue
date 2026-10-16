@@ -37,7 +37,7 @@
 
 				<BaseButton
 					v-if="mealSlot.recipe"
-					variant="outline"
+					variant="secondary"
 				>
 					{{ mealSlot.recipe?.name }}
 				</BaseButton>

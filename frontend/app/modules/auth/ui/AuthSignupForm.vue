@@ -51,19 +51,19 @@
 			/>
 
 			<BaseInput
-				v-model="email"
-				label="Email"
-				autocomplete="email"
-				placeholder="Enter email"
-				:error="errors.email"
-			/>
-
-			<BaseInput
 				v-model="username"
 				label="Username"
 				placeholder="Enter username"
 				autocomplete="username"
 				:error="errors.username"
+			/>
+
+			<BaseInput
+				v-model="email"
+				label="Email"
+				autocomplete="email"
+				placeholder="Enter email"
+				:error="errors.email"
 			/>
 
 			<BaseInput

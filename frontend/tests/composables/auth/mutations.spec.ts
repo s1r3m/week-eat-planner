@@ -31,10 +31,13 @@ it('login updates the shared user cache from the authentication response', async
 	)
 	expect(api).not.toHaveBeenCalled()
 	await result.login.mutateAsync({
-		username: user.email,
+		email: user.email,
 		password: 'password123',
 	})
-	expect(api.mock.calls.map(([path]) => path)).toEqual(['/auth/login'])
+	expect(api).toHaveBeenCalledExactlyOnceWith('/auth/login', {
+		method: 'POST',
+		body: { email: user.email, password: 'password123' },
+	})
 	expect(cache.getQueryData(AUTH_KEY.user())).toEqual(nextUser)
 })
 
@@ -62,7 +65,7 @@ it.each([
 	[
 		'login',
 		() => loginMutation(),
-		{ username: user.email, password: 'password123' },
+		{ email: user.email, password: 'password123' },
 	],
 	[
 		'signup',

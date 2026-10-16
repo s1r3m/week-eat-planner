@@ -9,10 +9,6 @@
 	import SlotGrid from '@/modules/weeks/ui/SlotGrid.vue'
 	import WeekDeleteDialog from '@/modules/weeks/ui/WeekDeleteDialog.vue'
 
-	definePageMeta({
-		middleware: 'layout',
-	})
-
 	const route = useRoute()
 	const {
 		data: week,

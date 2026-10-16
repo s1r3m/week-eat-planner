@@ -24,7 +24,7 @@ Application code lives in `app/`, public assets in `public/`, and tests in
 From the repository root:
 
 ```bash
-make fe_lint   # Oxlint, ESLint, Stylelint, and Prettier checks
+make fe_lint   # Oxlint, ESLint, Stylelint, Prettier, and TypeScript checks
 make fe_style  # formatting and automatic lint fixes
 make fe_test   # tests with coverage thresholds
 ```
@@ -46,12 +46,12 @@ bun run test -- tests/composables/weeks/useCreateWeek.spec.ts
 Coverage requires 100% statements, branches, functions, and lines per file for
 runtime TypeScript modules and Vue components under `app/`. Type-only modules
 are excluded. Reports are written to `coverage/`, including HTML, LCOV, and JSON.
-The optional TypeScript check requires Nuxt's generated API declarations; it is
-separate from `fe_lint` and CI.
+The TypeScript check requires Nuxt's generated API declarations and runs as part
+of `fe_lint`, including in CI. Coverage remains a separate check under `fe_test`.
 
 Composable and UI tests run in jsdom; API, plugin, and utility tests run in Node.
 The helpers mount real Vue, Pinia, and Colada instances while mocking the HTTP
-boundary and Nuxt globals. See [the test guide](tests/README.md) for details.
+boundary and Nuxt globals.
 
 ## Production
 

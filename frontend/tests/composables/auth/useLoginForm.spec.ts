@@ -22,10 +22,10 @@ describe('useLoginForm', () => {
 
 		expect(api).toHaveBeenCalledTimes(1)
 		expect(api).toHaveBeenCalledWith('/auth/login', {
-			body: new URLSearchParams({
+			body: {
 				password: 'password123',
-				username: 'test@example.com',
-			}),
+				email: 'test@example.com',
+			},
 			method: 'POST',
 		})
 		expect(form.serverError.value).toBeNull()

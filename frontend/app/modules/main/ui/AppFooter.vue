@@ -17,5 +17,6 @@
 		padding: var(--space-2);
 		border-top: 1px solid var(--border);
 		color: var(--text-muted);
+		font-size: var(--text-12);
 	}
 </style>

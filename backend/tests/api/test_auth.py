@@ -52,13 +52,20 @@ async def test_create_user__invalid_email_format__unprocessable_entity_error(cli
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_login__valid_credentials__session_returned(client, created_user):
+async def test_login__valid_credentials__session_set_user_returned(client, created_user):
     login_data = UserLogin(email=created_user.email, password=PASSWORD).model_dump(mode='json')
 
     response = await client.post(AppUrl.AUTH_LOGIN, json=login_data)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {'status': 'success'}
+    assert response.json() == {
+        'id': str(created_user.id),
+        'email': created_user.email,
+        'username': created_user.username,
+        'is_active': created_user.is_active,
+        'avatar_url': None,
+        'oauth_provider': None,
+    }
     assert response.cookies.get(SESSION_COOIKE_NAME)
 
 

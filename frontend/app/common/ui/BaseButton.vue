@@ -40,7 +40,7 @@
 	.btn--primary {
 		border-color: var(--brand-primary);
 		background-color: var(--brand-primary);
-		color: var(--text);
+		color: var(--text-highlighted-2);
 	}
 
 	.btn--danger {

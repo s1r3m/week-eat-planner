@@ -22,13 +22,7 @@ export const loginMutation = defineMutation(() => {
 
 	return useMutation({
 		mutation: (body: LoginPayload) =>
-			$api<UserData>('/auth/login', {
-				body: new URLSearchParams({
-					password: body.password,
-					username: body.username,
-				}),
-				method: 'POST',
-			}),
+			$api<UserData>('/auth/login', { body, method: 'POST' }),
 		onSuccess: (userInfo) => {
 			queryCache.setQueryData(AUTH_KEY.user(), userInfo)
 		},
