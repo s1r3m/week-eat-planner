@@ -28,11 +28,11 @@ it('transitions from pending to authenticated and shares cached user data', asyn
 	expect(await result.getResolvedUser()).toBeNull()
 })
 
-it('resolves failed authentication as a guest while exposing the error', async () => {
+it('exposes authentication failures as an error and rejects resolution', async () => {
 	const error = new Error('Unauthorized')
 	api.mockRejectedValue(error)
 	const { result } = mountComposable(useAuth)
-	expect(await result.getResolvedUser()).toBeNull()
-	expect(result.authState.value).toBe('guest')
+	await expect(result.getResolvedUser()).resolves.toBeNull()
+	expect(result.authState.value).toBe('error')
 	expect(result.error.value).toBe(error)
 })

@@ -33,7 +33,7 @@ beforeEach(() => {
 	route.name = 'index'
 	colorMode.value = 'light'
 	colorMode.preference = 'system'
-	api.mockReset().mockResolvedValue([])
+	api.mockReset().mockResolvedValue(null)
 	vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 	vi.stubGlobal('useRoute', () => route)
 	vi.stubGlobal('useColorMode', () => colorMode)
@@ -49,6 +49,7 @@ it('hides the current authentication route and emits navigation after it finishe
 		render: () => h(AppAuthControls),
 		stubs,
 	})
+	await flushPromises()
 	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
 		'Login',
 		'Register',
@@ -76,6 +77,34 @@ it('hides the current authentication route and emits navigation after it finishe
 	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
 		'Login',
 	])
+})
+
+it('logs out from the authenticated controls and displays its pending state', async () => {
+	const response = Promise.withResolvers<null>()
+	api.mockReturnValue(response.promise)
+	const { wrapper } = mountComposable(() => null, {
+		render: () => h(AppAuthControls),
+		stubs,
+		seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
+	})
+	await wrapper.get('button').trigger('click')
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
+	expect(wrapper.get('button').text()).toBe('Logging out...')
+	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
+		true,
+	)
+	expect(wrapper.getComponent(AppAuthControls).emitted('navigate')).toEqual([
+		[],
+	])
+	response.resolve(null)
+	await flushPromises()
+	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
+		'Login',
+		'Register',
+	])
+	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
+		false,
+	)
 })
 
 it('switches between light, dark, and system preferences and updates selected choices', async () => {

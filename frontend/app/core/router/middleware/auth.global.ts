@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	if (access === 'public' && !redirectAuthenticated) return
 
 	const { getResolvedUser } = useAuth()
-	let user: UserData | null
+	let user: null | UserData
 
 	try {
 		user = await getResolvedUser()
@@ -21,17 +21,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
 				statusText: 'Unable to verify your session. Relogin please.',
 			})
 		}
+		console.error('An error during GET /user', error)
 		return
 	}
 
-	if (access === 'required' && !user) {
+	if (!user && access === 'required') {
 		return await navigateTo({
 			name: 'login',
 			query: { redirect: getRedirectTarget(to.fullPath) },
 		})
 	}
 
-	if ((access === 'guest' || redirectAuthenticated) && user) {
+	if (user && (access === 'guest' || redirectAuthenticated)) {
 		return await navigateTo({ name: 'my-weeks' })
 	}
 })

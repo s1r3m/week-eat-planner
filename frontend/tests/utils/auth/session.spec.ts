@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-	getRedirectTarget,
-	isPublicRoute,
-	isUnauthorized,
-} from '@/modules/auth/utils/session'
+import { getRedirectTarget, isUnauthorized } from '@/modules/auth/utils/session'
 
 describe('isUnauthorized', () => {
 	it.each([
@@ -25,29 +21,6 @@ describe('isUnauthorized', () => {
 		{ status: '401' },
 	])('does not treat other failures as unauthorized: %j', (error) => {
 		expect(isUnauthorized(error)).toBe(false)
-	})
-})
-
-describe('isPublicRoute', () => {
-	it.each([
-		'/',
-		'/login',
-		'/signup',
-		'/weeks/shared-week',
-		'/weeks/shared-week/',
-	])('allows anonymous access to %s', (path) => {
-		expect(isPublicRoute(path)).toBe(true)
-	})
-
-	it.each([
-		'/my/weeks',
-		'/my/recipes',
-		'/weeks',
-		'/weeks/',
-		'/weeks/shared-week/edit',
-		'/login/reset',
-	])('requires authentication for %s', (path) => {
-		expect(isPublicRoute(path)).toBe(false)
 	})
 })
 

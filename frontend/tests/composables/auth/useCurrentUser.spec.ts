@@ -1,4 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
+import { FetchError } from 'ofetch'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getUser } from '@/modules/auth/api/authApi'
@@ -32,6 +33,18 @@ describe('getUser', () => {
 		await flushPromises()
 		expect(result.data.value).toBeUndefined()
 		expect(result.error.value).toEqual({ status: 401 })
+	})
+
+	it('treats a fetch-level unauthorized response as a guest', async () => {
+		api.mockRejectedValue(
+			Object.assign(new FetchError('Unauthorized'), {
+				response: { status: 401 },
+			}),
+		)
+		const { result } = mountComposable(getUser)
+		await flushPromises()
+		expect(result.data.value).toBeNull()
+		expect(result.error.value).toBeNull()
 	})
 
 	it('retains other errors and propagates an explicitly throwing refetch', async () => {
