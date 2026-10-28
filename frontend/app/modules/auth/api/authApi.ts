@@ -1,3 +1,5 @@
+import { FetchError } from 'ofetch'
+
 import type {
 	LoginPayload,
 	SignupPayload,
@@ -12,7 +14,16 @@ export const getUser = defineQuery(() => {
 	return useQuery({
 		key: AUTH_KEY.user(),
 		staleTime: 1000 * 60 * 15,
-		query: () => $api<UserData>('/user'),
+		query: async () => {
+			try {
+				return await $api<UserData>('/user')
+			} catch (error) {
+				if (error instanceof FetchError && error.response?.status === 401) {
+					return null
+				}
+				throw error
+			}
+		},
 	})
 })
 

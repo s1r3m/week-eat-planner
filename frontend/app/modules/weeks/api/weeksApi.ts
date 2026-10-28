@@ -25,7 +25,6 @@ export const getWeekQuery = defineQueryOptions((weekId: string) => {
 	return {
 		key: WEEKS_KEY.single(weekId),
 		query: () => $api<WeekFull>(`/weeks/${weekId}`),
-		ssrCatchError: true,
 	}
 })
 

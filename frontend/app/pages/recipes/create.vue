@@ -9,6 +9,10 @@
 	import PageTitle from '@/common/ui/PageTitle.vue'
 	import { createEmptyForm } from '@/modules/recipes/utils'
 
+	definePageMeta({
+		auth: 'required',
+	})
+
 	const form = ref<IRecipeForm>(createEmptyForm())
 	const isConfirmOpen = ref<boolean>(false)
 

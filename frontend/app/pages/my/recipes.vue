@@ -1,6 +1,10 @@
 <script setup lang="ts">
 	import BaseButton from '@/common/ui/BaseButton.vue'
 	import PageTitle from '@/common/ui/PageTitle.vue'
+
+	definePageMeta({
+		auth: 'required',
+	})
 </script>
 
 <template>

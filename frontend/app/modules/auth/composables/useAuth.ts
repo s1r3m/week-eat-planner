@@ -6,15 +6,14 @@ export const useAuth = () => {
 	const { data: user, status, error, refresh } = getUser()
 
 	const authState = computed<AuthState>(() => {
-		if (status.value === 'pending') {
-			return 'pending'
-		}
+		if (status.value === 'pending') return 'pending'
+		if (error.value) return 'error'
 		return user.value ? 'authenticated' : 'guest'
 	})
 
 	const getResolvedUser = async () => {
-		await refresh()
-		return user.value ?? null
+		const response = await refresh()
+		return response.data ?? null
 	}
 
 	return {

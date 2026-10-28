@@ -2,8 +2,12 @@
 	import AuthCard from '@/modules/auth/ui/AuthCard.vue'
 	import AuthSignupForm from '@/modules/auth/ui/AuthSignupForm.vue'
 
+	definePageMeta({
+		auth: 'guest',
+	})
+
 	const onSuccess = async () => {
-		await navigateTo({ name: 'my-weeks' })
+		await navigateTo({ name: 'login' })
 	}
 </script>
 

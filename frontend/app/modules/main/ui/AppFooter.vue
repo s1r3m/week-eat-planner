@@ -14,7 +14,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-2);
+		padding: var(--space-4);
 		border-top: 1px solid var(--border);
 		color: var(--text-muted);
 		font-size: var(--text-12);

@@ -45,6 +45,7 @@
 <style scoped>
 	.hero {
 		display: flex;
+		padding: var(--space-2);
 		gap: var(--space-4);
 	}
 
@@ -53,7 +54,6 @@
 		flex-direction: column;
 		align-items: start;
 		justify-content: center;
-		padding: var(--space-4);
 		gap: var(--space-8);
 	}
 
