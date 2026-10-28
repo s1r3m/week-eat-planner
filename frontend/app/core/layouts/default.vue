@@ -19,6 +19,6 @@
 	.layout-container {
 		display: grid;
 		grid-template-rows: min-content 1fr min-content;
-		height: 100vh;
+		height: 100dvh;
 	}
 </style>

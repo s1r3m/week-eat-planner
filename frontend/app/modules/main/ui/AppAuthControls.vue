@@ -7,7 +7,7 @@
 		navigate: []
 	}>()
 
-	const { mutate: logout, isLoading } = logoutMutation()
+	const { mutateAsync: logout, isLoading } = logoutMutation()
 	const { authState } = useAuth()
 
 	const route = useRoute()
@@ -25,8 +25,11 @@
 	}
 
 	const onLogout = async () => {
-		logout()
-		await navigate('index')
+		try {
+			await logout()
+		} finally {
+			await navigate('index')
+		}
 	}
 </script>
 

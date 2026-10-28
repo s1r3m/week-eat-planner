@@ -32,7 +32,7 @@ it('exposes authentication failures as an error and rejects resolution', async (
 	const error = new Error('Unauthorized')
 	api.mockRejectedValue(error)
 	const { result } = mountComposable(useAuth)
-	await expect(result.getResolvedUser()).resolves.toBeNull()
+	await expect(result.getResolvedUser()).rejects.toBe(error)
 	expect(result.authState.value).toBe('error')
 	expect(result.error.value).toBe(error)
 })

@@ -81,23 +81,35 @@ it('hides the current authentication route and emits navigation after it finishe
 
 it('logs out from the authenticated controls and displays its pending state', async () => {
 	const response = Promise.withResolvers<null>()
-	api.mockReturnValue(response.promise)
+	let logoutStarted = false
+	api.mockImplementation((path) => {
+		if (path === '/auth/logout') {
+			logoutStarted = true
+			return response.promise
+		}
+		return Promise.resolve(path === '/user' && !logoutStarted ? user : null)
+	})
 	const { wrapper } = mountComposable(() => null, {
 		render: () => h(AppAuthControls),
 		stubs,
 		seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
 	})
+	await flushPromises()
 	await wrapper.get('button').trigger('click')
-	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
+	expect(navigateTo).not.toHaveBeenCalled()
 	expect(wrapper.get('button').text()).toBe('Logging out...')
 	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
 		true,
 	)
+	expect(
+		wrapper.getComponent(AppAuthControls).emitted('navigate'),
+	).toBeUndefined()
+	response.resolve(null)
+	await flushPromises()
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
 	expect(wrapper.getComponent(AppAuthControls).emitted('navigate')).toEqual([
 		[],
 	])
-	response.resolve(null)
-	await flushPromises()
 	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
 		'Login',
 		'Register',

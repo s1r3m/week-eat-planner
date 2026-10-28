@@ -13,6 +13,7 @@ export const useAuth = () => {
 
 	const getResolvedUser = async () => {
 		const response = await refresh()
+		if (response.error) throw response.error
 		return response.data ?? null
 	}
 
