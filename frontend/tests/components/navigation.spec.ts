@@ -2,6 +2,7 @@ import { flushPromises } from '@vue/test-utils'
 import { assert, beforeEach, expect, it, vi } from 'vitest'
 import { computed, h, reactive, ref } from 'vue'
 
+import { useGlobalToast } from '@/common/composables/useGlobalToast'
 import { AUTH_KEY } from '@/modules/auth/constants'
 import * as navigation from '@/modules/main/composables/useAppNavigation'
 import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
@@ -33,7 +34,7 @@ beforeEach(() => {
 	route.name = 'index'
 	colorMode.value = 'light'
 	colorMode.preference = 'system'
-	api.mockReset().mockResolvedValue([])
+	api.mockReset().mockResolvedValue(null)
 	vi.stubGlobal('useNuxtApp', () => ({ $api: api }))
 	vi.stubGlobal('useRoute', () => route)
 	vi.stubGlobal('useColorMode', () => colorMode)
@@ -49,6 +50,7 @@ it('hides the current authentication route and emits navigation after it finishe
 		render: () => h(AppAuthControls),
 		stubs,
 	})
+	await flushPromises()
 	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
 		'Login',
 		'Register',
@@ -75,6 +77,72 @@ it('hides the current authentication route and emits navigation after it finishe
 	await flushPromises()
 	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
 		'Login',
+	])
+})
+
+it('logs out from the authenticated controls and displays its pending state', async () => {
+	const response = Promise.withResolvers<null>()
+	let logoutStarted = false
+	api.mockImplementation((path) => {
+		if (path === '/auth/logout') {
+			logoutStarted = true
+			return response.promise
+		}
+		return Promise.resolve(path === '/user' && !logoutStarted ? user : null)
+	})
+	const { wrapper } = mountComposable(() => null, {
+		render: () => h(AppAuthControls),
+		stubs,
+		seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
+	})
+	await flushPromises()
+	await wrapper.get('button').trigger('click')
+	expect(navigateTo).not.toHaveBeenCalled()
+	expect(wrapper.get('button').text()).toBe('Logging out...')
+	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
+		true,
+	)
+	expect(
+		wrapper.getComponent(AppAuthControls).emitted('navigate'),
+	).toBeUndefined()
+	response.resolve(null)
+	await flushPromises()
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
+	expect(wrapper.getComponent(AppAuthControls).emitted('navigate')).toEqual([
+		[],
+	])
+	expect(wrapper.findAll('button').map((button) => button.text())).toEqual([
+		'Login',
+		'Register',
+	])
+	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
+		false,
+	)
+})
+
+it('shows an error and navigates home when logout fails', async () => {
+	const error = new Error('Logout failed')
+	api.mockImplementation((path) =>
+		path === '/user' ? Promise.resolve(user) : Promise.reject(error),
+	)
+	const consoleError = vi.spyOn(console, 'error').mockImplementation(vi.fn())
+	const { wrapper } = mountComposable(() => null, {
+		render: () => h(AppAuthControls),
+		stubs,
+		seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
+	})
+	await wrapper.get('button').trigger('click')
+	await flushPromises()
+	expect(consoleError).toHaveBeenCalledExactlyOnceWith(
+		'Error during logout:',
+		error,
+	)
+	expect(useGlobalToast().toasts.value).toMatchObject([
+		{ message: 'Error during logout', variant: 'error' },
+	])
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
+	expect(wrapper.getComponent(AppAuthControls).emitted('navigate')).toEqual([
+		[],
 	])
 })
 

@@ -1,18 +1,41 @@
 <script setup lang="ts">
 	import BaseButton from '@/common/ui/BaseButton.vue'
+	import { logoutMutation } from '@/modules/auth/api/authApi'
+	import { useGlobalToast } from '~/common/composables/useGlobalToast'
+	import { useAuth } from '~/modules/auth/composables/useAuth'
 
 	const emits = defineEmits<{
 		navigate: []
 	}>()
 
+	const { mutateAsync: logout, isLoading } = logoutMutation()
+	const { authState } = useAuth()
+	const { show } = useGlobalToast()
+
 	const route = useRoute()
 
-	const showLogin = computed(() => route.name !== 'login')
-	const showSignup = computed(() => route.name !== 'signup')
+	const showLogin = computed(
+		() => authState.value !== 'authenticated' && route.name !== 'login',
+	)
+	const showSignup = computed(
+		() => authState.value !== 'authenticated' && route.name !== 'signup',
+	)
+	const showLogout = computed(() => authState.value === 'authenticated')
 
 	const navigate = async (name: string) => {
 		await navigateTo({ name })
 		emits('navigate')
+	}
+
+	const onLogout = async () => {
+		try {
+			await logout()
+		} catch (error) {
+			console.error('Error during logout:', error)
+			show('Error during logout')
+		} finally {
+			await navigate('index')
+		}
 	}
 </script>
 
@@ -31,6 +54,15 @@
 			@click="navigate('signup')"
 		>
 			Register
+		</BaseButton>
+
+		<BaseButton
+			v-if="showLogout"
+			variant="danger"
+			:disabled="isLoading"
+			@click="onLogout"
+		>
+			{{ isLoading ? 'Logging out...' : 'Logout' }}
 		</BaseButton>
 	</div>
 </template>

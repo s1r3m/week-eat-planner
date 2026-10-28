@@ -37,7 +37,7 @@ it.each([
 	},
 )
 
-it('takes successful registration to the weeks page', async () => {
+it('takes successful registration to the login page', async () => {
 	const { wrapper } = mountComposable(() => null, {
 		render: () => h(SignupPage),
 		stubs: { AuthSignupForm: true },
@@ -45,7 +45,7 @@ it('takes successful registration to the weeks page', async () => {
 	expect(wrapper.get('h1').text()).toBe('Join us')
 	wrapper.getComponent(AuthSignupForm).vm.$emit('success')
 	await flushPromises()
-	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'my-weeks' })
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'login' })
 })
 
 it('starts planning from the landing page and leaves the unfinished demo control disabled', async () => {

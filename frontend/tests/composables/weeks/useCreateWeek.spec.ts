@@ -152,17 +152,13 @@ describe('createWeekMutation', () => {
 		expect(useGlobalToast().toasts.value).toHaveLength(1)
 	})
 
-	it('keeps cached authentication when a background user refresh fails', async () => {
+	it('does not create a week when user refresh fails', async () => {
 		const { result, cache } = setup([week()])
 		const error = new Error('Session check failed')
 		await cache.invalidateQueries({ key: AUTH_KEY.user() }, false)
 		api.mockRejectedValue(error)
 		await expect(result.mutateAsync({ name: 'New' })).rejects.toBe(error)
-		expect(api).toHaveBeenCalledWith('/user')
-		expect(api).toHaveBeenCalledWith('/weeks', {
-			method: 'POST',
-			body: { name: 'New' },
-		})
+		expect(api).toHaveBeenCalledExactlyOnceWith('/user')
 		expect(cache.getQueryData(WEEKS_KEY.all())).toEqual([week()])
 		expect(useGlobalToast().toasts.value).toMatchObject([
 			{ message: error.message },

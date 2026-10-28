@@ -1,17 +1,38 @@
+import type { UserData } from '@/modules/auth/types'
+
 import { useAuth } from '@/modules/auth/composables/useAuth'
-import { getRedirectTarget, isPublicRoute } from '@/modules/auth/utils/session'
+import { getRedirectTarget } from '@/modules/auth/utils/session'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-	if (isPublicRoute(to.path)) return
+	const access = to.meta.auth ?? 'public'
+	const redirectAuthenticated = to.meta.redirectAuthenticated ?? false
+
+	if (access === 'public' && !redirectAuthenticated) return
 
 	const { getResolvedUser } = useAuth()
+	let user: null | UserData
 
-	const user = await getResolvedUser()
+	try {
+		user = await getResolvedUser()
+	} catch (error) {
+		if (access === 'required') {
+			throw createError({
+				status: 503,
+				statusText: 'Unable to verify your session. Relogin please.',
+			})
+		}
+		console.error('An error during GET /user', error)
+		return
+	}
 
-	if (!user) {
-		return navigateTo({
-			path: '/login',
+	if (!user && access === 'required') {
+		return await navigateTo({
+			name: 'login',
 			query: { redirect: getRedirectTarget(to.fullPath) },
 		})
+	}
+
+	if (user && (access === 'guest' || redirectAuthenticated)) {
+		return await navigateTo({ name: 'my-weeks' })
 	}
 })
