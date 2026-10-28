@@ -1,6 +1,7 @@
 <script setup lang="ts">
 	import BaseButton from '@/common/ui/BaseButton.vue'
 	import { logoutMutation } from '@/modules/auth/api/authApi'
+	import { useGlobalToast } from '~/common/composables/useGlobalToast'
 	import { useAuth } from '~/modules/auth/composables/useAuth'
 
 	const emits = defineEmits<{
@@ -9,13 +10,15 @@
 
 	const { mutateAsync: logout, isLoading } = logoutMutation()
 	const { authState } = useAuth()
+	const { show } = useGlobalToast()
 
 	const route = useRoute()
+
 	const showLogin = computed(
-		() => authState.value === 'guest' && route.name !== 'login',
+		() => authState.value !== 'authenticated' && route.name !== 'login',
 	)
 	const showSignup = computed(
-		() => authState.value === 'guest' && route.name !== 'signup',
+		() => authState.value !== 'authenticated' && route.name !== 'signup',
 	)
 	const showLogout = computed(() => authState.value === 'authenticated')
 
@@ -27,6 +30,9 @@
 	const onLogout = async () => {
 		try {
 			await logout()
+		} catch (error) {
+			console.error('Error during logout:', error)
+			show('Error during logout')
 		} finally {
 			await navigate('index')
 		}

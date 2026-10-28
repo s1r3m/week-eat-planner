@@ -2,6 +2,7 @@ import { flushPromises } from '@vue/test-utils'
 import { assert, beforeEach, expect, it, vi } from 'vitest'
 import { computed, h, reactive, ref } from 'vue'
 
+import { useGlobalToast } from '@/common/composables/useGlobalToast'
 import { AUTH_KEY } from '@/modules/auth/constants'
 import * as navigation from '@/modules/main/composables/useAppNavigation'
 import AppAuthControls from '@/modules/main/ui/AppAuthControls.vue'
@@ -117,6 +118,32 @@ it('logs out from the authenticated controls and displays its pending state', as
 	expect((wrapper.get('button').element as HTMLButtonElement).disabled).toBe(
 		false,
 	)
+})
+
+it('shows an error and navigates home when logout fails', async () => {
+	const error = new Error('Logout failed')
+	api.mockImplementation((path) =>
+		path === '/user' ? Promise.resolve(user) : Promise.reject(error),
+	)
+	const consoleError = vi.spyOn(console, 'error').mockImplementation(vi.fn())
+	const { wrapper } = mountComposable(() => null, {
+		render: () => h(AppAuthControls),
+		stubs,
+		seed: (cache) => cache.setQueryData(AUTH_KEY.user(), user),
+	})
+	await wrapper.get('button').trigger('click')
+	await flushPromises()
+	expect(consoleError).toHaveBeenCalledExactlyOnceWith(
+		'Error during logout:',
+		error,
+	)
+	expect(useGlobalToast().toasts.value).toMatchObject([
+		{ message: 'Error during logout', variant: 'error' },
+	])
+	expect(navigateTo).toHaveBeenCalledExactlyOnceWith({ name: 'index' })
+	expect(wrapper.getComponent(AppAuthControls).emitted('navigate')).toEqual([
+		[],
+	])
 })
 
 it('switches between light, dark, and system preferences and updates selected choices', async () => {
