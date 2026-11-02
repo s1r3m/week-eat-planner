@@ -137,7 +137,7 @@ class AuthService:
                 logger.error('Email is already registered via OAuth')
                 raise OAuthAccountException()
 
-            user = User(**user_data.model_dump(), is_email_verified=True)
+            user = User(**user_data.model_dump(), is_email_verified=True, is_active=True)
             db_user = await self._user_dao.add(user)
             logger.info('Created new user via Google OAuth')
         else:
@@ -176,29 +176,29 @@ class AuthService:
 
     async def activate_user_with_token(self, token: str) -> None:
         """Verifies the recieved token and activtes the account."""
-        logger.info(f'Verifying the token {token}')
+        logger.info('Verifying the received token')
         now = datetime.now(UTC)
         token_hash = TokenProvider.get_token_hash(token)
         db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash))
         if not db_token:
-            logger.error(f'The token {token} does not match any in db')
+            logger.error('The token does not match any in db')
             raise BadActivationToken()
 
         user = db_token.user
         if not user:
-            logger.error(f'User from token {token} was not found')
+            logger.error('User from token was not found')
             raise BadActivationToken()
 
         if db_token.purpose != TokenPurpose.ACTIVATE_ACCOUNT:
-            logger.error(f'The token {token} is not of activation type')
+            logger.error('The token is not of activation type')
             raise BadActivationToken()
 
         if db_token.expires_at <= now:
-            logger.error(f'The token {token} is expired')
+            logger.error('The token is expired')
             raise BadActivationToken()
 
         if db_token.is_redeemed:
-            logger.error(f'Token {token} is already redeemed')
+            logger.error('Token is already redeemed')
             raise BadActivationToken()
 
         user.is_email_verified = True
