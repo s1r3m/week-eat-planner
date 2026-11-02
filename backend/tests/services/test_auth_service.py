@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
@@ -7,14 +8,16 @@ from tests.constants import PASSWORD
 from week_eat_planner.api.schemas import UserCreate
 from week_eat_planner.api.schemas.session import UserSession
 from week_eat_planner.api.schemas.user import GoogleCode, OAuthUserData, UserLogin
-from week_eat_planner.constants import OAuthProvider
-from week_eat_planner.db.models.auth import Session
+from week_eat_planner.constants import ACTIVATION_TOKEN_TTL, OAuthProvider
+from week_eat_planner.db.models.auth import ActionToken, Session, TokenPurpose
 from week_eat_planner.exceptions import (
+    BadActivationToken,
     InvalidCredentialsException,
     OAuthAccountException,
     PasswordAccountException,
     UserAlreadyExistsException,
 )
+from week_eat_planner.security.token_provider import TokenProvider
 from week_eat_planner.services.auth_service import AuthService
 
 
@@ -33,10 +36,33 @@ def mocked_session_dao(mocker) -> AsyncMock:
 
 
 @pytest.fixture
+def mocked_token_dao(mocker) -> AsyncMock:
+    token_dao_mock = mocker.AsyncMock()
+    mocker.patch('week_eat_planner.services.auth_service.ActionTokenDAO', return_value=token_dao_mock)
+    return token_dao_mock
+
+
+@pytest.fixture
 def mocked_google_auth_client(mocker) -> AsyncMock:
     client_mock = mocker.AsyncMock()
     mocker.patch('week_eat_planner.services.auth_service.GoogleAuthClient', return_value=client_mock)
     return client_mock
+
+
+@pytest.fixture
+def activation_token(db_user):
+    token = TokenProvider.create_token()
+    token_hash = TokenProvider.get_token_hash(token)
+    expires_at = datetime.now(UTC) + timedelta(hours=ACTIVATION_TOKEN_TTL)
+    db_token = ActionToken(
+        user_id=db_user.id,
+        hashed_token=token_hash,
+        expires_at=expires_at,
+        purpose=TokenPurpose.ACTIVATE_ACCOUNT,
+        user=db_user,
+    )
+
+    return db_token, token
 
 
 @pytest.fixture
@@ -181,3 +207,107 @@ async def test_logout__valid_token__token_revoked(mocked_session_dao, mocked_ses
     mocked_session_dao.delete.assert_awaited_once_with(
         UserSession(user_id=auth_session.user.id, hashed_token=auth_session.hashed_token)
     )
+
+
+async def test_create_activation_token__valid_user__token_created(mocked_token_dao, mocked_session, db_user):
+    token = await AuthService(mocked_session).create_activation_token(db_user)
+
+    mocked_token_dao.add.assert_awaited_once()
+    assert token
+
+
+async def test_activate_user_with_token__valid_token__user_activated(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    db_token, token = activation_token
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert db_user.is_active
+    assert db_user.is_email_verified
+    assert db_token.is_redeemed
+
+
+async def test_activate_user_with_token__no_token__error_raised(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    _, token = activation_token
+    mocked_token_dao.find_one_or_none.return_value = None
+
+    with pytest.raises(BadActivationToken) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_active
+    assert not db_user.is_email_verified
+    error = BadActivationToken()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_activate_user_with_token__no_user_found__error_raised(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    db_token, token = activation_token
+    db_token.user = None
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    with pytest.raises(BadActivationToken) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_active
+    assert not db_user.is_email_verified
+    error = BadActivationToken()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_activate_user_with_token__wrong_purpose_token__error_raised(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    db_token, token = activation_token
+    db_token.purpose = TokenPurpose.RESET_PASSWORD
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    with pytest.raises(BadActivationToken) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_active
+    assert not db_user.is_email_verified
+    error = BadActivationToken()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_activate_user_with_token__expired_token__error_raised(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    db_token, token = activation_token
+    db_token.expires_at = datetime.now(UTC) - timedelta(minutes=1)
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    with pytest.raises(BadActivationToken) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_active
+    assert not db_user.is_email_verified
+    error = BadActivationToken()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_activate_user_with_token__redeemed_token__error_raised(
+    mocked_token_dao, mocked_session, activation_token, db_user
+):
+    db_token, token = activation_token
+    db_token.is_redeemed = True
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    with pytest.raises(BadActivationToken) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_active
+    assert not db_user.is_email_verified
+    error = BadActivationToken()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail

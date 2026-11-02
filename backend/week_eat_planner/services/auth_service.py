@@ -16,6 +16,7 @@ from week_eat_planner.api.schemas import (
     UserSession,
 )
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
+from week_eat_planner.constants import ACTIVATION_TOKEN_TTL
 from week_eat_planner.db.dao import ActionTokenDAO, SessionDAO, UserDAO
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.models.auth import ActionToken, TokenPurpose
@@ -165,7 +166,7 @@ class AuthService:
         token = TokenProvider.create_token()
         token_hash = TokenProvider.get_token_hash(token)
 
-        expires_at = datetime.now(UTC) + timedelta(hours=24)
+        expires_at = datetime.now(UTC) + timedelta(hours=ACTIVATION_TOKEN_TTL)
         activation_token = ActionToken(
             user_id=user.id, hashed_token=token_hash, expires_at=expires_at, purpose=TokenPurpose.ACTIVATE_ACCOUNT
         )
@@ -173,7 +174,7 @@ class AuthService:
 
         return token
 
-    async def verify_activation_token(self, token: str) -> None:
+    async def activate_user_with_token(self, token: str) -> None:
         """Verifies the recieved token and activtes the account."""
         logger.info(f'Verifying the token {token}')
         now = datetime.now(UTC)
@@ -181,6 +182,11 @@ class AuthService:
         db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash))
         if not db_token:
             logger.error(f'The token {token} does not match any in db')
+            raise BadActivationToken()
+
+        user = db_token.user
+        if not user:
+            logger.error(f'User from token {token} was not found')
             raise BadActivationToken()
 
         if db_token.purpose != TokenPurpose.ACTIVATE_ACCOUNT:
@@ -195,7 +201,7 @@ class AuthService:
             logger.error(f'Token {token} is already redeemed')
             raise BadActivationToken()
 
-        db_token.user.is_email_verified = True
-        db_token.user.is_active = True
+        user.is_email_verified = True
+        user.is_active = True
         db_token.is_redeemed = True
-        logger.info(f'User {db_token.user.id} email is verified and activated')
+        logger.info(f'User {user.id} email is verified and activated')

@@ -143,6 +143,6 @@ async def verify_activation(
 ) -> SuccessResponse:
     """Verifies the account by recieved activation token."""
     logger.info(f'Got POST {AppUrl.AUTH_VERIFY} request')
-    await AuthService(session).verify_activation_token(token.token)
+    await AuthService(session).activate_user_with_token(token.token)
 
     return SuccessResponse()

@@ -36,7 +36,7 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 
 @pytest.fixture
 def db_user() -> User:
-    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=True, hashed_password=HASHED_PASSWORD)
+    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=False, hashed_password=HASHED_PASSWORD)
 
 
 @pytest.fixture
