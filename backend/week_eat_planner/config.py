@@ -34,6 +34,9 @@ class Settings(BaseSettings):
         TG_API_SITE: Telegram API base URL.
         GOOGLE_CLIENT_ID: OAuth client ID and expected Google ID-token audience.
         GOOGLE_CLIENT_SECRET: OAuth client secret used for the Google code exchange.
+        SMTP_HOST: Mail server host.
+        SMTP_PORT: Mail server port.
+        EMAIL_FROM: A sender email.
     """
 
     IS_DEBUG: bool
@@ -50,24 +53,15 @@ class Settings(BaseSettings):
     STORAGE_REGION: str
 
     # Auth settings.
-    JWT_SECRET: str
-    JWT_ALGORITHM: str
-    JWT_ISSUER: str
-    JWT_AUDIENCE: str
     SESSION_TTL_DAYS: int  # Refresh token time to live in days
-    ROTATE_TOKEN_EXPIRE_DELTA: int  # Time delta in minutes to rotate refresh token if it's close to expiration
-
-    # Logger settings.
-    FORMAT_LOG: str = '{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}'
-    LOG_ROTATION: str = '10 MB'
-
-    # Telegram bot variables.
-    ADMIN_IDS: list[int]
-    BOT_TOKEN: str
-    TG_API_SITE: str
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+
+    # Email
+    SMTP_HOST: str
+    SMTP_PORT: int
+    EMAIL_FROM: str
 
     model_config = SettingsConfigDict(env_file=Path(__file__).parents[1] / '.env')
 
@@ -78,14 +72,6 @@ class Settings(BaseSettings):
             The complete webhook URL.
         """
         return f'{self.BE_HOST}/webhook'
-
-    def get_tg_api_url(self) -> str:
-        """Constructs the base URL for the Telegram Bot API.
-
-        Returns:
-            The Telegram Bot API URL.
-        """
-        return f'{self.TG_API_SITE}/bot{self.BOT_TOKEN}'
 
 
 settings = Settings()

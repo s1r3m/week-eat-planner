@@ -36,8 +36,8 @@ class SessionService:
         Returns:
             The plain-text token to send to the client; only its SHA-256 hash is stored.
         """
-        token = TokenProvider.get_session_token()
-        hashed_token = TokenProvider.hash_token(token)
+        token = TokenProvider.create_token()
+        hashed_token = TokenProvider.get_token_hash(token)
 
         now = datetime.now(UTC)
         auth_session = Session(
@@ -66,7 +66,7 @@ class SessionService:
             SessionNotFoundException: If no stored session matches the token hash.
             SessionExpiredException: If the session expires at or before the current UTC time.
         """
-        token_hash = TokenProvider.hash_token(token)
+        token_hash = TokenProvider.get_token_hash(token)
         auth_session = await self._session_dao.find_one_or_none(SessionToken(hashed_token=token_hash))
 
         if not auth_session:

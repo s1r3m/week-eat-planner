@@ -13,6 +13,7 @@ class AppUrl(StrEnum):
     AUTH_LOGOUT = '/auth/logout'
     AUTH_REFRESH = '/auth/refresh'
     AUTH_SIGNUP = '/auth/signup'
+    AUTH_VERIFY = '/auth/verify'
 
     PING = '/ping'
 

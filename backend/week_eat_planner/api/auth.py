@@ -9,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.dependencies.auth_deps import get_current_auth_session
 from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
-from week_eat_planner.api.schemas import SuccessResponse, UserCreate, UserRead
-from week_eat_planner.api.schemas.user import GoogleCode, UserLogin
+from week_eat_planner.api.schemas import ActivationToken, GoogleCode, SuccessResponse, UserCreate, UserLogin, UserRead
 from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
 from week_eat_planner.helpers import set_session_cookie
 from week_eat_planner.services.auth_service import AuthService
+from week_eat_planner.services.email_service import EmailService
 from week_eat_planner.services.session_service import SessionService
 
 router = APIRouter(tags=['Auth'])
@@ -41,6 +41,8 @@ async def create_user(
     logger.info(f'Got POST {AppUrl.AUTH_SIGNUP} request for {user_data.email}')
     auth_service = AuthService(session)
     created_user = await auth_service.register_user(user_data)
+    activation_token = await auth_service.create_activation_token(created_user)
+    await EmailService().send_activation_email(created_user, activation_token)
 
     return created_user
 
@@ -130,4 +132,17 @@ async def google_auth(
     user = await AuthService(session).login_with_google(data, httpx_client)
     session_token = await SessionService(session).create_session_token(user)
     set_session_cookie(response, session_token)
+
+    return SuccessResponse()
+
+
+@router.post(AppUrl.AUTH_VERIFY, response_model=SuccessResponse)
+async def verify_activation(
+    token: ActivationToken,
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> SuccessResponse:
+    """Verifies the account by recieved activation token."""
+    logger.info(f'Got POST {AppUrl.AUTH_VERIFY} request')
+    await AuthService(session).verify_activation_token(token.token)
+
     return SuccessResponse()

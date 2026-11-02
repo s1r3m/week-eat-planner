@@ -144,3 +144,15 @@ class HashedPassword(BaseModel):
     """
 
     hashed_password: str
+
+
+class ActivationToken(BaseModel):
+    """Schema for activation request body."""
+
+    token: str
+
+
+class HashedToken(BaseModel):
+    """Schema to look up a hashed token."""
+
+    hashed_token: str

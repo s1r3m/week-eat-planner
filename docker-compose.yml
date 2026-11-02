@@ -66,6 +66,16 @@ services:
       done;
       "
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: wep-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    volumes:
+      - mailpit_data:/data
+
 volumes:
+  mailpit_data:
   minio_data:
   postgres_data_dev:

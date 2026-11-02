@@ -122,6 +122,17 @@ class LogicException(HTTPException):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
+class BadActivationToken(LogicException):
+    """Exception raised when an activation token is invalid.
+
+    Uses HTTP 409 responses.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the HTTP 409 error with its response detail."""
+        super().__init__(detail='Bad activation token')
+
+
 class UserAlreadyExistsException(LogicException):
     """Exception raised when attempting to register an already existing user.
 

@@ -1,20 +1,33 @@
 """Service layer for authentication and user registration logic."""
 
+from datetime import UTC, datetime, timedelta
+
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, GoogleCode, UserCreate, UserFilter, UserLogin, UserSession
+from week_eat_planner.api.schemas import (
+    Email,
+    GoogleCode,
+    HashedToken,
+    UserCreate,
+    UserFilter,
+    UserLogin,
+    UserSession,
+)
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
-from week_eat_planner.db.dao import SessionDAO, UserDAO
+from week_eat_planner.db.dao import ActionTokenDAO, SessionDAO, UserDAO
 from week_eat_planner.db.models import Session, User
+from week_eat_planner.db.models.auth import ActionToken, TokenPurpose
 from week_eat_planner.exceptions import (
+    BadActivationToken,
     InvalidCredentialsException,
     OAuthAccountException,
     PasswordAccountException,
     UserAlreadyExistsException,
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
+from week_eat_planner.security.token_provider import TokenProvider
 
 
 class AuthService:
@@ -26,8 +39,9 @@ class AuthService:
         Args:
             session: Database session whose transaction is managed by the caller.
         """
-        self._user_dao = UserDAO(session)
+        self._action_token_dao = ActionTokenDAO(session)
         self._session_dao = SessionDAO(session)
+        self._user_dao = UserDAO(session)
 
     async def register_user(self, user_data: UserCreate) -> User:
         """Registers a new user.
@@ -143,3 +157,45 @@ class AuthService:
             UserSession(user_id=auth_session.user.id, hashed_token=auth_session.hashed_token)
         )
         logger.info(f'User {auth_session.user.id} logged out successfully')
+
+    async def create_activation_token(self, user: User) -> str:
+        """Create a token that is sent in activation email."""
+
+        logger.info(f'Creating an activation token for {user.id}')
+        token = TokenProvider.create_token()
+        token_hash = TokenProvider.get_token_hash(token)
+
+        expires_at = datetime.now(UTC) + timedelta(hours=24)
+        activation_token = ActionToken(
+            user_id=user.id, hashed_token=token_hash, expires_at=expires_at, purpose=TokenPurpose.ACTIVATE_ACCOUNT
+        )
+        await self._action_token_dao.add(activation_token)
+
+        return token
+
+    async def verify_activation_token(self, token: str) -> None:
+        """Verifies the recieved token and activtes the account."""
+        logger.info(f'Verifying the token {token}')
+        now = datetime.now(UTC)
+        token_hash = TokenProvider.get_token_hash(token)
+        db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash))
+        if not db_token:
+            logger.error(f'The token {token} does not match any in db')
+            raise BadActivationToken()
+
+        if db_token.purpose != TokenPurpose.ACTIVATE_ACCOUNT:
+            logger.error(f'The token {token} is not of activation type')
+            raise BadActivationToken()
+
+        if db_token.expires_at <= now:
+            logger.error(f'The token {token} is expired')
+            raise BadActivationToken()
+
+        if db_token.is_redeemed:
+            logger.error(f'Token {token} is already redeemed')
+            raise BadActivationToken()
+
+        db_token.user.is_email_verified = True
+        db_token.user.is_active = True
+        db_token.is_redeemed = True
+        logger.info(f'User {db_token.user.id} email is verified and activated')

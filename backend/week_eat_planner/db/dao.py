@@ -2,6 +2,13 @@
 
 from week_eat_planner.db.base import BaseDAO
 from week_eat_planner.db.models import MealSlot, Recipe, Session, ShoppingList, User, UserFavorite, Week
+from week_eat_planner.db.models.auth import ActionToken
+
+
+class ActionTokenDAO(BaseDAO[ActionToken]):
+    """Data access for user action tokens."""
+
+    model = ActionToken
 
 
 class MealSlotDAO(BaseDAO[MealSlot]):
