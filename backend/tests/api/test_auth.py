@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException, status
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
-from week_eat_planner.api.schemas.user import OAuthUserData, UserCreate, UserLogin
+from week_eat_planner.api.schemas.user import ActivationToken, OAuthUserData, UserCreate, UserLogin
 from week_eat_planner.constants import AppUrl, OAuthProvider, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
@@ -200,3 +200,12 @@ async def test_google_auth__email_has_password_account__error_raised(mocker, cli
     error = PasswordAccountException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}
+
+
+async def test_verify_token__valid_token__account_activated(mocker, client):
+    token_data = ActivationToken(token='token').model_dump(mode='json')
+    mocker.patch('week_eat_planner.api.auth.AuthService.activate_user_with_token')
+
+    response = await client.post(AppUrl.AUTH_VERIFY, json=token_data)
+
+    assert response.status_code == status.HTTP_200_OK

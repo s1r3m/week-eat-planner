@@ -36,7 +36,7 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 
 @pytest.fixture
 def db_user() -> User:
-    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=True, hashed_password=HASHED_PASSWORD)
+    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=False, hashed_password=HASHED_PASSWORD)
 
 
 @pytest.fixture
@@ -121,12 +121,12 @@ def db_meal_slots() -> list[MealSlot]:
 
 @pytest.fixture
 def session_token() -> str:
-    return TokenProvider.get_session_token()
+    return TokenProvider.create_token()
 
 
 @pytest.fixture
 def auth_session(db_user: User, session_token: str) -> Session:
-    hashed_token = TokenProvider.hash_token(session_token)
+    hashed_token = TokenProvider.get_token_hash(session_token)
     expires_at = datetime.now(UTC) + timedelta(minutes=1)
     session = Session(user_id=db_user.id, hashed_token=hashed_token, user=db_user, expires_at=expires_at)
 

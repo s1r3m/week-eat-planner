@@ -103,7 +103,10 @@ def created_week_factory(db_session: AsyncSession) -> Callable:
 @pytest.fixture
 def user_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user_data: UserCreate) -> UserRead:
-        user = await AuthService(db_session).register_user(user_data)
+        auth_service = AuthService(db_session)
+        user = await auth_service.register_user(user_data)
+        activation_token = await auth_service.create_activation_token(user)
+        await auth_service.activate_user_with_token(activation_token)
         await db_session.flush()
         return UserRead.model_validate(user)
 

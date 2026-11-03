@@ -1,6 +1,7 @@
 """Persistent authentication sessions containing hashed opaque tokens."""
 
 from datetime import datetime
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -11,6 +12,11 @@ from week_eat_planner.db.base import Base
 
 if TYPE_CHECKING:
     from .user import User
+
+
+class TokenPurpose(StrEnum):
+    ACTIVATE_ACCOUNT = 'activate_account'
+    RESET_PASSWORD = 'reset_password'
 
 
 class Session(Base):
@@ -40,3 +46,26 @@ class Session(Base):
             A diagnostic string describing the record.
         """
         return f'<Session>(id={self.id}, user_id={self.user_id}, expires_at={self.expires_at})'
+
+
+class ActionToken(Base):
+    """Token issued for a user account action.
+
+    Attributes:
+        user_id: ID of the user who owns the token.
+        hashed_token: SHA-256 hex digest used to look up the token.
+        purpose: Account action for which the token was issued.
+        expires_at: UTC expiration time used to reject expired tokens.
+        is_redeemed: Whether the token has already been used.
+        user: Eagerly loaded user associated with the token.
+    """
+
+    __tablename__ = 'action_tokens'
+
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    hashed_token: Mapped[str] = mapped_column(unique=True, nullable=False)
+    purpose: Mapped[TokenPurpose] = mapped_column(nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    is_redeemed: Mapped[bool] = mapped_column(nullable=False, default=False)
+
+    user: Mapped[User] = relationship(lazy='selectin')

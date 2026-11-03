@@ -13,11 +13,12 @@ from .recipe import (
 )
 from .session import SessionToken, UserSession
 from .shopping_list import ShoppingListItem, ShoppingListRead, ShoppingListUpdate
-from .token import RefreshTokenFilter, Token, TokenUpdate
 from .user import (
+    ActivationToken,
     Email,
     GoogleCode,
     HashedPassword,
+    HashedToken,
     UserChangePassword,
     UserCreate,
     UserFilter,
@@ -28,11 +29,13 @@ from .user import (
 from .week import WeekCreate, WeekRead, WeekReadMinimal, WeekUpdate
 
 __all__ = [
+    'ActivationToken',
     'CookingStep',
     'Email',
     'GoogleCode',
     'Ingredient',
     'HashedPassword',
+    'HashedToken',
     'RecipeFavoriteFilter',
     'MealSlotAssign',
     'MealSlotId',
@@ -44,14 +47,11 @@ __all__ = [
     'RecipeReadMinimal',
     'RecipeUpdate',
     'RecordId',
-    'RefreshTokenFilter',
     'SessionToken',
     'ShoppingListItem',
     'ShoppingListRead',
     'ShoppingListUpdate',
     'SuccessResponse',
-    'Token',
-    'TokenUpdate',
     'UserChangePassword',
     'UserCreate',
     'UserFilter',

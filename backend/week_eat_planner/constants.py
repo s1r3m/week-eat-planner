@@ -4,6 +4,8 @@ from enum import StrEnum
 
 MIN_PASSWORD_LENGTH = 8
 
+ACTIVATION_TOKEN_TTL = 24  # Hours
+
 
 class AppUrl(StrEnum):
     """API path constants, including the currently unregistered legacy refresh path."""
@@ -13,6 +15,7 @@ class AppUrl(StrEnum):
     AUTH_LOGOUT = '/auth/logout'
     AUTH_REFRESH = '/auth/refresh'
     AUTH_SIGNUP = '/auth/signup'
+    AUTH_VERIFY = '/auth/verify'
 
     PING = '/ping'
 
