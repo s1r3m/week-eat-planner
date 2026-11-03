@@ -123,13 +123,10 @@ class LogicException(HTTPException):
 
 
 class BadActivationToken(LogicException):
-    """Exception raised when an activation token is invalid.
-
-    Uses HTTP 409 responses.
-    """
+    """Raised when an account activation token is invalid."""
 
     def __init__(self) -> None:
-        """Initialize the HTTP 409 error with its response detail."""
+        """Initialize the HTTP 409 error for an invalid activation token."""
         super().__init__(detail='Bad activation token')
 
 

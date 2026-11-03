@@ -8,6 +8,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - mailpit
     networks:
       default:
         aliases:

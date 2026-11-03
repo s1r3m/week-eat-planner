@@ -141,7 +141,18 @@ async def verify_activation(
     token: ActivationToken,
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> SuccessResponse:
-    """Verifies the account by recieved activation token."""
+    """Verify a user's account using an activation token.
+
+    Args:
+        token: Account activation token to verify.
+        session: Database session committed by the dependency after the endpoint returns.
+
+    Returns:
+        A success response after activating the account.
+
+    Raises:
+        BadActivationToken: If the token is invalid, expired, or already redeemed.
+    """
     logger.info(f'Got POST {AppUrl.AUTH_VERIFY} request')
     await AuthService(session).activate_user_with_token(token.token)
 

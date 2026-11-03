@@ -49,7 +49,16 @@ class Session(Base):
 
 
 class ActionToken(Base):
-    """Stored actions tokens for users."""
+    """Token issued for a user account action.
+
+    Attributes:
+        user_id: ID of the user who owns the token.
+        hashed_token: SHA-256 hex digest used to look up the token.
+        purpose: Account action for which the token was issued.
+        expires_at: UTC expiration time used to reject expired tokens.
+        is_redeemed: Whether the token has already been used.
+        user: Eagerly loaded user associated with the token.
+    """
 
     __tablename__ = 'action_tokens'
 

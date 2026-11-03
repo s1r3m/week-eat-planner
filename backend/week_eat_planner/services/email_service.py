@@ -7,13 +7,18 @@ from week_eat_planner.db.models.user import User
 
 
 class EmailService:
-    """Email service that sends emails. AI will cover this."""
+    """Send account activation and password reset emails."""
 
     def __init__(self) -> None:
-        """Init method."""
+        """Initialize the email service."""
 
     async def send_activation_email(self, user: User, activation_token: str) -> None:
-        """Sends an email with activation code to the user."""
+        """Send an account activation email containing the provided token.
+
+        Args:
+            user: Account receiving the activation email.
+            activation_token: Plain-text token to include in the email.
+        """
 
         message = EmailMessage()
         message['Subject'] = 'Welcome to Week Eat Planner'
@@ -23,10 +28,14 @@ class EmailService:
         await self._send_email(message)
 
     async def send_password_reset_email(self) -> None:
-        """Sends an email with password reset instructions and codes."""
+        """Send a password reset email."""
 
     async def _send_email(self, message: EmailMessage) -> None:
-        """Sends the email to SMTP_HOST."""
+        """Send an email through the configured SMTP server.
+
+        Args:
+            message: Email message to send.
+        """
         message['From'] = settings.EMAIL_FROM
 
         await send(message, hostname=settings.SMTP_HOST, port=settings.SMTP_PORT)

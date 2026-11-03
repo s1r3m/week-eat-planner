@@ -6,7 +6,7 @@ from week_eat_planner.db.models.auth import ActionToken
 
 
 class ActionTokenDAO(BaseDAO[ActionToken]):
-    """Data access for user action tokens."""
+    """Provide database access to user action tokens."""
 
     model = ActionToken
 

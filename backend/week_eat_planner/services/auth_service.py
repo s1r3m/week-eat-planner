@@ -160,7 +160,14 @@ class AuthService:
         logger.info(f'User {auth_session.user.id} logged out successfully')
 
     async def create_activation_token(self, user: User) -> str:
-        """Create a token that is sent in activation email."""
+        """Create a token to activate the user's account.
+
+        Args:
+            user: Account for which to create the activation token.
+
+        Returns:
+            The plain-text activation token to send to the user.
+        """
 
         logger.info(f'Creating an activation token for {user.id}')
         token = TokenProvider.create_token()
@@ -175,7 +182,14 @@ class AuthService:
         return token
 
     async def activate_user_with_token(self, token: str) -> None:
-        """Verifies the recieved token and activtes the account."""
+        """Activate a user's account using the provided token.
+
+        Args:
+            token: Plain-text account activation token.
+
+        Raises:
+            BadActivationToken: If the token is invalid, expired, already redeemed, or not for activation.
+        """
         logger.info('Verifying the received token')
         now = datetime.now(UTC)
         token_hash = TokenProvider.get_token_hash(token)

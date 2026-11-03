@@ -147,12 +147,12 @@ class HashedPassword(BaseModel):
 
 
 class ActivationToken(BaseModel):
-    """Schema for activation request body."""
+    """Request body containing an account activation token."""
 
     token: str
 
 
 class HashedToken(BaseModel):
-    """Schema to look up a hashed token."""
+    """Query data for looking up a token by its hash."""
 
     hashed_token: str
