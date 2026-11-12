@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import (
     Email,
-    GetActivationToken,
+    GetEmailToken,
     GoogleCode,
     HashedToken,
     UserCreate,
@@ -172,7 +172,8 @@ class AuthService:
 
         logger.info(f'Creating an activation token for {user.id}')
         old_token = await self._action_token_dao.find_one_or_none(
-            GetActivationToken(status=TokenStatus.ACTIVE, user_id=user.id), for_update=True
+            GetEmailToken(status=TokenStatus.ACTIVE, purpose=TokenPurpose.ACTIVATE_ACCOUNT, user_id=user.id),
+            for_update=True,
         )
         token = TokenProvider.create_token()
         token_hash = TokenProvider.get_token_hash(token)

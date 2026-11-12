@@ -8,7 +8,7 @@ from tests.constants import PASSWORD
 from week_eat_planner.api.schemas import UserCreate
 from week_eat_planner.api.schemas.session import UserSession
 from week_eat_planner.api.schemas.user import GoogleCode, OAuthUserData, UserLogin
-from week_eat_planner.constants import ACTIVATION_TOKEN_TTL, OAuthProvider
+from week_eat_planner.constants import ACTIVATION_TOKEN_TTL, OAuthProvider, PASSWORD_RESET_TOKEN_TTL
 from week_eat_planner.db.models.auth import ActionToken, Session, TokenPurpose, TokenStatus
 from week_eat_planner.exceptions import (
     BadActivationTokenException,
@@ -59,6 +59,23 @@ def activation_token(db_user):
         hashed_token=token_hash,
         expires_at=expires_at,
         purpose=TokenPurpose.ACTIVATE_ACCOUNT,
+        status=TokenStatus.ACTIVE,
+        user=db_user,
+    )
+
+    return db_token, token
+
+
+@pytest.fixture
+def reset_password_token(db_user):
+    token = TokenProvider.create_token()
+    token_hash = TokenProvider.get_token_hash(token)
+    expires_at = datetime.now(UTC) + timedelta(hours=PASSWORD_RESET_TOKEN_TTL)
+    db_token = ActionToken(
+        user_id=db_user.id,
+        hashed_token=token_hash,
+        expires_at=expires_at,
+        purpose=TokenPurpose.RESET_PASSWORD,
         status=TokenStatus.ACTIVE,
         user=db_user,
     )
@@ -333,6 +350,21 @@ async def test_activate_user_with_token__not_active_token__error_raised(
 ):
     db_token, token = activation_token
     db_token.status = status
+    mocked_token_dao.find_one_or_none.return_value = db_token
+
+    with pytest.raises(BadActivationTokenException) as exc:
+        await AuthService(mocked_session).activate_user_with_token(token)
+
+    assert not db_user.is_email_verified
+    error = BadActivationTokenException()
+    assert exc.value.status_code == error.status_code
+    assert exc.value.detail == error.detail
+
+
+async def test_activate_user_with_token__reset_password_token__error_raised(
+    mocked_token_dao, mocked_session, reset_password_token, db_user
+):
+    db_token, token = reset_password_token
     mocked_token_dao.find_one_or_none.return_value = db_token
 
     with pytest.raises(BadActivationTokenException) as exc:

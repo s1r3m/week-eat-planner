@@ -5,6 +5,7 @@ from enum import StrEnum
 MIN_PASSWORD_LENGTH = 8
 
 ACTIVATION_TOKEN_TTL = 24  # Hours
+PASSWORD_RESET_TOKEN_TTL = 1  # Hours
 
 
 class AppUrl(StrEnum):

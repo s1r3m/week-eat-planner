@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.constants import MIN_PASSWORD_LENGTH, OAuthProvider
-from week_eat_planner.db.models.auth import TokenStatus
+from week_eat_planner.db.models.auth import TokenPurpose, TokenStatus
 
 
 class Email(BaseModel):
@@ -154,11 +154,12 @@ class ActivationToken(BaseModel):
     token: str
 
 
-class GetActivationToken(BaseModel):
+class GetEmailToken(BaseModel):
     """A schema to load an activation token for a user."""
 
     status: TokenStatus
     user_id: UUID
+    purpose: TokenPurpose = TokenPurpose.ACTIVATE_ACCOUNT
 
 
 class HashedToken(BaseModel):
