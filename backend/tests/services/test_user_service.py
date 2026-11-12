@@ -23,7 +23,9 @@ def mocked_user_dao(mocker) -> AsyncMock:
 
 async def test_get_user__user_exists__user_returned(mocked_user_dao, mocked_session, db_user):
     mocked_user_dao.find_one_or_none_by_id.return_value = db_user
+
     user = await UserService(mocked_session).get_user(db_user.id)
+
     assert user == db_user
 
 

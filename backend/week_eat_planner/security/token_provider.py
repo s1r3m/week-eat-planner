@@ -8,7 +8,16 @@ class TokenProvider:
     """Factory for creating and hashing session tokens."""
 
     @classmethod
-    def hash_token(cls, token: str) -> str:
+    def create_token(cls) -> str:
+        """Generate a cryptographically random, URL-safe session token.
+
+        Returns:
+            A URL-safe token generated from 32 random bytes.
+        """
+        return secrets.token_urlsafe(32)
+
+    @classmethod
+    def get_token_hash(cls, token: str) -> str:
         """Hash an opaque session token using SHA-256 for storage and lookup.
 
         Args:
@@ -19,12 +28,3 @@ class TokenProvider:
         """
         digest = hashlib.sha256(token.encode('utf-8')).hexdigest()
         return digest
-
-    @classmethod
-    def get_session_token(cls) -> str:
-        """Generate a cryptographically random, URL-safe session token.
-
-        Returns:
-            A URL-safe token generated from 32 random bytes.
-        """
-        return secrets.token_urlsafe(32)

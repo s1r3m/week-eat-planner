@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator, Callable
 from http import HTTPStatus
+from xmlrpc.client import boolean
 
 import pytest
 import pytest_asyncio
@@ -83,13 +84,6 @@ def auth_client_factory(client: AsyncClient) -> Callable:
     return _factory
 
 
-@pytest_asyncio.fixture
-async def logout_client_for_created_user(auth_client_factory: Callable, created_user: UserRead) -> AsyncClient:
-    auth_client = await auth_client_factory(created_user, PASSWORD)
-    await auth_client.post(AppUrl.AUTH_LOGOUT)  # Remove cookies
-    return auth_client
-
-
 @pytest.fixture
 def created_week_factory(db_session: AsyncSession) -> Callable:
     async def _factory(user: User, week_data: WeekCreate) -> Week:
@@ -102,8 +96,12 @@ def created_week_factory(db_session: AsyncSession) -> Callable:
 
 @pytest.fixture
 def user_factory(db_session: AsyncSession) -> Callable:
-    async def _factory(user_data: UserCreate) -> UserRead:
-        user = await AuthService(db_session).register_user(user_data)
+    async def _factory(user_data: UserCreate, is_verified: boolean = True) -> UserRead:
+        auth_service = AuthService(db_session)
+        user = await auth_service.register_user(user_data)
+        if is_verified:
+            activation_token = await auth_service.create_activation_token(user)
+            await auth_service.activate_user_with_token(activation_token)
         await db_session.flush()
         return UserRead.model_validate(user)
 
@@ -128,6 +126,13 @@ async def created_user(user_factory: Callable) -> UserRead:
 @pytest_asyncio.fixture
 async def created_user_2(user_factory: Callable) -> UserRead:
     return await user_factory(UserCreate(email='user_2@test.com', password=PASSWORD, username='user_2'))
+
+
+@pytest_asyncio.fixture
+async def not_verified_created_user(user_factory: Callable) -> UserRead:
+    return await user_factory(
+        UserCreate(email='user_2@test.com', password=PASSWORD, username='user_2'), is_verified=False
+    )
 
 
 @pytest_asyncio.fixture
@@ -180,3 +185,10 @@ async def auth_client_for_created_user(auth_client_factory: Callable, created_us
 @pytest_asyncio.fixture
 async def auth_client_for_created_user_2(auth_client_factory: Callable, created_user_2: UserRead) -> AsyncClient:
     return await auth_client_factory(created_user_2, PASSWORD)
+
+
+@pytest_asyncio.fixture
+async def auth_client_for_not_verified_user(
+    auth_client_factory: Callable, not_verified_created_user: UserRead
+) -> AsyncClient:
+    return await auth_client_factory(not_verified_created_user, PASSWORD)

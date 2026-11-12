@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, Path, UploadFile, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
+from week_eat_planner.api.dependencies.auth_deps import get_current_user, get_optional_user
 from week_eat_planner.api.dependencies.storage_deps import get_storage_client
 from week_eat_planner.api.schemas import RecipeCreate, RecipeRead, RecipeReadMinimal, RecipeUpdate
 from week_eat_planner.clients.storage_client import StorageClient
@@ -22,7 +22,7 @@ router = APIRouter(tags=['Recipe'])
 @router.post(AppUrl.RECIPES, response_model=RecipeRead, status_code=status.HTTP_201_CREATED)
 async def create_recipe(
     recipe_data: RecipeCreate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Recipe:
     """Creates a new recipe for the current user.
@@ -44,7 +44,7 @@ async def create_recipe(
 
 @router.get(AppUrl.RECIPES_MY, response_model=list[RecipeReadMinimal])
 async def get_my_recipes(
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[Recipe]:
     """Retrieves all recipes created by the current user.
@@ -65,7 +65,7 @@ async def get_my_recipes(
 
 @router.get(AppUrl.RECIPES_FAVORITES, response_model=list[RecipeReadMinimal])
 async def get_favorites(
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[Recipe]:
     """Retrieves all favorite recipes for the current user.
@@ -115,7 +115,7 @@ async def get_recipe(
 async def update_recipe(
     new_data: RecipeUpdate,
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Recipe:
     """Updates a recipe.
@@ -145,7 +145,7 @@ async def update_recipe(
 @router.delete(AppUrl.RECIPES_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_recipe(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
@@ -177,7 +177,7 @@ async def delete_recipe(
 @router.patch(AppUrl.RECIPES_IMAGE_TPL, response_model=RecipeReadMinimal)
 async def upload_image(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     storage: Annotated[StorageClient, Depends(get_storage_client)],
     image: UploadFile = File(...),  # noqa: B008
@@ -231,7 +231,7 @@ async def upload_image(
 @router.post(AppUrl.RECIPES_FAVORITES_TPL, status_code=status.HTTP_201_CREATED, response_model=RecipeReadMinimal)
 async def create_favorite(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Recipe:
     """Adds a recipe to the user's favorites.
@@ -258,7 +258,7 @@ async def create_favorite(
 @router.delete(AppUrl.RECIPES_FAVORITES_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def remove_favorite(
     recipe_id: Annotated[str, Path(title='ID of the recipe to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Removes a recipe from the user's favorites.

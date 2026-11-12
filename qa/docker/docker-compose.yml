@@ -8,6 +8,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - mailpit
     networks:
       default:
         aliases:
@@ -25,18 +26,12 @@ services:
       - STORAGE_ACCESS_KEY_ID=wep_root
       - STORAGE_SECRET_ACCESS_KEY=weppassword
       - STORAGE_REGION=test
-      - JWT_SECRET=gV64m9aIzFG4qpgVphvQbPQrtAO0nM-7YwwOvu0XPt5KJOjAy4AfgLkqJXYEt
-      - JWT_ALGORITHM=HS256
-      - JWT_ISSUER=wep-auth
-      - JWT_AUDIENCE=wep-api
-      - ACCESS_TOKEN_TTL=900
       - SESSION_TTL_DAYS=30
-      - ROTATE_TOKEN_EXPIRE_DELTA=15
-      - ADMIN_IDS=[193191236]
-      - BOT_TOKEN=your_bot_token
-      - TG_API_SITE=https://api.telegram.org
       - GOOGLE_CLIENT_ID=google_app_id
       - GOOGLE_CLIENT_SECRET=some_secret
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - EMAIL_FROM=test@test.com
     expose:
       - 8000
     depends_on:
@@ -69,5 +64,14 @@ services:
     ports:
       - "5432:5432"
 
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    volumes:
+      - mailpit_data:/data
+
 volumes:
+  mailpit_data:
   postgres_data:

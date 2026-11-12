@@ -16,15 +16,15 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
         'id': str(created_user.id),
         'email': created_user.email,
         'username': created_user.username,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }
 
 
 @pytest.mark.usefixtures('created_user')
-async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
-    response = await logout_client_for_created_user.get(AppUrl.USER)
+async def test_get_user__no_auth_user__user_in_response(client):
+    response = await client.get(AppUrl.USER)
 
     error = NoSessionTokenException()
     assert response.status_code == error.status_code
@@ -41,7 +41,7 @@ async def test_update_user__data_changed__updated_user_in_response(auth_client_f
         'id': str(created_user.id),
         'email': created_user.email,
         'username': new_name,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }
@@ -49,12 +49,12 @@ async def test_update_user__data_changed__updated_user_in_response(auth_client_f
 
 async def test_update_user__empty_username__422_returned(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(AppUrl.USER, json={'username': ''})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_update_user__empty_payload__422_returned(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(AppUrl.USER, json={})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_update_user__no_auth__401_returned(client):
@@ -86,7 +86,7 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 )
 async def test_change_password__bad_data__validation_failed(auth_client_for_created_user, body):
     response = await auth_client_for_created_user.patch(AppUrl.USER_PASSWORD, json=body)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_change_password__old_password_mismatch__error_response(auth_client_for_created_user):

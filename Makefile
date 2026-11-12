@@ -85,19 +85,22 @@ migrations: $(VENV_ACTIVATE) $(ENV_FILE) run_db
 	cd $(BE_PATH) && alembic upgrade head
 
 ## @App Start the environment.
-start: minio migrations
+start: minio migrations mailpit
 	uvicorn "week_eat_planner.main:app" --host 0.0.0.0 --port 8000 --reload
 
 minio:
 	$(DOCKER_COMPOSE) up minio -d --wait
 	$(DOCKER_COMPOSE) run --rm minio-init
 
+mailpit:
+	$(DOCKER_COMPOSE) up mailpit -d --wait
+
 ## @App Show docker logs.
 logs:
 	$(DOCKER_COMPOSE) logs
 
 ## @Tests Prepare test environment (DB + Minio).
-test_env: migrations minio
+test_env: migrations minio mailpit
 
 ## @App Stop the environment.
 stop:

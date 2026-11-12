@@ -1,20 +1,35 @@
 """Service layer for authentication and user registration logic."""
 
+from datetime import UTC, datetime, timedelta
+
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.schemas import Email, GoogleCode, UserCreate, UserFilter, UserLogin, UserSession
+from week_eat_planner.api.schemas import (
+    Email,
+    GetEmailToken,
+    GoogleCode,
+    HashedToken,
+    UserCreate,
+    UserFilter,
+    UserLogin,
+    UserSession,
+)
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
-from week_eat_planner.db.dao import SessionDAO, UserDAO
+from week_eat_planner.constants import ACTIVATION_TOKEN_TTL
+from week_eat_planner.db.dao import ActionTokenDAO, SessionDAO, UserDAO
 from week_eat_planner.db.models import Session, User
+from week_eat_planner.db.models.auth import ActionToken, TokenPurpose, TokenStatus
 from week_eat_planner.exceptions import (
+    BadActivationTokenException,
     InvalidCredentialsException,
     OAuthAccountException,
     PasswordAccountException,
     UserAlreadyExistsException,
 )
 from week_eat_planner.security.hashing import get_password_hash, verify_password
+from week_eat_planner.security.token_provider import TokenProvider
 
 
 class AuthService:
@@ -26,8 +41,9 @@ class AuthService:
         Args:
             session: Database session whose transaction is managed by the caller.
         """
-        self._user_dao = UserDAO(session)
+        self._action_token_dao = ActionTokenDAO(session)
         self._session_dao = SessionDAO(session)
+        self._user_dao = UserDAO(session)
 
     async def register_user(self, user_data: UserCreate) -> User:
         """Registers a new user.
@@ -143,3 +159,73 @@ class AuthService:
             UserSession(user_id=auth_session.user.id, hashed_token=auth_session.hashed_token)
         )
         logger.info(f'User {auth_session.user.id} logged out successfully')
+
+    async def create_activation_token(self, user: User) -> str:
+        """Create a token to activate the user's account.
+
+        Args:
+            user: Account for which to create the activation token.
+
+        Returns:
+            The plain-text activation token to send to the user.
+        """
+
+        logger.info(f'Creating an activation token for {user.id}')
+        old_token = await self._action_token_dao.find_one_or_none(
+            GetEmailToken(status=TokenStatus.ACTIVE, purpose=TokenPurpose.ACTIVATE_ACCOUNT, user_id=user.id),
+            for_update=True,
+        )
+        token = TokenProvider.create_token()
+        token_hash = TokenProvider.get_token_hash(token)
+
+        expires_at = datetime.now(UTC) + timedelta(hours=ACTIVATION_TOKEN_TTL)
+        activation_token = ActionToken(
+            user_id=user.id,
+            hashed_token=token_hash,
+            expires_at=expires_at,
+            purpose=TokenPurpose.ACTIVATE_ACCOUNT,
+            status=TokenStatus.ACTIVE,
+        )
+        await self._action_token_dao.add(activation_token)
+        if old_token and old_token.status == TokenStatus.ACTIVE:
+            old_token.status = TokenStatus.CANCELED
+
+        return token
+
+    async def activate_user_with_token(self, token: str) -> None:
+        """Activate a user's account using the provided token.
+
+        Args:
+            token: Plain-text account activation token.
+
+        Raises:
+            BadActivationToken: If the token is invalid, expired, already redeemed, or not for activation.
+        """
+        logger.info('Verifying the received token')
+        now = datetime.now(UTC)
+        token_hash = TokenProvider.get_token_hash(token)
+        db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash), for_update=True)
+        if not db_token:
+            logger.error('The token does not match any in db')
+            raise BadActivationTokenException()
+
+        user = db_token.user
+        if not user:
+            logger.error('User from token was not found')
+            raise BadActivationTokenException()
+
+        if db_token.purpose != TokenPurpose.ACTIVATE_ACCOUNT:
+            logger.error('The token is not of activation type')
+            raise BadActivationTokenException()
+
+        if db_token.expires_at <= now:
+            logger.error('The token is expired')
+            raise BadActivationTokenException()
+
+        if db_token.status != TokenStatus.ACTIVE:
+            logger.error('Token is already redeemed or canceled')
+            raise BadActivationTokenException()
+
+        user.is_email_verified = True
+        db_token.status = TokenStatus.REDEEMED
+        logger.info(f'User {user.id} email is verified and activated')

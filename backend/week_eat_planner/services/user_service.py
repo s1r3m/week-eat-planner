@@ -37,7 +37,7 @@ class UserService:
         """
         logger.debug(f'Retrieving user with {user_id=}')
         user = await self._user_dao.find_one_or_none_by_id(user_id)
-        if not user or not user.is_active:
+        if not user:
             logger.error(f'User not found with {user_id=}')
             raise UserNotFoundException(user_id)
 

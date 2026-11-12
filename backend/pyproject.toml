@@ -38,6 +38,7 @@ dependencies = [
     "python-multipart==0.0.32",
     "bcrypt>=5.0.0",
     "argon2-cffi>=25.1.0",
+    "aiosmtplib>=5.1.3",
 ]
 
 [project.urls]
@@ -87,7 +88,6 @@ order-by-type = false
 
 [tool.ruff.lint]
 select = [
-    'D',   # pydocstyle: Google-style application docstrings
     'E',   # pycodestyle: PEP8 style & formatting rules
     'W',   # pycodestyle: warnings
     'F',   # pyflakes: syntax and logical errors

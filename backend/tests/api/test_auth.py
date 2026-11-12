@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException, status
 
 from tests.constants import EMAIL, PASSWORD, USERNAME
-from week_eat_planner.api.schemas.user import OAuthUserData, UserCreate, UserLogin
+from week_eat_planner.api.schemas.user import ActivationToken, OAuthUserData, UserCreate, UserLogin
 from week_eat_planner.constants import AppUrl, OAuthProvider, SESSION_COOIKE_NAME
 from week_eat_planner.exceptions import (
     InvalidCredentialsException,
@@ -12,6 +12,7 @@ from week_eat_planner.exceptions import (
     OAuthInvalidCodeException,
     OAuthProviderException,
     PasswordAccountException,
+    UserAlreadyActivatedException,
     UserAlreadyExistsException,
 )
 
@@ -62,7 +63,7 @@ async def test_login__valid_credentials__session_set_user_returned(client, creat
         'id': str(created_user.id),
         'email': created_user.email,
         'username': created_user.username,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }
@@ -198,5 +199,29 @@ async def test_google_auth__email_has_password_account__error_raised(mocker, cli
     response = await client.post(AppUrl.AUTH_GOOGLE_EXCHANGE, json={'code': 'auth_code'})
 
     error = PasswordAccountException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
+
+
+async def test_verify_token__valid_token__account_activated(mocker, client):
+    token_data = ActivationToken(token='token').model_dump(mode='json')
+    mocker.patch('week_eat_planner.api.auth.AuthService.activate_user_with_token')
+
+    response = await client.post(AppUrl.AUTH_VERIFY, json=token_data)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+async def test_recreate_activation_token__fresh_call__success_response(mocker, auth_client_for_not_verified_user):
+    response = await auth_client_for_not_verified_user.post(AppUrl.AUTH_REACTIVATE)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == {'status': 'success'}
+
+
+async def test_recreate_activation_token__activated_account__error_response(mocker, auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REACTIVATE)
+
+    error = UserAlreadyActivatedException()
     assert response.status_code == error.status_code
     assert response.json() == {'detail': error.detail}

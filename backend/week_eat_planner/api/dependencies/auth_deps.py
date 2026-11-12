@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from week_eat_planner.constants import SESSION_COOIKE_NAME
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
-from week_eat_planner.exceptions import NoSessionTokenException, SessionException, UserNotFoundException
+from week_eat_planner.exceptions import NoSessionTokenException, SessionException
 from week_eat_planner.services.session_service import SessionService
 
 
@@ -54,23 +54,19 @@ async def get_optional_user(auth_session: Annotated[Session | None, Depends(get_
     return auth_session.user
 
 
-async def get_current_active_user(user: Annotated[User | None, Depends(get_optional_user)]) -> User:
+async def get_current_user(user: Annotated[User | None, Depends(get_optional_user)]) -> User:
     """Require an authenticated user whose account is active.
 
     Args:
         user: User resolved from the session cookie, or None.
 
     Returns:
-        The authenticated, active user.
+        The authenticated user.
 
     Raises:
         NoSessionTokenException: If no valid session resolved to a user (HTTP 401).
-        UserNotFoundException: If the authenticated user's account is inactive (HTTP 409).
     """
     if not user:
         raise NoSessionTokenException()
-
-    if not user.is_active:
-        raise UserNotFoundException(user_id=user.id)
 
     return user
