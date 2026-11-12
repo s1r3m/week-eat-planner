@@ -16,6 +16,7 @@ from .shopping_list import ShoppingListItem, ShoppingListRead, ShoppingListUpdat
 from .user import (
     ActivationToken,
     Email,
+    GetActivationToken,
     GoogleCode,
     HashedPassword,
     HashedToken,
@@ -32,6 +33,7 @@ __all__ = [
     'ActivationToken',
     'CookingStep',
     'Email',
+    'GetActivationToken',
     'GoogleCode',
     'Ingredient',
     'HashedPassword',

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from week_eat_planner.api.schemas import (
     Email,
+    GetActivationToken,
     GoogleCode,
     HashedToken,
     UserCreate,
@@ -15,7 +16,6 @@ from week_eat_planner.api.schemas import (
     UserLogin,
     UserSession,
 )
-from week_eat_planner.api.schemas.common import OwnerId
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.constants import ACTIVATION_TOKEN_TTL
 from week_eat_planner.db.dao import ActionTokenDAO, SessionDAO, UserDAO
@@ -171,7 +171,9 @@ class AuthService:
         """
 
         logger.info(f'Creating an activation token for {user.id}')
-        old_token = await self._action_token_dao.find_one_or_none(OwnerId(user_id=user.id), for_update=True)
+        old_token = await self._action_token_dao.find_one_or_none(
+            GetActivationToken(status=TokenStatus.ACTIVE, user_id=user.id), for_update=True
+        )
         token = TokenProvider.create_token()
         token_hash = TokenProvider.get_token_hash(token)
 

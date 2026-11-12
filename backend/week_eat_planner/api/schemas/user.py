@@ -1,11 +1,13 @@
 """User profile, password authentication, and OAuth identity schemas."""
 
 from typing import Annotated
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from week_eat_planner.api.schemas.common import RecordId
 from week_eat_planner.constants import MIN_PASSWORD_LENGTH, OAuthProvider
+from week_eat_planner.db.models.auth import TokenStatus
 
 
 class Email(BaseModel):
@@ -150,6 +152,13 @@ class ActivationToken(BaseModel):
     """Request body containing an account activation token."""
 
     token: str
+
+
+class GetActivationToken(BaseModel):
+    """A schema to load an activation token for a user."""
+
+    status: TokenStatus
+    user_id: UUID
 
 
 class HashedToken(BaseModel):
