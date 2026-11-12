@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Response
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user
+from week_eat_planner.api.dependencies.auth_deps import get_current_user
 from week_eat_planner.api.schemas import SuccessResponse, UserChangePassword, UserLogin, UserRead, UserUpdate
 from week_eat_planner.constants import AppUrl
 from week_eat_planner.db.models import User
@@ -21,7 +21,7 @@ router = APIRouter(tags=['User'])
 
 @router.get(AppUrl.USER, response_model=UserRead)
 async def get_user(
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
 ) -> User:
     """Get the current user profile.
 
@@ -38,7 +38,7 @@ async def get_user(
 @router.patch(AppUrl.USER, response_model=UserRead)
 async def update_user(
     new_data: UserUpdate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> User:
     """Update the current user's profile.
@@ -63,7 +63,7 @@ async def update_user(
 @router.patch(AppUrl.USER_PASSWORD, response_model=SuccessResponse)
 async def change_password(
     data: UserChangePassword,
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
     response: Response,
 ) -> SuccessResponse:

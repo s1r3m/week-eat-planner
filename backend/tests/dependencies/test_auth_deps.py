@@ -4,12 +4,12 @@ import pytest
 from fastapi import Request
 
 from week_eat_planner.api.dependencies.auth_deps import (
-    get_current_active_user,
     get_current_auth_session,
+    get_current_user,
     get_optional_user,
 )
 from week_eat_planner.constants import SESSION_COOIKE_NAME
-from week_eat_planner.exceptions import NoSessionTokenException, SessionExpiredException, UserNotFoundException
+from week_eat_planner.exceptions import NoSessionTokenException, SessionExpiredException
 
 
 @pytest.fixture
@@ -72,7 +72,7 @@ async def test_get_optional_user__no_session__none_returned(request_wo_session_t
     assert result is None
 
 
-async def test_get_current_active_user__old_session__none_returned(
+async def test_get_current_user__old_session__none_returned(
     request_with_session_token, mocked_session_service, mocked_session
 ):
     mocked_session_service.get_sesion_by_token.side_effect = [SessionExpiredException]
@@ -83,7 +83,7 @@ async def test_get_current_active_user__old_session__none_returned(
     assert result is None
 
 
-async def test_get_current_active_user__active_session__user_returned(
+async def test_get_current_user__active_session__user_returned(
     request_with_session_token, mocked_session, mocked_session_service, auth_session, db_user
 ):
     db_user.is_active = True
@@ -91,22 +91,22 @@ async def test_get_current_active_user__active_session__user_returned(
     auth_session = await get_current_auth_session(request_with_session_token, mocked_session)
     user = await get_optional_user(auth_session)
 
-    result = await get_current_active_user(user)
+    result = await get_current_user(user)
 
     assert result == db_user
 
 
-async def test_get_current_active_user__no_session__error_raised(request_wo_session_token, mocked_session):
+async def test_get_current_user__no_session__error_raised(request_wo_session_token, mocked_session):
     auth_session = await get_current_auth_session(request_wo_session_token, mocked_session)
     user = await get_optional_user(auth_session)
 
     with pytest.raises(NoSessionTokenException) as exc:
-        await get_current_active_user(user)
+        await get_current_user(user)
 
     assert 'No session token in request' in str(exc.value)
 
 
-async def test_get_current_active_user__old_session__error_raised(
+async def test_get_current_user__old_session__error_raised(
     request_with_session_token, mocked_session_service, mocked_session
 ):
     mocked_session_service.get_sesion_by_token.side_effect = [SessionExpiredException]
@@ -114,20 +114,6 @@ async def test_get_current_active_user__old_session__error_raised(
     user = await get_optional_user(auth_session)
 
     with pytest.raises(NoSessionTokenException) as exc:
-        await get_current_active_user(user)
+        await get_current_user(user)
 
     assert 'No session token in request' in str(exc.value)
-
-
-async def test_get_current_active_user__inactive_user__error_raised(
-    request_with_session_token, mocked_session, mocked_session_service, auth_session, db_user
-):
-    auth_session.user.is_active = False
-    mocked_session_service.get_sesion_by_token.return_value = auth_session
-    auth_session = await get_current_auth_session(request_with_session_token, mocked_session)
-    user = await get_optional_user(auth_session)
-
-    with pytest.raises(UserNotFoundException) as exc:
-        await get_current_active_user(user)
-
-    assert f'User {db_user.id} was not found!' in str(exc.value)

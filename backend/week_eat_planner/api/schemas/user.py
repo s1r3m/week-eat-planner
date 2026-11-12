@@ -50,7 +50,7 @@ class UserRead(Email, RecordId):
         oauth_provider: The name of the OAuth provider, if applicable.
     """
 
-    is_active: bool
+    is_email_verified: bool
     username: str
     avatar_url: str | None
     oauth_provider: str | None

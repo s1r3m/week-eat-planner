@@ -15,13 +15,14 @@ from week_eat_planner.api.schemas import (
     UserLogin,
     UserSession,
 )
+from week_eat_planner.api.schemas.common import OwnerId
 from week_eat_planner.clients.google_auth_client import GoogleAuthClient
 from week_eat_planner.constants import ACTIVATION_TOKEN_TTL
 from week_eat_planner.db.dao import ActionTokenDAO, SessionDAO, UserDAO
 from week_eat_planner.db.models import Session, User
-from week_eat_planner.db.models.auth import ActionToken, TokenPurpose
+from week_eat_planner.db.models.auth import ActionToken, TokenPurpose, TokenStatus
 from week_eat_planner.exceptions import (
-    BadActivationToken,
+    BadActivationTokenException,
     InvalidCredentialsException,
     OAuthAccountException,
     PasswordAccountException,
@@ -170,14 +171,22 @@ class AuthService:
         """
 
         logger.info(f'Creating an activation token for {user.id}')
+        old_tokens = await self._action_token_dao.find_all(OwnerId(user_id=user.id))
         token = TokenProvider.create_token()
         token_hash = TokenProvider.get_token_hash(token)
 
         expires_at = datetime.now(UTC) + timedelta(hours=ACTIVATION_TOKEN_TTL)
         activation_token = ActionToken(
-            user_id=user.id, hashed_token=token_hash, expires_at=expires_at, purpose=TokenPurpose.ACTIVATE_ACCOUNT
+            user_id=user.id,
+            hashed_token=token_hash,
+            expires_at=expires_at,
+            purpose=TokenPurpose.ACTIVATE_ACCOUNT,
+            status=TokenStatus.ACTIVE,
         )
         await self._action_token_dao.add(activation_token)
+        for old_token in old_tokens:
+            if old_token.status != TokenStatus.REDEEMED:
+                old_token.status = TokenStatus.CANCELED
 
         return token
 
@@ -196,26 +205,25 @@ class AuthService:
         db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash))
         if not db_token:
             logger.error('The token does not match any in db')
-            raise BadActivationToken()
+            raise BadActivationTokenException()
 
         user = db_token.user
         if not user:
             logger.error('User from token was not found')
-            raise BadActivationToken()
+            raise BadActivationTokenException()
 
         if db_token.purpose != TokenPurpose.ACTIVATE_ACCOUNT:
             logger.error('The token is not of activation type')
-            raise BadActivationToken()
+            raise BadActivationTokenException()
 
         if db_token.expires_at <= now:
             logger.error('The token is expired')
-            raise BadActivationToken()
+            raise BadActivationTokenException()
 
-        if db_token.is_redeemed:
-            logger.error('Token is already redeemed')
-            raise BadActivationToken()
+        if db_token.status != TokenStatus.ACTIVE:
+            logger.error('Token is already redeemed or canceled')
+            raise BadActivationTokenException()
 
         user.is_email_verified = True
-        user.is_active = True
-        db_token.is_redeemed = True
+        db_token.status = TokenStatus.REDEEMED
         logger.info(f'User {user.id} email is verified and activated')

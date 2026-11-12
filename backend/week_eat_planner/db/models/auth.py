@@ -19,6 +19,12 @@ class TokenPurpose(StrEnum):
     RESET_PASSWORD = 'reset_password'
 
 
+class TokenStatus(StrEnum):
+    ACTIVE = 'active'
+    CANCELED = 'canceled'
+    REDEEMED = 'redeemed'
+
+
 class Session(Base):
     """Stored authentication session containing a hashed opaque token.
 
@@ -56,7 +62,7 @@ class ActionToken(Base):
         hashed_token: SHA-256 hex digest used to look up the token.
         purpose: Account action for which the token was issued.
         expires_at: UTC expiration time used to reject expired tokens.
-        is_redeemed: Whether the token has already been used.
+        status: Token status.
         user: Eagerly loaded user associated with the token.
     """
 
@@ -66,6 +72,6 @@ class ActionToken(Base):
     hashed_token: Mapped[str] = mapped_column(unique=True, nullable=False)
     purpose: Mapped[TokenPurpose] = mapped_column(nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    is_redeemed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    status: Mapped[TokenStatus] = mapped_column(nullable=False)
 
     user: Mapped[User] = relationship(lazy='selectin')

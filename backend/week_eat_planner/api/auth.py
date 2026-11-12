@@ -7,12 +7,13 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_auth_session
+from week_eat_planner.api.dependencies.auth_deps import get_current_auth_session, get_current_user
 from week_eat_planner.api.dependencies.httpx_client_deps import get_httpx_client
 from week_eat_planner.api.schemas import ActivationToken, GoogleCode, SuccessResponse, UserCreate, UserLogin, UserRead
 from week_eat_planner.constants import AppUrl, SESSION_COOIKE_NAME
 from week_eat_planner.db.models import Session, User
 from week_eat_planner.db.session_maker import db
+from week_eat_planner.exceptions import UserAlreadyActivatedException
 from week_eat_planner.helpers import set_session_cookie
 from week_eat_planner.services.auth_service import AuthService
 from week_eat_planner.services.email_service import EmailService
@@ -155,5 +156,21 @@ async def verify_activation(
     """
     logger.info(f'Got POST {AppUrl.AUTH_VERIFY} request')
     await AuthService(session).activate_user_with_token(token.token)
+
+    return SuccessResponse()
+
+
+@router.post(AppUrl.AUTH_REACTIVATE, response_model=SuccessResponse)
+async def recreate_activation_token(
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(db.get_db_commit)],
+) -> SuccessResponse:
+    """Creates a new activation token if the old one is lost."""
+    logger.info(f'Got POST {AppUrl.AUTH_REACTIVATE} request')
+    if user.is_email_verified:
+        raise UserAlreadyActivatedException()
+
+    activation_token = await AuthService(session).create_activation_token(user)
+    await EmailService().send_activation_email(user, activation_token)
 
     return SuccessResponse()

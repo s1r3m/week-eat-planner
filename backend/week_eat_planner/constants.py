@@ -13,6 +13,7 @@ class AppUrl(StrEnum):
     AUTH_GOOGLE_EXCHANGE = '/auth/google/exchange'
     AUTH_LOGIN = '/auth/login'
     AUTH_LOGOUT = '/auth/logout'
+    AUTH_REACTIVATE = '/auth/reactivate'
     AUTH_REFRESH = '/auth/refresh'
     AUTH_SIGNUP = '/auth/signup'
     AUTH_VERIFY = '/auth/verify'

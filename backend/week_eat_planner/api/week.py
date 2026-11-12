@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Path, status
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from week_eat_planner.api.dependencies.auth_deps import get_current_active_user, get_optional_user
+from week_eat_planner.api.dependencies.auth_deps import get_current_user, get_optional_user
 from week_eat_planner.api.schemas import (
     MealSlotAssign,
     MealSlotRead,
@@ -29,7 +29,7 @@ router = APIRouter(tags=['Weeks'])
 @router.post(AppUrl.WEEKS, response_model=WeekReadMinimal, status_code=status.HTTP_201_CREATED)
 async def create_week(
     week_data: WeekCreate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Creates a new week for the current user.
@@ -52,7 +52,7 @@ async def create_week(
 
 @router.get(AppUrl.WEEKS, response_model=list[WeekReadMinimal])
 async def get_user_weeks(
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> list[Week]:
     """Retrieves all weeks for the current user.
@@ -102,7 +102,7 @@ async def get_week(
 async def update_week(
     new_data: WeekUpdate,
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> Week:
     """Updates a specific week.
@@ -133,7 +133,7 @@ async def update_week(
 @router.delete(AppUrl.WEEKS_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_week(
     week_id: Annotated[str, Path(title='ID of the week to get')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Deletes a specific week.
@@ -160,7 +160,7 @@ async def delete_week(
 async def assign_recipe_to_meal_slot(
     week_id: Annotated[str, Path(title='ID of the week to get')],
     slots_data: list[MealSlotAssign],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> list[MealSlot]:
     """Assigns the given recipes to meal slots or un-assigns if recipe_id is None.
@@ -192,7 +192,7 @@ async def assign_recipe_to_meal_slot(
 @router.post(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead, status_code=status.HTTP_201_CREATED)
 async def create_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to create a shopping list for')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> ShoppingList:
     """Creates a new shopping list for the specified week.
@@ -220,7 +220,7 @@ async def create_shopping_list(
 @router.get(AppUrl.SHOPPING_LIST_TPL, response_model=ShoppingListRead)
 async def get_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to get a shopping list for')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db)],
 ) -> ShoppingList:
     """Retrieves the shopping list for a specific week.
@@ -249,7 +249,7 @@ async def get_shopping_list(
 async def update_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to edit a shopping list for')],
     new_data: ShoppingListUpdate,
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> ShoppingList:
     """Updates an existing shopping list.
@@ -280,7 +280,7 @@ async def update_shopping_list(
 @router.delete(AppUrl.SHOPPING_LIST_TPL, status_code=status.HTTP_204_NO_CONTENT)
 async def delete_shopping_list(
     week_id: Annotated[str, Path(title='ID of the week to delete a shopping list for')],
-    user: Annotated[User, Depends(get_current_active_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],
 ) -> None:
     """Delete the shopping list belonging to a week owned by the current user.
