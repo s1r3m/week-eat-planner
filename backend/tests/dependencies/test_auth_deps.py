@@ -86,7 +86,6 @@ async def test_get_current_user__old_session__none_returned(
 async def test_get_current_user__active_session__user_returned(
     request_with_session_token, mocked_session, mocked_session_service, auth_session, db_user
 ):
-    db_user.is_active = True
     mocked_session_service.get_sesion_by_token.return_value = auth_session
     auth_session = await get_current_auth_session(request_with_session_token, mocked_session)
     user = await get_optional_user(auth_session)

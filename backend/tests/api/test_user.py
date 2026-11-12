@@ -16,15 +16,15 @@ async def test_get_user__auth_user__user_in_response(auth_client_for_created_use
         'id': str(created_user.id),
         'email': created_user.email,
         'username': created_user.username,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }
 
 
 @pytest.mark.usefixtures('created_user')
-async def test_get_user__no_auth_user__user_in_response(logout_client_for_created_user):
-    response = await logout_client_for_created_user.get(AppUrl.USER)
+async def test_get_user__no_auth_user__user_in_response(client):
+    response = await client.get(AppUrl.USER)
 
     error = NoSessionTokenException()
     assert response.status_code == error.status_code
@@ -41,7 +41,7 @@ async def test_update_user__data_changed__updated_user_in_response(auth_client_f
         'id': str(created_user.id),
         'email': created_user.email,
         'username': new_name,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }

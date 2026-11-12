@@ -36,7 +36,7 @@ async def mocked_session(mocker: MockerFixture) -> AsyncSession:
 
 @pytest.fixture
 def db_user() -> User:
-    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_active=False, hashed_password=HASHED_PASSWORD)
+    return User(id=USER_ID, email=EMAIL, username=USERNAME, is_email_verified=False, hashed_password=HASHED_PASSWORD)
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def db_user_2() -> User:
         id=generate_uuid7(),
         email='user2@example.com',
         username='user_2',
-        is_active=True,
+        is_email_verified=True,
         hashed_password=HASHED_PASSWORD,
     )
 

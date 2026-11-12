@@ -160,7 +160,7 @@ async def verify_activation(
     return SuccessResponse()
 
 
-@router.post(AppUrl.AUTH_REACTIVATE, response_model=SuccessResponse)
+@router.post(AppUrl.AUTH_REACTIVATE, response_model=SuccessResponse, status_code=status.HTTP_201_CREATED)
 async def recreate_activation_token(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(db.get_db_commit)],

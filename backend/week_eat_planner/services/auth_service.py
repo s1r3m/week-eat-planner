@@ -138,7 +138,7 @@ class AuthService:
                 logger.error('Email is already registered via OAuth')
                 raise OAuthAccountException()
 
-            user = User(**user_data.model_dump(), is_email_verified=True, is_active=True)
+            user = User(**user_data.model_dump(), is_email_verified=True)
             db_user = await self._user_dao.add(user)
             logger.info('Created new user via Google OAuth')
         else:
@@ -185,7 +185,7 @@ class AuthService:
         )
         await self._action_token_dao.add(activation_token)
         for old_token in old_tokens:
-            if old_token.status != TokenStatus.REDEEMED:
+            if old_token.status == TokenStatus.ACTIVE:
                 old_token.status = TokenStatus.CANCELED
 
         return token

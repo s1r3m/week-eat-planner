@@ -12,6 +12,7 @@ from week_eat_planner.exceptions import (
     OAuthInvalidCodeException,
     OAuthProviderException,
     PasswordAccountException,
+    UserAlreadyActivatedException,
     UserAlreadyExistsException,
 )
 
@@ -62,7 +63,7 @@ async def test_login__valid_credentials__session_set_user_returned(client, creat
         'id': str(created_user.id),
         'email': created_user.email,
         'username': created_user.username,
-        'is_active': created_user.is_active,
+        'is_email_verified': created_user.is_email_verified,
         'avatar_url': None,
         'oauth_provider': None,
     }
@@ -209,3 +210,18 @@ async def test_verify_token__valid_token__account_activated(mocker, client):
     response = await client.post(AppUrl.AUTH_VERIFY, json=token_data)
 
     assert response.status_code == status.HTTP_200_OK
+
+
+async def test_recreate_activation_token__fresh_call__success_response(mocker, auth_client_for_not_verified_user):
+    response = await auth_client_for_not_verified_user.post(AppUrl.AUTH_REACTIVATE)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == {'status': 'success'}
+
+
+async def test_recreate_activation_token__activated_account__error_response(mocker, auth_client_for_created_user):
+    response = await auth_client_for_created_user.post(AppUrl.AUTH_REACTIVATE)
+
+    error = UserAlreadyActivatedException()
+    assert response.status_code == error.status_code
+    assert response.json() == {'detail': error.detail}
