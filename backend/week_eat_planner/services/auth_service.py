@@ -171,7 +171,7 @@ class AuthService:
         """
 
         logger.info(f'Creating an activation token for {user.id}')
-        old_tokens = await self._action_token_dao.find_all(OwnerId(user_id=user.id))
+        old_token = await self._action_token_dao.find_one_or_none(OwnerId(user_id=user.id), for_update=True)
         token = TokenProvider.create_token()
         token_hash = TokenProvider.get_token_hash(token)
 
@@ -184,9 +184,8 @@ class AuthService:
             status=TokenStatus.ACTIVE,
         )
         await self._action_token_dao.add(activation_token)
-        for old_token in old_tokens:
-            if old_token.status == TokenStatus.ACTIVE:
-                old_token.status = TokenStatus.CANCELED
+        if old_token and old_token.status == TokenStatus.ACTIVE:
+            old_token.status = TokenStatus.CANCELED
 
         return token
 

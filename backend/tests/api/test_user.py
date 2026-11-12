@@ -49,12 +49,12 @@ async def test_update_user__data_changed__updated_user_in_response(auth_client_f
 
 async def test_update_user__empty_username__422_returned(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(AppUrl.USER, json={'username': ''})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_update_user__empty_payload__422_returned(auth_client_for_created_user):
     response = await auth_client_for_created_user.patch(AppUrl.USER, json={})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_update_user__no_auth__401_returned(client):
@@ -86,7 +86,7 @@ async def test_change_password__valid_new_password__token_in_cookies(auth_client
 )
 async def test_change_password__bad_data__validation_failed(auth_client_for_created_user, body):
     response = await auth_client_for_created_user.patch(AppUrl.USER_PASSWORD, json=body)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_change_password__old_password_mismatch__error_response(auth_client_for_created_user):

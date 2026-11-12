@@ -211,7 +211,7 @@ async def test_logout__valid_token__token_revoked(mocked_session_dao, mocked_ses
 
 
 async def test_create_activation_token__valid_user__token_created(mocked_token_dao, mocked_session, db_user):
-    mocked_token_dao.find_all.return_value = []
+    mocked_token_dao.find_one_or_none.return_value = None
 
     token = await AuthService(mocked_session).create_activation_token(db_user)
 
@@ -223,7 +223,7 @@ async def test_create_activation_token__old_active_token_present__old_token_canc
     mocked_token_dao, mocked_session, db_user, activation_token
 ):
     db_token, old_token = activation_token
-    mocked_token_dao.find_all.return_value = [db_token]
+    mocked_token_dao.find_one_or_none.return_value = db_token
 
     token = await AuthService(mocked_session).create_activation_token(db_user)
 
@@ -237,7 +237,7 @@ async def test_create_activation_token__old_redeemed_token_present__old_token_no
 ):
     db_token, old_token = activation_token
     db_token.status = TokenStatus.REDEEMED
-    mocked_token_dao.find_all.return_value = [db_token]
+    mocked_token_dao.find_one_or_none.return_value = db_token
 
     token = await AuthService(mocked_session).create_activation_token(db_user)
 
