@@ -201,7 +201,7 @@ class AuthService:
         logger.info('Verifying the received token')
         now = datetime.now(UTC)
         token_hash = TokenProvider.get_token_hash(token)
-        db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash))
+        db_token = await self._action_token_dao.find_one_or_none(HashedToken(hashed_token=token_hash), for_update=True)
         if not db_token:
             logger.error('The token does not match any in db')
             raise BadActivationTokenException()
