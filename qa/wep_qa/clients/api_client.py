@@ -23,7 +23,8 @@ class BaseApiClient:
         self,
         method: str,
         url: str,
-        expected_status_code: HTTPStatus,
+        json: dict | None = None,
+        expected_status_code: HTTPStatus | None = None,
         raise_for_status: bool = True,
     ) -> Response:
         """Perform an HTTP request and validate the response status code.
@@ -31,6 +32,7 @@ class BaseApiClient:
         Args:
             method (str): The HTTP method (GET, POST, etc.).
             url (str): The URL to request.
+            json (dict): The optional json body that is sent with request.
             expected_status_code (HTTPStatus): The status code expected from the API.
             raise_for_status (bool): Whether to call raise_for_status() on the response. Defaults to True.
 
@@ -41,10 +43,10 @@ class BaseApiClient:
             UnexpectedStatusCodeError: If the response status code does not match expected_status_code.
             HTTPStatusError: If raise_for_status is True and the response has an error status code.
         """
-        request = self.client.build_request(method, url)
+        request = self.client.build_request(method, url, json=json)
 
         response = self.client.send(request)
-        if response.status_code != expected_status_code:
+        if expected_status_code and response.status_code != expected_status_code:
             err_msg = f'Unexpected status code: {response.status_code}, expected: {expected_status_code}'
             raise UnexpectedStatusCodeError(err_msg, request=request, response=response)
 
@@ -61,6 +63,9 @@ class WepApiClient(BaseApiClient):
 
     PING = '/api/ping'
 
+    AUTH_LOGIN = '/api/auth/login'
+    AUTH_REGISTER = '/api/auth/register'
+
     def get_ping(self) -> Response:
         """Get the ping response from the API.
 
@@ -68,3 +73,29 @@ class WepApiClient(BaseApiClient):
             Response: The HTTP response object.
         """
         return self._call(HTTPMethod.GET, url=self.PING, expected_status_code=HTTPStatus.OK)
+
+    def post_login(self, email: str, password: str) -> Response:
+        """Post a login request via API.
+
+        Returns:
+            Response: The HTTP response object.
+        """
+        return self._call(
+            method=HTTPMethod.POST,
+            url=self.AUTH_LOGIN,
+            json={'email': email, 'password': password},
+            expected_status_code=HTTPStatus.OK,
+        )
+
+    def post_register(self, email: str, password: str) -> Response:
+        """Post the register request via API.
+
+        Returns:
+            Response: The HTTP response object.
+        """
+        return self._call(
+            method=HTTPMethod.POST,
+            url=self.AUTH_REGISTER,
+            json={'email': email, 'password': password},
+            expected_status_code=HTTPStatus.CREATED,
+        )
