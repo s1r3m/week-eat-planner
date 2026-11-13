@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from http import HTTPStatus
 
 EMAIL = 'user@wep.com'
@@ -15,3 +15,8 @@ class ErrorData:
 class Error(ErrorData, Enum):
     BAD_CREDENTIALS = HTTPStatus.UNAUTHORIZED, 'Could not validate credentials'
     EMAIL_IS_TAKEN = HTTPStatus.CONFLICT, 'User already exists'
+
+
+class Header(StrEnum):
+    AUTH_SESSION = 'wep_session'
+    SET_COOKIE = 'set-cookie'

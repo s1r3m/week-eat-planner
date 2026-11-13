@@ -1,6 +1,9 @@
 from http import HTTPMethod, HTTPStatus
 
 from httpx import Client, HTTPStatusError, Response
+from loguru import logger
+
+from wep_qa.constants import Header
 
 
 class UnexpectedStatusCodeError(HTTPStatusError):
@@ -23,6 +26,7 @@ class BaseApiClient:
         self,
         method: str,
         url: str,
+        headers: dict[str, str] | None = None,
         json: dict | None = None,
         expected_status_code: HTTPStatus | None = None,
         raise_for_status: bool = True,
@@ -48,6 +52,7 @@ class BaseApiClient:
         response = self.client.send(request)
         if expected_status_code and response.status_code != expected_status_code:
             err_msg = f'Unexpected status code: {response.status_code}, expected: {expected_status_code}'
+            logger.error(f'{err_msg}: {response.text}')
             raise UnexpectedStatusCodeError(err_msg, request=request, response=response)
 
         # TODO: add json schema validation
@@ -64,6 +69,7 @@ class WepApiClient(BaseApiClient):
     PING = '/api/ping'
 
     AUTH_LOGIN = '/api/auth/login'
+    AUTH_LOGOUT = '/api/auth/logout'
     AUTH_SIGNUP = '/api/auth/signup'
 
     def get_ping(self) -> Response:
@@ -98,4 +104,17 @@ class WepApiClient(BaseApiClient):
             url=self.AUTH_SIGNUP,
             json={'email': email, 'password': password, 'username': username},
             expected_status_code=HTTPStatus.CREATED,
+        )
+
+    def post_logout(self, session: str) -> Response:
+        """Logs out the user via API.
+
+        Returns:
+            Response: The HTTP response object.
+        """
+        return self._call(
+            method=HTTPMethod.POST,
+            url=self.AUTH_LOGOUT,
+            headers={Header.AUTH_SESSION: session},
+            expected_status_code=HTTPStatus.NO_CONTENT,
         )

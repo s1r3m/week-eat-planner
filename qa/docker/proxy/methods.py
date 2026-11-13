@@ -36,10 +36,7 @@ async def check_db_isolation() -> None:
     async with db.session_maker.begin() as session:
         counts = await session.execute(
             select(
-                *(
-                    select(func.count()).select_from(table).scalar_subquery().label(table.fullname)
-                    for table in tables
-                )
+                *(select(func.count()).select_from(table).scalar_subquery().label(table.fullname) for table in tables)
             )
         )
         nonempty_tables = {name: count for name, count in counts.mappings().one().items() if count}
@@ -49,7 +46,11 @@ async def check_db_isolation() -> None:
                 f'{preparer.quote_schema("public")}.{preparer.quote(table.name)}' for table in tables
             )
             await session.execute(text(f'TRUNCATE TABLE {table_names} RESTART IDENTITY'))
-        raise ValueError('\n'.join(f'DB leakage: {table_name}: {count}' for table_name, count in nonempty_tables.items()))
+
+    if nonempty_tables:
+        raise ValueError(
+            '\n'.join(f'DB leakage: {table_name}: {count}' for table_name, count in nonempty_tables.items())
+        )
 
 
 @async_to_sync

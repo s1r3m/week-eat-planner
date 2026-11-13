@@ -1,5 +1,4 @@
 from collections.abc import Generator
-from urllib import response
 
 import pytest
 
@@ -23,9 +22,17 @@ def user() -> User:
 
 
 @pytest.fixture
-def created_user(actions, user) -> User:
+def created_user(actions: Actions) -> User:
+    user = User(email='user_1@wep.com', password='Us3rPas$w04d_1', username='User 1')
     response = actions.user.register_user(user)
     body = response.json()
     user.id = body['id']
 
     return user
+
+
+@pytest.fixture
+def auth_user(actions: Actions, created_user: User) -> User:
+    response = actions.user.login_user(created_user)
+
+    return created_user

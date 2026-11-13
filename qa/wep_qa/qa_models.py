@@ -7,6 +7,7 @@ from wep_qa.constants import PASSWORD
 class User:
     email: str
     username: str
+    session: str = ''
     password: str = PASSWORD
     id: str | None = None
 

@@ -88,8 +88,8 @@ lint: $(VENV_ACTIVATE)
 
 ## @Checks Run code formatter.
 style: $(VENV_ACTIVATE)
-	ruff check --fix $(PROJECT_PATH)/qa
 	ruff format $(PROJECT_PATH)/qa
+	ruff check --fix $(PROJECT_PATH)/qa
 
 test: $(VENV_ACTIVATE)
 	pytest tests

@@ -4,6 +4,7 @@ from xmlrpc.client import ServerProxy
 
 class _WepProxy(Protocol):
     def remove_user(self, user_id: str) -> bool: ...
+    def check_db_isolation(self) -> None: ...
 
 
 class WepProxyClient:
