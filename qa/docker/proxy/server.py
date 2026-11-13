@@ -1,4 +1,5 @@
 import asyncio
+import os
 from xmlrpc.server import SimpleXMLRPCServer
 
 from week_eat_planner.db.session_maker import db
@@ -18,7 +19,7 @@ loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 database_initialized = False
 try:
-    loop.run_until_complete(db.init())
+    loop.run_until_complete(db.init(os.environ['DB_URL']))
     database_initialized = True
     server.serve_forever()
 finally:

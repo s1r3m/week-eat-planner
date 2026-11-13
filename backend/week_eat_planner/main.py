@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from week_eat_planner.api import auth, monitoring, recipe, user, week
 from week_eat_planner.clients.async_client import http_client_manager
+from week_eat_planner.config import database_url
 from week_eat_planner.db.session_maker import db
 
 
@@ -22,7 +23,7 @@ async def lifespan(fast_app: FastAPI) -> AsyncGenerator[None]:
     Yields:
         None while the application serves requests.
     """
-    await db.init()
+    await db.init(database_url)
 
     yield
 
