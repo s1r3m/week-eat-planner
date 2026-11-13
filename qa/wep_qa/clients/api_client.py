@@ -71,6 +71,7 @@ class WepApiClient(BaseApiClient):
 
     AUTH_LOGIN = '/api/auth/login'
     AUTH_LOGOUT = '/api/auth/logout'
+    AUTH_RESEND = '/api/auth/reactivate'
     AUTH_SIGNUP = '/api/auth/signup'
     AUTH_VERIFY = '/api/auth/verify'
 
@@ -117,4 +118,12 @@ class WepApiClient(BaseApiClient):
             url=self.USER,
             cookies={AUTH_SESSION: session or ''},
             expected_status_code=HTTPStatus.OK,
+        )
+
+    def post_resend_activation(self, session: str) -> Response:
+        return self._call(
+            method=HTTPMethod.POST,
+            url=self.AUTH_RESEND,
+            cookies={AUTH_SESSION: session or ''},
+            expected_status_code=HTTPStatus.CREATED,
         )

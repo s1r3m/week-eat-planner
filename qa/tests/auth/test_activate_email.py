@@ -26,3 +26,22 @@ def test_verify_email__bad_token__error_raised(actions, created_user):
         actions.user.verify_user_email(created_user, bad_token)
 
     actions.assertion.check_error_response(exc, Error.BAD_ACTIVATION_TOKEN)
+
+
+def test_verify_email__used_token__error_raised(actions, activated_user):
+    used_token = activated_user.last_activation_token
+
+    with pytest.raises(UnexpectedStatusCodeError) as exc:
+        actions.user.verify_user_email(activated_user, used_token)
+
+    actions.assertion.check_error_response(exc, Error.BAD_ACTIVATION_TOKEN)
+
+
+def test_verify_email__old_valid_token__error_raised(actions, auth_user):
+    activation_token = actions.user.get_activation_token(auth_user)
+    actions.user.resend_activation_token(auth_user)
+
+    with pytest.raises(UnexpectedStatusCodeError) as exc:
+        actions.user.verify_user_email(auth_user, activation_token)
+
+    actions.assertion.check_error_response(exc, Error.BAD_ACTIVATION_TOKEN)

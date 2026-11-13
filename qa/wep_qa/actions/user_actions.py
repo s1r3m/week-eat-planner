@@ -39,3 +39,7 @@ class UserActions(BaseActions):
         response = self._clients.api.activate_email(token)
         user.is_email_activated = True
         return response
+
+    def resend_activation_token(self, user: User) -> Response:
+        response = self._clients.api.post_resend_activation(user.session)
+        return response
