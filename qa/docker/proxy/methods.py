@@ -28,7 +28,7 @@ async def check_db_isolation() -> None:
     tables = [
         table
         for table in Base.metadata.tables.values()
-        if table.schema == 'public' and table.name not in exclude_tables
+        if table.schema in (None, 'public') and table.name not in exclude_tables
     ]
     if not tables:
         return

@@ -2,7 +2,7 @@ from httpx import Response
 from pytest import ExceptionInfo
 
 from wep_qa.actions.base_actions import BaseActions
-from wep_qa.constants import Error, Header
+from wep_qa.constants import AUTH_SESSION, Error, Header
 from wep_qa.qa_models import User
 from wep_qa.utils import parse_response_header
 
@@ -20,7 +20,8 @@ class AssertionActions(BaseActions):
         self._check_user_response(response, user)
 
     def check_login_response(self, response: Response, user: User) -> None:
-        assert Header.AUTH_SESSION in response.headers.get(Header.SET_COOKIE)
+        set_cookies = parse_response_header(response, Header.SET_COOKIE)
+        assert set_cookies.get(AUTH_SESSION)
         self._check_user_response(response, user)
 
     def _check_user_response(self, response: Response, user: User) -> None:
@@ -35,6 +36,6 @@ class AssertionActions(BaseActions):
 
     def check_logout_response(self, response: Response) -> None:
         assert not response.text
-        cookies = parse_response_header(response, Header.SET_COOKIE)
-        assert not cookies[Header.AUTH_SESSION]
+        set_cookies = parse_response_header(response, Header.SET_COOKIE)
+        assert not set_cookies[AUTH_SESSION]
         assert not response.cookies

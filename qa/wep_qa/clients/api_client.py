@@ -3,7 +3,7 @@ from http import HTTPMethod, HTTPStatus
 from httpx import Client, HTTPStatusError, Response
 from loguru import logger
 
-from wep_qa.constants import Header
+from wep_qa.constants import AUTH_SESSION, Header
 
 
 class UnexpectedStatusCodeError(HTTPStatusError):
@@ -47,7 +47,7 @@ class BaseApiClient:
             UnexpectedStatusCodeError: If the response status code does not match expected_status_code.
             HTTPStatusError: If raise_for_status is True and the response has an error status code.
         """
-        request = self.client.build_request(method, url, json=json)
+        request = self.client.build_request(method, url, json=json, headers=headers)
 
         response = self.client.send(request)
         if expected_status_code and response.status_code != expected_status_code:
@@ -115,6 +115,6 @@ class WepApiClient(BaseApiClient):
         return self._call(
             method=HTTPMethod.POST,
             url=self.AUTH_LOGOUT,
-            headers={Header.AUTH_SESSION: session},
+            headers={Header.COOKIE: f'{AUTH_SESSION}: session'},
             expected_status_code=HTTPStatus.NO_CONTENT,
         )

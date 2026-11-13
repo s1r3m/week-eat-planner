@@ -14,11 +14,11 @@ def parse_response_header(response: Response, header: Header) -> dict[str, str |
         return {}
 
     result: dict[str, str | None] = {}
-    pairs = raw_header_value.split(';')
+    pairs = raw_header_value.split('; ')
     for line in pairs:
-        values = line.split('=')
-        key = values[0]
-        value = values[1] if len(values) > 1 and values[1] != '""' else None
+        values = line.split('=', 1)
+        key = values[0].strip()
+        value = values[1].strip() if len(values) > 1 and values[1] != '""' else None
         result[key] = value
 
     return result

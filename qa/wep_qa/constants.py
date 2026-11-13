@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 EMAIL = 'user@wep.com'
 PASSWORD = 'S3cr3tPa$$'
+AUTH_SESSION = 'wep_session'
 
 
 @dataclass
@@ -18,5 +19,5 @@ class Error(ErrorData, Enum):
 
 
 class Header(StrEnum):
-    AUTH_SESSION = 'wep_session'
+    COOKIE = 'Cookie'
     SET_COOKIE = 'set-cookie'
