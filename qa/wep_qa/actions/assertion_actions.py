@@ -24,18 +24,28 @@ class AssertionActions(BaseActions):
         assert set_cookies.get(AUTH_SESSION)
         self._check_user_response(response, user)
 
-    def _check_user_response(self, response: Response, user: User) -> None:
-        assert response.json() == {
-            'id': user.id,
-            'email': user.email,
-            'username': user.username,
-            'is_email_verified': False,
-            'avatar_url': None,
-            'oauth_provider': None,
-        }
-
     def check_logout_response(self, response: Response) -> None:
         assert not response.text
         set_cookies = parse_response_header(response, Header.SET_COOKIE)
         assert not set_cookies[AUTH_SESSION]
         assert not response.cookies
+
+    def check_verify_email_response(self, response: Response) -> None:
+        self._check_successful_response(response)
+
+    def _check_successful_response(self, response: Response) -> None:
+        assert response.json() == {'status': 'success'}
+
+    def check_user(self, user: User) -> None:
+        response = self._clients.api.get_user(user.session)
+        self._check_user_response(response, user)
+
+    def _check_user_response(self, response: Response, user: User) -> None:
+        assert response.json() == {
+            'id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'is_email_verified': user.is_email_activated,
+            'avatar_url': None,
+            'oauth_provider': None,
+        }

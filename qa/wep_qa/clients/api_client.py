@@ -67,28 +67,19 @@ class BaseApiClient:
 
 
 class WepApiClient(BaseApiClient):
-    """Client for the WEP API."""
-
     PING = '/api/ping'
 
     AUTH_LOGIN = '/api/auth/login'
     AUTH_LOGOUT = '/api/auth/logout'
     AUTH_SIGNUP = '/api/auth/signup'
+    AUTH_VERIFY = '/api/auth/verify'
+
+    USER = '/api/user'
 
     def get_ping(self) -> Response:
-        """Get the ping response from the API.
-
-        Returns:
-            Response: The HTTP response object.
-        """
         return self._call(HTTPMethod.GET, url=self.PING, expected_status_code=HTTPStatus.OK)
 
     def post_login(self, email: str, password: str) -> Response:
-        """Post a login request via API.
-
-        Returns:
-            Response: The HTTP response object.
-        """
         return self._call(
             method=HTTPMethod.POST,
             url=self.AUTH_LOGIN,
@@ -97,11 +88,6 @@ class WepApiClient(BaseApiClient):
         )
 
     def post_register(self, email: str, password: str, username: str) -> Response:
-        """Post the register request via API.
-
-        Returns:
-            Response: The HTTP response object.
-        """
         return self._call(
             method=HTTPMethod.POST,
             url=self.AUTH_SIGNUP,
@@ -110,11 +96,6 @@ class WepApiClient(BaseApiClient):
         )
 
     def post_logout(self, session: str | None) -> Response:
-        """Logs out the user via API.
-
-        Returns:
-            Response: The HTTP response object.
-        """
         return self._call(
             method=HTTPMethod.POST,
             url=self.AUTH_LOGOUT,
@@ -122,10 +103,18 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.NO_CONTENT,
         )
 
-    def get_weeks(self, session: str) -> Response:
+    def activate_email(self, token: str) -> Response:
+        return self._call(
+            method=HTTPMethod.POST,
+            url=self.AUTH_VERIFY,
+            json={'token': token},
+            expected_status_code=HTTPStatus.OK,
+        )
+
+    def get_user(self, session: str) -> Response:
         return self._call(
             method=HTTPMethod.GET,
-            url='/api/weeks',
-            cookies={AUTH_SESSION: session},
+            url=self.USER,
+            cookies={AUTH_SESSION: session or ''},
             expected_status_code=HTTPStatus.OK,
         )

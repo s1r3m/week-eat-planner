@@ -31,3 +31,11 @@ class UserActions(BaseActions):
     def logout_user(self, user: User) -> Response:
         response = self._clients.api.post_logout(user.session)
         return response
+
+    def get_activation_token(self, user: User) -> str:
+        return self._clients.mail.get_activation_token(user.email)
+
+    def verify_user_email(self, user: User, token: str) -> Response:
+        response = self._clients.api.activate_email(token)
+        user.is_email_activated = True
+        return response
