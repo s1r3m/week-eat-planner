@@ -3,7 +3,9 @@ export default defineNuxtPlugin(() => {
 	const requestHeaders = useRequestHeaders(['cookie'])
 
 	const api = $fetch.create({
-		baseURL: config.public.apiUrl,
+		baseURL: import.meta.env.SSR
+			? config.apiUrl || config.public.apiUrl
+			: config.public.apiUrl,
 		credentials: 'include',
 		onRequest({ options }) {
 			if (requestHeaders.cookie) {

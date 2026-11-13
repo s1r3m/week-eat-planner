@@ -6,7 +6,7 @@ export const user: UserData = {
 	id: 'user-1',
 	email: 'test@example.com',
 	username: 'tester',
-	is_active: true,
+	is_email_verified: true,
 	avatar_url: null,
 	oauth_provider: null,
 }

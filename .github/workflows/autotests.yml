@@ -1,6 +1,6 @@
 name: autotests.yml
 permissions:
-  contents: write
+  contents: read
 
 on:
   push:
@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
@@ -35,12 +33,12 @@ jobs:
         run: make -C qa lint
 
   autotests:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
@@ -76,9 +74,6 @@ jobs:
       - name: Install dependencies
         run: make -C qa install
 
-      - name: Run linters
-        run: make -C qa lint
-
       - name: Run the app
         run: make -C qa start
 
@@ -99,7 +94,9 @@ jobs:
       # Restore history AFTER pytest has cleaned and generated results.
       - name: Generate Allure report
         id: report
-        if: always() && steps.tests.outcome != ''
+        if: >
+          !cancelled() &&
+          (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
         run: |
           mkdir -p qa/allure-results
 

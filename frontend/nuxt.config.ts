@@ -66,7 +66,9 @@ export default defineNuxtConfig({
 		clients: {
 			baseApi: {
 				baseURL: process.env.NUXT_PUBLIC_API_URL,
-				schema: 'http://localhost:8000/openapi.json',
+				schema:
+					process.env.NUXT_OPENAPI_SCHEMA ||
+					'http://localhost:8000/openapi.json',
 			},
 		},
 		disableNuxtPlugin: true,
@@ -85,6 +87,7 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
+		apiUrl: '',
 		public: {
 			apiUrl: process.env.NUXT_PUBLIC_API_URL,
 		},
