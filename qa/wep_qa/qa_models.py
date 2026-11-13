@@ -7,6 +7,8 @@ from wep_qa.constants import PASSWORD
 class User:
     email: str
     username: str
+    is_email_activated: bool = False
+    activation_token: str | None = None
     session: str = ''
     password: str = PASSWORD
     id: str | None = None
