@@ -14,3 +14,4 @@ class ErrorData:
 
 class Error(ErrorData, Enum):
     BAD_CREDENTIALS = HTTPStatus.UNAUTHORIZED, 'Could not validate credentials'
+    EMAIL_IS_TAKEN = HTTPStatus.CONFLICT, 'User already exists'

@@ -3,7 +3,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 from week_eat_planner.db.session_maker import db
 
-from .methods import remove_user
+from .methods import check_db_isolation, remove_user
 
 server = SimpleXMLRPCServer(
     ('0.0.0.0', 9000),
@@ -11,7 +11,8 @@ server = SimpleXMLRPCServer(
     use_builtin_types=True,
 )
 
-server.register_function(remove_user, 'remove_user')
+server.register_function(check_db_isolation)
+server.register_function(remove_user)
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)

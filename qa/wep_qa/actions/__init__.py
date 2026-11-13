@@ -16,3 +16,5 @@ class Actions:
         for user in self._repo.users:
             if not (user.id and self._clients.proxy.delete_user(user_id=user.id)):
                 raise ValueError(f'User with email {user.email} was not created')
+
+        self._clients.proxy.check_db_isolation()

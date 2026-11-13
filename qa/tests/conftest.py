@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from urllib import response
 
 import pytest
 
@@ -19,3 +20,12 @@ def actions() -> Generator[Actions]:
 @pytest.fixture
 def user() -> User:
     return User(email=EMAIL, username=f'User_{EMAIL}')
+
+
+@pytest.fixture
+def created_user(actions, user) -> User:
+    response = actions.user.register_user(user)
+    body = response.json()
+    user.id = body['id']
+
+    return user

@@ -10,5 +10,8 @@ class WepProxyClient:
     def __init__(self, url: str) -> None:
         self._client = cast(_WepProxy, ServerProxy(url, allow_none=True, use_builtin_types=True))
 
+    def check_db_isolation(self) -> None:
+        self._client.check_db_isolation()
+
     def delete_user(self, *, user_id: str) -> bool:
         return self._client.remove_user(user_id)
