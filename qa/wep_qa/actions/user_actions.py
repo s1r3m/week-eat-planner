@@ -30,6 +30,4 @@ class UserActions(BaseActions):
 
     def logout_user(self, user: User) -> Response:
         response = self._clients.api.post_logout(user.session)
-        headers = parse_response_header(response, Header.SET_COOKIE)
-
         return response
