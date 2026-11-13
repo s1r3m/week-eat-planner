@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from http import HTTPStatus
 
+EMAIL = 'user@wep.com'
 PASSWORD = 'S3cr3tPa$$'
 
 

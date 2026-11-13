@@ -33,7 +33,8 @@
     "**/.jj": false,
     ".ruff_cache": true,
     "**/.idea": true,
-    "**/.mypy_cache": true
+    "**/.mypy_cache": true,
+    "**/.hypothesis": true
   },
 
   "vitest.rootConfig": "frontend/vitest.config.ts",

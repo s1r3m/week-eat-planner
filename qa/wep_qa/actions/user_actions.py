@@ -9,7 +9,12 @@ class UserActions(BaseActions):
         return self._clients.api.get_ping()
 
     def register_user(self, user: User) -> Response:
-        return self._clients.api.post_register(email=user.email, password=user.password)
+        response = self._clients.api.post_register(email=user.email, password=user.password, username=user.username)
+        body = response.json()
+        user.id = body['id']
+
+        self._repo.users.add(user)
+        return response
 
     def login_user(self, user: User) -> Response:
         return self._clients.api.post_login(email=user.email, password=user.password)

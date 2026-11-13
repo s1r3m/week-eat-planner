@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from uuid import UUID
+from dataclasses import dataclass, field
 
 from wep_qa.constants import PASSWORD
 
@@ -7,5 +6,14 @@ from wep_qa.constants import PASSWORD
 @dataclass(slots=True)
 class User:
     email: str
+    username: str
     password: str = PASSWORD
-    id: UUID | None = None
+    id: str | None = None
+
+    def __hash__(self) -> int:
+        return hash(id)
+
+
+@dataclass(slots=True)
+class Repo:
+    users: set[User] = field(default_factory=set)

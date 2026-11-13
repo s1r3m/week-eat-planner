@@ -8,7 +8,7 @@ endif
 # Versions.
 PYTHON_VERSION = 3.14
 PYTHON = python$(PYTHON_VERSION)
-UV_VERSION = 0.12.23
+UV_VERSION = 0.13.8
 
 # Paths.
 PROJECT_PATH = $(shell dirname $(CURDIR))
@@ -59,7 +59,7 @@ start: stop
 	$(MAKE) -C .. package
 	cd $(PROJECT_PATH)/qa/docker 	 && \
 		docker compose build --pull  && \
-		docker compose up --detach --wait nginx
+		docker compose up --detach --wait nginx proxy
 ifneq ($(GITHUB_ACTIONS),true)
 	$(MAKE) logs
 endif

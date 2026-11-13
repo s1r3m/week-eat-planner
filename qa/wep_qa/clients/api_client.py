@@ -64,7 +64,7 @@ class WepApiClient(BaseApiClient):
     PING = '/api/ping'
 
     AUTH_LOGIN = '/api/auth/login'
-    AUTH_REGISTER = '/api/auth/register'
+    AUTH_SIGNUP = '/api/auth/signup'
 
     def get_ping(self) -> Response:
         """Get the ping response from the API.
@@ -87,7 +87,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.OK,
         )
 
-    def post_register(self, email: str, password: str) -> Response:
+    def post_register(self, email: str, password: str, username: str) -> Response:
         """Post the register request via API.
 
         Returns:
@@ -95,7 +95,7 @@ class WepApiClient(BaseApiClient):
         """
         return self._call(
             method=HTTPMethod.POST,
-            url=self.AUTH_REGISTER,
-            json={'email': email, 'password': password},
+            url=self.AUTH_SIGNUP,
+            json={'email': email, 'password': password, 'username': username},
             expected_status_code=HTTPStatus.CREATED,
         )
