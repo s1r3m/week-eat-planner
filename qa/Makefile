@@ -92,7 +92,7 @@ style: $(VENV_ACTIVATE)
 	ruff check --fix $(PROJECT_PATH)/qa
 
 test: $(VENV_ACTIVATE)
-	pytest tests
+	pytest tests --alluredir=allure-results --clean-alluredir
 
 
 HELP_TARGET_MAX_CHAR_NUM = 20

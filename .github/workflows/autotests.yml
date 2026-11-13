@@ -1,65 +1,163 @@
 name: autotests.yml
 permissions:
-  contents: read
+  contents: write
 
 on:
-  workflow_dispatch:
-    inputs:
-      clean_workspace:
-        description: "Clean workspace before checkout"
-        required: false
-        default: false
-        type: boolean
   push:
     branches:
       - main
+      - develop
   pull_request:
 
+concurrency:
+  group: allure-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  autotests:
+  lintes:
     runs-on: ubuntu-latest
     steps:
-      - name: Clean workspace (Manual)
-        if: inputs.clean_workspace == true
-        run: |
-          echo "Cleaning workspace..."
-          rm -rf ./* || true
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Fetch all history for all branches and tags to enable merging.
           fetch-depth: 0
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "0.12.23"
+          version: "0.13.8"
           enable-cache: true
-
-      - name: Merge base branch into PR
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Merging base branch (origin/${{ github.event.pull_request.base.ref }}) into HEAD..."
-          git merge "origin/${{ github.event.pull_request.base.ref }}"
-          echo "Merge successful."
-        # This step will automatically fail if there are merge conflicts,
-        # correctly indicating that the PR is not ready.
 
       - name: Install dependencies
         run: make -C qa install
+
+      - name: Run linters
+        run: make -C qa lint
+
+  autotests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.8"
+          enable-cache: true
+
+      # Allure 2 CLI requires Java.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Allure CLI
+        run: npm install --global allure-commandline@2.34.1
+
+      # Retrieve the previously published report.
+      - name: Fetch previous Allure report
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            git fetch origin refs/heads/gh-pages:refs/remotes/origin/gh-pages
+
+            git worktree add \
+              --detach \
+              "$RUNNER_TEMP/gh-pages" \
+              refs/remotes/origin/gh-pages
+          else
+            echo "No previous report. Starting without history."
+            mkdir -p "$RUNNER_TEMP/gh-pages"
+          fi
+
+      - name: Install dependencies
+        run: make -C qa install
+
+      - name: Run linters
+        run: make -C qa lint
 
       - name: Run the app
         run: make -C qa start
 
       - name: Run tests
+        id: tests
+        continue-on-error: true
         run: make -C qa test
 
       - name: Show Docker logs on failure
-        if: failure()
+        if: failure() || steps.tests.outcome == 'failure'
         run: cd qa/docker && docker compose logs
 
       - name: Stop the app and clean up
         # This step will run even if the tests fail, ensuring Docker containers are stopped.
         if: always()
         run: make -C qa stop
+
+      # Restore history AFTER pytest has cleaned and generated results.
+      - name: Generate Allure report
+        id: report
+        if: always() && steps.tests.outcome != ''
+        run: |
+          mkdir -p qa/allure-results
+
+          if [ -d "$RUNNER_TEMP/gh-pages/history" ]; then
+            echo "Restoring previous Allure history..."
+
+            mkdir -p qa/allure-results/history
+
+            cp -a \
+              "$RUNNER_TEMP/gh-pages/history/." \
+              qa/allure-results/history/
+          fi
+
+          if ! find qa/allure-results -type f -print -quit | grep -q .; then
+            echo "No Allure results found. Skipping report generation."
+            echo "report_available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          allure generate \
+            qa/allure-results \
+            --clean \
+            -o qa/allure-report
+
+          echo "report_available=true" >> "$GITHUB_OUTPUT"
+
+      # Keep raw results for debugging.
+      - name: Upload raw Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ github.run_id }}
+          path: qa/allure-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Keep HTML report available even for PRs.
+      - name: Upload HTML report
+        if: always() && steps.report.outputs.report_available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ github.run_id }}
+          path: qa/allure-report/
+          retention-days: 14
+
+      # Publish only from develop.
+      - name: Publish Allure report to GitHub Pages
+        if: >
+          github.event_name != 'pull_request' &&
+          github.ref == 'refs/heads/develop' &&
+          steps.report.outputs.report_available == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./qa/allure-report
+
+      # Restore the original test exit status.
+      - name: Fail workflow if tests failed
+        if: always() && steps.tests.outcome == 'failure'
+        run: exit 1
