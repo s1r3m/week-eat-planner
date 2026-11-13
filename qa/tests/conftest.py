@@ -27,13 +27,14 @@ def created_user(actions: Actions) -> User:
     response = actions.user.register_user(user)
     body = response.json()
     user.id = body['id']
+    user.activation_token = actions.user.get_activation_token(user)
 
     return user
 
 
 @pytest.fixture
 def auth_user(actions: Actions, created_user: User) -> User:
-    response = actions.user.login_user(created_user)
+    actions.user.login_user(created_user)
 
     return created_user
 
@@ -42,6 +43,6 @@ def auth_user(actions: Actions, created_user: User) -> User:
 def activated_user(actions: Actions, auth_user: User) -> User:
     activation_token = actions.user.get_activation_token(auth_user)
     actions.user.verify_user_email(auth_user, activation_token)
-    auth_user.last_activation_token = activation_token
+    auth_user.activation_token = activation_token
 
     return auth_user

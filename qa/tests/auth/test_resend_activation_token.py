@@ -5,12 +5,9 @@ from wep_qa.constants import Error
 
 
 def test_resend_activation_token__valid_user__token_sent(actions, auth_user):
-    activation_token = actions.user.get_activation_token(auth_user)
-
     response = actions.user.resend_activation_token(auth_user)
 
     actions.assertion.check_resend_activation_token_response(response)
-    auth_user.last_activation_token = activation_token
     actions.assertion.check_resend_activation_token(auth_user)
 
 

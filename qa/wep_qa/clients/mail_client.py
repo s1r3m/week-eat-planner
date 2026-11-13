@@ -6,7 +6,7 @@ ACTIVATION_SUBJECT = 'Welcome to Week Eat Planner'
 
 
 class MailUrl(StrEnum):
-    MESSAGES = '/api/v1/messages'
+    SEARCH = '/api/v1/search'
 
 
 class WepMailClient:
@@ -14,12 +14,12 @@ class WepMailClient:
         self._client = Client(base_url=url)
 
     def get_activation_token(self, email: str) -> str:
-        response = self._client.get(MailUrl.MESSAGES, params={'to': email, 'limit': 1})
+        response = self._client.get(MailUrl.SEARCH, params={'query': f'to:{email}'})
         body = response.json()
         messages = body['messages']
         filtered_messages = [msg for msg in messages if msg['Subject'] == ACTIVATION_SUBJECT]
         if not filtered_messages:
-            return ''
+            raise ValueError(f'No emails for {email}')
 
         _, token = filtered_messages[0]['Snippet'].split(':')
         return token.strip()

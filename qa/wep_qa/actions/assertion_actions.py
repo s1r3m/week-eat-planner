@@ -38,7 +38,7 @@ class AssertionActions(BaseActions):
 
     def check_resend_activation_token(self, user: User) -> None:
         token = self._clients.mail.get_activation_token(user.email)
-        assert token != user.last_activation_token
+        assert token != user.activation_token
 
     def _check_successful_response(self, response: Response) -> None:
         assert response.json() == {'status': 'success'}

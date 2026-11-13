@@ -15,8 +15,8 @@ class ErrorData:
 
 class Error(ErrorData, Enum):
     ALREADY_ACTIVATED_USER = HTTPStatus.CONFLICT, 'A user is already activated'
-    BAD_CREDENTIALS = HTTPStatus.UNAUTHORIZED, 'Could not validate credentials'
     BAD_ACTIVATION_TOKEN = HTTPStatus.CONFLICT, 'Bad activation token'
+    BAD_CREDENTIALS = HTTPStatus.UNAUTHORIZED, 'Could not validate credentials'
     EMAIL_IS_TAKEN = HTTPStatus.CONFLICT, 'User already exists'
     NO_SESSION_IN_REQUEST = HTTPStatus.UNAUTHORIZED, 'No session token in request'
 
