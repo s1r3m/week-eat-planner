@@ -5,20 +5,27 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory.
-WORKDIR /app
-
-# Create venv.
-RUN pip install uv==0.12.23
-RUN uv venv venv
-
 # Add  wait-for-it.sh.
 RUN curl -o /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
 
-# Install the app.
-COPY backend/dist/*.whl .
-RUN uv pip install *.whl --no-cache-dir --python /app/venv/bin/python
+# Copy official Astral uv binaries.
+COPY --from=ghcr.io/astral-sh/uv:0.13.8  /uv /uvx /bin/
 
+ENV UV_PYTHON_DOWNLOADS=0
+
+# Create virtual environment.
+RUN uv venv /app/venv --python python
+
+# Set the working directory.
+WORKDIR /app
+
+# Install application wheel and dependencies.
+COPY backend/dist/*.whl /app/
+
+RUN uv pip install \
+    --python /app/venv/bin/python \
+    --no-cache \
+    /app/*.whl
 
 FROM python:3.14-slim AS final
 

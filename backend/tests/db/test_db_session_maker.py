@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 import pytest
 import pytest_asyncio
 
+from week_eat_planner.config import database_url
 from week_eat_planner.db.session_maker import db
 
 
@@ -18,8 +19,10 @@ async def mock_session_maker(mocker, mocked_session) -> None:
 
 @pytest_asyncio.fixture
 async def inited_db() -> AsyncGenerator[None]:
-    await db.init()
+    await db.init(database_url)
+
     yield
+
     await db.close()
 
 

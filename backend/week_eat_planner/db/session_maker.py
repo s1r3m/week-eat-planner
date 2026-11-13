@@ -4,8 +4,6 @@ from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
-from week_eat_planner.config import database_url
-
 
 class DatabaseSession:
     """Manages the creation and lifecycle of database sessions."""
@@ -15,7 +13,7 @@ class DatabaseSession:
         self._engine: AsyncEngine | None = None
         self._session_maker: async_sessionmaker[AsyncSession] | None = None
 
-    async def init(self) -> None:
+    async def init(self, database_url: str) -> None:
         """Initializes the database engine and session maker.
 
         Creates an asynchronous engine and a session factory for PostgreSQL.

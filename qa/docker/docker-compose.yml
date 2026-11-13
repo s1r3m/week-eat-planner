@@ -17,21 +17,8 @@ services:
     build:
       context: ../../
       dockerfile: qa/docker/app/Dockerfile
-    environment:
-      - IS_DEBUG=true
-      - DB_URL=postgresql+asyncpg://wep:wep@db:5432/wep
-      - BE_HOST=http://app.dev.local
-      - FE_HOST=http://app.dev.local
-      - STORAGE_HOST=http://127.0.0.1:9000
-      - STORAGE_ACCESS_KEY_ID=wep_root
-      - STORAGE_SECRET_ACCESS_KEY=weppassword
-      - STORAGE_REGION=test
-      - SESSION_TTL_DAYS=30
-      - GOOGLE_CLIENT_ID=google_app_id
-      - GOOGLE_CLIENT_SECRET=some_secret
-      - SMTP_HOST=mailpit
-      - SMTP_PORT=1025
-      - EMAIL_FROM=test@test.com
+    env_file:
+      - .env.ci
     expose:
       - 8000
     depends_on:
@@ -41,6 +28,17 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+  proxy:
+    build:
+      context: ../..
+      dockerfile: qa/docker/proxy/Dockerfile
+    env_file:
+      - .env.ci
+    ports:
+      - "127.0.0.1:9000:9000"
+    depends_on:
+      - db
+      - backend
   frontend:
     build:
       context: ../../frontend

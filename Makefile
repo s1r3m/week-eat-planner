@@ -8,7 +8,7 @@ endif
 # Versions.
 PYTHON_VERSION = 3.14
 PYTHON = python$(PYTHON_VERSION)
-UV_VERSION = 0.12.23
+UV_VERSION = 0.13.8
 
 # Paths.
 PROJECT_PATH = $(CURDIR)

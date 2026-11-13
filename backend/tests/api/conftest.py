@@ -25,6 +25,7 @@ from week_eat_planner.api.schemas import (
     UserRead,
     WeekCreate,
 )
+from week_eat_planner.config import database_url
 from week_eat_planner.constants import AppUrl, StorageBucket
 from week_eat_planner.db.models import Recipe, User, Week
 from week_eat_planner.db.session_maker import db
@@ -36,7 +37,7 @@ from week_eat_planner.services.week_service import WeekService
 
 @pytest_asyncio.fixture
 async def db_connection() -> AsyncGenerator[None]:
-    await db.init()
+    await db.init(database_url)
     yield
     await db.close()
 
