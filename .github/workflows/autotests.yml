@@ -54,7 +54,14 @@ jobs:
           java-version: "17"
 
       - name: Install Allure CLI
-        run: npm install --global allure-commandline@2.34.1
+        run: |
+          curl -fsSL \
+            https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.46.2/allure-commandline-2.46.2.zip \
+            -o /tmp/allure.zip
+
+          unzip -q /tmp/allure.zip -d /opt/allure
+
+          echo "/opt/allure/allure-2.46.2/bin" >> "$GITHUB_PATH"
 
       # Retrieve the previously published report.
       - name: Fetch previous Allure report
