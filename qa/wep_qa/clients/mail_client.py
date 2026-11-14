@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+import allure
 from httpx import Client
 
 ACTIVATION_SUBJECT = 'Welcome to Week Eat Planner'
@@ -13,6 +14,7 @@ class WepMailClient:
     def __init__(self, url: str) -> None:
         self._client = Client(base_url=url)
 
+    @allure.step
     def get_activation_token(self, email: str) -> str:
         response = self._client.get(MailUrl.SEARCH, params={'query': f'to:{email}'})
         body = response.json()

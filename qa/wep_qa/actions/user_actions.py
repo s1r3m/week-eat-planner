@@ -1,3 +1,4 @@
+import allure
 from httpx import Response
 
 from wep_qa.actions.base_actions import BaseActions
@@ -7,9 +8,11 @@ from wep_qa.utils import parse_response_header
 
 
 class UserActions(BaseActions):
+    @allure.step
     def ping(self) -> Response:
         return self._clients.api.get_ping()
 
+    @allure.step
     def register_user(self, user: User) -> Response:
         response = self._clients.api.post_register(email=user.email, password=user.password, username=user.username)
         body = response.json()
@@ -18,6 +21,7 @@ class UserActions(BaseActions):
         self._repo.users.add(user)
         return response
 
+    @allure.step
     def login_user(self, user: User) -> Response:
         response = self._clients.api.post_login(email=user.email, password=user.password)
         headers = parse_response_header(response, Header.SET_COOKIE)
@@ -28,18 +32,22 @@ class UserActions(BaseActions):
         user.session = session
         return response
 
+    @allure.step
     def logout_user(self, user: User) -> Response:
         response = self._clients.api.post_logout(user.session)
         return response
 
+    @allure.step
     def get_activation_token(self, user: User) -> str:
         return self._clients.mail.get_activation_token(user.email)
 
+    @allure.step
     def verify_user_email(self, user: User, token: str) -> Response:
         response = self._clients.api.activate_email(token)
         user.is_email_activated = True
         return response
 
+    @allure.step
     def resend_activation_token(self, user: User) -> Response:
         response = self._clients.api.post_resend_activation(user.session)
         return response
