@@ -1,3 +1,4 @@
+import allure
 from httpx import Response
 from pytest import ExceptionInfo
 
@@ -8,34 +9,42 @@ from wep_qa.utils import parse_response_header
 
 
 class AssertionActions(BaseActions):
+    @allure.step
     def check_ping_response(self, response: Response) -> None:
         assert response.text == 'pong'
 
+    @allure.step
     def check_error_response(self, exc: ExceptionInfo, error: Error) -> None:
         response: Response = exc.value.response
         assert response.status_code == error.code
         assert response.json() == {'detail': error.detail}
 
+    @allure.step
     def check_register_user_response(self, response: Response, user: User) -> None:
         self._check_user_response(response, user)
 
+    @allure.step
     def check_login_response(self, response: Response, user: User) -> None:
         set_cookies = parse_response_header(response, Header.SET_COOKIE)
         assert set_cookies.get(AUTH_SESSION)
         self._check_user_response(response, user)
 
+    @allure.step
     def check_logout_response(self, response: Response) -> None:
         assert not response.text
         set_cookies = parse_response_header(response, Header.SET_COOKIE)
         assert not set_cookies[AUTH_SESSION]
         assert not response.cookies
 
+    @allure.step
     def check_verify_email_response(self, response: Response) -> None:
         self._check_successful_response(response)
 
+    @allure.step
     def check_resend_activation_token_response(self, response: Response) -> None:
         self._check_successful_response(response)
 
+    @allure.step
     def check_resend_activation_token(self, user: User) -> None:
         token = self._clients.mail.get_activation_token(user.email)
         assert token != user.activation_token
@@ -43,6 +52,7 @@ class AssertionActions(BaseActions):
     def _check_successful_response(self, response: Response) -> None:
         assert response.json() == {'status': 'success'}
 
+    @allure.step
     def check_user(self, user: User) -> None:
         response = self._clients.api.get_user(user.session)
         self._check_user_response(response, user)

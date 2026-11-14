@@ -1,6 +1,7 @@
 from http import HTTPMethod, HTTPStatus
 
-from httpx import Client, HTTPStatusError, Response
+import allure
+from httpx import Client, HTTPStatusError, Request, Response
 from loguru import logger
 
 from wep_qa.constants import AUTH_SESSION
@@ -30,7 +31,6 @@ class BaseApiClient:
         json: dict | None = None,
         cookies: dict[str, str] | None = None,
         expected_status_code: HTTPStatus | None = None,
-        raise_for_status: bool = True,
     ) -> Response:
         """Perform an HTTP request and validate the response status code.
 
@@ -51,8 +51,10 @@ class BaseApiClient:
             HTTPStatusError: If raise_for_status is True and the response has an error status code.
         """
         request = self.client.build_request(method, url, json=json, headers=headers, cookies=cookies)
+        self._attach_request(request)
 
         response = self.client.send(request)
+        self._attach_response(response)
         if expected_status_code and response.status_code != expected_status_code:
             err_msg = f'Unexpected status code: {response.status_code}, expected: {expected_status_code}'
             logger.error(f'{err_msg}: {response.text}')
@@ -60,10 +62,23 @@ class BaseApiClient:
 
         # TODO: add json schema validation
 
-        if raise_for_status:
-            response.raise_for_status()
-
         return response
+
+    def _attach_request(self, request: Request) -> None:
+        allure.attach(
+            f'{request.method} {request.url}\n'
+            f'Headers:\n{dict(request.headers)}\n'
+            f'Body:\n{request.content.decode(errors="replace")}',
+            name='HTTP request',
+            attachment_type=allure.attachment_type.TEXT,
+        )
+
+    def _attach_response(self, response: Response) -> None:
+        allure.attach(
+            f'Status: {response.status_code}\nHeaders:\n{dict(response.headers)}\nBody:\n{response.text}',
+            name='HTTP response',
+            attachment_type=allure.attachment_type.TEXT,
+        )
 
 
 class WepApiClient(BaseApiClient):
@@ -77,9 +92,11 @@ class WepApiClient(BaseApiClient):
 
     USER = '/api/user'
 
+    @allure.step
     def get_ping(self) -> Response:
         return self._call(HTTPMethod.GET, url=self.PING, expected_status_code=HTTPStatus.OK)
 
+    @allure.step
     def post_login(self, email: str, password: str) -> Response:
         return self._call(
             method=HTTPMethod.POST,
@@ -88,6 +105,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.OK,
         )
 
+    @allure.step
     def post_register(self, email: str, password: str, username: str) -> Response:
         return self._call(
             method=HTTPMethod.POST,
@@ -96,6 +114,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.CREATED,
         )
 
+    @allure.step
     def post_logout(self, session: str | None) -> Response:
         return self._call(
             method=HTTPMethod.POST,
@@ -104,6 +123,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.NO_CONTENT,
         )
 
+    @allure.step
     def activate_email(self, token: str) -> Response:
         return self._call(
             method=HTTPMethod.POST,
@@ -112,6 +132,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.OK,
         )
 
+    @allure.step
     def get_user(self, session: str) -> Response:
         return self._call(
             method=HTTPMethod.GET,
@@ -120,6 +141,7 @@ class WepApiClient(BaseApiClient):
             expected_status_code=HTTPStatus.OK,
         )
 
+    @allure.step
     def post_resend_activation(self, session: str) -> Response:
         return self._call(
             method=HTTPMethod.POST,

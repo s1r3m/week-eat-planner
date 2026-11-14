@@ -1,4 +1,8 @@
-import { expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
+
+afterEach(() => {
+	vi.unstubAllEnvs()
+})
 
 vi.stubGlobal('defineNuxtPlugin', (plugin: unknown) => plugin)
 const { default: apiPlugin } = await import('@/plugins/api')
@@ -7,11 +11,12 @@ interface ApiClientOptions {
 	onRequest: (context: { options: { headers: Headers } }) => void
 }
 
-const createApiPlugin = async (cookie?: string) => {
+const createApiPlugin = async (cookie?: string, serverApiUrl = '') => {
 	const api = vi.fn()
 	const create = vi.fn<(options: ApiClientOptions) => typeof api>(() => api)
 	vi.stubGlobal('useRequestHeaders', () => (cookie ? { cookie } : {}))
 	vi.stubGlobal('useRuntimeConfig', () => ({
+		apiUrl: serverApiUrl,
 		public: { apiUrl: 'https://api.example.test' },
 	}))
 	vi.stubGlobal('$fetch', { create })
@@ -21,6 +26,7 @@ const createApiPlugin = async (cookie?: string) => {
 }
 
 it('provides an API client configured with the runtime URL and session credentials', async () => {
+	vi.stubEnv('SSR', true)
 	const { api, create, result } = await createApiPlugin()
 	expect(create).toHaveBeenCalledExactlyOnceWith(
 		expect.objectContaining({
@@ -29,6 +35,24 @@ it('provides an API client configured with the runtime URL and session credentia
 		}),
 	)
 	expect(result).toEqual({ provide: { api } })
+})
+
+it('uses the internal API URL during server rendering', async () => {
+	vi.stubEnv('SSR', true)
+	const { create } = await createApiPlugin(undefined, 'http://backend:8000')
+
+	expect(create).toHaveBeenCalledExactlyOnceWith(
+		expect.objectContaining({ baseURL: 'http://backend:8000' }),
+	)
+})
+
+it('uses the public API URL in the browser even when an internal URL is configured', async () => {
+	vi.stubEnv('SSR', false)
+	const { create } = await createApiPlugin(undefined, 'http://backend:8000')
+
+	expect(create).toHaveBeenCalledExactlyOnceWith(
+		expect.objectContaining({ baseURL: 'https://api.example.test' }),
+	)
 })
 
 it('forwards the request cookie to the API client', async () => {

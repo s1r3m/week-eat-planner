@@ -16,20 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  fe:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: wep-fe
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: bun run dev --port 3000 --host 0.0.0.0
-
   minio:
     image: rustfs/rustfs:1.0.0
     container_name: wep-minio

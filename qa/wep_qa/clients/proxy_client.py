@@ -1,6 +1,8 @@
 from typing import Protocol, cast
 from xmlrpc.client import ServerProxy
 
+import allure
+
 
 class _WepProxy(Protocol):
     def remove_user(self, user_id: str) -> bool: ...
@@ -14,5 +16,6 @@ class WepProxyClient:
     def check_db_isolation(self) -> None:
         self._client.check_db_isolation()
 
+    @allure.step
     def delete_user(self, *, user_id: str) -> bool:
         return self._client.remove_user(user_id)

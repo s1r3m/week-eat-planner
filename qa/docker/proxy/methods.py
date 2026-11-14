@@ -13,7 +13,7 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 
-def async_to_sync(func: Callable[P, Coroutine[Any, Any, R]]) -> Callable[P, R]:
+def async_to_sync[**P, R](func: Callable[P, Coroutine[Any, Any, R]]) -> Callable[P, R]:
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         loop = asyncio.get_event_loop()

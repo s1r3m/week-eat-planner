@@ -61,9 +61,3 @@ From `frontend/`:
 bun run build
 bun run preview
 ```
-
-## Docker
-
-The frontend Dockerfile uses Node.js 24 and Bun 1.3.14 and starts Nuxt's
-development server on `0.0.0.0:3000`. Both the root Compose configuration and
-the QA Compose configuration use this image and mount `frontend/` at `/app`.
