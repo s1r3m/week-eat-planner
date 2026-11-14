@@ -1,0 +1,1 @@
+2026-11-14 14:19:52.175 +00:00 | ERROR    | wep_qa.clients.api_client:_call:60 - Unexpected status code: 409, expected: 201: {"detail":"A user is already activated"}

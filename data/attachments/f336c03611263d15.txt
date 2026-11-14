@@ -1,0 +1,4 @@
+POST http://localhost:81/api/auth/logout
+Headers:
+{'host': 'localhost:81', 'content-length': '0', 'accept': '*/*', 'accept-encoding': 'gzip, deflate', 'connection': 'keep-alive', 'user-agent': 'python-httpx/0.28.1', 'cookie': 'wep_session=atzL4N33DxemNyXFFKsPXsOhYiDgRLxUWWYiIlk5Oac; wep_session=atzL4N33DxemNyXFFKsPXsOhYiDgRLxUWWYiIlk5Oac'}
+Body:

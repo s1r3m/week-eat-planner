@@ -1,0 +1,5 @@
+Status: 201
+Headers:
+{'server': 'nginx/1.31.8', 'date': 'Sat, 14 Nov 2026 14:19:51 GMT', 'content-type': 'application/json', 'content-length': '165', 'connection': 'keep-alive', 'vary': 'Origin'}
+Body:
+{"id":"01a1da6d-cdcb-75d8-914f-c655767032ba","email":"user@wep.com","is_email_verified":false,"username":"User_user@wep.com","avatar_url":null,"oauth_provider":null}

@@ -1,0 +1,5 @@
+POST http://localhost:81/api/auth/signup
+Headers:
+{'host': 'localhost:81', 'accept': '*/*', 'accept-encoding': 'gzip, deflate', 'connection': 'keep-alive', 'user-agent': 'python-httpx/0.28.1', 'content-length': '74', 'content-type': 'application/json'}
+Body:
+{"email":"user_1@wep.com","password":"Us3rPas$w04d_1","username":"User 1"}

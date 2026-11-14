@@ -1,0 +1,5 @@
+POST http://localhost:81/api/auth/verify
+Headers:
+{'host': 'localhost:81', 'accept': '*/*', 'accept-encoding': 'gzip, deflate', 'connection': 'keep-alive', 'user-agent': 'python-httpx/0.28.1', 'cookie': 'wep_session=9zHusuhSzdeuEkV9R9zRMakOEW_EwxwTFj8RZpoh364', 'content-length': '55', 'content-type': 'application/json'}
+Body:
+{"token":"x27PH3wNb51NYm0eKU9Sf3FgXGm37b_cOK-RX82zPOU"}

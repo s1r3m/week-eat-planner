@@ -1,4 +1,0 @@
-@custom-media --tablet (width < 900px);
-@custom-media --mobile (width < 600px);
-
-@custom-media --sidebar-show (width > 599px);

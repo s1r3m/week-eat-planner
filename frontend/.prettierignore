@@ -1,6 +1,0 @@
-.nuxt
-.output
-.cache
-coverage
-node_modules
-bun.lock

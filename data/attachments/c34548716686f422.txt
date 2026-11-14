@@ -1,0 +1,5 @@
+Status: 409
+Headers:
+{'server': 'nginx/1.31.8', 'date': 'Sat, 14 Nov 2026 14:19:50 GMT', 'content-type': 'application/json', 'content-length': '33', 'connection': 'keep-alive', 'vary': 'Origin'}
+Body:
+{"detail":"Bad activation token"}
