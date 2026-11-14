@@ -75,9 +75,7 @@ class BaseApiClient:
 
     def _attach_response(self, response: Response) -> None:
         allure.attach(
-            f'Status: {response.status_code}\n'
-            f'Headers:\n{dict(response.headers)}\n'
-            f'Body:\n{response.text}',
+            f'Status: {response.status_code}\nHeaders:\n{dict(response.headers)}\nBody:\n{response.text}',
             name='HTTP response',
             attachment_type=allure.attachment_type.TEXT,
         )

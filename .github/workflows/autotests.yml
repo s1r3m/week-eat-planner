@@ -110,7 +110,7 @@ jobs:
               qa/allure-results/history/
           fi
 
-          if ! find qa/allure-results -type f -print -quit | grep -q .; then
+          if ! find qa/allure-results -maxdepth 1 -type f -name '*-result.json' -print -quit | grep -q .; then
             echo "No Allure results found. Skipping report generation."
             echo "report_available=false" >> "$GITHUB_OUTPUT"
             exit 0
